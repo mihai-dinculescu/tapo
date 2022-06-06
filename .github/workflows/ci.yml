@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  checks:
+    name: Rust checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: davidB/rust-cargo-make@v1
+      - uses: actions/checkout@v2
+      - name: Run format
+        run: cargo make format
+      - name: Run check
+        run: cargo make check
+      - name: Run clippy
+        run: cargo make clippy
+      - name: Run test
+        run: cargo make test

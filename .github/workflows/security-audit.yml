@@ -1,0 +1,30 @@
+name: Security
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+  schedule:
+    - cron: "0 0 * * *"
+jobs:
+  security_audit:
+    name: Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}

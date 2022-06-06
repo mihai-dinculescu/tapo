@@ -1,0 +1,26 @@
+[config]
+skip_core_tasks = true
+
+[tasks.format]
+command = "cargo"
+args = ["fmt", "--verbose", "--", "--check"]
+
+[tasks.check]
+command = "cargo"
+args = ["check", "--verbose"]
+
+[tasks.clippy]
+command = "cargo"
+args = ["clippy", "--all-targets", "--all-features", "--verbose", "--", "-D", "warnings"]
+
+[tasks.test]
+command = "cargo"
+args = ["test", "--verbose"]
+
+[tasks.ci-flow]
+dependencies = [
+    "format",
+    "check",
+    "clippy",
+    "test"
+]
