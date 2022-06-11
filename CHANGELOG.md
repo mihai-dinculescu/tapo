@@ -10,6 +10,10 @@ file. This change log follows the conventions of
 
 - `Color` now implements `serde::Serialize` and `serde::Deserialize`.
 
+### Removed
+
+- `TapoDeviceExt` is no longer has `Default` and `serde::Serialize` as supersets.
+
 ## [v0.1.0] - 2022-06-07
 
 ### Initial Release of Tapo
