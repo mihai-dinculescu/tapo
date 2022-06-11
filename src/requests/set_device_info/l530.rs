@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use lazy_static::lazy_static;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use anyhow::Context;
 
@@ -21,7 +21,7 @@ pub struct L530SetDeviceInfoParams {
 }
 
 /// List of preset colors as defined in the Google Home app.
-#[derive(Eq, PartialEq, Hash)]
+#[derive(Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum Color {
     CoolWhite,
     Daylight,

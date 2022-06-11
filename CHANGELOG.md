@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Changed
+
+- `Color` now implements `serde::Serialize` and `serde::Deserialize`.
+
 ## [v0.1.0] - 2022-06-07
 
 ### Initial Release of Tapo
