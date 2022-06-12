@@ -1,9 +1,10 @@
 # Tapo
 
 [![Crates][crates_badge]][crates]
+[![Documentation][documentation_badge]][documentation]
 [![CI][ci_badge]][ci]
 [![license][license_badge]][license]
-[![Crates.io][crates_installs_badge]][crates]\
+[![Crates.io][crates_downloads_badge]][crates]\
 Unofficial Tapo API Client.
 
 ## Device support
@@ -41,12 +42,14 @@ Contributions are welcome and encouraged! See [/CONTRIBUTING.md][contributing].
 Inspired by [petretiandrea/plugp100][inspired_by].
 
 [crates_badge]: https://img.shields.io/crates/v/tapo.svg
-[crates]: https://crates.io/crates/tapo
+[crates]: https://crates.io/crates/
+[documentation_badge]: https://docs.rs/tapo/badge.svg
+[documentation]: https://docs.rs/tapo
 [ci_badge]: https://github.com/mihai-dinculescu/tapo/workflows/CI/badge.svg?branch=main
 [ci]: https://github.com/mihai-dinculescu/tapo/actions
 [license_badge]: https://img.shields.io/crates/l/tapo.svg
 [license]: https://github.com/mihai-dinculescu/tapo/blob/main/LICENSE
-[crates_installs_badge]: https://img.shields.io/crates/d/tapo?label=cargo%20installs
+[crates_downloads_badge]: https://img.shields.io/crates/d/tapo?label=downloads
 [examples]: https://github.com/mihai-dinculescu/tapo/tree/main/examples
 [contributing]: https://github.com/mihai-dinculescu/tapo/blob/main/CONTRIBUTING.md
 [inspired_by]: https://github.com/petretiandrea/plugp100
