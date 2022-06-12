@@ -7,12 +7,13 @@
 Unofficial Tapo API Client.
 
 ## Device support
+
 | Feature               |    L530 |    L510 |    P110 |    P100 | GenericDevice |
 | --------------------- | ------: | ------: | ------: | ------: | ------------: |
 | on                    | &check; | &check; | &check; | &check; |       &check; |
 | off                   | &check; | &check; | &check; | &check; |       &check; |
 | get_device_info       | &check; | &check; | &check; | &check; |       &check; |
-| get_device_usage      | &check; | &check; | &check; | &check; |               |
+| get_device_usage      | &check; | &check; | &check; | &check; |       &check; |
 | get_energy_usage      |         |         | &check; |         |               |
 | set_brightness        | &check; | &check; |         |         |               |
 | set_color             | &check; |         |         |         |               |
@@ -20,6 +21,7 @@ Unofficial Tapo API Client.
 | set_color_temperature | &check; |         |         |         |               |
 
 ## Examples
+
 ```bash
 export IP_ADDRESS=
 export TAPO_USERNAME=
@@ -31,9 +33,11 @@ cargo run --example tapo_l530
 See all examples in [/examples][examples].
 
 ## Contributing
+
 Contributions are welcome and encouraged! See [/CONTRIBUTING.md][contributing].
 
 ## Credits
+
 Inspired by [petretiandrea/plugp100][inspired_by].
 
 [crates_badge]: https://img.shields.io/crates/v/tapo.svg

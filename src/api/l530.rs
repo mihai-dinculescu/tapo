@@ -1,6 +1,6 @@
 use crate::api::ApiClient;
 use crate::requests::L530SetDeviceInfoParams;
-use crate::responses::{DeviceUsageResult, L530DeviceInfoResult};
+use crate::responses::L530DeviceInfoResult;
 use crate::{Color, L530};
 
 /// The functionality of [`crate::ApiClient<L530>`] that applies to [`crate::L530`]. Superset of [`crate::ApiClient<D>`].
@@ -55,10 +55,5 @@ impl ApiClient<L530> {
     pub async fn get_device_info(&self) -> anyhow::Result<L530DeviceInfoResult> {
         self.get_device_info_internal::<L530DeviceInfoResult>()
             .await
-    }
-
-    /// Gets *device usage*. It contains the time in use, the power consumption, and the energy savings of the device.
-    pub async fn get_device_usage(&self) -> anyhow::Result<DeviceUsageResult> {
-        self.get_device_usage_internal().await
     }
 }

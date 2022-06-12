@@ -12,6 +12,7 @@ file. This change log follows the conventions of
 
 ### Changed
 
+- `get_device_usage` has been moved to the base implementation so that all devices have access to it.
 - `Color` now implements `serde::Serialize` and `serde::Deserialize`.
 
 ### Removed

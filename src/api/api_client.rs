@@ -205,6 +205,21 @@ where
         Ok(result)
     }
 
+    /// Gets *device usage*. It contains the time in use, the power consumption, and the energy savings of the device.
+    pub async fn get_device_usage(&self) -> anyhow::Result<DeviceUsageResult> {
+        debug!("Get Device usage...");
+        let get_device_usage_params = GetDeviceUsageParams::new();
+        let get_device_usage_request =
+            TapoRequest::GetDeviceUsage(TapoParams::new(get_device_usage_params));
+
+        let result = self
+            .execute_secure_passthrough_request::<DeviceUsageResult>(get_device_usage_request, true)
+            .await?
+            .context("failed to obtain a response for get device usage")?;
+
+        Ok(result)
+    }
+
     pub(crate) async fn set_device_info_internal(
         &self,
         device_info_params: serde_json::Value,
@@ -237,20 +252,6 @@ where
             .await?
             .map(|result| result.decode())
             .context("failed to obtain a response for get device info")??;
-
-        Ok(result)
-    }
-
-    pub(crate) async fn get_device_usage_internal(&self) -> anyhow::Result<DeviceUsageResult> {
-        debug!("Get Device usage...");
-        let get_device_usage_params = GetDeviceUsageParams::new();
-        let get_device_usage_request =
-            TapoRequest::GetDeviceUsage(TapoParams::new(get_device_usage_params));
-
-        let result = self
-            .execute_secure_passthrough_request::<DeviceUsageResult>(get_device_usage_request, true)
-            .await?
-            .context("failed to obtain a response for get device usage")?;
 
         Ok(result)
     }
