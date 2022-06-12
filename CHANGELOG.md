@@ -6,6 +6,8 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [v0.2.0] - 2022-06-13
+
 ### Added
 
 - Generic Device example.
@@ -24,5 +26,6 @@ file. This change log follows the conventions of
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.2.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.2.0
 [v0.1.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.1.0
 [keepachangelog]: https://keepachangelog.com
