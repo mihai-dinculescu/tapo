@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Added
+
+- Generic Device example.
+
 ### Changed
 
 - `Color` now implements `serde::Serialize` and `serde::Deserialize`.
