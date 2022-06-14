@@ -5,7 +5,7 @@
 [![CI][ci_badge]][ci]
 [![license][license_badge]][license]
 [![Crates.io][crates_downloads_badge]][crates]\
-Unofficial Tapo API Client.
+Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L530, L510) and plugs (P110, P100).
 
 ## Device support
 
@@ -42,7 +42,7 @@ Contributions are welcome and encouraged! See [/CONTRIBUTING.md][contributing].
 Inspired by [petretiandrea/plugp100][inspired_by].
 
 [crates_badge]: https://img.shields.io/crates/v/tapo.svg
-[crates]: https://crates.io/crates/
+[crates]: https://crates.io/crates/tapo
 [documentation_badge]: https://docs.rs/tapo/badge.svg
 [documentation]: https://docs.rs/tapo
 [ci_badge]: https://github.com/mihai-dinculescu/tapo/workflows/CI/badge.svg?branch=main
