@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Changed
+
+- `latitude` and `longitude` in `DeviceInfoResult` are now signed integers to accomodate for incoming responses with negative numbers.
+
 ## [v0.2.0] - 2022-06-13
 
 ### Added
