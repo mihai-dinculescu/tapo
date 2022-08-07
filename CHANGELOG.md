@@ -6,9 +6,11 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [v0.2.1] - 2022-08-07
+
 ### Changed
 
-- `latitude` and `longitude` in `DeviceInfoResult` are now signed integers to accomodate for incoming responses with negative numbers.
+- `latitude` and `longitude` in `GenericDeviceInfoResult`, `L510DeviceInfoResult`, `L530DeviceInfoResult` and `PlugDeviceInfoResult` are now signed integers to accommodate for incoming responses with negative numbers. (thanks to @JPablomr)
 
 ## [v0.2.0] - 2022-06-13
 
@@ -30,6 +32,7 @@ file. This change log follows the conventions of
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.2.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.2.1
 [v0.2.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.2.0
 [v0.1.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.1.0
 [keepachangelog]: https://keepachangelog.com
