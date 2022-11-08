@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Changed
+
+- `GenericDeviceInfoResult::on_time` has been changed from `u64` to `Option<u64>` because some devices (like L930) do not provide this field.
+
 ## [v0.2.1] - 2022-08-07
 
 ### Changed
