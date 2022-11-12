@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 use crate::responses::{DefaultState, DeviceInfoResultExt, TapoResponseExt};
 
-/// Device info of [`crate::P100`] and [`crate::P110`]. Superset of [`crate::GenericDeviceInfoResult`].
+/// Device info of [`crate::P100`] and [`crate::P110`]. Superset of [`crate::responses::GenericDeviceInfoResult`].
 #[derive(Debug, Clone, Deserialize)]
 pub struct PlugDeviceInfoResult {
     //

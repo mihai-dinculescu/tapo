@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
-pub struct HandshakeParams {
+pub(crate) struct HandshakeParams {
     key: String,
 }
 

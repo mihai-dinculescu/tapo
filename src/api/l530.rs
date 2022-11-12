@@ -1,7 +1,7 @@
 use crate::api::ApiClient;
-use crate::requests::L530SetDeviceInfoParams;
+use crate::devices::L530;
+use crate::requests::{Color, L530SetDeviceInfoParams};
 use crate::responses::L530DeviceInfoResult;
-use crate::{Color, L530};
 
 /// The functionality of [`crate::ApiClient<L530>`] that applies to [`crate::L530`]. Superset of [`crate::ApiClient<D>`].
 impl ApiClient<L530> {
@@ -49,7 +49,7 @@ impl ApiClient<L530> {
         self.set_device_info_internal(json).await
     }
 
-    /// Gets *device info* as [`crate::L530DeviceInfoResult`].
+    /// Gets *device info* as [`crate::responses::L530DeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::ApiClient::get_device_info_json`].
     pub async fn get_device_info(&self) -> anyhow::Result<L530DeviceInfoResult> {

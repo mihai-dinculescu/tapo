@@ -10,7 +10,7 @@ use crate::requests::{
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "method")]
-pub enum TapoRequest {
+pub(crate) enum TapoRequest {
     Handshake(TapoParams<HandshakeParams>),
     LoginDevice(TapoParams<LoginDeviceParams>),
     #[serde(rename = "securePassthrough")]
@@ -23,7 +23,7 @@ pub enum TapoRequest {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TapoParams<T> {
+pub(crate) struct TapoParams<T> {
     params: T,
     #[serde(skip_serializing_if = "Option::is_none")]
     request_time_mils: Option<u64>,

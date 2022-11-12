@@ -15,7 +15,7 @@ impl ApiClient<L510> {
         self.set_device_info_internal(json).await
     }
 
-    /// Gets *device info* as [`crate::L510DeviceInfoResult`].
+    /// Gets *device info* as [`crate::responses::L510DeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::ApiClient::get_device_info_json`].
     pub async fn get_device_info(&self) -> anyhow::Result<L510DeviceInfoResult> {

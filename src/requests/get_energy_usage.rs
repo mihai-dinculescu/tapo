@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 #[derive(Debug, Default, Serialize)]
-pub struct GetEnergyUsageParams;
+pub(crate) struct GetEnergyUsageParams;
 
 impl GetEnergyUsageParams {
     pub fn new() -> Self {

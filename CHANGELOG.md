@@ -9,6 +9,8 @@ file. This change log follows the conventions of
 ### Changed
 
 - `GenericDeviceInfoResult::on_time` has been changed from `u64` to `Option<u64>` because some devices (like L930) do not provide this field.
+- All response structs have been moved under `tapo::responses`.
+- The docs have been improved.
 
 ## [v0.2.1] - 2022-08-07
 

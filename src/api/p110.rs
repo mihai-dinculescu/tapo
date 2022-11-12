@@ -4,7 +4,7 @@ use crate::responses::{EnergyUsageResult, PlugDeviceInfoResult};
 
 /// The functionality of [`crate::ApiClient<P110>`] that applies to [`crate::P110`]. Superset of [`crate::ApiClient<D>`].
 impl ApiClient<P110> {
-    /// Gets *device info* as [`crate::PlugDeviceInfoResult`].
+    /// Gets *device info* as [`crate::responses::PlugDeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::ApiClient::get_device_info_json`].
     pub async fn get_device_info(&self) -> anyhow::Result<PlugDeviceInfoResult> {

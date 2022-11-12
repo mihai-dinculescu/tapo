@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 #[derive(Debug, Default, Serialize)]
-pub struct GetDeviceUsageParams;
+pub(crate) struct GetDeviceUsageParams;
 
 impl GetDeviceUsageParams {
     pub fn new() -> Self {

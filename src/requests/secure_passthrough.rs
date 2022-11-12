@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
-pub struct SecurePassthroughParams {
+pub(crate) struct SecurePassthroughParams {
     request: String,
 }
 

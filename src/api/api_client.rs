@@ -24,73 +24,98 @@ const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 ///
 /// # Examples
 /// ## L530
-/// ```rust,ignore
+/// ```rust,no_run
 /// use tapo::{ApiClient, L530};
 ///
-/// let device = ApiClient::<L530>::new(
-///     "192.168.1.100".to_string(),
-///     "tapo-username@example.com".to_string(),
-///     "tapo-password".to_string(),
-///     true,
-/// ).await?;
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::<L530>::new(
+///         "192.168.1.100".to_string(),
+///         "tapo-username@example.com".to_string(),
+///         "tapo-password".to_string(),
+///         true,
+///     ).await?;
 ///
-/// device.on().await?;
+///     device.on().await?;
+///
+///     Ok(())
+/// }
 /// ```
 ///
 /// ## L510
-/// ```rust,ignore
+/// ```rust,no_run
 /// use tapo::{ApiClient, L510};
 ///
-/// let device = ApiClient::<L510>::new(
-///     "192.168.1.100".to_string(),
-///     "tapo-username@example.com".to_string(),
-///     "tapo-password".to_string(),
-///     true,
-/// ).await?;
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::<L510>::new(
+///         "192.168.1.100".to_string(),
+///         "tapo-username@example.com".to_string(),
+///         "tapo-password".to_string(),
+///         true,
+///     ).await?;
 ///
-/// device.on().await?;
+///     device.on().await?;
+///
+///     Ok(())
+/// }
 /// ```
 ///
 /// ## P110
-/// ```rust,ignore
+/// ```rust,no_run
 /// use tapo::{ApiClient, P110};
 ///
-/// let device = ApiClient::<P110>::new(
-///     "192.168.1.100".to_string(),
-///     "tapo-username@example.com".to_string(),
-///     "tapo-password".to_string(),
-///     true,
-/// ).await?;
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::<P110>::new(
+///         "192.168.1.100".to_string(),
+///         "tapo-username@example.com".to_string(),
+///         "tapo-password".to_string(),
+///         true,
+///     ).await?;
 ///
-/// device.on().await?;
+///     device.on().await?;
+///
+///     Ok(())
+/// }
 /// ```
 ///
 /// ## P100
-/// ```rust,ignore
+/// ```rust,no_run
 /// use tapo::{ApiClient, P100};
 ///
-/// let device = ApiClient::<P100>::new(
-///     "192.168.1.100".to_string(),
-///     "tapo-username@example.com".to_string(),
-///     "tapo-password".to_string(),
-///     true,
-/// ).await?;
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::<P100>::new(
+///         "192.168.1.100".to_string(),
+///         "tapo-username@example.com".to_string(),
+///         "tapo-password".to_string(),
+///         true,
+///     ).await?;
 ///
-/// device.on().await?;
+///     device.on().await?;
+///
+///     Ok(())
+/// }
 /// ```
 ///
 /// ## GenericDevice
-/// ```rust,ignore
+/// ```rust,no_run
 /// use tapo::{ApiClient, GenericDevice};
 ///
-/// let device = ApiClient::<GenericDevice>::new(
-///     "192.168.1.100".to_string(),
-///     "tapo-username@example.com".to_string(),
-///     "tapo-password".to_string(),
-///     true,
-/// ).await?;
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::<GenericDevice>::new(
+///         "192.168.1.100".to_string(),
+///         "tapo-username@example.com".to_string(),
+///         "tapo-password".to_string(),
+///         true,
+///     ).await?;
 ///
-/// device.on().await?;
+///     device.on().await?;
+///
+///     Ok(())
+/// }
 /// ```
 #[derive(Debug)]
 pub struct ApiClient<D = GenericDevice>
@@ -122,17 +147,22 @@ where
     /// * `attempt_login` - *bool*; whether to attempt to login
     ///
     /// # Examples
-    /// ```rust,ignore
+    /// ```rust,no_run
     /// use tapo::{ApiClient, L530};
     ///
-    /// let device = ApiClient::<L530>::new(
-    ///     "192.168.1.100".to_string(),
-    ///     "tapo-username@example.com".to_string(),
-    ///     "tapo-password".to_string(),
-    ///     true,
-    /// ).await?;
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let device = ApiClient::<L530>::new(
+    ///         "192.168.1.100".to_string(),
+    ///         "tapo-username@example.com".to_string(),
+    ///         "tapo-password".to_string(),
+    ///         true,
+    ///     ).await?;
     ///
-    /// device.on().await?;
+    ///     device.on().await?;
+    ///
+    ///     Ok(())
+    /// }
     /// ```
     pub async fn new(
         ip_address: String,

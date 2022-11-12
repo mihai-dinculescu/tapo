@@ -1,11 +1,8 @@
 /// L530 Example
-use std::env;
-use std::{thread, time::Duration};
+use std::{env, thread, time::Duration};
 
 use log::{info, LevelFilter};
-
-use tapo::ApiClient;
-use tapo::{Color, L530};
+use tapo::{ApiClient, Color, L530};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

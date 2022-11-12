@@ -1,11 +1,8 @@
 /// P100 Example
-use std::env;
-use std::{thread, time::Duration};
+use std::{env, thread, time::Duration};
 
 use log::{info, LevelFilter};
-
-use tapo::ApiClient;
-use tapo::P100;
+use tapo::{ApiClient, P100};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

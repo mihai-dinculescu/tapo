@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 #[derive(Debug, Default, Serialize)]
-pub struct L510SetDeviceInfoParams {
+pub(crate) struct L510SetDeviceInfoParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     device_on: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -9,7 +9,7 @@ pub struct L510SetDeviceInfoParams {
 }
 
 impl L510SetDeviceInfoParams {
-    pub(crate) fn brightness(value: u8) -> anyhow::Result<Self> {
+    pub fn brightness(value: u8) -> anyhow::Result<Self> {
         Self {
             brightness: Some(value),
             ..Default::default()
@@ -17,7 +17,7 @@ impl L510SetDeviceInfoParams {
         .validate()
     }
 
-    pub(crate) fn validate(self) -> anyhow::Result<Self> {
+    pub fn validate(self) -> anyhow::Result<Self> {
         if self.brightness.is_none() {
             return Err(anyhow::anyhow!(
                 "DeviceInfoParams requires at least one property"

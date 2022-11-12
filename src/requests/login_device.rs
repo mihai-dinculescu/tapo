@@ -6,7 +6,7 @@ use serde::Serialize;
 use crate::encryption::sha_digest_username;
 
 #[derive(Serialize)]
-pub struct LoginDeviceParams {
+pub(crate) struct LoginDeviceParams {
     username: String,
     password: String,
 }

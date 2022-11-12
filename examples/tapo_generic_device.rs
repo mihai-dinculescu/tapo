@@ -1,11 +1,8 @@
-/// P100 Example
-use std::env;
-use std::{thread, time::Duration};
+/// Generic Device Example
+use std::{env, thread, time::Duration};
 
 use log::{info, LevelFilter};
-
-use tapo::ApiClient;
-use tapo::GenericDevice;
+use tapo::{ApiClient, GenericDevice};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
