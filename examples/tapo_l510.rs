@@ -30,6 +30,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Waiting 2 seconds...");
     thread::sleep(Duration::from_secs(2));
 
+    info!("Using the `set` API to set multiple properties in a single request...");
+    device.set().on().brightness(50)?.send().await?;
+
+    info!("Waiting 2 seconds...");
+    thread::sleep(Duration::from_secs(2));
+
     info!("Turning device off...");
     device.off().await?;
 

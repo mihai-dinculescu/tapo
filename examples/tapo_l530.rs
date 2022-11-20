@@ -2,7 +2,7 @@
 use std::{env, thread, time::Duration};
 
 use log::{info, LevelFilter};
-use tapo::{ApiClient, Color, L530};
+use tapo::{requests::Color, ApiClient, L530};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -41,6 +41,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Setting the color to `Incandescent` using the `color temperature`...");
     device.set_color_temperature(2700).await?;
+
+    info!("Waiting 2 seconds...");
+    thread::sleep(Duration::from_secs(2));
+
+    info!("Using the `set` API to set multiple properties in a single request...");
+    device
+        .set()
+        .on()
+        .brightness(50)?
+        .color(Color::HotPink)?
+        .send()
+        .await?;
 
     info!("Waiting 2 seconds...");
     thread::sleep(Duration::from_secs(2));

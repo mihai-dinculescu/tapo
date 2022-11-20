@@ -6,9 +6,13 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Added
+- The `set` API allows multiple properties to be set in a single request for the *L510* and *L530* devices.
+
 ### Changed
 
-- `GenericDeviceInfoResult::on_time` has been changed from `u64` to `Option<u64>` because some devices (like L930) do not provide this field.
+- `tapo::Color` has been moved to `tapo::requests::Color`.
+- `GenericDeviceInfoResult::on_time` has been changed from `u64` to `Option<u64>` because some devices (like *L930*) do not provide this field.
 - All response structs have been moved under `tapo::responses`.
 - The docs have been improved.
 

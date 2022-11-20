@@ -1,10 +1,15 @@
 use anyhow::Context;
 use serde::Serialize;
 
+use crate::api::ApiClient;
+use crate::devices::L530;
 use crate::requests::color::{Color, COLOR_MAP};
 
-#[derive(Debug, Default, Serialize)]
-pub(crate) struct L530SetDeviceInfoParams {
+/// Builder that is used by the [`crate::ApiClient<L530>::set`] API to set multiple properties in a single request.
+#[derive(Debug, Serialize)]
+pub struct L530SetDeviceInfoParams<'a> {
+    #[serde(skip)]
+    client: &'a ApiClient<L530>,
     #[serde(skip_serializing_if = "Option::is_none")]
     device_on: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -18,50 +23,93 @@ pub(crate) struct L530SetDeviceInfoParams {
     color_temperature: Option<u16>,
 }
 
-impl L530SetDeviceInfoParams {
-    pub fn brightness(value: u8) -> anyhow::Result<Self> {
-        Self {
-            brightness: Some(value),
-            ..Default::default()
-        }
-        .validate()
+impl<'a> L530SetDeviceInfoParams<'a> {
+    /// Turns *on* the device. `send` must be called at the end to apply the changes.
+    pub fn on(mut self) -> Self {
+        self.device_on = Some(true);
+        self
     }
 
-    pub fn color(color: Color) -> anyhow::Result<Self> {
+    /// Turns *off* the device. `send` must be called at the end to apply the changes.
+    pub fn off(mut self) -> Self {
+        self.device_on = Some(false);
+        self
+    }
+
+    /// Sets the *brightness*. `send` must be called at the end to apply the changes.
+    ///
+    /// # Arguments
+    ///
+    /// * `brightness` - *u8*; between 1 and 100
+    pub fn brightness(mut self, value: u8) -> anyhow::Result<Self> {
+        self.brightness = Some(value);
+        self.validate()
+    }
+
+    /// Sets the *color*. `send` must be called at the end to apply the changes.
+    ///
+    /// # Arguments
+    ///
+    /// * `color` - [crate::requests::Color]
+    pub fn color(mut self, color: Color) -> anyhow::Result<Self> {
         let (hue, saturation, color_temperature) = *COLOR_MAP
             .get(&color)
             .context("failed to find the color properties")?;
 
-        Self {
-            hue,
-            saturation,
-            color_temperature,
-            ..Default::default()
-        }
-        .validate()
+        self.hue = hue;
+        self.saturation = saturation;
+        self.color_temperature = color_temperature;
+
+        self.validate()
     }
 
-    pub fn hue_saturation(hue: u16, saturation: u8) -> anyhow::Result<Self> {
-        Self {
-            hue: Some(hue),
-            saturation: Some(saturation),
-            color_temperature: None,
-            ..Default::default()
-        }
-        .validate()
+    /// Sets the *hue* and *saturation*. `send` must be called at the end to apply the changes.
+    ///
+    /// # Arguments
+    ///
+    /// * `hue` - *u16* between 1 and 360
+    /// * `saturation` - *u8*; between 1 and 100
+    pub fn hue_saturation(mut self, hue: u16, saturation: u8) -> anyhow::Result<Self> {
+        self.hue = Some(hue);
+        self.saturation = Some(saturation);
+        self.color_temperature = None;
+
+        self.validate()
     }
 
-    pub fn color_temperature(value: u16) -> anyhow::Result<Self> {
+    /// Sets the *color temperature*. `send` must be called at the end to apply the changes.
+    ///
+    /// # Arguments
+    ///
+    /// * `color_temperature` - *u16*; between 2500 and 6500
+    pub fn color_temperature(mut self, value: u16) -> anyhow::Result<Self> {
+        self.hue = None;
+        self.saturation = None;
+        self.color_temperature = Some(value);
+
+        self.validate()
+    }
+
+    /// Performs a request to apply the changes to the device.
+    pub async fn send(self) -> anyhow::Result<()> {
+        let json = serde_json::to_value(&self)?;
+        self.client.set_device_info_internal(json).await
+    }
+}
+
+impl<'a> L530SetDeviceInfoParams<'a> {
+    pub(crate) fn new(client: &'a ApiClient<L530>) -> Self {
         Self {
+            client,
+            device_on: None,
+            brightness: None,
             hue: None,
             saturation: None,
-            color_temperature: Some(value),
-            ..Default::default()
+            color_temperature: None,
         }
-        .validate()
     }
 
-    pub fn validate(self) -> anyhow::Result<Self> {
+    fn validate(self) -> anyhow::Result<Self> {
         if self.brightness.is_none()
             && self.hue.is_none()
             && self.saturation.is_none()

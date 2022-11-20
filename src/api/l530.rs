@@ -5,48 +5,85 @@ use crate::responses::L530DeviceInfoResult;
 
 /// The functionality of [`crate::ApiClient<L530>`] that applies to [`crate::L530`]. Superset of [`crate::ApiClient<D>`].
 impl ApiClient<L530> {
-    /// Sets the light bulb's *color*.
+    /// Returns a [`crate::requests::L530SetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
+    /// `send` must be called at the end to apply the changes.
     ///
-    /// # Arguments
+    /// # Example
+    /// ```rust,no_run
+    /// use tapo::{ApiClient, L530};
+    /// use tapo::requests::Color;
     ///
-    /// * `color` - [crate::Color]
-    pub async fn set_color(&self, color: Color) -> anyhow::Result<()> {
-        let json = serde_json::to_value(&L530SetDeviceInfoParams::color(color)?)?;
-        self.set_device_info_internal(json).await
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    ///     let device = ApiClient::<L530>::new(
+    ///         "192.168.1.100".to_string(),
+    ///         "tapo-username@example.com".to_string(),
+    ///         "tapo-password".to_string(),
+    ///         true,
+    ///     ).await?;
+    ///
+    ///     device
+    ///     .set()
+    ///     .on()
+    ///     .brightness(50)?
+    ///     .color(Color::HotPink)?
+    ///     .send()
+    ///     .await?;
+    ///
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn set(&self) -> L530SetDeviceInfoParams {
+        L530SetDeviceInfoParams::new(self)
     }
 
-    /// Sets the light bulb's *brightness*.
+    /// Sets the *brightness*.
     ///
     /// # Arguments
     ///
     /// * `brightness` - *u8*; between 1 and 100
     pub async fn set_brightness(&self, brightness: u8) -> anyhow::Result<()> {
-        let json = serde_json::to_value(&L530SetDeviceInfoParams::brightness(brightness)?)?;
-        self.set_device_info_internal(json).await
+        L530SetDeviceInfoParams::new(self)
+            .brightness(brightness)?
+            .send()
+            .await
     }
 
-    /// Sets the light bulb's *hue* and *saturation*.
+    /// Sets the *color*.
+    ///
+    /// # Arguments
+    ///
+    /// * `color` - [crate::requests::Color]
+    pub async fn set_color(&self, color: Color) -> anyhow::Result<()> {
+        L530SetDeviceInfoParams::new(self)
+            .color(color)?
+            .send()
+            .await
+    }
+
+    /// Sets the *hue* and *saturation*.
     ///
     /// # Arguments
     ///
     /// * `hue` - *u16* between 1 and 360
     /// * `saturation` - *u8*; between 1 and 100
     pub async fn set_hue_saturation(&self, hue: u16, saturation: u8) -> anyhow::Result<()> {
-        let json =
-            serde_json::to_value(&L530SetDeviceInfoParams::hue_saturation(hue, saturation)?)?;
-        self.set_device_info_internal(json).await
+        L530SetDeviceInfoParams::new(self)
+            .hue_saturation(hue, saturation)?
+            .send()
+            .await
     }
 
-    /// Sets the light bulb's *color temperature*.
+    /// Sets the *color temperature*.
     ///
     /// # Arguments
     ///
     /// * `color_temperature` - *u16*; between 2500 and 6500
     pub async fn set_color_temperature(&self, color_temperature: u16) -> anyhow::Result<()> {
-        let json = serde_json::to_value(&L530SetDeviceInfoParams::color_temperature(
-            color_temperature,
-        )?)?;
-        self.set_device_info_internal(json).await
+        L530SetDeviceInfoParams::new(self)
+            .color_temperature(color_temperature)?
+            .send()
+            .await
     }
 
     /// Gets *device info* as [`crate::responses::L530DeviceInfoResult`].

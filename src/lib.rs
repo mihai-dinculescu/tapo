@@ -6,7 +6,7 @@
 //! use std::{env, thread, time::Duration};
 //!
 //! use log::{info, LevelFilter};
-//! use tapo::{ApiClient, Color, L530};
+//! use tapo::{requests::Color, ApiClient, L530};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -49,6 +49,18 @@
 //!     info!("Waiting 2 seconds...");
 //!     thread::sleep(Duration::from_secs(2));
 //!
+//!     info!("Using the `set` API to change multiple properties in a single request...");
+//!     device
+//!         .set()
+//!         .on()
+//!         .brightness(50)?
+//!         .color(Color::HotPink)?
+//!         .send()
+//!         .await?;
+//!
+//!     info!("Waiting 2 seconds...");
+//!     thread::sleep(Duration::from_secs(2));
+//!
 //!     info!("Turning device off...");
 //!     device.off().await?;
 //!
@@ -67,11 +79,10 @@
 mod api;
 mod devices;
 mod encryption;
-mod requests;
 mod tapo_date_format;
 
+pub mod requests;
 pub mod responses;
 
 pub use api::*;
 pub use devices::*;
-pub use requests::*;
