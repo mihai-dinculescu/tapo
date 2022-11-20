@@ -11,7 +11,7 @@ If you're thinking to create a PR with large feature/change, please first discus
 - Add tag
 
   ```bash
-  git tag -a vX.X.X
+  git tag -a vX.X.X -m "vX.X.X"
   ```
 
 - Push

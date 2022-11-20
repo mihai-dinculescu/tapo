@@ -6,6 +6,8 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [v0.3.0] - 2022-11-20
+
 ### Added
 - The `set` API allows multiple properties to be set in a single request for the *L510* and *L530* devices.
 
@@ -42,6 +44,7 @@ file. This change log follows the conventions of
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.3.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.3.0
 [v0.2.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.2.1
 [v0.2.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.2.0
 [v0.1.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.1.0
