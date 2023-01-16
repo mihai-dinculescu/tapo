@@ -1,3 +1,4 @@
+use base64::{engine::general_purpose, Engine as _};
 use log::debug;
 use openssl::symm::{decrypt, encrypt, Cipher};
 use openssl::{pkey, rsa, sha::Sha1};
@@ -41,13 +42,13 @@ impl TpLinkCipher {
             Some(&self.iv),
             data.as_bytes(),
         )?;
-        let cipher_base64 = base64::encode(&cipher_bytes);
+        let cipher_base64 = general_purpose::STANDARD.encode(cipher_bytes);
 
         Ok(cipher_base64)
     }
 
     pub fn decrypt(&self, cipher_base64: &str) -> anyhow::Result<String> {
-        let cipher_bytes = base64::decode(cipher_base64)?;
+        let cipher_bytes = general_purpose::STANDARD.decode(cipher_base64)?;
         let decrypted_bytes = decrypt(
             Cipher::aes_128_cbc(),
             &self.key,
@@ -64,7 +65,7 @@ pub fn decode_handshake_key(key: &str, key_pair: &KeyPair) -> anyhow::Result<TpL
     let key_preview = &key[..5];
     debug!("Will decode handshake key {key_preview:?}...");
 
-    let key_bytes = base64::decode(key)?;
+    let key_bytes = general_purpose::STANDARD.decode(key)?;
     let mut buf = vec![0; key_pair.rsa.size() as usize];
 
     let decrypt_count = key_pair

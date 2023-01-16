@@ -1,3 +1,4 @@
+use base64::{engine::general_purpose, Engine as _};
 use serde::Deserialize;
 
 use crate::responses::{DefaultState, DeviceInfoResultExt, TapoResponseExt};
@@ -63,8 +64,12 @@ pub struct L510State {
 impl DeviceInfoResultExt for L510DeviceInfoResult {
     fn decode(&self) -> anyhow::Result<Self> {
         Ok(Self {
-            ssid: std::str::from_utf8(&base64::decode(self.ssid.clone())?)?.to_string(),
-            nickname: std::str::from_utf8(&base64::decode(self.nickname.clone())?)?.to_string(),
+            ssid: std::str::from_utf8(&general_purpose::STANDARD.decode(self.ssid.clone())?)?
+                .to_string(),
+            nickname: std::str::from_utf8(
+                &general_purpose::STANDARD.decode(self.nickname.clone())?,
+            )?
+            .to_string(),
             ..self.clone()
         })
     }

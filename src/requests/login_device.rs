@@ -1,5 +1,6 @@
 use std::fmt;
 
+use base64::{engine::general_purpose, Engine as _};
 use log::debug;
 use serde::Serialize;
 
@@ -17,8 +18,8 @@ impl LoginDeviceParams {
         debug!("Username digest: {username_digest}");
 
         Ok(Self {
-            username: base64::encode(username_digest),
-            password: base64::encode(password),
+            username: general_purpose::STANDARD.encode(username_digest),
+            password: general_purpose::STANDARD.encode(password),
         })
     }
 }

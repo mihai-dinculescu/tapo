@@ -210,13 +210,13 @@ where
 
     /// Turns *on* the device.
     pub async fn on(&self) -> anyhow::Result<()> {
-        let json = serde_json::to_value(&GenericSetDeviceInfoParams::device_on(true)?)?;
+        let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;
         self.set_device_info_internal(json).await
     }
 
     /// Turns *off* the device.
     pub async fn off(&self) -> anyhow::Result<()> {
-        let json = serde_json::to_value(&GenericSetDeviceInfoParams::device_on(false)?)?;
+        let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(false)?)?;
         self.set_device_info_internal(json).await
     }
 
