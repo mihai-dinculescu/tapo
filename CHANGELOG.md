@@ -6,6 +6,8 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [v0.3.1] - 2023-02-19
+
 ### Added
 - `examples/tapo_generic_device_toggle.rs` demonstrates how `device_info` can be used to assess the current status of a generic device and toggle it.
 
@@ -50,6 +52,7 @@ file. This change log follows the conventions of
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.3.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.3.1
 [v0.3.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.3.0
 [v0.2.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.2.1
 [v0.2.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.2.0
