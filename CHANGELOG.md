@@ -6,6 +6,9 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Changed
+- `on_time` is now optional for the `L510` and `L530` devices because the v2 hardware no longer returns it.
+
 ## [v0.3.0] - 2022-11-20
 
 ### Added

@@ -26,7 +26,8 @@ pub struct L510DeviceInfoResult {
     pub lang: String,
     pub device_on: bool,
     /// The time in seconds this device has been ON since the last state change (ON/OFF).
-    pub on_time: u64,
+    /// On v2 hardware this is always None.
+    pub on_time: Option<u64>,
     pub overheated: bool,
     pub nickname: String,
     pub avatar: String,
