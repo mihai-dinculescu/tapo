@@ -1,4 +1,4 @@
-/// Generic Device Example - Toggle
+/// Toggle Generic Device Example
 use std::env;
 
 use log::{info, LevelFilter};
