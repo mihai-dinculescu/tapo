@@ -6,6 +6,9 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Added
+- `examples/tapo_generic_device_toggle.rs` demonstrates how `device_info` can be used to assess the current status of a generic device and toggle it.
+
 ### Changed
 - `on_time` is now optional for the `L510` and `L530` devices because the v2 hardware no longer returns it.
 
