@@ -21,12 +21,12 @@ pub struct EnergyUsageResult {
     /// Past 30 days energy usage in watts (W)
     pub month_energy: u64,
     /// Hourly energy usage for the past 24 hours in watts (W)
-    pub past24h: Vec<u64>,
+    pub past24h: Option<Vec<u64>>,
     /// Hourly energy usage by day for the past 7 days in watts (W)
-    pub past7d: Vec<Vec<u64>>,
+    pub past7d: Option<Vec<Vec<u64>>>,
     /// Daily energy usage for the past 30 days in watts (W)
-    pub past30d: Vec<u64>,
+    pub past30d: Option<Vec<u64>>,
     /// Monthly energy usage for the past year in watts (W)
-    pub past1y: Vec<u64>,
+    pub past1y: Option<Vec<u64>>,
 }
 impl TapoResponseExt for EnergyUsageResult {}
