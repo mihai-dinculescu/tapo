@@ -10,6 +10,10 @@ file. This change log follows the conventions of
 
 - `get_energy_data` is now available for the *P110* devices.
 
+### Changed
+
+- `EnergyUsageResult`'s `past24h`, `past7d`, `past30d` and `past1y` fields are now deprecated. `get_energy_data` should be used instead. (thanks to @felixhauptmann)
+
 ## [v0.3.1] - 2023-02-19
 
 ### Added
