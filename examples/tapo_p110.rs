@@ -2,7 +2,8 @@
 use std::{env, thread, time::Duration};
 
 use log::{info, LevelFilter};
-use tapo::{ApiClient, P110};
+use tapo::{requests::EnergyDataInterval, ApiClient, P110};
+use time::macros::{date, datetime};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -38,6 +39,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let energy_usage = device.get_energy_usage().await?;
     info!("Energy usage: {energy_usage:?}");
+
+    let energy_data_hourly = device
+        .get_energy_data(EnergyDataInterval::Hourly {
+            start_datetime: datetime!(2023-02-24 00:00 UTC),
+            end_datetime: datetime!(2023-02-24 23:59 UTC),
+        })
+        .await?;
+    info!("Energy data (hourly): {energy_data_hourly:?}");
+
+    let energy_data_daily = device
+        .get_energy_data(EnergyDataInterval::Daily {
+            start_date: date!(2023 - 01 - 01),
+        })
+        .await?;
+    info!("Energy data (daily): {energy_data_daily:?}");
+
+    let energy_data_monthly = device
+        .get_energy_data(EnergyDataInterval::Monthly {
+            start_date: date!(2023 - 01 - 01),
+        })
+        .await?;
+    info!("Energy data (monthly): {energy_data_monthly:?}");
 
     Ok(())
 }

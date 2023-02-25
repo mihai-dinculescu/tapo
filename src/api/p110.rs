@@ -1,6 +1,7 @@
 use crate::api::ApiClient;
 use crate::devices::P110;
-use crate::responses::{EnergyUsageResult, PlugDeviceInfoResult};
+use crate::requests::EnergyDataInterval;
+use crate::responses::{EnergyDataResult, EnergyUsageResult, PlugDeviceInfoResult};
 
 /// The functionality of [`crate::ApiClient<P110>`] that applies to [`crate::P110`]. Superset of [`crate::ApiClient<D>`].
 impl ApiClient<P110> {
@@ -12,8 +13,16 @@ impl ApiClient<P110> {
             .await
     }
 
-    /// Gets *energy usage*. It contains local time, current power and the energy usage and runtime over multiple periods of time.
+    /// Gets *energy usage*. It returns local time, current power and the energy usage and runtime for the current day and past month.
     pub async fn get_energy_usage(&self) -> anyhow::Result<EnergyUsageResult> {
         self.get_energy_usage_internal().await
+    }
+
+    /// Gets *energy data*. It returns local time and energy data for the requested `interval`.
+    pub async fn get_energy_data(
+        &self,
+        interval: EnergyDataInterval,
+    ) -> anyhow::Result<EnergyDataResult> {
+        self.get_energy_data_internal(interval).await
     }
 }

@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Added
+
+- `get_energy_data` is now available for the *P110* devices.
+
 ## [v0.3.1] - 2023-02-19
 
 ### Added

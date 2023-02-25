@@ -10,12 +10,13 @@ use serde_json::json;
 use crate::devices::{GenericDevice, TapoDeviceExt};
 use crate::encryption::{decode_handshake_key, KeyPair, TpLinkCipher};
 use crate::requests::{
-    GenericSetDeviceInfoParams, GetDeviceInfoParams, GetDeviceUsageParams, GetEnergyUsageParams,
-    HandshakeParams, LoginDeviceParams, SecurePassthroughParams, TapoParams, TapoRequest,
+    EnergyDataInterval, GenericSetDeviceInfoParams, GetDeviceInfoParams, GetDeviceUsageParams,
+    GetEnergyDataParams, GetEnergyUsageParams, HandshakeParams, LoginDeviceParams,
+    SecurePassthroughParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
-    validate_result, DeviceInfoResultExt, DeviceUsageResult, EnergyUsageResult, HandshakeResult,
-    TapoResponse, TapoResponseExt, TapoResult, TokenResult,
+    validate_result, DeviceInfoResultExt, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
+    HandshakeResult, TapoResponse, TapoResponseExt, TapoResult, TokenResult,
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
@@ -296,6 +297,23 @@ where
             .execute_secure_passthrough_request::<EnergyUsageResult>(get_energy_usage_request, true)
             .await?
             .context("failed to obtain a response for get energy usage")?;
+
+        Ok(result)
+    }
+
+    pub(crate) async fn get_energy_data_internal(
+        &self,
+        interval: EnergyDataInterval,
+    ) -> anyhow::Result<EnergyDataResult> {
+        debug!("Get Energy data...");
+        let get_energy_data_params = GetEnergyDataParams::new(interval);
+        let get_energy_data_request =
+            TapoRequest::GetEnergyData(TapoParams::new(get_energy_data_params));
+
+        let result = self
+            .execute_secure_passthrough_request::<EnergyDataResult>(get_energy_data_request, true)
+            .await?
+            .context("failed to obtain a response for get energy data")?;
 
         Ok(result)
     }
