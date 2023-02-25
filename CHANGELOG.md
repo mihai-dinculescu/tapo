@@ -6,9 +6,11 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [v0.4.0] - 2023-02-25
+
 ### Added
 
-- `get_energy_data` is now available for the *P110* devices.
+- `get_energy_data` is now available for the *P110* devices. (thanks to @kuhschnappel)
 
 ### Changed
 
@@ -60,6 +62,7 @@ file. This change log follows the conventions of
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.4.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.4.0
 [v0.3.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.3.1
 [v0.3.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.3.0
 [v0.2.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.2.1
