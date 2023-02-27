@@ -12,7 +12,7 @@ repository = "https://github.com/mihai-dinculescu/tapo"
 
 [dependencies]
 anyhow = "1.0"
-base16ct = { version = "0.1", features = ["alloc"] }
+base16ct = { version = "0.2", features = ["alloc"] }
 base64 = "0.21"
 isahc = { version = "1.7", features = ["json", "cookies"] }
 lazy_static = "1.4"
