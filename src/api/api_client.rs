@@ -24,13 +24,13 @@ const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 /// Tapo API Client. See [examples](https://github.com/mihai-dinculescu/tapo/tree/main/examples).
 ///
 /// # Examples
-/// ## L530
+/// ## GenericDevice
 /// ```rust,no_run
-/// use tapo::{ApiClient, L530};
+/// use tapo::{ApiClient, GenericDevice};
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::<L530>::new(
+///     let device = ApiClient::<GenericDevice>::new(
 ///         "192.168.1.100".to_string(),
 ///         "tapo-username@example.com".to_string(),
 ///         "tapo-password".to_string(),
@@ -62,13 +62,13 @@ const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 /// }
 /// ```
 ///
-/// ## P110
+/// ## L530
 /// ```rust,no_run
-/// use tapo::{ApiClient, P110};
+/// use tapo::{ApiClient, L530};
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::<P110>::new(
+///     let device = ApiClient::<L530>::new(
 ///         "192.168.1.100".to_string(),
 ///         "tapo-username@example.com".to_string(),
 ///         "tapo-password".to_string(),
@@ -100,13 +100,13 @@ const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 /// }
 /// ```
 ///
-/// ## GenericDevice
+/// ## P110
 /// ```rust,no_run
-/// use tapo::{ApiClient, GenericDevice};
+/// use tapo::{ApiClient, P110};
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::<GenericDevice>::new(
+///     let device = ApiClient::<P110>::new(
 ///         "192.168.1.100".to_string(),
 ///         "tapo-username@example.com".to_string(),
 ///         "tapo-password".to_string(),

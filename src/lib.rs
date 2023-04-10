@@ -1,5 +1,5 @@
 //! Tapo API Client
-//! Works with light bulbs (L530, L510, etc.), plugs (P110, P100, etc.), and others.
+//! Works with light bulbs (L510, L530), plugs (P100, P105, P110, P115), and others.
 //!
 //! # Example with L530
 //! ```rust,no_run
