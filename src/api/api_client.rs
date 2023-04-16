@@ -1,21 +1,21 @@
 use std::fmt;
 use std::marker::PhantomData;
 
-use anyhow::Context;
 use isahc::{config::Configurable, cookies::CookieJar, AsyncReadResponseExt, HttpClient};
 use log::debug;
 use serde::de::DeserializeOwned;
 use serde_json::json;
 
 use crate::devices::{GenericDevice, TapoDeviceExt};
-use crate::encryption::{decode_handshake_key, KeyPair, TpLinkCipher};
+use crate::encryption::{KeyPair, TpLinkCipher};
+use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     EnergyDataInterval, GenericSetDeviceInfoParams, GetDeviceInfoParams, GetDeviceUsageParams,
     GetEnergyDataParams, GetEnergyUsageParams, HandshakeParams, LoginDeviceParams,
     SecurePassthroughParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
-    validate_result, DeviceInfoResultExt, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
+    validate_response, DeviceInfoResultExt, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
     HandshakeResult, TapoResponse, TapoResponseExt, TapoResult, TokenResult,
 };
 
@@ -170,7 +170,7 @@ where
         tapo_username: String,
         tapo_password: String,
         attempt_login: bool,
-    ) -> anyhow::Result<ApiClient<D>> {
+    ) -> Result<ApiClient<D>, Error> {
         let url = format!("http://{ip_address}/app");
         debug!("Device url: {url}");
 
@@ -199,7 +199,7 @@ where
     }
 
     /// Attempts to login. This function can be called multiple times for the same [`crate::ApiClient<D>`].
-    pub async fn login(&mut self) -> anyhow::Result<()> {
+    pub async fn login(&mut self) -> Result<(), Error> {
         // we have to clear the cookie jar otherwise all subsequent login requests will fail
         self.cookie_jar.clear();
 
@@ -210,19 +210,19 @@ where
     }
 
     /// Turns *on* the device.
-    pub async fn on(&self) -> anyhow::Result<()> {
+    pub async fn on(&self) -> Result<(), Error> {
         let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;
         self.set_device_info_internal(json).await
     }
 
     /// Turns *off* the device.
-    pub async fn off(&self) -> anyhow::Result<()> {
+    pub async fn off(&self) -> Result<(), Error> {
         let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(false)?)?;
         self.set_device_info_internal(json).await
     }
 
     /// Gets *device info* as [`serde_json::Value`].
-    pub async fn get_device_info_json(&self) -> anyhow::Result<serde_json::Value> {
+    pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
         debug!("Get Device info as json...");
         let get_device_info_params = GetDeviceInfoParams::new();
         let get_device_info_request =
@@ -231,13 +231,13 @@ where
         let result = self
             .execute_secure_passthrough_request::<serde_json::Value>(get_device_info_request, true)
             .await?
-            .context("failed to obtain a response for get device info")?;
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
         Ok(result)
     }
 
     /// Gets *device usage*. It contains the time in use, the power consumption, and the energy savings of the device.
-    pub async fn get_device_usage(&self) -> anyhow::Result<DeviceUsageResult> {
+    pub async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
         debug!("Get Device usage...");
         let get_device_usage_params = GetDeviceUsageParams::new();
         let get_device_usage_request =
@@ -246,7 +246,7 @@ where
         let result = self
             .execute_secure_passthrough_request::<DeviceUsageResult>(get_device_usage_request, true)
             .await?
-            .context("failed to obtain a response for get device usage")?;
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
         Ok(result)
     }
@@ -254,7 +254,7 @@ where
     pub(crate) async fn set_device_info_internal(
         &self,
         device_info_params: serde_json::Value,
-    ) -> anyhow::Result<()> {
+    ) -> Result<(), Error> {
         debug!("Device info will change to: {device_info_params:?}");
 
         let set_device_info_request = TapoRequest::SetDeviceInfo(
@@ -269,7 +269,7 @@ where
         Ok(())
     }
 
-    pub(crate) async fn get_device_info_internal<R>(&self) -> anyhow::Result<R>
+    pub(crate) async fn get_device_info_internal<R>(&self) -> Result<R, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt + DeviceInfoResultExt,
     {
@@ -282,12 +282,12 @@ where
             .execute_secure_passthrough_request::<R>(get_device_info_request, true)
             .await?
             .map(|result| result.decode())
-            .context("failed to obtain a response for get device info")??;
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))??;
 
         Ok(result)
     }
 
-    pub(crate) async fn get_energy_usage_internal(&self) -> anyhow::Result<EnergyUsageResult> {
+    pub(crate) async fn get_energy_usage_internal(&self) -> Result<EnergyUsageResult, Error> {
         debug!("Get Energy usage...");
         let get_energy_usage_params = GetEnergyUsageParams::new();
         let get_energy_usage_request =
@@ -296,7 +296,7 @@ where
         let result = self
             .execute_secure_passthrough_request::<EnergyUsageResult>(get_energy_usage_request, true)
             .await?
-            .context("failed to obtain a response for get energy usage")?;
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
         Ok(result)
     }
@@ -304,7 +304,7 @@ where
     pub(crate) async fn get_energy_data_internal(
         &self,
         interval: EnergyDataInterval,
-    ) -> anyhow::Result<EnergyDataResult> {
+    ) -> Result<EnergyDataResult, Error> {
         debug!("Get Energy data...");
         let get_energy_data_params = GetEnergyDataParams::new(interval);
         let get_energy_data_request =
@@ -313,57 +313,58 @@ where
         let result = self
             .execute_secure_passthrough_request::<EnergyDataResult>(get_energy_data_request, true)
             .await?
-            .context("failed to obtain a response for get energy data")?;
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
         Ok(result)
     }
 
-    async fn handshake(&mut self) -> anyhow::Result<()> {
+    async fn handshake(&mut self) -> Result<(), Error> {
         debug!("Performing handshake...");
         let key_pair = KeyPair::new()?;
 
-        let handshake_params = HandshakeParams::new(&key_pair.public_key);
+        let handshake_params = HandshakeParams::new(key_pair.get_public_key()?);
         let handshake_request = TapoRequest::Handshake(TapoParams::new(handshake_params));
         debug!("Handshake request: {}", json!(handshake_request));
 
+        let body = serde_json::to_vec(&handshake_request)?;
+
         let response: TapoResponse<HandshakeResult> = self
             .client
-            .post_async(&self.url, serde_json::to_vec(&handshake_request)?)
+            .post_async(&self.url, body)
             .await?
             .json()
             .await?;
 
         debug!("Device responded with: {response:?}");
 
-        validate_result(&response)?;
+        validate_response(&response)?;
 
         let handshake_key = response
             .result
-            .context("failed to find the result component of the handshake response")?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
             .key;
-        let tp_link_cipher = decode_handshake_key(&handshake_key, &key_pair)?;
+
+        let tp_link_cipher = TpLinkCipher::new(&handshake_key, &key_pair)?;
 
         self.tp_link_cipher = Some(tp_link_cipher);
 
         Ok(())
     }
 
-    async fn login_request(&mut self) -> anyhow::Result<()> {
+    async fn login_request(&mut self) -> Result<(), Error> {
         debug!("Will login with username '{}'...", self.username);
 
         let login_device_params =
-            TapoParams::new(LoginDeviceParams::new(&self.username, &self.password)?)
+            TapoParams::new(LoginDeviceParams::new(&self.username, &self.password))
                 .set_request_time_mils()?;
         let login_device_request = TapoRequest::LoginDevice(login_device_params);
 
         let result = self
             .execute_secure_passthrough_request::<TokenResult>(login_device_request, false)
             .await?
-            .context("failed to find the result component of the login inner response")?;
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
-        let token = result.token;
-
-        self.token.replace(token);
+        self.token.replace(result.token);
 
         Ok(())
     }
@@ -372,18 +373,19 @@ where
         &self,
         request: TapoRequest,
         with_token: bool,
-    ) -> anyhow::Result<Option<R>>
+    ) -> Result<Option<R>, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
         let request_string = serde_json::to_string(&request)?;
         debug!("Request to passthrough: {request_string}");
 
-        let request_encrypted = self
+        let tp_link_cipher = self
             .tp_link_cipher
             .as_ref()
-            .context("failed to find tp_link_cipher")?
-            .encrypt(&request_string)?;
+            .ok_or_else(|| Error::NotLoggedIn)?;
+
+        let request_encrypted = tp_link_cipher.encrypt(&request_string)?;
 
         let secure_passthrough_params = SecurePassthroughParams::new(&request_encrypted);
         let secure_passthrough_request =
@@ -394,7 +396,7 @@ where
             format!(
                 "{}?token={}",
                 &self.url,
-                self.token.as_ref().context("failed to find token")?
+                self.token.as_ref().ok_or_else(|| Error::NotLoggedIn)?
             )
         } else {
             self.url.clone()
@@ -409,18 +411,14 @@ where
 
         debug!("Device responded with: {response:?}");
 
-        validate_result(&response)?;
+        validate_response(&response)?;
 
         let inner_response_encrypted = response
             .result
-            .context("failed to find the result component of the execute command response")?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
             .response;
 
-        let inner_response_decrypted = self
-            .tp_link_cipher
-            .as_ref()
-            .context("failed to find tp_link_cipher")?
-            .decrypt(&inner_response_encrypted)?;
+        let inner_response_decrypted = tp_link_cipher.decrypt(&inner_response_encrypted)?;
 
         debug!("Device inner response decrypted: {inner_response_decrypted}");
 
@@ -428,7 +426,7 @@ where
 
         debug!("Device inner response: {inner_response:?}");
 
-        validate_result(&inner_response)?;
+        validate_response(&inner_response)?;
 
         let result = inner_response.result;
 

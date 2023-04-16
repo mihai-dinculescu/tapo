@@ -79,6 +79,7 @@
 mod api;
 mod devices;
 mod encryption;
+mod error;
 mod tapo_date_format;
 
 pub mod requests;
@@ -86,3 +87,4 @@ pub mod responses;
 
 pub use api::*;
 pub use devices::*;
+pub use error::*;

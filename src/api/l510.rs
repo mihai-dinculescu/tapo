@@ -1,5 +1,6 @@
 use crate::api::ApiClient;
 use crate::devices::L510;
+use crate::error::Error;
 use crate::requests::L510SetDeviceInfoParams;
 use crate::responses::L510DeviceInfoResult;
 
@@ -40,7 +41,7 @@ impl ApiClient<L510> {
     /// # Arguments
     ///
     /// * `brightness` - *u8*; between 1 and 100
-    pub async fn set_brightness(&self, brightness: u8) -> anyhow::Result<()> {
+    pub async fn set_brightness(&self, brightness: u8) -> Result<(), Error> {
         L510SetDeviceInfoParams::new(self)
             .brightness(brightness)?
             .send()
@@ -50,7 +51,7 @@ impl ApiClient<L510> {
     /// Gets *device info* as [`crate::responses::L510DeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::ApiClient::get_device_info_json`].
-    pub async fn get_device_info(&self) -> anyhow::Result<L510DeviceInfoResult> {
+    pub async fn get_device_info(&self) -> Result<L510DeviceInfoResult, Error> {
         self.get_device_info_internal::<L510DeviceInfoResult>()
             .await
     }

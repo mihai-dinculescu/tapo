@@ -13,14 +13,14 @@ pub(crate) struct LoginDeviceParams {
 }
 
 impl LoginDeviceParams {
-    pub fn new(username: &str, password: &str) -> anyhow::Result<Self> {
-        let username_digest = sha_digest_username(username)?;
+    pub fn new(username: &str, password: &str) -> Self {
+        let username_digest = sha_digest_username(username);
         debug!("Username digest: {username_digest}");
 
-        Ok(Self {
+        Self {
             username: general_purpose::STANDARD.encode(username_digest),
             password: general_purpose::STANDARD.encode(password),
-        })
+        }
     }
 }
 

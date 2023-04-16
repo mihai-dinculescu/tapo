@@ -1,7 +1,7 @@
-use base64::{engine::general_purpose, Engine as _};
 use serde::Deserialize;
 
-use crate::responses::{DefaultState, DeviceInfoResultExt, TapoResponseExt};
+use crate::error::Error;
+use crate::responses::{decode_value, DefaultState, DeviceInfoResultExt, TapoResponseExt};
 
 /// Device info of [`crate::L510`]. Superset of [`crate::responses::GenericDeviceInfoResult`].
 #[derive(Debug, Clone, Deserialize)]
@@ -48,7 +48,18 @@ pub struct L510DeviceInfoResult {
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
     pub default_states: DefaultState<L510StateWrapper>,
 }
+
 impl TapoResponseExt for L510DeviceInfoResult {}
+
+impl DeviceInfoResultExt for L510DeviceInfoResult {
+    fn decode(&self) -> Result<Self, Error> {
+        Ok(Self {
+            ssid: decode_value(&self.ssid)?,
+            nickname: decode_value(&self.nickname)?,
+            ..self.clone()
+        })
+    }
+}
 
 /// L510 State wrapper.
 #[derive(Debug, Clone, Deserialize)]
@@ -60,18 +71,4 @@ pub struct L510StateWrapper {
 #[derive(Debug, Clone, Deserialize)]
 pub struct L510State {
     pub brightness: u8,
-}
-
-impl DeviceInfoResultExt for L510DeviceInfoResult {
-    fn decode(&self) -> anyhow::Result<Self> {
-        Ok(Self {
-            ssid: std::str::from_utf8(&general_purpose::STANDARD.decode(self.ssid.clone())?)?
-                .to_string(),
-            nickname: std::str::from_utf8(
-                &general_purpose::STANDARD.decode(self.nickname.clone())?,
-            )?
-            .to_string(),
-            ..self.clone()
-        })
-    }
 }

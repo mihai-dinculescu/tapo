@@ -1,5 +1,6 @@
 use crate::api::ApiClient;
 use crate::devices::L530;
+use crate::error::Error;
 use crate::requests::{Color, L530SetDeviceInfoParams};
 use crate::responses::L530DeviceInfoResult;
 
@@ -42,7 +43,7 @@ impl ApiClient<L530> {
     /// # Arguments
     ///
     /// * `brightness` - *u8*; between 1 and 100
-    pub async fn set_brightness(&self, brightness: u8) -> anyhow::Result<()> {
+    pub async fn set_brightness(&self, brightness: u8) -> Result<(), Error> {
         L530SetDeviceInfoParams::new(self)
             .brightness(brightness)?
             .send()
@@ -54,7 +55,7 @@ impl ApiClient<L530> {
     /// # Arguments
     ///
     /// * `color` - [crate::requests::Color]
-    pub async fn set_color(&self, color: Color) -> anyhow::Result<()> {
+    pub async fn set_color(&self, color: Color) -> Result<(), Error> {
         L530SetDeviceInfoParams::new(self)
             .color(color)?
             .send()
@@ -67,7 +68,7 @@ impl ApiClient<L530> {
     ///
     /// * `hue` - *u16* between 1 and 360
     /// * `saturation` - *u8*; between 1 and 100
-    pub async fn set_hue_saturation(&self, hue: u16, saturation: u8) -> anyhow::Result<()> {
+    pub async fn set_hue_saturation(&self, hue: u16, saturation: u8) -> Result<(), Error> {
         L530SetDeviceInfoParams::new(self)
             .hue_saturation(hue, saturation)?
             .send()
@@ -79,7 +80,7 @@ impl ApiClient<L530> {
     /// # Arguments
     ///
     /// * `color_temperature` - *u16*; between 2500 and 6500
-    pub async fn set_color_temperature(&self, color_temperature: u16) -> anyhow::Result<()> {
+    pub async fn set_color_temperature(&self, color_temperature: u16) -> Result<(), Error> {
         L530SetDeviceInfoParams::new(self)
             .color_temperature(color_temperature)?
             .send()
@@ -89,7 +90,7 @@ impl ApiClient<L530> {
     /// Gets *device info* as [`crate::responses::L530DeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::ApiClient::get_device_info_json`].
-    pub async fn get_device_info(&self) -> anyhow::Result<L530DeviceInfoResult> {
+    pub async fn get_device_info(&self) -> Result<L530DeviceInfoResult, Error> {
         self.get_device_info_internal::<L530DeviceInfoResult>()
             .await
     }

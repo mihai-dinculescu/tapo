@@ -1,5 +1,7 @@
 use serde::Deserialize;
 
+use crate::error::{Error, TapoResponseError};
+
 /// Implemented by all Tapo Responses.
 pub trait TapoResponseExt {}
 
@@ -11,13 +13,10 @@ pub struct TapoResponse<T: TapoResponseExt> {
     pub result: Option<T>,
 }
 
-pub fn validate_result<T: TapoResponseExt>(response: &TapoResponse<T>) -> anyhow::Result<()> {
-    if response.error_code != 0 {
-        Err(anyhow::anyhow!(
-            "expected error code 0, got {}",
-            response.error_code
-        ))
-    } else {
-        Ok(())
+pub fn validate_response<T: TapoResponseExt>(response: &TapoResponse<T>) -> Result<(), Error> {
+    match response.error_code {
+        0 => Ok(()),
+        -1501 => Err(Error::Tapo(TapoResponseError::InvalidCredentials)),
+        code => Err(Error::Tapo(TapoResponseError::Unknown(code))),
     }
 }
