@@ -1,9 +1,9 @@
 use serde::Deserialize;
 
-use super::TapoResponseExt;
+use crate::responses::TapoResponseExt;
 
 #[derive(Debug, Deserialize)]
-pub struct TapoResult {
+pub(crate) struct TapoResult {
     pub response: String,
 }
 impl TapoResponseExt for TapoResult {}

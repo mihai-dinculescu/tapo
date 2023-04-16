@@ -2,7 +2,7 @@
 use std::env;
 
 use log::{info, LevelFilter};
-use tapo::{ApiClient, GenericDevice};
+use tapo::ApiClient;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -19,8 +19,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tapo_username = env::var("TAPO_USERNAME")?;
     let tapo_password = env::var("TAPO_PASSWORD")?;
 
-    let device =
-        ApiClient::<GenericDevice>::new(ip_address, tapo_username, tapo_password, true).await?;
+    let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
+        .generic_device()
+        .login()
+        .await?;
 
     let device_info = device.get_device_info().await?;
 

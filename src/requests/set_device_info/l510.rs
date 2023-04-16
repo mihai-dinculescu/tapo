@@ -1,14 +1,13 @@
 use serde::Serialize;
 
 use crate::api::ApiClient;
-use crate::devices::L510;
 use crate::error::Error;
 
-/// Builder that is used by the [`crate::ApiClient<L510>::set`] API to set multiple properties in a single request.
+/// Builder that is used by the [`crate::L510Handler::set`] API to set multiple properties in a single request.
 #[derive(Debug, Serialize)]
 pub struct L510SetDeviceInfoParams<'a> {
     #[serde(skip)]
-    client: &'a ApiClient<L510>,
+    client: &'a ApiClient,
     #[serde(skip_serializing_if = "Option::is_none")]
     device_on: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -41,12 +40,12 @@ impl<'a> L510SetDeviceInfoParams<'a> {
     /// Performs a request to apply the changes to the device.
     pub async fn send(self) -> Result<(), Error> {
         let json = serde_json::to_value(&self)?;
-        self.client.set_device_info_internal(json).await
+        self.client.set_device_info(json).await
     }
 }
 
 impl<'a> L510SetDeviceInfoParams<'a> {
-    pub(crate) fn new(client: &'a ApiClient<L510>) -> Self {
+    pub(crate) fn new(client: &'a ApiClient) -> Self {
         Self {
             client,
             device_on: None,

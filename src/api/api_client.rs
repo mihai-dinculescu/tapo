@@ -1,18 +1,17 @@
 use std::fmt;
-use std::marker::PhantomData;
 
 use isahc::{config::Configurable, cookies::CookieJar, AsyncReadResponseExt, HttpClient};
 use log::debug;
 use serde::de::DeserializeOwned;
 use serde_json::json;
 
-use crate::devices::{GenericDevice, TapoDeviceExt};
+use crate::api::{GenericDeviceHandler, L510Handler, L530Handler, P100Handler, P110Handler};
 use crate::encryption::{KeyPair, TpLinkCipher};
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
-    EnergyDataInterval, GenericSetDeviceInfoParams, GetDeviceInfoParams, GetDeviceUsageParams,
-    GetEnergyDataParams, GetEnergyUsageParams, HandshakeParams, LoginDeviceParams,
-    SecurePassthroughParams, TapoParams, TapoRequest,
+    EnergyDataInterval, GetDeviceInfoParams, GetDeviceUsageParams, GetEnergyDataParams,
+    GetEnergyUsageParams, HandshakeParams, LoginDeviceParams, SecurePassthroughParams, TapoParams,
+    TapoRequest,
 };
 use crate::responses::{
     validate_response, DeviceInfoResultExt, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
@@ -21,21 +20,28 @@ use crate::responses::{
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 
+/// Unauthenticated handler. Call `login` to authenticate.
+pub struct Unauthenticated;
+/// Authenticated handler. The session can be refreshed by calling `login` again.
+pub struct Authenticated;
+
 /// Tapo API Client. See [examples](https://github.com/mihai-dinculescu/tapo/tree/main/examples).
 ///
 /// # Examples
 /// ## GenericDevice
 /// ```rust,no_run
-/// use tapo::{ApiClient, GenericDevice};
+/// use tapo::ApiClient;
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::<GenericDevice>::new(
-///         "192.168.1.100".to_string(),
-///         "tapo-username@example.com".to_string(),
-///         "tapo-password".to_string(),
-///         true,
-///     ).await?;
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .generic_device()
+///     .login()
+///     .await?;
 ///
 ///     device.on().await?;
 ///
@@ -45,16 +51,18 @@ const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 ///
 /// ## L510
 /// ```rust,no_run
-/// use tapo::{ApiClient, L510};
+/// use tapo::ApiClient;
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::<L510>::new(
-///         "192.168.1.100".to_string(),
-///         "tapo-username@example.com".to_string(),
-///         "tapo-password".to_string(),
-///         true,
-///     ).await?;
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .l510()
+///     .login()
+///     .await?;
 ///
 ///     device.on().await?;
 ///
@@ -64,16 +72,18 @@ const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 ///
 /// ## L530
 /// ```rust,no_run
-/// use tapo::{ApiClient, L530};
+/// use tapo::ApiClient;
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::<L530>::new(
-///         "192.168.1.100".to_string(),
-///         "tapo-username@example.com".to_string(),
-///         "tapo-password".to_string(),
-///         true,
-///     ).await?;
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .l530()
+///     .login()
+///     .await?;
 ///
 ///     device.on().await?;
 ///
@@ -81,18 +91,20 @@ const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 /// }
 /// ```
 ///
-/// ## P100
+/// ## P100 & P105
 /// ```rust,no_run
-/// use tapo::{ApiClient, P100};
+/// use tapo::ApiClient;
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::<P100>::new(
-///         "192.168.1.100".to_string(),
-///         "tapo-username@example.com".to_string(),
-///         "tapo-password".to_string(),
-///         true,
-///     ).await?;
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .p100()
+///     .login()
+///     .await?;
 ///
 ///     device.on().await?;
 ///
@@ -100,18 +112,20 @@ const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 /// }
 /// ```
 ///
-/// ## P110
+/// ## P110 & P115
 /// ```rust,no_run
-/// use tapo::{ApiClient, P110};
+/// use tapo::ApiClient;
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::<P110>::new(
-///         "192.168.1.100".to_string(),
-///         "tapo-username@example.com".to_string(),
-///         "tapo-password".to_string(),
-///         true,
-///     ).await?;
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .p110()
+///     .login()
+///     .await?;
 ///
 ///     device.on().await?;
 ///
@@ -119,11 +133,7 @@ const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 /// }
 /// ```
 #[derive(Debug)]
-pub struct ApiClient<D = GenericDevice>
-where
-    D: TapoDeviceExt,
-{
-    device_type: PhantomData<D>,
+pub struct ApiClient {
     client: HttpClient,
     url: String,
     username: String,
@@ -133,45 +143,40 @@ where
     token: Option<String>,
 }
 
-/// The functionality of [`crate::ApiClient<D>`] that's common to all devices.
-impl<D> ApiClient<D>
-where
-    D: TapoDeviceExt,
-{
-    /// Returns a new instance of [`crate::ApiClient<D>`]. If `attempt_login` is `true`, a login will be attempted.
+impl ApiClient {
+    /// Returns a new instance of [`crate::ApiClient`].
     ///
     /// # Arguments
     ///
-    /// * `ip_address` - *String*; the IP address of the device
-    /// * `tapo_username` - *String*; the Tapo username
-    /// * `tapo_password` - *String*; the Tapo password
-    /// * `attempt_login` - *bool*; whether to attempt to login
+    /// * `ip_address` - *impl Into<String>*; the IP address of the device
+    /// * `tapo_username` - *impl Into<String>*; the Tapo username
+    /// * `tapo_password` - *impl Into<String>*; the Tapo password
     ///
     /// # Examples
     /// ```rust,no_run
-    /// use tapo::{ApiClient, L530};
+    /// use tapo::ApiClient;
     ///
     /// #[tokio::main]
     /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let device = ApiClient::<L530>::new(
-    ///         "192.168.1.100".to_string(),
-    ///         "tapo-username@example.com".to_string(),
-    ///         "tapo-password".to_string(),
-    ///         true,
-    ///     ).await?;
+    ///     let client = ApiClient::new(
+    ///         "192.168.1.100",
+    ///         "tapo-username@example.com",
+    ///         "tapo-password",
+    ///     )?;
+    ///
+    ///     let device = client.l530().login().await?;
     ///
     ///     device.on().await?;
     ///
     ///     Ok(())
     /// }
     /// ```
-    pub async fn new(
-        ip_address: String,
-        tapo_username: String,
-        tapo_password: String,
-        attempt_login: bool,
-    ) -> Result<ApiClient<D>, Error> {
-        let url = format!("http://{ip_address}/app");
+    pub fn new(
+        ip_address: impl Into<String>,
+        tapo_username: impl Into<String>,
+        tapo_password: impl Into<String>,
+    ) -> Result<ApiClient, Error> {
+        let url = format!("http://{}/app", ip_address.into());
         debug!("Device url: {url}");
 
         let cookie_jar = CookieJar::new();
@@ -180,26 +185,43 @@ where
             .cookie_jar(cookie_jar.clone())
             .build()?;
 
-        let mut instance = Self {
-            device_type: PhantomData,
+        Ok(Self {
             client,
             url,
-            username: tapo_username,
-            password: tapo_password,
+            username: tapo_username.into(),
+            password: tapo_password.into(),
             cookie_jar,
             tp_link_cipher: None,
             token: None,
-        };
-
-        if attempt_login {
-            instance.login().await?;
-        }
-
-        Ok(instance)
+        })
     }
 
-    /// Attempts to login. This function can be called multiple times for the same [`crate::ApiClient<D>`].
-    pub async fn login(&mut self) -> Result<(), Error> {
+    /// Specializes the given [`crate::ApiClient`] into an [`crate::GenericDeviceHandler`].
+    pub fn generic_device(self) -> GenericDeviceHandler<Unauthenticated> {
+        GenericDeviceHandler::new(self)
+    }
+
+    /// Specializes the given [`crate::ApiClient`] into an [`crate::L510Handler`].
+    pub fn l510(self) -> L510Handler<Unauthenticated> {
+        L510Handler::new(self)
+    }
+
+    /// Specializes the given [`crate::ApiClient`] into an [`crate::L530Handler`].
+    pub fn l530(self) -> L530Handler<Unauthenticated> {
+        L530Handler::new(self)
+    }
+
+    /// Specializes the given [`crate::ApiClient`] into an [`crate::P100Handler`].
+    pub fn p100(self) -> P100Handler<Unauthenticated> {
+        P100Handler::new(self)
+    }
+
+    /// Specializes the given [`crate::ApiClient`] into an [`crate::P110Handler`].
+    pub fn p110(self) -> P110Handler<Unauthenticated> {
+        P110Handler::new(self)
+    }
+
+    pub(crate) async fn login(&mut self) -> Result<(), Error> {
         // we have to clear the cookie jar otherwise all subsequent login requests will fail
         self.cookie_jar.clear();
 
@@ -209,67 +231,7 @@ where
         Ok(())
     }
 
-    /// Turns *on* the device.
-    pub async fn on(&self) -> Result<(), Error> {
-        let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;
-        self.set_device_info_internal(json).await
-    }
-
-    /// Turns *off* the device.
-    pub async fn off(&self) -> Result<(), Error> {
-        let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(false)?)?;
-        self.set_device_info_internal(json).await
-    }
-
-    /// Gets *device info* as [`serde_json::Value`].
-    pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
-        debug!("Get Device info as json...");
-        let get_device_info_params = GetDeviceInfoParams::new();
-        let get_device_info_request =
-            TapoRequest::GetDeviceInfo(TapoParams::new(get_device_info_params));
-
-        let result = self
-            .execute_secure_passthrough_request::<serde_json::Value>(get_device_info_request, true)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
-
-        Ok(result)
-    }
-
-    /// Gets *device usage*. It contains the time in use, the power consumption, and the energy savings of the device.
-    pub async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
-        debug!("Get Device usage...");
-        let get_device_usage_params = GetDeviceUsageParams::new();
-        let get_device_usage_request =
-            TapoRequest::GetDeviceUsage(TapoParams::new(get_device_usage_params));
-
-        let result = self
-            .execute_secure_passthrough_request::<DeviceUsageResult>(get_device_usage_request, true)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
-
-        Ok(result)
-    }
-
-    pub(crate) async fn set_device_info_internal(
-        &self,
-        device_info_params: serde_json::Value,
-    ) -> Result<(), Error> {
-        debug!("Device info will change to: {device_info_params:?}");
-
-        let set_device_info_request = TapoRequest::SetDeviceInfo(
-            TapoParams::new(device_info_params)
-                .set_request_time_mils()?
-                .set_terminal_uuid(TERMINAL_UUID),
-        );
-
-        self.execute_secure_passthrough_request::<TapoResult>(set_device_info_request, true)
-            .await?;
-
-        Ok(())
-    }
-
-    pub(crate) async fn get_device_info_internal<R>(&self) -> Result<R, Error>
+    pub(crate) async fn get_device_info<R>(&self) -> Result<R, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt + DeviceInfoResultExt,
     {
@@ -287,7 +249,53 @@ where
         Ok(result)
     }
 
-    pub(crate) async fn get_energy_usage_internal(&self) -> Result<EnergyUsageResult, Error> {
+    pub(crate) async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
+        debug!("Get Device info as json...");
+        let get_device_info_params = GetDeviceInfoParams::new();
+        let get_device_info_request =
+            TapoRequest::GetDeviceInfo(TapoParams::new(get_device_info_params));
+
+        let result = self
+            .execute_secure_passthrough_request::<serde_json::Value>(get_device_info_request, true)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        Ok(result)
+    }
+
+    pub(crate) async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
+        debug!("Get Device usage...");
+        let get_device_usage_params = GetDeviceUsageParams::new();
+        let get_device_usage_request =
+            TapoRequest::GetDeviceUsage(TapoParams::new(get_device_usage_params));
+
+        let result = self
+            .execute_secure_passthrough_request::<DeviceUsageResult>(get_device_usage_request, true)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        Ok(result)
+    }
+
+    pub(crate) async fn set_device_info(
+        &self,
+        device_info_params: serde_json::Value,
+    ) -> Result<(), Error> {
+        debug!("Device info will change to: {device_info_params:?}");
+
+        let set_device_info_request = TapoRequest::SetDeviceInfo(
+            TapoParams::new(device_info_params)
+                .set_request_time_mils()?
+                .set_terminal_uuid(TERMINAL_UUID),
+        );
+
+        self.execute_secure_passthrough_request::<TapoResult>(set_device_info_request, true)
+            .await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn get_energy_usage(&self) -> Result<EnergyUsageResult, Error> {
         debug!("Get Energy usage...");
         let get_energy_usage_params = GetEnergyUsageParams::new();
         let get_energy_usage_request =
@@ -301,7 +309,7 @@ where
         Ok(result)
     }
 
-    pub(crate) async fn get_energy_data_internal(
+    pub(crate) async fn get_energy_data(
         &self,
         interval: EnergyDataInterval,
     ) -> Result<EnergyDataResult, Error> {
@@ -383,7 +391,7 @@ where
         let tp_link_cipher = self
             .tp_link_cipher
             .as_ref()
-            .ok_or_else(|| Error::NotLoggedIn)?;
+            .ok_or_else(|| anyhow::anyhow!("tp_link_cipher shouldn't be None"))?;
 
         let request_encrypted = tp_link_cipher.encrypt(&request_string)?;
 
@@ -396,7 +404,9 @@ where
             format!(
                 "{}?token={}",
                 &self.url,
-                self.token.as_ref().ok_or_else(|| Error::NotLoggedIn)?
+                self.token
+                    .as_ref()
+                    .ok_or_else(|| anyhow::anyhow!("token shouldn't be None"))?
             )
         } else {
             self.url.clone()

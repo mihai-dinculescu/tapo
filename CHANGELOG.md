@@ -8,7 +8,21 @@ file. This change log follows the conventions of
 
 ### Changed
 
-- Error handling has been reworked across the whole project. All functions that can fail now return a `Result<..., tapo::Error>`.
+- The creation of an API Client for a specific device is now done through handler methods on the `ApiClient` struct. This allows for a more ergonomic API. (thanks to [Octocrab](https://github.com/XAMPPRocky/octocrab) for inspirations)
+
+```rust
+// old
+let device = ApiClient::<L530>::new(ip_address, tapo_username, tapo_password, true).await?;
+
+// new
+let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
+    .l530()
+    .login()
+    .await?;
+```
+
+- `ApiClient::new` parameters are now `impl Into<String>` instead of `String` to allow for more flexibility.
+- Error handling has been reworked. All functions that could error now return a `Result<..., tapo::Error>`.
 
 ## [v0.4.0] - 2023-02-25
 

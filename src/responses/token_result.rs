@@ -1,9 +1,9 @@
 use serde::Deserialize;
 
-use super::TapoResponseExt;
+use crate::responses::TapoResponseExt;
 
 #[derive(Debug, Deserialize)]
-pub struct TokenResult {
+pub(crate) struct TokenResult {
     pub token: String,
 }
 impl TapoResponseExt for TokenResult {}

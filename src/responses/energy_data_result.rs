@@ -4,7 +4,7 @@ use time::OffsetDateTime;
 use crate::responses::TapoResponseExt;
 use crate::tapo_date_format;
 
-/// Energy data for the requested interval.
+/// Energy data for the requested [`crate::requests::EnergyDataInterval`].
 #[derive(Debug, Deserialize)]
 pub struct EnergyDataResult {
     /// Local time, with the UTC offset assumed from the machine this call is made on

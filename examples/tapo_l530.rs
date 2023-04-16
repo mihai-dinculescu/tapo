@@ -2,7 +2,7 @@
 use std::{env, thread, time::Duration};
 
 use log::{info, LevelFilter};
-use tapo::{requests::Color, ApiClient, L530};
+use tapo::{requests::Color, ApiClient};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -19,7 +19,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tapo_username = env::var("TAPO_USERNAME")?;
     let tapo_password = env::var("TAPO_PASSWORD")?;
 
-    let device = ApiClient::<L530>::new(ip_address, tapo_username, tapo_password, true).await?;
+    let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
+        .l530()
+        .login()
+        .await?;
 
     info!("Turning device on...");
     device.on().await?;

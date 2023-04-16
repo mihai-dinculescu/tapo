@@ -15,9 +15,6 @@ pub enum TapoResponseError {
 #[derive(thiserror::Error, Debug)]
 #[non_exhaustive]
 pub enum Error {
-    /// Not Logged In Error.
-    #[error("Not logged in")]
-    NotLoggedIn,
     /// Response Error from the Tapo API.
     #[error("Tapo: {0:?}")]
     Tapo(TapoResponseError),
