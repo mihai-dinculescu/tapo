@@ -6,6 +6,8 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [v0.5.0] - 2023-04-16
+
 ### Changed
 
 - The creation of an API Client for a specific device is now done through handler methods on the `ApiClient` struct. This allows for a more ergonomic API. (thanks to [Octocrab](https://github.com/XAMPPRocky/octocrab) for inspirations)
@@ -80,6 +82,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.5.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.5.0
 [v0.4.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.4.0
 [v0.3.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.3.1
 [v0.3.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.3.0
