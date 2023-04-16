@@ -1,7 +1,7 @@
-use base64::{engine::general_purpose, Engine as _};
 use serde::Deserialize;
 
-use crate::responses::{DefaultState, DeviceInfoResultExt, TapoResponseExt};
+use crate::error::Error;
+use crate::responses::{decode_value, DefaultState, DeviceInfoResultExt, TapoResponseExt};
 
 /// Device info of [`crate::P100`] and [`crate::P110`]. Superset of [`crate::responses::GenericDeviceInfoResult`].
 #[derive(Debug, Clone, Deserialize)]
@@ -41,7 +41,18 @@ pub struct PlugDeviceInfoResult {
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
     pub default_states: DefaultState<PlugStateWrapper>,
 }
+
 impl TapoResponseExt for PlugDeviceInfoResult {}
+
+impl DeviceInfoResultExt for PlugDeviceInfoResult {
+    fn decode(&self) -> Result<Self, Error> {
+        Ok(Self {
+            ssid: decode_value(&self.ssid)?,
+            nickname: decode_value(&self.nickname)?,
+            ..self.clone()
+        })
+    }
+}
 
 /// Plug State wrapper.
 #[derive(Debug, Clone, Deserialize)]
@@ -53,18 +64,4 @@ pub struct PlugStateWrapper {
 #[derive(Debug, Clone, Deserialize)]
 pub struct PlugState {
     pub on: Option<bool>,
-}
-
-impl DeviceInfoResultExt for PlugDeviceInfoResult {
-    fn decode(&self) -> anyhow::Result<Self> {
-        Ok(Self {
-            ssid: std::str::from_utf8(&general_purpose::STANDARD.decode(self.ssid.clone())?)?
-                .to_string(),
-            nickname: std::str::from_utf8(
-                &general_purpose::STANDARD.decode(self.nickname.clone())?,
-            )?
-            .to_string(),
-            ..self.clone()
-        })
-    }
 }

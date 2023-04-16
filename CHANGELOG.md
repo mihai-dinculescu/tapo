@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Changed
+
+- Error handling has been reworked across the whole project. All functions that can fail now return a `Result<..., tapo::Error>`.
+
 ## [v0.4.0] - 2023-02-25
 
 ### Added

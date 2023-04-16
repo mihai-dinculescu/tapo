@@ -1,7 +1,7 @@
-use base64::{engine::general_purpose, Engine as _};
 use serde::Deserialize;
 
-use crate::responses::{DeviceInfoResultExt, TapoResponseExt};
+use crate::error::Error;
+use crate::responses::{decode_value, DeviceInfoResultExt, TapoResponseExt};
 
 /// Device info of [`crate::ApiClient<GenericDevice>`].
 #[derive(Debug, Clone, Deserialize)]
@@ -33,17 +33,14 @@ pub struct GenericDeviceInfoResult {
     pub latitude: Option<i64>,
     pub time_diff: Option<i64>,
 }
+
 impl TapoResponseExt for GenericDeviceInfoResult {}
 
 impl DeviceInfoResultExt for GenericDeviceInfoResult {
-    fn decode(&self) -> anyhow::Result<Self> {
+    fn decode(&self) -> Result<Self, Error> {
         Ok(Self {
-            ssid: std::str::from_utf8(&general_purpose::STANDARD.decode(self.ssid.clone())?)?
-                .to_string(),
-            nickname: std::str::from_utf8(
-                &general_purpose::STANDARD.decode(self.nickname.clone())?,
-            )?
-            .to_string(),
+            ssid: decode_value(&self.ssid)?,
+            nickname: decode_value(&self.nickname)?,
             ..self.clone()
         })
     }

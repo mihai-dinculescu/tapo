@@ -6,9 +6,7 @@ pub(crate) struct HandshakeParams {
 }
 
 impl HandshakeParams {
-    pub fn new(key: &str) -> Self {
-        Self {
-            key: key.to_string(),
-        }
+    pub fn new(key: String) -> Self {
+        Self { key }
     }
 }
