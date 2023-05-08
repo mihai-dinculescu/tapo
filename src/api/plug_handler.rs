@@ -2,18 +2,16 @@ use std::marker::PhantomData;
 
 use crate::api::{ApiClient, ApiClientExt, Authenticated, Unauthenticated};
 use crate::error::Error;
-use crate::requests::{EnergyDataInterval, GenericSetDeviceInfoParams};
-use crate::responses::{
-    DeviceUsageResult, EnergyDataResult, EnergyUsageResult, PlugDeviceInfoResult,
-};
+use crate::requests::GenericSetDeviceInfoParams;
+use crate::responses::{DeviceUsageResult, PlugDeviceInfoResult};
 
-/// Handler for the [P110](https://www.tapo.com/en/search/?q=P110) & [P115](https://www.tapo.com/en/search/?q=P115) devices.
-pub struct P110Handler<S = Unauthenticated> {
+/// Handler for the [P100](https://www.tapo.com/en/search/?q=P100) & [P105](https://www.tapo.com/en/search/?q=P105) devices.
+pub struct PlugHandler<S = Unauthenticated> {
     client: ApiClient,
     status: PhantomData<S>,
 }
 
-impl<S> P110Handler<S> {
+impl<S> PlugHandler<S> {
     pub(crate) fn new(client: ApiClient) -> Self {
         Self {
             client,
@@ -22,17 +20,17 @@ impl<S> P110Handler<S> {
     }
 
     /// Attempts to login. Each subsequent call will refresh the session.
-    pub async fn login(mut self) -> Result<P110Handler<Authenticated>, Error> {
+    pub async fn login(mut self) -> Result<PlugHandler<Authenticated>, Error> {
         self.client.login().await?;
 
-        Ok(P110Handler {
+        Ok(PlugHandler {
             client: self.client,
             status: PhantomData,
         })
     }
 }
 
-impl P110Handler<Authenticated> {
+impl PlugHandler<Authenticated> {
     /// Turns *on* the device.
     pub async fn on(&self) -> Result<(), Error> {
         let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;
@@ -47,7 +45,7 @@ impl P110Handler<Authenticated> {
 
     /// Gets *device info* as [`crate::responses::PlugDeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::P110Handler::get_device_info_json`].
+    /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::PlugHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<PlugDeviceInfoResult, Error> {
         self.client.get_device_info::<PlugDeviceInfoResult>().await
     }
@@ -61,18 +59,5 @@ impl P110Handler<Authenticated> {
     /// Gets *device usage* as [`crate::responses::DeviceUsageResult`].
     pub async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
         self.client.get_device_usage().await
-    }
-
-    /// Gets *energy usage* as [`crate::responses::EnergyUsageResult`].
-    pub async fn get_energy_usage(&self) -> Result<EnergyUsageResult, Error> {
-        self.client.get_energy_usage().await
-    }
-
-    /// Gets *energy data* as [`crate::responses::EnergyDataResult`].
-    pub async fn get_energy_data(
-        &self,
-        interval: EnergyDataInterval,
-    ) -> Result<EnergyDataResult, Error> {
-        self.client.get_energy_data(interval).await
     }
 }

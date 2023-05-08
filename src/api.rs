@@ -1,15 +1,15 @@
 mod api_client;
+mod color_light_handler;
+mod color_light_strip_handler;
+mod energy_monitoring_plug_handler;
 mod generic_device_handler;
-mod l510_handler;
-mod l530_handler;
-mod l930_handler;
-mod p100_handler;
-mod p110_handler;
+mod light_handler;
+mod plug_handler;
 
 pub use api_client::*;
+pub use color_light_handler::*;
+pub use color_light_strip_handler::*;
+pub use energy_monitoring_plug_handler::*;
 pub use generic_device_handler::*;
-pub use l510_handler::*;
-pub use l530_handler::*;
-pub use l930_handler::*;
-pub use p100_handler::*;
-pub use p110_handler::*;
+pub use light_handler::*;
+pub use plug_handler::*;

@@ -7,7 +7,8 @@ use serde::de::DeserializeOwned;
 use serde_json::json;
 
 use crate::api::{
-    GenericDeviceHandler, L510Handler, L530Handler, L930Handler, P100Handler, P110Handler,
+    ColorLightHandler, ColorLightStripHandler, EnergyMonitoringPlugHandler, GenericDeviceHandler,
+    LightHandler, PlugHandler,
 };
 use crate::encryption::{KeyPair, TpLinkCipher};
 use crate::error::{Error, TapoResponseError};
@@ -99,6 +100,90 @@ pub(crate) trait ApiClientExt: std::fmt::Debug {
 /// }
 /// ```
 ///
+/// ## L610
+/// ```rust,no_run
+/// use tapo::ApiClient;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .l610()
+///     .login()
+///     .await?;
+///
+///     device.on().await?;
+///
+///     Ok(())
+/// }
+/// ```
+///
+/// ## L630
+/// ```rust,no_run
+/// use tapo::ApiClient;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .l630()
+///     .login()
+///     .await?;
+///
+///     device.on().await?;
+///
+///     Ok(())
+/// }
+/// ```
+///
+/// ## L900
+/// ```rust,no_run
+/// use tapo::ApiClient;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .l900()
+///     .login()
+///     .await?;
+///
+///     device.on().await?;
+///
+///     Ok(())
+/// }
+/// ```
+///
+/// ## L920
+/// ```rust,no_run
+/// use tapo::ApiClient;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .l920()
+///     .login()
+///     .await?;
+///
+///     device.on().await?;
+///
+///     Ok(())
+/// }
+/// ```
+///
 /// ## L930
 /// ```rust,no_run
 /// use tapo::ApiClient;
@@ -120,7 +205,7 @@ pub(crate) trait ApiClientExt: std::fmt::Debug {
 /// }
 /// ```
 ///
-/// ## P100 & P105
+/// ## P100
 /// ```rust,no_run
 /// use tapo::ApiClient;
 ///
@@ -141,7 +226,28 @@ pub(crate) trait ApiClientExt: std::fmt::Debug {
 /// }
 /// ```
 ///
-/// ## P110 & P115
+/// ## P105
+/// ```rust,no_run
+/// use tapo::ApiClient;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .p105()
+///     .login()
+///     .await?;
+///
+///     device.on().await?;
+///
+///     Ok(())
+/// }
+/// ```
+///
+/// ## P110
 /// ```rust,no_run
 /// use tapo::ApiClient;
 ///
@@ -153,6 +259,27 @@ pub(crate) trait ApiClientExt: std::fmt::Debug {
 ///         "tapo-password",
 ///     )?
 ///     .p110()
+///     .login()
+///     .await?;
+///
+///     device.on().await?;
+///
+///     Ok(())
+/// }
+/// ```
+///
+/// ## P115
+/// ```rust,no_run
+/// use tapo::ApiClient;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .p115()
 ///     .login()
 ///     .await?;
 ///
@@ -230,29 +357,59 @@ impl ApiClient {
         GenericDeviceHandler::new(self)
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::L510Handler`].
-    pub fn l510(self) -> L510Handler<Unauthenticated> {
-        L510Handler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::LightHandler`].
+    pub fn l510(self) -> LightHandler<Unauthenticated> {
+        LightHandler::new(self)
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::L530Handler`].
-    pub fn l530(self) -> L530Handler<Unauthenticated> {
-        L530Handler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::ColorLightHandler`].
+    pub fn l530(self) -> ColorLightHandler<Unauthenticated> {
+        ColorLightHandler::new(self)
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::L930Handler`].
-    pub fn l930(self) -> L930Handler<Unauthenticated> {
-        L930Handler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::LightHandler`].
+    pub fn l610(self) -> LightHandler<Unauthenticated> {
+        LightHandler::new(self)
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::P100Handler`].
-    pub fn p100(self) -> P100Handler<Unauthenticated> {
-        P100Handler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::ColorLightHandler`].
+    pub fn l630(self) -> ColorLightHandler<Unauthenticated> {
+        ColorLightHandler::new(self)
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::P110Handler`].
-    pub fn p110(self) -> P110Handler<Unauthenticated> {
-        P110Handler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::ColorLightHandler`].
+    pub fn l900(self) -> ColorLightHandler<Unauthenticated> {
+        ColorLightHandler::new(self)
+    }
+
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::ColorLightStripHandler`].
+    pub fn l920(self) -> ColorLightStripHandler<Unauthenticated> {
+        ColorLightStripHandler::new(self)
+    }
+
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::ColorLightStripHandler`].
+    pub fn l930(self) -> ColorLightStripHandler<Unauthenticated> {
+        ColorLightStripHandler::new(self)
+    }
+
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::PlugHandler`].
+    pub fn p100(self) -> PlugHandler<Unauthenticated> {
+        PlugHandler::new(self)
+    }
+
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::PlugHandler`].
+    pub fn p105(self) -> PlugHandler<Unauthenticated> {
+        PlugHandler::new(self)
+    }
+
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::EnergyMonitoringPlugHandler`].
+    pub fn p110(self) -> EnergyMonitoringPlugHandler<Unauthenticated> {
+        EnergyMonitoringPlugHandler::new(self)
+    }
+
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::EnergyMonitoringPlugHandler`].
+    pub fn p115(self) -> EnergyMonitoringPlugHandler<Unauthenticated> {
+        EnergyMonitoringPlugHandler::new(self)
     }
 
     pub(crate) async fn login(&mut self) -> Result<(), Error> {

@@ -23,25 +23,25 @@ pub struct EnergyUsageResult {
     /// Hourly energy usage for the past 24 hours in watts (W)
     #[deprecated(
         since = "0.4.0",
-        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::P110Handler::get_energy_data` instead."
+        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::EnergyMonitoringPlugHandler::get_energy_data` instead."
     )]
     pub past24h: Option<Vec<u64>>,
     /// Hourly energy usage by day for the past 7 days in watts (W)
     #[deprecated(
         since = "0.4.0",
-        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::P110Handler::get_energy_data` instead."
+        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::EnergyMonitoringPlugHandler::get_energy_data` instead."
     )]
     pub past7d: Option<Vec<Vec<u64>>>,
     /// Daily energy usage for the past 30 days in watts (W)
     #[deprecated(
         since = "0.4.0",
-        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::P110Handler::get_energy_data` instead."
+        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::EnergyMonitoringPlugHandler::get_energy_data` instead."
     )]
     pub past30d: Option<Vec<u64>>,
     /// Monthly energy usage for the past year in watts (W)
     #[deprecated(
         since = "0.4.0",
-        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::P110Handler::get_energy_data` instead."
+        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::EnergyMonitoringPlugHandler::get_energy_data` instead."
     )]
     pub past1y: Option<Vec<u64>>,
 }

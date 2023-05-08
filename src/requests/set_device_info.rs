@@ -1,8 +1,8 @@
 mod color_light;
 mod generic_device;
-mod l510;
+mod light;
 
 pub use color_light::*;
-pub use l510::*;
+pub use light::*;
 
 pub(crate) use generic_device::*;

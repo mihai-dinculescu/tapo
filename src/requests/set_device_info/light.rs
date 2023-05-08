@@ -3,9 +3,9 @@ use serde::Serialize;
 use crate::api::ApiClientExt;
 use crate::error::Error;
 
-/// Builder that is used by the [`crate::L510Handler::set`] API to set multiple properties in a single request.
+/// Builder that is used by the [`crate::LightHandler::set`] API to set multiple properties in a single request.
 #[derive(Debug, Serialize)]
-pub struct L510SetDeviceInfoParams<'a> {
+pub struct LightSetDeviceInfoParams<'a> {
     #[serde(skip)]
     client: &'a dyn ApiClientExt,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -14,7 +14,7 @@ pub struct L510SetDeviceInfoParams<'a> {
     brightness: Option<u8>,
 }
 
-impl<'a> L510SetDeviceInfoParams<'a> {
+impl<'a> LightSetDeviceInfoParams<'a> {
     /// Turns *on* the device. `send` must be called at the end to apply the changes.
     pub fn on(mut self) -> Self {
         self.device_on = Some(true);
@@ -28,7 +28,7 @@ impl<'a> L510SetDeviceInfoParams<'a> {
     }
 
     /// Sets the *brightness*. `send` must be called at the end to apply the changes.
-    /// The device will also be turned *on*, unless [`crate::requests::L510SetDeviceInfoParams::off`] is called.
+    /// The device will also be turned *on*, unless [`crate::requests::LightSetDeviceInfoParams::off`] is called.
     ///
     /// # Arguments
     ///
@@ -46,7 +46,7 @@ impl<'a> L510SetDeviceInfoParams<'a> {
     }
 }
 
-impl<'a> L510SetDeviceInfoParams<'a> {
+impl<'a> LightSetDeviceInfoParams<'a> {
     pub(crate) fn new(client: &'a dyn ApiClientExt) -> Self {
         Self {
             client,
@@ -94,7 +94,7 @@ mod tests {
 
     #[tokio::test]
     async fn no_property_validation() {
-        let params = L510SetDeviceInfoParams::new(&MockApiClient);
+        let params = LightSetDeviceInfoParams::new(&MockApiClient);
         let result = params.send().await;
         assert!(matches!(
             result.err(),
@@ -104,14 +104,14 @@ mod tests {
 
     #[tokio::test]
     async fn brightness_validation() {
-        let params = L510SetDeviceInfoParams::new(&MockApiClient);
+        let params = LightSetDeviceInfoParams::new(&MockApiClient);
         let result = params.brightness(0).send().await;
         assert!(matches!(
             result.err(),
             Some(Error::Validation { field, message }) if field == "brightness" && message == "must be between 1 and 100"
         ));
 
-        let params = L510SetDeviceInfoParams::new(&MockApiClient);
+        let params = LightSetDeviceInfoParams::new(&MockApiClient);
         let result = params.brightness(101).send().await;
         assert!(matches!(
             result.err(),

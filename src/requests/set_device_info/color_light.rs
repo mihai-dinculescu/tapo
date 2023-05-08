@@ -4,7 +4,7 @@ use crate::api::ApiClientExt;
 use crate::error::Error;
 use crate::requests::color::{Color, COLOR_MAP};
 
-/// Builder that is used by the [`crate::L530Handler::set`] and [`crate::L930Handler::set`] APIs to set multiple properties in a single request.
+/// Builder that is used by the [`crate::ColorLightHandler::set`] API to set multiple properties in a single request.
 #[derive(Debug, Serialize)]
 pub struct ColorLightSetDeviceInfoParams<'a> {
     #[serde(skip)]

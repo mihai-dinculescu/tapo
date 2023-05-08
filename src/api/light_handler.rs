@@ -2,16 +2,16 @@ use std::marker::PhantomData;
 
 use crate::api::{ApiClient, ApiClientExt, Authenticated, Unauthenticated};
 use crate::error::Error;
-use crate::requests::{GenericSetDeviceInfoParams, L510SetDeviceInfoParams};
+use crate::requests::{GenericSetDeviceInfoParams, LightSetDeviceInfoParams};
 use crate::responses::{DeviceUsageResult, L510DeviceInfoResult};
 
-/// Handler for the [L510](https://www.tapo.com/en/search/?q=L510) devices.
-pub struct L510Handler<S = Unauthenticated> {
+/// Handler for the [L510](https://www.tapo.com/en/search/?q=L510) and [L610](https://www.tapo.com/en/search/?q=L610) devices.
+pub struct LightHandler<S = Unauthenticated> {
     client: ApiClient,
     status: PhantomData<S>,
 }
 
-impl<S> L510Handler<S> {
+impl<S> LightHandler<S> {
     pub(crate) fn new(client: ApiClient) -> Self {
         Self {
             client,
@@ -20,17 +20,17 @@ impl<S> L510Handler<S> {
     }
 
     /// Attempts to login. Each subsequent call will refresh the session.
-    pub async fn login(mut self) -> Result<L510Handler<Authenticated>, Error> {
+    pub async fn login(mut self) -> Result<LightHandler<Authenticated>, Error> {
         self.client.login().await?;
 
-        Ok(L510Handler {
+        Ok(LightHandler {
             client: self.client,
             status: PhantomData,
         })
     }
 }
 
-impl L510Handler<Authenticated> {
+impl LightHandler<Authenticated> {
     /// Turns *on* the device.
     pub async fn on(&self) -> Result<(), Error> {
         let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;
@@ -45,7 +45,7 @@ impl L510Handler<Authenticated> {
 
     /// Gets *device info* as [`crate::responses::L510DeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::L510Handler::get_device_info_json`].
+    /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::LightHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<L510DeviceInfoResult, Error> {
         self.client.get_device_info::<L510DeviceInfoResult>().await
     }
@@ -61,7 +61,7 @@ impl L510Handler<Authenticated> {
         self.client.get_device_usage().await
     }
 
-    /// Returns a [`crate::requests::L510SetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
+    /// Returns a [`crate::requests::LightSetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
     /// `send` must be called at the end to apply the changes.
     ///
     /// # Example
@@ -89,8 +89,8 @@ impl L510Handler<Authenticated> {
     ///     Ok(())
     /// }
     /// ```
-    pub fn set(&self) -> L510SetDeviceInfoParams {
-        L510SetDeviceInfoParams::new(&self.client)
+    pub fn set(&self) -> LightSetDeviceInfoParams {
+        LightSetDeviceInfoParams::new(&self.client)
     }
 
     /// Sets the *brightness* and turns *on* the device.
@@ -99,7 +99,7 @@ impl L510Handler<Authenticated> {
     ///
     /// * `brightness` - between 1 and 100
     pub async fn set_brightness(&self, brightness: u8) -> Result<(), Error> {
-        L510SetDeviceInfoParams::new(&self.client)
+        LightSetDeviceInfoParams::new(&self.client)
             .brightness(brightness)
             .send()
             .await

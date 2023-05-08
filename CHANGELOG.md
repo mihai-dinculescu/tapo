@@ -7,11 +7,19 @@ file. This change log follows the conventions of
 ## [Unreleased]
 
 ### Added
-- Added support for light strips like L920 and L930. The highlight is the `tapo::L930Handler::set_lighting_effect` function, which supports all the effects that the Tapo app contains alongside user-defined effects.
+- Added support for the L920 and L930 light strips. The highlight is the `tapo::ColorLightStripHandler::set_lighting_effect` function, which supports all the effects that the Tapo app contains alongside user-defined effects.
+- Added support for the L900 light strips.
+- Each supported device now has it's own handler creator.
 
 ### Changed
-- `tapo::requests::L530SetDeviceInfoParams` has been renamed to `tapo::requests::ColorLightSetDeviceInfoParams` to better reflect its purpose when used for L530, L920 and L930 devices.
 - `set_*` functions like `tapo::requests::ColorLightSetDeviceInfoParams::set_brightness` now return `Self` instead of `Result<Self, Error>` to allow for better ergonomics. The validations will now run when `tapo::requests::ColorLightSetDeviceInfoParams::send` is called.
+- `tapo::requests::L510SetDeviceInfoParams` has been renamed to `tapo::requests::LightSetDeviceInfoParams` to better reflect its purpose when used for L510, L610, and L900 devices.
+- `tapo::requests::L530SetDeviceInfoParams` has been renamed to `tapo::requests::ColorLightSetDeviceInfoParams` to better reflect its purpose when used for L530, L630, L920 and L930 devices.
+- `tapo::P100Handler` has been renamed to `tapo::PlugHandler`.
+- `tapo::P110Handler` has been renamed to `tapo::EnergyMonitoringPlugHandler`.
+- `tapo::L510Handler` has been renamed to `tapo::LightHandler`.
+- `tapo::L530Handler` has been renamed to `tapo::ColorLightHandler`.
+- `tapo::L930Handler` has been renamed to `tapo::ColorLightStripHandler`.
 
 ## [v0.5.0] - 2023-04-16
 
