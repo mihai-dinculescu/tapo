@@ -5,7 +5,7 @@
 [![CI][ci_badge]][ci]
 [![license][license_badge]][license]
 [![Crates.io][crates_downloads_badge]][crates]\
-Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L530), light strips (L920, L930) and plugs (P100, P105, P110, P115).
+Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L530, L610, L630), light strips (L900, L920, L930) and plugs (P100, P105, P110, P115).
 
 ## Device support
 

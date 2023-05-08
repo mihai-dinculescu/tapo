@@ -1,10 +1,10 @@
 [package]
 name = "tapo"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 license = "MIT"
 authors = ["Mihai Dinculescu <mihai.dinculescu@outlook.com>"]
-description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L530), light strips (L920, L930) and plugs (P100, P105, P110, P115)."
+description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L530, L610, L630), light strips (L900, L920, L930) and plugs (P100, P105, P110, P115)."
 keywords = ["IOT", "tapo", "smart-home", "smart-bulb", "smart-plug"]
 categories = ["hardware-support", "embedded", "development-tools"]
 readme = "README.md"

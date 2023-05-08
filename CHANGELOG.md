@@ -6,6 +6,8 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [v0.6.0] - 2023-05-08
+
 ### Added
 - Added support for the L920 and L930 light strips. The highlight is the `tapo::ColorLightStripHandler::set_lighting_effect` function, which supports all the effects that the Tapo app contains alongside user-defined effects.
 - Added support for the L900 light strips.
@@ -97,6 +99,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.6.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.6.0
 [v0.5.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.5.0
 [v0.4.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.4.0
 [v0.3.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.3.1
