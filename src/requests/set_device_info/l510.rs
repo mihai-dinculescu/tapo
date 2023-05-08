@@ -1,13 +1,13 @@
 use serde::Serialize;
 
-use crate::api::ApiClient;
+use crate::api::ApiClientExt;
 use crate::error::Error;
 
 /// Builder that is used by the [`crate::L510Handler::set`] API to set multiple properties in a single request.
 #[derive(Debug, Serialize)]
 pub struct L510SetDeviceInfoParams<'a> {
     #[serde(skip)]
-    client: &'a ApiClient,
+    client: &'a dyn ApiClientExt,
     #[serde(skip_serializing_if = "Option::is_none")]
     device_on: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -28,24 +28,26 @@ impl<'a> L510SetDeviceInfoParams<'a> {
     }
 
     /// Sets the *brightness*. `send` must be called at the end to apply the changes.
+    /// The device will also be turned *on*, unless [`crate::requests::L510SetDeviceInfoParams::off`] is called.
     ///
     /// # Arguments
     ///
-    /// * `brightness` - *u8*; between 1 and 100
-    pub fn brightness(mut self, value: u8) -> Result<Self, Error> {
+    /// * `brightness` - between 1 and 100
+    pub fn brightness(mut self, value: u8) -> Self {
         self.brightness = Some(value);
-        self.validate()
+        self
     }
 
     /// Performs a request to apply the changes to the device.
     pub async fn send(self) -> Result<(), Error> {
+        self.validate()?;
         let json = serde_json::to_value(&self)?;
         self.client.set_device_info(json).await
     }
 }
 
 impl<'a> L510SetDeviceInfoParams<'a> {
-    pub(crate) fn new(client: &'a ApiClient) -> Self {
+    pub(crate) fn new(client: &'a dyn ApiClientExt) -> Self {
         Self {
             client,
             device_on: None,
@@ -53,7 +55,7 @@ impl<'a> L510SetDeviceInfoParams<'a> {
         }
     }
 
-    fn validate(self) -> Result<Self, Error> {
+    fn validate(&self) -> Result<(), Error> {
         if self.device_on.is_none() && self.brightness.is_none() {
             return Err(Error::Validation {
                 field: "DeviceInfoParams".to_string(),
@@ -70,6 +72,50 @@ impl<'a> L510SetDeviceInfoParams<'a> {
             }
         }
 
-        Ok(self)
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use async_trait::async_trait;
+
+    use super::*;
+
+    #[derive(Debug)]
+    struct MockApiClient;
+
+    #[async_trait]
+    impl ApiClientExt for MockApiClient {
+        async fn set_device_info(&self, _: serde_json::Value) -> Result<(), Error> {
+            Ok(())
+        }
+    }
+
+    #[tokio::test]
+    async fn no_property_validation() {
+        let params = L510SetDeviceInfoParams::new(&MockApiClient);
+        let result = params.send().await;
+        assert!(matches!(
+            result.err(),
+            Some(Error::Validation { field, message }) if field == "DeviceInfoParams" && message == "requires at least one property"
+        ));
+    }
+
+    #[tokio::test]
+    async fn brightness_validation() {
+        let params = L510SetDeviceInfoParams::new(&MockApiClient);
+        let result = params.brightness(0).send().await;
+        assert!(matches!(
+            result.err(),
+            Some(Error::Validation { field, message }) if field == "brightness" && message == "must be between 1 and 100"
+        ));
+
+        let params = L510SetDeviceInfoParams::new(&MockApiClient);
+        let result = params.brightness(101).send().await;
+        assert!(matches!(
+            result.err(),
+            Some(Error::Validation { field, message }) if field == "brightness" && message == "must be between 1 and 100"
+        ));
     }
 }

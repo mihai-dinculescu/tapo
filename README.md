@@ -5,27 +5,29 @@
 [![CI][ci_badge]][ci]
 [![license][license_badge]][license]
 [![Crates.io][crates_downloads_badge]][crates]\
-Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L530) and plugs (P100, P105, P110, P115).
+Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L530), light strips (L920, L930) and plugs (P100, P105, P110, P115).
 
 ## Device support
 
-| Feature               | GenericDevice |    L510 |    L530 | P100 & P105 \* | P110 & P115 \** |
-| --------------------- | ------------: | ------: | ------: | -------------: | --------------: |
-| on                    |       &check; | &check; | &check; |        &check; |         &check; |
-| off                   |       &check; | &check; | &check; |        &check; |         &check; |
-| get_device_info       |       &check; | &check; | &check; |        &check; |         &check; |
-| get_device_usage      |       &check; | &check; | &check; |        &check; |         &check; |
-| get_energy_usage      |               |         |         |                |         &check; |
-| get_energy_data       |               |         |         |                |         &check; |
-| set_brightness        |               | &check; | &check; |                |                 |
-| set_color             |               |         | &check; |                |                 |
-| set_hue_saturation    |               |         | &check; |                |                 |
-| set_color_temperature |               |         | &check; |                |                 |
-| set() API \***        |               | &check; | &check; |                |                 |
+| Feature               | GenericDevice |    L510 |    L530 | L920 & L930 \* | P100 & P105 \** | P110 & P115 \*** |
+| --------------------- | ------------: | ------: | ------: | -------------: | --------------: | ---------------: |
+| on                    |       &check; | &check; | &check; |        &check; |         &check; |          &check; |
+| off                   |       &check; | &check; | &check; |        &check; |         &check; |          &check; |
+| get_device_info       |       &check; | &check; | &check; |        &check; |         &check; |          &check; |
+| get_device_usage      |       &check; | &check; | &check; |        &check; |         &check; |          &check; |
+| get_energy_usage      |               |         |         |                |                 |          &check; |
+| get_energy_data       |               |         |         |                |                 |          &check; |
+| set_brightness        |               | &check; | &check; |        &check; |                 |                  |
+| set_color             |               |         | &check; |        &check; |                 |                  |
+| set_hue_saturation    |               |         | &check; |        &check; |                 |                  |
+| set_color_temperature |               |         | &check; |        &check; |                 |                  |
+| set_lighting_effect   |               |         |         |        &check; |                 |                  |
+| set() API \****       |               | &check; | &check; |        &check; |                 |                  |
 
-\* The P105 devices can be interacted with using the P100 API.\
-\** The P115 devices can be interacted with using the P110 API.\
-\*** The `set()` API allows multiple properties to be set in a single request.
+\* L920 devices can be interacted with using the L930 API. L900 devices can be interacted with using both the L530 API and L930 API (wo/ lighting effects).\
+\** P105 devices can be interacted with using the P100 API.\
+\*** P115 devices can be interacted with using the P110 API.\
+\**** The `set()` API allows multiple properties to be set in a single request.
 
 ## Examples
 

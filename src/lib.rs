@@ -1,5 +1,5 @@
 //! Tapo API Client
-//! Works with light bulbs (L510, L530), plugs (P100, P105, P110, P115), and others.
+//! Works with light bulbs (L510, L530), light strips (L920, L930), plugs (P100, P105, P110, P115), and others.
 //!
 //! # Example with L530
 //! ```rust,no_run
@@ -40,8 +40,8 @@
 //!     info!("Waiting 2 seconds...");
 //!     thread::sleep(Duration::from_secs(2));
 //!
-//!     info!("Setting the color to `Coral` using the `hue` and `saturation`...");
-//!     device.set_hue_saturation(16, 68).await?;
+//!     info!("Setting the color to `Deep Sky Blue` using the `hue` and `saturation`...");
+//!     device.set_hue_saturation(195, 100).await?;
 //!
 //!     info!("Waiting 2 seconds...");
 //!     thread::sleep(Duration::from_secs(2));
@@ -56,8 +56,8 @@
 //!     device
 //!         .set()
 //!         .on()
-//!         .brightness(50)?
-//!         .color(Color::HotPink)?
+//!         .brightness(50)
+//!         .color(Color::HotPink)
 //!         .send()
 //!         .await?;
 //!

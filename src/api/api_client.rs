@@ -1,17 +1,20 @@
 use std::fmt;
 
+use async_trait::async_trait;
 use isahc::{config::Configurable, cookies::CookieJar, AsyncReadResponseExt, HttpClient};
 use log::debug;
 use serde::de::DeserializeOwned;
 use serde_json::json;
 
-use crate::api::{GenericDeviceHandler, L510Handler, L530Handler, P100Handler, P110Handler};
+use crate::api::{
+    GenericDeviceHandler, L510Handler, L530Handler, L930Handler, P100Handler, P110Handler,
+};
 use crate::encryption::{KeyPair, TpLinkCipher};
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     EnergyDataInterval, GetDeviceInfoParams, GetDeviceUsageParams, GetEnergyDataParams,
-    GetEnergyUsageParams, HandshakeParams, LoginDeviceParams, SecurePassthroughParams, TapoParams,
-    TapoRequest,
+    GetEnergyUsageParams, HandshakeParams, LightingEffect, LoginDeviceParams,
+    SecurePassthroughParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
     validate_response, DeviceInfoResultExt, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
@@ -24,6 +27,11 @@ const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 pub struct Unauthenticated;
 /// Authenticated handler. The session can be refreshed by calling `login` again.
 pub struct Authenticated;
+
+#[async_trait]
+pub(crate) trait ApiClientExt: std::fmt::Debug {
+    async fn set_device_info(&self, device_info_params: serde_json::Value) -> Result<(), Error>;
+}
 
 /// Tapo API Client. See [examples](https://github.com/mihai-dinculescu/tapo/tree/main/examples).
 ///
@@ -91,6 +99,27 @@ pub struct Authenticated;
 /// }
 /// ```
 ///
+/// ## L930
+/// ```rust,no_run
+/// use tapo::ApiClient;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .l930()
+///     .login()
+///     .await?;
+///
+///     device.on().await?;
+///
+///     Ok(())
+/// }
+/// ```
+///
 /// ## P100 & P105
 /// ```rust,no_run
 /// use tapo::ApiClient;
@@ -148,11 +177,11 @@ impl ApiClient {
     ///
     /// # Arguments
     ///
-    /// * `ip_address` - *impl Into<String>*; the IP address of the device
-    /// * `tapo_username` - *impl Into<String>*; the Tapo username
-    /// * `tapo_password` - *impl Into<String>*; the Tapo password
+    /// * `ip_address` - the IP address of the device
+    /// * `tapo_username` - the Tapo username
+    /// * `tapo_password` - the Tapo password
     ///
-    /// # Examples
+    /// # Example
     /// ```rust,no_run
     /// use tapo::ApiClient;
     ///
@@ -196,27 +225,32 @@ impl ApiClient {
         })
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an [`crate::GenericDeviceHandler`].
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::GenericDeviceHandler`].
     pub fn generic_device(self) -> GenericDeviceHandler<Unauthenticated> {
         GenericDeviceHandler::new(self)
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an [`crate::L510Handler`].
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::L510Handler`].
     pub fn l510(self) -> L510Handler<Unauthenticated> {
         L510Handler::new(self)
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an [`crate::L530Handler`].
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::L530Handler`].
     pub fn l530(self) -> L530Handler<Unauthenticated> {
         L530Handler::new(self)
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an [`crate::P100Handler`].
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::L930Handler`].
+    pub fn l930(self) -> L930Handler<Unauthenticated> {
+        L930Handler::new(self)
+    }
+
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::P100Handler`].
     pub fn p100(self) -> P100Handler<Unauthenticated> {
         P100Handler::new(self)
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an [`crate::P110Handler`].
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::P110Handler`].
     pub fn p110(self) -> P110Handler<Unauthenticated> {
         P110Handler::new(self)
     }
@@ -277,19 +311,19 @@ impl ApiClient {
         Ok(result)
     }
 
-    pub(crate) async fn set_device_info(
+    pub(crate) async fn set_lighting_effect(
         &self,
-        device_info_params: serde_json::Value,
+        lighting_effect: LightingEffect,
     ) -> Result<(), Error> {
-        debug!("Device info will change to: {device_info_params:?}");
+        debug!("Lighting effect will change to: {lighting_effect:?}");
 
-        let set_device_info_request = TapoRequest::SetDeviceInfo(
-            TapoParams::new(device_info_params)
+        let set_lighting_effect_request = TapoRequest::SetLightingEffect(Box::new(
+            TapoParams::new(lighting_effect)
                 .set_request_time_mils()?
                 .set_terminal_uuid(TERMINAL_UUID),
-        );
+        ));
 
-        self.execute_secure_passthrough_request::<TapoResult>(set_device_info_request, true)
+        self.execute_secure_passthrough_request::<TapoResult>(set_lighting_effect_request, true)
             .await?;
 
         Ok(())
@@ -441,5 +475,23 @@ impl ApiClient {
         let result = inner_response.result;
 
         Ok(result)
+    }
+}
+
+#[async_trait]
+impl ApiClientExt for ApiClient {
+    async fn set_device_info(&self, device_info_params: serde_json::Value) -> Result<(), Error> {
+        debug!("Device info will change to: {device_info_params:?}");
+
+        let set_device_info_request = TapoRequest::SetDeviceInfo(Box::new(
+            TapoParams::new(device_info_params)
+                .set_request_time_mils()?
+                .set_terminal_uuid(TERMINAL_UUID),
+        ));
+
+        self.execute_secure_passthrough_request::<TapoResult>(set_device_info_request, true)
+            .await?;
+
+        Ok(())
     }
 }

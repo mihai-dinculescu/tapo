@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::api::{ApiClient, Authenticated, Unauthenticated};
+use crate::api::{ApiClient, ApiClientExt, Authenticated, Unauthenticated};
 use crate::error::Error;
 use crate::requests::{GenericSetDeviceInfoParams, L510SetDeviceInfoParams};
 use crate::responses::{DeviceUsageResult, L510DeviceInfoResult};
@@ -82,7 +82,7 @@ impl L510Handler<Authenticated> {
     ///     device
     ///     .set()
     ///     .on()
-    ///     .brightness(50)?
+    ///     .brightness(50)
     ///     .send()
     ///     .await?;
     ///
@@ -93,14 +93,14 @@ impl L510Handler<Authenticated> {
         L510SetDeviceInfoParams::new(&self.client)
     }
 
-    /// Sets the *brightness*.
+    /// Sets the *brightness* and turns *on* the device.
     ///
     /// # Arguments
     ///
-    /// * `brightness` - *u8*; between 1 and 100
+    /// * `brightness` - between 1 and 100
     pub async fn set_brightness(&self, brightness: u8) -> Result<(), Error> {
         L510SetDeviceInfoParams::new(&self.client)
-            .brightness(brightness)?
+            .brightness(brightness)
             .send()
             .await
     }

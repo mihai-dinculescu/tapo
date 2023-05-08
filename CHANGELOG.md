@@ -6,6 +6,13 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Added
+- Added support for light strips like L920 and L930. The highlight is the `tapo::L930Handler::set_lighting_effect` function, which supports all the effects that the Tapo app contains alongside user-defined effects.
+
+### Changed
+- `tapo::requests::L530SetDeviceInfoParams` has been renamed to `tapo::requests::ColorLightSetDeviceInfoParams` to better reflect its purpose when used for L530, L920 and L930 devices.
+- `set_*` functions like `tapo::requests::ColorLightSetDeviceInfoParams::set_brightness` now return `Self` instead of `Result<Self, Error>` to allow for better ergonomics. The validations will now run when `tapo::requests::ColorLightSetDeviceInfoParams::send` is called.
+
 ## [v0.5.0] - 2023-04-16
 
 ### Changed

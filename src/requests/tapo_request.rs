@@ -4,7 +4,7 @@ use serde::Serialize;
 
 use crate::requests::{
     GetDeviceInfoParams, GetDeviceUsageParams, GetEnergyDataParams, GetEnergyUsageParams,
-    HandshakeParams, LoginDeviceParams, SecurePassthroughParams,
+    HandshakeParams, LightingEffect, LoginDeviceParams, SecurePassthroughParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -15,7 +15,8 @@ pub(crate) enum TapoRequest {
     LoginDevice(TapoParams<LoginDeviceParams>),
     #[serde(rename = "securePassthrough")]
     SecurePassthrough(TapoParams<SecurePassthroughParams>),
-    SetDeviceInfo(TapoParams<serde_json::Value>),
+    SetDeviceInfo(Box<TapoParams<serde_json::Value>>),
+    SetLightingEffect(Box<TapoParams<LightingEffect>>),
     GetDeviceInfo(TapoParams<GetDeviceInfoParams>),
     GetDeviceUsage(TapoParams<GetDeviceUsageParams>),
     GetEnergyUsage(TapoParams<GetEnergyUsageParams>),

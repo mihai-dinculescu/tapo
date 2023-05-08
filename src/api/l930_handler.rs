@@ -2,16 +2,18 @@ use std::marker::PhantomData;
 
 use crate::api::{ApiClient, ApiClientExt, Authenticated, Unauthenticated};
 use crate::error::Error;
-use crate::requests::{Color, ColorLightSetDeviceInfoParams, GenericSetDeviceInfoParams};
-use crate::responses::{DeviceUsageResult, L530DeviceInfoResult};
+use crate::requests::{
+    Color, ColorLightSetDeviceInfoParams, GenericSetDeviceInfoParams, LightingEffect,
+};
+use crate::responses::{DeviceUsageResult, L930DeviceInfoResult};
 
-/// Handler for the [L530](https://www.tapo.com/en/search/?q=L530) devices.
-pub struct L530Handler<S = Unauthenticated> {
+/// Handler for the [L920](https://www.tapo.com/en/search/?q=L920) and [L930](https://www.tapo.com/en/search/?q=L930) devices.
+pub struct L930Handler<S = Unauthenticated> {
     client: ApiClient,
     status: PhantomData<S>,
 }
 
-impl<S> L530Handler<S> {
+impl<S> L930Handler<S> {
     pub(crate) fn new(client: ApiClient) -> Self {
         Self {
             client,
@@ -20,17 +22,17 @@ impl<S> L530Handler<S> {
     }
 
     /// Attempts to login. Each subsequent call will refresh the session.
-    pub async fn login(mut self) -> Result<L530Handler<Authenticated>, Error> {
+    pub async fn login(mut self) -> Result<L930Handler<Authenticated>, Error> {
         self.client.login().await?;
 
-        Ok(L530Handler {
+        Ok(L930Handler {
             client: self.client,
             status: PhantomData,
         })
     }
 }
 
-impl L530Handler<Authenticated> {
+impl L930Handler<Authenticated> {
     /// Turns *on* the device.
     pub async fn on(&self) -> Result<(), Error> {
         let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;
@@ -43,11 +45,11 @@ impl L530Handler<Authenticated> {
         self.client.set_device_info(json).await
     }
 
-    /// Gets *device info* as [`crate::responses::L530DeviceInfoResult`].
+    /// Gets *device info* as [`crate::responses::L930DeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::L530Handler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<L530DeviceInfoResult, Error> {
-        self.client.get_device_info::<L530DeviceInfoResult>().await
+    /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::L930Handler::get_device_info_json`].
+    pub async fn get_device_info(&self) -> Result<L930DeviceInfoResult, Error> {
+        self.client.get_device_info::<L930DeviceInfoResult>().await
     }
 
     /// Gets *device info* as [`serde_json::Value`].
@@ -63,6 +65,7 @@ impl L530Handler<Authenticated> {
 
     /// Returns a [`crate::requests::ColorLightSetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
     /// `send` must be called at the end to apply the changes.
+    /// For *lighting effects*, use [`crate::L930Handler::set_lighting_effect`] instead.
     ///
     /// # Example
     /// ```rust,no_run
@@ -76,7 +79,7 @@ impl L530Handler<Authenticated> {
     ///         "tapo-username@example.com",
     ///         "tapo-password",
     ///     )?
-    ///     .l530()
+    ///     .l930()
     ///     .login()
     ///     .await?;
     ///
@@ -96,6 +99,7 @@ impl L530Handler<Authenticated> {
     }
 
     /// Sets the *brightness* and turns *on* the device.
+    /// Pre-existing *lighting effect* will be removed.
     ///
     /// # Arguments
     ///
@@ -108,10 +112,11 @@ impl L530Handler<Authenticated> {
     }
 
     /// Sets the *color* and turns *on* the device.
+    /// Pre-existing *lighting effect* will be removed.
     ///
     /// # Arguments
     ///
-    /// * `color` - [crate::requests::Color]
+    /// * `color` - one of [crate::requests::Color]
     pub async fn set_color(&self, color: Color) -> Result<(), Error> {
         ColorLightSetDeviceInfoParams::new(&self.client)
             .color(color)
@@ -120,6 +125,7 @@ impl L530Handler<Authenticated> {
     }
 
     /// Sets the *hue*, *saturation* and turns *on* the device.
+    /// Pre-existing *lighting effect* will be removed.
     ///
     /// # Arguments
     ///
@@ -133,6 +139,7 @@ impl L530Handler<Authenticated> {
     }
 
     /// Sets the *color temperature* and turns *on* the device.
+    /// Pre-existing *lighting effect* will be removed.
     ///
     /// # Arguments
     ///
@@ -141,6 +148,20 @@ impl L530Handler<Authenticated> {
         ColorLightSetDeviceInfoParams::new(&self.client)
             .color_temperature(color_temperature)
             .send()
+            .await
+    }
+
+    /// Sets a *lighting effect* and turns *on* the device.
+    ///
+    /// # Arguments
+    ///
+    /// * `lighting_effect` - [crate::requests::LightingEffectPreset] or [crate::requests::LightingEffect].
+    pub async fn set_lighting_effect(
+        &self,
+        lighting_effect: impl Into<LightingEffect>,
+    ) -> Result<(), Error> {
+        self.client
+            .set_lighting_effect(lighting_effect.into())
             .await
     }
 }

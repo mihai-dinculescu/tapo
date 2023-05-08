@@ -1,8 +1,11 @@
-/// L530 Example
+/// L930 Example
 use std::{env, thread, time::Duration};
 
 use log::{info, LevelFilter};
-use tapo::{requests::Color, ApiClient};
+use tapo::{
+    requests::{Color, LightingEffect, LightingEffectPreset, LightingEffectType},
+    ApiClient,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -20,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tapo_password = env::var("TAPO_PASSWORD")?;
 
     let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
-        .l530()
+        .l930()
         .login()
         .await?;
 
@@ -59,6 +62,52 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Waiting 2 seconds...");
     thread::sleep(Duration::from_secs(2));
+
+    info!("Setting a preset Lighting effect...");
+    device
+        .set_lighting_effect(LightingEffectPreset::BubblingCauldron)
+        .await?;
+
+    info!("Waiting 10 seconds...");
+    thread::sleep(Duration::from_secs(10));
+
+    info!("Setting a custom static Lighting effect...");
+    let custom_effect = LightingEffect::new_with_random_id(
+        "My Custom Static Effect",
+        LightingEffectType::Static,
+        true,
+        true,
+        100,
+        vec![[359, 85, 100]],
+    )
+    .with_expansion_strategy(1)
+    .with_segments(vec![0, 1, 2])
+    .with_sequence(vec![[359, 85, 100], [0, 0, 100], [236, 72, 100]]);
+
+    device.set_lighting_effect(custom_effect).await?;
+
+    info!("Waiting 10 seconds...");
+    thread::sleep(Duration::from_secs(10));
+
+    info!("Setting a custom sequence Lighting effect...");
+    let custom_effect = LightingEffect::new_with_random_id(
+        "My Custom Sequence Effect",
+        LightingEffectType::Sequence,
+        true,
+        true,
+        100,
+        vec![[359, 85, 100]],
+    )
+    .with_expansion_strategy(1)
+    .with_segments(vec![0, 1, 2])
+    .with_sequence(vec![[359, 85, 100], [0, 0, 100], [236, 72, 100]])
+    .with_direction(1)
+    .with_duration(50);
+
+    device.set_lighting_effect(custom_effect).await?;
+
+    info!("Waiting 10 seconds...");
+    thread::sleep(Duration::from_secs(10));
 
     info!("Turning device off...");
     device.off().await?;

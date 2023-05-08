@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::api::{ApiClient, Authenticated, Unauthenticated};
+use crate::api::{ApiClient, ApiClientExt, Authenticated, Unauthenticated};
 use crate::error::Error;
 use crate::requests::GenericSetDeviceInfoParams;
 use crate::responses::{DeviceUsageResult, PlugDeviceInfoResult};
