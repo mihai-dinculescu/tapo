@@ -1,11 +1,11 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
 use crate::responses::TapoResponseExt;
 use crate::tapo_date_format;
 
 /// Energy data for the requested [`crate::requests::EnergyDataInterval`].
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EnergyDataResult {
     /// Local time, with the UTC offset assumed from the machine this call is made on
     #[serde(with = "tapo_date_format")]

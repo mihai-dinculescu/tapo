@@ -1,10 +1,10 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::responses::{decode_value, DefaultState, DeviceInfoResultExt, TapoResponseExt};
 
 /// Device info of Tapo P100, P105, P110 and P115. Superset of [`crate::responses::GenericDeviceInfoResult`].
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlugDeviceInfoResult {
     //
     // Inherited from GenericDeviceInfoResult
@@ -55,13 +55,13 @@ impl DeviceInfoResultExt for PlugDeviceInfoResult {
 }
 
 /// Plug State wrapper.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlugStateWrapper {
     pub state: PlugState,
 }
 
 /// Plug State.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlugState {
     pub on: Option<bool>,
 }

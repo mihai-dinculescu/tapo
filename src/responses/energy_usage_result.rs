@@ -1,11 +1,11 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
 use crate::responses::TapoResponseExt;
 use crate::tapo_date_format;
 
 /// Contains local time, current power and the energy usage and runtime for today and for the current month.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct EnergyUsageResult {
     /// Local time, with the UTC offset assumed from the machine this call is made on
     #[serde(with = "tapo_date_format")]
