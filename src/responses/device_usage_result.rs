@@ -1,9 +1,9 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::responses::TapoResponseExt;
 
 /// Contains the time in use, the power consumption, and the energy savings of the device.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DeviceUsageResult {
     // Time usage in minutes
     pub time_usage: UsageByPeriodResult,
@@ -15,7 +15,7 @@ pub struct DeviceUsageResult {
 impl TapoResponseExt for DeviceUsageResult {}
 
 /// Usage by period result for today, the past 7 days, and the past 30 days.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UsageByPeriodResult {
     /// Today
     pub today: u64,

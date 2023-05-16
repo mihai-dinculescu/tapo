@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, TapoResponseError};
 
@@ -7,7 +7,7 @@ pub(crate) trait TapoResponseExt {}
 
 impl TapoResponseExt for serde_json::Value {}
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct TapoResponse<T: TapoResponseExt> {
     pub error_code: i32,
     pub result: Option<T>,

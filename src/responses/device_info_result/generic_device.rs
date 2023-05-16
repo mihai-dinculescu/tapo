@@ -1,10 +1,10 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::responses::{decode_value, DeviceInfoResultExt, TapoResponseExt};
 
 /// Device info of [`crate::ApiClient<GenericDevice>`].
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GenericDeviceInfoResult {
     pub device_id: String,
     pub r#type: String,

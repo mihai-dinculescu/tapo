@@ -1,10 +1,10 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::responses::{decode_value, DefaultState, DeviceInfoResultExt, TapoResponseExt};
 
 /// Device info of Tapo L530. Superset of [`crate::responses::GenericDeviceInfoResult`].
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct L530DeviceInfoResult {
     //
     // Inherited from GenericDeviceInfoResult
@@ -62,13 +62,13 @@ impl DeviceInfoResultExt for L530DeviceInfoResult {
 }
 
 /// L530 State wrapper.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct L530StateWrapper {
     pub state: L530State,
 }
 
 /// L530 State.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct L530State {
     pub brightness: u8,
     pub hue: Option<u16>,
