@@ -27,6 +27,6 @@ time = { version = "0.3", features = ["parsing", "formatting"] }
 uuid = { version = "1.3", features = ["serde", "v4"] }
 
 [dev-dependencies]
-pretty_env_logger = "0.4"
+pretty_env_logger = "0.5"
 tokio = { version = "1.28", features = ["rt-multi-thread", "macros"] }
 time = { version = "0.3", features = ["parsing", "macros"] }
