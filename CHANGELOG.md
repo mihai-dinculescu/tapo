@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Added
+
+- All responses now derive `serde::Serialize` to allow for easier serialization in the consumers. (thanks to @ClementNerma)
+
 ## [v0.6.0] - 2023-05-08
 
 ### Added
