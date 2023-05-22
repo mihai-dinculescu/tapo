@@ -30,7 +30,7 @@ pub struct Unauthenticated;
 pub struct Authenticated;
 
 #[async_trait]
-pub(crate) trait ApiClientExt: std::fmt::Debug {
+pub(crate) trait ApiClientExt: std::fmt::Debug + Send + Sync {
     async fn set_device_info(&self, device_info_params: serde_json::Value) -> Result<(), Error>;
 }
 
