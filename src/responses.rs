@@ -1,3 +1,5 @@
+//! Tapo response objects.
+
 mod device_info_result;
 mod device_usage_result;
 mod energy_data_result;

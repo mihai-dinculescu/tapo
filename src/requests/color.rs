@@ -4,6 +4,7 @@ use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 
 /// List of preset colors as defined in the Google Home app.
+#[allow(missing_docs)]
 #[derive(Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum Color {
     CoolWhite,

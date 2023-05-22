@@ -1,3 +1,5 @@
+//! Tapo request objects.
+
 mod color;
 mod energy_data_interval;
 mod get_device_info;

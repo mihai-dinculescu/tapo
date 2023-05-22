@@ -5,6 +5,7 @@ use crate::responses::{decode_value, DeviceInfoResultExt, TapoResponseExt};
 
 /// Device info of [`crate::ApiClient<GenericDevice>`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct GenericDeviceInfoResult {
     pub device_id: String,
     pub r#type: String,

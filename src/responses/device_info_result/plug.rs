@@ -5,6 +5,7 @@ use crate::responses::{decode_value, DefaultState, DeviceInfoResultExt, TapoResp
 
 /// Device info of Tapo P100, P105, P110 and P115. Superset of [`crate::responses::GenericDeviceInfoResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct PlugDeviceInfoResult {
     //
     // Inherited from GenericDeviceInfoResult
@@ -56,12 +57,14 @@ impl DeviceInfoResultExt for PlugDeviceInfoResult {
 
 /// Plug State wrapper.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct PlugStateWrapper {
     pub state: PlugState,
 }
 
 /// Plug State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct PlugState {
     pub on: Option<bool>,
 }

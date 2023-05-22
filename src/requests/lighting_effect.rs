@@ -3,6 +3,7 @@ use serde_with::{serde_as, BoolFromInt};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[allow(missing_docs)]
 pub enum LightingEffectType {
     Sequence,
     Random,
@@ -12,6 +13,7 @@ pub enum LightingEffectType {
 
 #[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct LightingEffect {
     // Mandatory
     pub brightness: u8,
@@ -262,6 +264,7 @@ impl LightingEffect {
 
 #[derive(Debug)]
 #[non_exhaustive]
+#[allow(missing_docs)]
 pub enum LightingEffectPreset {
     Aurora,
     BubblingCauldron,

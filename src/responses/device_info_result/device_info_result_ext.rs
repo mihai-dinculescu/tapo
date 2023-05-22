@@ -7,6 +7,7 @@ pub trait DeviceInfoResultExt
 where
     Self: Sized,
 {
+    /// Decodes a base64 encoded string from the result.
     fn decode(&self) -> Result<Self, Error>;
 }
 

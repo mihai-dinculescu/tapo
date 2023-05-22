@@ -5,6 +5,7 @@ use crate::responses::{decode_value, DefaultState, DeviceInfoResultExt, TapoResp
 
 /// Device info of Tapo L150. Superset of [`crate::responses::GenericDeviceInfoResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct L510DeviceInfoResult {
     //
     // Inherited from GenericDeviceInfoResult
@@ -63,12 +64,14 @@ impl DeviceInfoResultExt for L510DeviceInfoResult {
 
 /// L510 State wrapper.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct L510StateWrapper {
     pub state: L510State,
 }
 
 /// L510 State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(missing_docs)]
 pub struct L510State {
     pub brightness: u8,
 }

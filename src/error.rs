@@ -20,7 +20,12 @@ pub enum Error {
     Tapo(TapoResponseError),
     /// Validation Error of a provided field.
     #[error("Validation: {field} {message}")]
-    Validation { field: String, message: String },
+    Validation {
+        /// The field that failed validation.
+        field: String,
+        /// The validation error message.
+        message: String,
+    },
     /// Serialization/Deserialization Error.
     #[error("Serde: {0}")]
     Serde(#[from] serde_json::Error),

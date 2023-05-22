@@ -5,11 +5,11 @@ use crate::responses::TapoResponseExt;
 /// Contains the time in use, the power consumption, and the energy savings of the device.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DeviceUsageResult {
-    // Time usage in minutes
+    /// Time usage in minutes
     pub time_usage: UsageByPeriodResult,
-    // Power usage in watt-hour (Wh)
+    /// Power usage in watt-hour (Wh)
     pub power_usage: UsageByPeriodResult,
-    // Saved power in watt-hour (Wh)
+    /// Saved power in watt-hour (Wh)
     pub saved_power: UsageByPeriodResult,
 }
 impl TapoResponseExt for DeviceUsageResult {}
