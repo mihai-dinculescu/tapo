@@ -22,7 +22,7 @@ pub struct GenericDeviceInfoResult {
     pub rssi: i16,
     pub specs: String,
     pub lang: String,
-    pub device_on: bool,
+    pub device_on: Option<bool>,
     pub overheated: bool,
     pub nickname: String,
     pub avatar: String,

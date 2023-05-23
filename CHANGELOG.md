@@ -9,6 +9,11 @@ file. This change log follows the conventions of
 ### Added
 
 - All responses now derive `serde::Serialize` to allow for easier serialization in the consumers. (thanks to @ClementNerma)
+- `ApiClient` has been marked as both `Send` and `Sync` to allow for sharing between threads. (thanks to @ClementNerma)
+
+### Changed
+
+- `GenericDeviceInfoResult`'s `device_on` property has been made optional in order to accommodate for devices that do not provide this field.
 
 ## [v0.6.0] - 2023-05-08
 

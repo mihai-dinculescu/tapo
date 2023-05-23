@@ -1,7 +1,7 @@
 /// Toggle Generic Device Example
 use std::env;
 
-use log::{info, LevelFilter};
+use log::{info, warn, LevelFilter};
 use tapo::ApiClient;
 
 #[tokio::main]
@@ -27,13 +27,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let device_info = device.get_device_info().await?;
 
     match device_info.device_on {
-        true => {
+        Some(true) => {
             info!("Device is on. Turning it off...");
             device.off().await?;
         }
-        false => {
+        Some(false) => {
             info!("Device is off. Turning it on...");
             device.on().await?;
+        }
+        None => {
+            warn!("This device cannot be turned on or off.");
         }
     }
 
