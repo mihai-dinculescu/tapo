@@ -3,8 +3,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Serialize;
 
 use crate::requests::{
-    GetDeviceInfoParams, GetDeviceUsageParams, GetEnergyDataParams, GetEnergyUsageParams,
-    HandshakeParams, LightingEffect, LoginDeviceParams, SecurePassthroughParams,
+    GetEnergyDataParams, HandshakeParams, LightingEffect, LoginDeviceParams,
+    SecurePassthroughParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -17,11 +17,15 @@ pub(crate) enum TapoRequest {
     SecurePassthrough(TapoParams<SecurePassthroughParams>),
     SetDeviceInfo(Box<TapoParams<serde_json::Value>>),
     SetLightingEffect(Box<TapoParams<LightingEffect>>),
-    GetDeviceInfo(TapoParams<GetDeviceInfoParams>),
-    GetDeviceUsage(TapoParams<GetDeviceUsageParams>),
-    GetEnergyUsage(TapoParams<GetEnergyUsageParams>),
+    GetDeviceInfo(TapoParams<EmptyParams>),
+    GetDeviceUsage(TapoParams<EmptyParams>),
+    GetEnergyUsage(TapoParams<EmptyParams>),
     GetEnergyData(TapoParams<GetEnergyDataParams>),
+    GetChildDeviceList(TapoParams<EmptyParams>),
 }
+
+#[derive(Debug, Serialize)]
+pub(crate) struct EmptyParams;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]

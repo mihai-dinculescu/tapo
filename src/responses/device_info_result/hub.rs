@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, DefaultState, TapoResponseExt};
+use crate::responses::{decode_value, DecodableResultExt, TapoResponseExt};
 
-/// Device info of Tapo P100, P105, P110 and P115. Superset of [`crate::responses::GenericDeviceInfoResult`].
+/// Device info of Tapo H100. Superset of [`crate::responses::GenericDeviceInfoResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct PlugDeviceInfoResult {
+pub struct HubDeviceInfoResult {
     //
     // Inherited from GenericDeviceInfoResult
     //
@@ -25,9 +25,6 @@ pub struct PlugDeviceInfoResult {
     pub rssi: i16,
     pub specs: String,
     pub lang: String,
-    pub device_on: bool,
-    /// The time in seconds this device has been ON since the last state change (ON/OFF).
-    pub on_time: u64,
     pub overheated: bool,
     pub nickname: String,
     pub avatar: String,
@@ -39,31 +36,17 @@ pub struct PlugDeviceInfoResult {
     //
     // Unique to this device
     //
-    /// The default state of a device to be used when internet connectivity is lost after a power cut.
-    pub default_states: DefaultState<PlugStateWrapper>,
+    pub in_alarm: bool,
+    pub in_alarm_source: String,
 }
 
-impl TapoResponseExt for PlugDeviceInfoResult {}
+impl TapoResponseExt for HubDeviceInfoResult {}
 
-impl DecodableResultExt for PlugDeviceInfoResult {
+impl DecodableResultExt for HubDeviceInfoResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.ssid = decode_value(&self.ssid)?;
         self.nickname = decode_value(&self.nickname)?;
 
         Ok(self)
     }
-}
-
-/// Plug State wrapper.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(missing_docs)]
-pub struct PlugStateWrapper {
-    pub state: PlugState,
-}
-
-/// Plug State.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(missing_docs)]
-pub struct PlugState {
-    pub on: Option<bool>,
 }

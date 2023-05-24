@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DefaultState, DeviceInfoResultExt, TapoResponseExt};
+use crate::responses::{decode_value, DecodableResultExt, DefaultState, TapoResponseExt};
 
 /// Device info of Tapo L150. Superset of [`crate::responses::GenericDeviceInfoResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -52,13 +52,12 @@ pub struct L510DeviceInfoResult {
 
 impl TapoResponseExt for L510DeviceInfoResult {}
 
-impl DeviceInfoResultExt for L510DeviceInfoResult {
-    fn decode(&self) -> Result<Self, Error> {
-        Ok(Self {
-            ssid: decode_value(&self.ssid)?,
-            nickname: decode_value(&self.nickname)?,
-            ..self.clone()
-        })
+impl DecodableResultExt for L510DeviceInfoResult {
+    fn decode(mut self) -> Result<Self, Error> {
+        self.ssid = decode_value(&self.ssid)?;
+        self.nickname = decode_value(&self.nickname)?;
+
+        Ok(self)
     }
 }
 

@@ -49,13 +49,13 @@ impl ColorLightStripHandler<Authenticated> {
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::ColorLightStripHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<L930DeviceInfoResult, Error> {
-        self.client.get_device_info::<L930DeviceInfoResult>().await
+        self.client.get_device_info().await
     }
 
     /// Gets *device info* as [`serde_json::Value`].
     /// It contains all the properties returned from the Tapo API.
     pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
-        self.client.get_device_info_json().await
+        self.client.get_device_info().await
     }
 
     /// Gets *device usage* as [`crate::responses::DeviceUsageResult`].

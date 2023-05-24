@@ -1,5 +1,9 @@
-//! Tapo API Client
-//! Works with light bulbs (L510, L530, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P115), and others.
+#![warn(missing_docs)]
+
+//! Tapo API Client.
+//!
+//! Tested with light bulbs (L510, L530, L610, L630), light strips (L900, L920, L930),
+//! plugs (P100, P105, P110, P115), hubs (H100), switches (S200B) and sensors (T100, T110, T310, T315).
 //!
 //! # Example with L530
 //! ```rust,no_run

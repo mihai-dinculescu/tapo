@@ -8,17 +8,16 @@ use serde_json::json;
 
 use crate::api::{
     ColorLightHandler, ColorLightStripHandler, EnergyMonitoringPlugHandler, GenericDeviceHandler,
-    LightHandler, PlugHandler,
+    HubHandler, LightHandler, PlugHandler,
 };
 use crate::encryption::{KeyPair, TpLinkCipher};
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
-    EnergyDataInterval, GetDeviceInfoParams, GetDeviceUsageParams, GetEnergyDataParams,
-    GetEnergyUsageParams, HandshakeParams, LightingEffect, LoginDeviceParams,
-    SecurePassthroughParams, TapoParams, TapoRequest,
+    EmptyParams, EnergyDataInterval, GetEnergyDataParams, HandshakeParams, LightingEffect,
+    LoginDeviceParams, SecurePassthroughParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
-    validate_response, DeviceInfoResultExt, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
+    validate_response, DecodableResultExt, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
     HandshakeResult, TapoResponse, TapoResponseExt, TapoResult, TokenResult,
 };
 
@@ -288,6 +287,28 @@ pub(crate) trait ApiClientExt: std::fmt::Debug + Send + Sync {
 ///     Ok(())
 /// }
 /// ```
+///
+/// ## H100
+/// ```rust,no_run
+/// use tapo::ApiClient;
+///
+/// #[tokio::main]
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
+///     let device = ApiClient::new(
+///         "192.168.1.100",
+///         "tapo-username@example.com",
+///         "tapo-password",
+///     )?
+///     .h100()
+///     .login()
+///     .await?;
+///
+///     let child_device_list = device.get_child_device_list().await?;
+///     println!("Child device list: {child_device_list:?}");
+///
+///     Ok(())
+/// }
+/// ```
 #[derive(Debug)]
 pub struct ApiClient {
     client: HttpClient,
@@ -412,6 +433,11 @@ impl ApiClient {
         EnergyMonitoringPlugHandler::new(self)
     }
 
+    /// Specializes the given [`crate::ApiClient`] into a [`crate::HubHandler`].
+    pub fn h100(self) -> HubHandler<Unauthenticated> {
+        HubHandler::new(self)
+    }
+
     pub(crate) async fn login(&mut self) -> Result<(), Error> {
         // we have to clear the cookie jar otherwise all subsequent login requests will fail
         self.cookie_jar.clear();
@@ -424,48 +450,24 @@ impl ApiClient {
 
     pub(crate) async fn get_device_info<R>(&self) -> Result<R, Error>
     where
-        R: fmt::Debug + DeserializeOwned + TapoResponseExt + DeviceInfoResultExt,
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
     {
         debug!("Get Device info...");
-        let get_device_info_params = GetDeviceInfoParams::new();
-        let get_device_info_request =
-            TapoRequest::GetDeviceInfo(TapoParams::new(get_device_info_params));
+        let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
-        let result = self
-            .execute_secure_passthrough_request::<R>(get_device_info_request, true)
+        self.execute_secure_passthrough_request::<R>(request, true)
             .await?
             .map(|result| result.decode())
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))??;
-
-        Ok(result)
-    }
-
-    pub(crate) async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
-        debug!("Get Device info as json...");
-        let get_device_info_params = GetDeviceInfoParams::new();
-        let get_device_info_request =
-            TapoRequest::GetDeviceInfo(TapoParams::new(get_device_info_params));
-
-        let result = self
-            .execute_secure_passthrough_request::<serde_json::Value>(get_device_info_request, true)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
-
-        Ok(result)
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
     }
 
     pub(crate) async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
         debug!("Get Device usage...");
-        let get_device_usage_params = GetDeviceUsageParams::new();
-        let get_device_usage_request =
-            TapoRequest::GetDeviceUsage(TapoParams::new(get_device_usage_params));
+        let request = TapoRequest::GetDeviceUsage(TapoParams::new(EmptyParams));
 
-        let result = self
-            .execute_secure_passthrough_request::<DeviceUsageResult>(get_device_usage_request, true)
+        self.execute_secure_passthrough_request::<DeviceUsageResult>(request, true)
             .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
-
-        Ok(result)
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     pub(crate) async fn set_lighting_effect(
@@ -474,13 +476,13 @@ impl ApiClient {
     ) -> Result<(), Error> {
         debug!("Lighting effect will change to: {lighting_effect:?}");
 
-        let set_lighting_effect_request = TapoRequest::SetLightingEffect(Box::new(
+        let request = TapoRequest::SetLightingEffect(Box::new(
             TapoParams::new(lighting_effect)
                 .set_request_time_mils()?
                 .set_terminal_uuid(TERMINAL_UUID),
         ));
 
-        self.execute_secure_passthrough_request::<TapoResult>(set_lighting_effect_request, true)
+        self.execute_secure_passthrough_request::<TapoResult>(request, true)
             .await?;
 
         Ok(())
@@ -488,16 +490,11 @@ impl ApiClient {
 
     pub(crate) async fn get_energy_usage(&self) -> Result<EnergyUsageResult, Error> {
         debug!("Get Energy usage...");
-        let get_energy_usage_params = GetEnergyUsageParams::new();
-        let get_energy_usage_request =
-            TapoRequest::GetEnergyUsage(TapoParams::new(get_energy_usage_params));
+        let request = TapoRequest::GetEnergyUsage(TapoParams::new(EmptyParams));
 
-        let result = self
-            .execute_secure_passthrough_request::<EnergyUsageResult>(get_energy_usage_request, true)
+        self.execute_secure_passthrough_request::<EnergyUsageResult>(request, true)
             .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
-
-        Ok(result)
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     pub(crate) async fn get_energy_data(
@@ -505,27 +502,36 @@ impl ApiClient {
         interval: EnergyDataInterval,
     ) -> Result<EnergyDataResult, Error> {
         debug!("Get Energy data...");
-        let get_energy_data_params = GetEnergyDataParams::new(interval);
-        let get_energy_data_request =
-            TapoRequest::GetEnergyData(TapoParams::new(get_energy_data_params));
+        let params = GetEnergyDataParams::new(interval);
+        let request = TapoRequest::GetEnergyData(TapoParams::new(params));
 
-        let result = self
-            .execute_secure_passthrough_request::<EnergyDataResult>(get_energy_data_request, true)
+        self.execute_secure_passthrough_request::<EnergyDataResult>(request, true)
             .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
 
-        Ok(result)
+    pub(crate) async fn get_child_device_list<R>(&self) -> Result<R, Error>
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
+    {
+        debug!("Get Child device list...");
+        let request = TapoRequest::GetChildDeviceList(TapoParams::new(EmptyParams));
+
+        self.execute_secure_passthrough_request::<R>(request, true)
+            .await?
+            .map(|result| result.decode())
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
     }
 
     async fn handshake(&mut self) -> Result<(), Error> {
         debug!("Performing handshake...");
         let key_pair = KeyPair::new()?;
 
-        let handshake_params = HandshakeParams::new(key_pair.get_public_key()?);
-        let handshake_request = TapoRequest::Handshake(TapoParams::new(handshake_params));
-        debug!("Handshake request: {}", json!(handshake_request));
+        let params = HandshakeParams::new(key_pair.get_public_key()?);
+        let request = TapoRequest::Handshake(TapoParams::new(params));
+        debug!("Handshake request: {}", json!(request));
 
-        let body = serde_json::to_vec(&handshake_request)?;
+        let body = serde_json::to_vec(&request)?;
 
         let response: TapoResponse<HandshakeResult> = self
             .client
@@ -553,13 +559,12 @@ impl ApiClient {
     async fn login_request(&mut self) -> Result<(), Error> {
         debug!("Will login with username '{}'...", self.username);
 
-        let login_device_params =
-            TapoParams::new(LoginDeviceParams::new(&self.username, &self.password))
-                .set_request_time_mils()?;
-        let login_device_request = TapoRequest::LoginDevice(login_device_params);
+        let params = TapoParams::new(LoginDeviceParams::new(&self.username, &self.password))
+            .set_request_time_mils()?;
+        let request = TapoRequest::LoginDevice(params);
 
         let result = self
-            .execute_secure_passthrough_request::<TokenResult>(login_device_request, false)
+            .execute_secure_passthrough_request::<TokenResult>(request, false)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
