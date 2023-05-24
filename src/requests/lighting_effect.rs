@@ -263,7 +263,7 @@ impl LightingEffect {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 #[non_exhaustive]
 #[allow(missing_docs)]
 pub enum LightingEffectPreset {
