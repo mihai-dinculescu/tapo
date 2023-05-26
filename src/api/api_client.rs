@@ -13,12 +13,14 @@ use crate::api::{
 use crate::encryption::{KeyPair, TpLinkCipher};
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
-    EmptyParams, EnergyDataInterval, GetEnergyDataParams, HandshakeParams, LightingEffect,
-    LoginDeviceParams, SecurePassthroughParams, TapoParams, TapoRequest,
+    ControlChildParams, EmptyParams, EnergyDataInterval, GetEnergyDataParams, HandshakeParams,
+    LightingEffect, LoginDeviceParams, MultipleRequestParams, SecurePassthroughParams, TapoParams,
+    TapoRequest,
 };
 use crate::responses::{
-    validate_response, DecodableResultExt, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
-    HandshakeResult, TapoResponse, TapoResponseExt, TapoResult, TokenResult,
+    validate_response, ControlChildResult, DecodableResultExt, DeviceUsageResult, EnergyDataResult,
+    EnergyUsageResult, HandshakeResult, TapoMultipleResponse, TapoResponse, TapoResponseExt,
+    TapoResult, TokenResult,
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
@@ -521,6 +523,56 @@ impl ApiClient {
             .await?
             .map(|result| result.decode())
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+    }
+
+    pub(crate) async fn get_child_device_component_list<R>(&self) -> Result<R, Error>
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
+    {
+        debug!("Get Child device component list...");
+        let request = TapoRequest::GetChildDeviceComponentList(TapoParams::new(EmptyParams));
+
+        self.execute_secure_passthrough_request::<R>(request, true)
+            .await?
+            .map(|result| result.decode())
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+    }
+
+    pub(crate) async fn control_child<R>(
+        &self,
+        device_id: String,
+        child_request: TapoRequest,
+    ) -> Result<R, Error>
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
+    {
+        debug!("Control child...");
+        let params = MultipleRequestParams::new(vec![child_request]);
+        let request = TapoRequest::MultipleRequest(Box::new(TapoParams::new(params)));
+
+        let params = ControlChildParams::new(device_id, request);
+        let request = TapoRequest::ControlChild(Box::new(TapoParams::new(params)));
+
+        let responses = self
+            .execute_secure_passthrough_request::<ControlChildResult<TapoMultipleResponse<R>>>(
+                request, true,
+            )
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            .response_data
+            .result
+            .responses;
+
+        let response = responses
+            .into_iter()
+            .next()
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        validate_response(&response)?;
+
+        response
+            .result
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     async fn handshake(&mut self) -> Result<(), Error> {

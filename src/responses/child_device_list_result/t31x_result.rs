@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+use crate::api::{Authenticated, HubHandler};
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, Status};
+use crate::requests::{EmptyParams, TapoParams, TapoRequest};
+use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt};
 
 /// Temperature unit.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17,7 +19,7 @@ pub enum TemperatureUnit {
 /// Specific properties: `current_humidity`, `current_temperature`, `temperature_unit`, `current_humidity_exception`, `current_temperature_exception`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct T31XSensor {
+pub struct T31XResult {
     pub at_low_battery: bool,
     pub avatar: String,
     pub bind_count: u32,
@@ -47,6 +49,7 @@ pub struct T31XSensor {
     pub oem_id: String,
     pub parent_device_id: String,
     pub region: String,
+    /// The time in seconds between each report.
     pub report_interval: u32,
     pub rssi: i16,
     pub signal_level: u8,
@@ -58,9 +61,24 @@ pub struct T31XSensor {
     pub r#type: String,
 }
 
-impl DecodableResultExt for Box<T31XSensor> {
+impl TapoResponseExt for T31XResult {}
+
+impl DecodableResultExt for Box<T31XResult> {
     fn decode(mut self) -> Result<Self, Error> {
         self.nickname = decode_value(&self.nickname)?;
         Ok(self)
+    }
+}
+
+impl T31XResult {
+    /// Gets *device info* as [`crate::responses::T31XResult`].
+    /// It is not guaranteed to contain all the properties returned from the Tapo API.
+    pub async fn get_device_info(
+        &self,
+        handler: &HubHandler<Authenticated>,
+    ) -> Result<T31XResult, Error> {
+        let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
+
+        handler.control_child(self.device_id.clone(), request).await
     }
 }

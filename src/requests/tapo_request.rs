@@ -3,8 +3,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Serialize;
 
 use crate::requests::{
-    GetEnergyDataParams, HandshakeParams, LightingEffect, LoginDeviceParams,
-    SecurePassthroughParams,
+    ControlChildParams, GetEnergyDataParams, GetTriggerLogsParams, HandshakeParams, LightingEffect,
+    LoginDeviceParams, MultipleRequestParams, SecurePassthroughParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -22,6 +22,12 @@ pub(crate) enum TapoRequest {
     GetEnergyUsage(TapoParams<EmptyParams>),
     GetEnergyData(TapoParams<GetEnergyDataParams>),
     GetChildDeviceList(TapoParams<EmptyParams>),
+    GetChildDeviceComponentList(TapoParams<EmptyParams>),
+    ControlChild(Box<TapoParams<ControlChildParams>>),
+    // Child requests
+    #[serde(rename = "multipleRequest")]
+    MultipleRequest(Box<TapoParams<MultipleRequestParams>>),
+    GetTriggerLogs(Box<TapoParams<GetTriggerLogsParams>>),
 }
 
 #[derive(Debug, Serialize)]

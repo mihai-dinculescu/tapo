@@ -8,7 +8,7 @@ file. This change log follows the conventions of
 
 ### Added
 
-- Added support for the H100 device, the S200B switch and the T100, T110, T310, T315 sensors.
+- Added initial support for the H100 device, the S200B switch and the T100, T110, T310, T315 sensors. The child devices currently support `get_device_info` and `get_trigger_logs`.
 - All responses now derive `serde::Serialize` to allow for easier serialization in the consumers. (thanks to @ClementNerma)
 - `ApiClient` has been marked as both `Send` and `Sync` to allow for sharing between threads. (thanks to @ClementNerma)
 

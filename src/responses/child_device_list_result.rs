@@ -1,12 +1,12 @@
-mod s200b_switch;
-mod t100_sensor;
-mod t110_sensor;
-mod t31x_sensor;
+mod s200b_result;
+mod t100_result;
+mod t110_result;
+mod t31x_result;
 
-pub use s200b_switch::*;
-pub use t100_sensor::*;
-pub use t110_sensor::*;
-pub use t31x_sensor::*;
+pub use s200b_result::*;
+pub use t100_result::*;
+pub use t110_result::*;
+pub use t31x_result::*;
 
 use serde::{Deserialize, Serialize};
 
@@ -49,15 +49,15 @@ pub enum Status {
 #[serde(tag = "model")]
 pub enum ChildDeviceResult {
     /// S200B button switch.
-    S200B(Box<S200BSwitch>),
+    S200B(Box<S200BResult>),
     /// T100 motion sensor.
-    T100(Box<T100Sensor>),
+    T100(Box<T100Result>),
     /// T110 contact sensor.
-    T110(Box<T110Sensor>),
+    T110(Box<T110Result>),
     /// T310 temperature & humidity sensor.
-    T310(Box<T31XSensor>),
+    T310(Box<T31XResult>),
     /// T315 temperature & humidity sensor.
-    T315(Box<T31XSensor>),
+    T315(Box<T31XResult>),
     /// Catch-all for currently unsupported devices.
     /// Please open an issue if you need support for a new device.
     #[serde(other)]

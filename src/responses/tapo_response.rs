@@ -13,6 +13,18 @@ pub(crate) struct TapoResponse<T: TapoResponseExt> {
     pub result: Option<T>,
 }
 
+#[derive(Debug, Deserialize)]
+pub(crate) struct TapoMultipleResponse<T: TapoResponseExt> {
+    pub result: TapoMultipleResult<T>,
+}
+
+impl<T> TapoResponseExt for TapoMultipleResponse<T> where T: TapoResponseExt {}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct TapoMultipleResult<T: TapoResponseExt> {
+    pub responses: Vec<TapoResponse<T>>,
+}
+
 pub(crate) fn validate_response<T: TapoResponseExt>(
     response: &TapoResponse<T>,
 ) -> Result<(), Error> {

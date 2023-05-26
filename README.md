@@ -9,24 +9,31 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 ## Device support
 
-| Feature               | GenericDevice | L510, L610 | L530, L630, L900 | L920, L930 | P100, P105 | P110, P115 | H100 \* |
-| --------------------- | ------------: | ---------: | ---------------: | ---------: | ---------: | ---------: | ------: |
-| on                    |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |         |
-| off                   |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; | &check; |
-| get_child_device_list |               |            |                  |            |            |            | &check; |
-| get_device_info       |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |         |
-| get_device_usage      |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |         |
-| get_energy_usage      |               |            |                  |            |            |    &check; |         |
-| get_energy_data       |               |            |                  |            |            |    &check; |         |
-| set_brightness        |               |    &check; |          &check; |    &check; |            |            |         |
-| set_color             |               |            |          &check; |    &check; |            |            |         |
-| set_hue_saturation    |               |            |          &check; |    &check; |            |            |         |
-| set_color_temperature |               |            |          &check; |    &check; |            |            |         |
-| set_lighting_effect   |               |            |                  |    &check; |            |            |         |
-| set() API \*\*        |               |    &check; |          &check; |    &check; |            |            |         |
+| Feature               | GenericDevice | L510, L610 | L530, L630, L900 | L920, L930 | P100, P105 | P110, P115 |
+| --------------------- | ------------: | ---------: | ---------------: | ---------: | ---------: | ---------: |
+| on                    |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |
+| off                   |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |
+| get_device_info       |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |
+| get_device_usage      |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |
+| get_energy_usage      |               |            |                  |            |            |    &check; |
+| get_energy_data       |               |            |                  |            |            |    &check; |
+| set_brightness        |               |    &check; |          &check; |    &check; |            |            |
+| set_color             |               |            |          &check; |    &check; |            |            |
+| set_hue_saturation    |               |            |          &check; |    &check; |            |            |
+| set_color_temperature |               |            |          &check; |    &check; |            |            |
+| set_lighting_effect   |               |            |                  |    &check; |            |            |
+| set() API \*          |               |    &check; |          &check; |    &check; |            |            |
 
-\* H100 support currently includes the S200B switch and the T100, T110, T310, T315 sensors.\
-\*\* The `set()` API allows multiple properties to be set in a single request.
+\* The `set()` API allows multiple properties to be set in a single request.
+
+## Hub (H100) Support
+
+| Feature            |   S200B |    T100 |    T110 | T310,T315 |
+| ------------------ | ------: | ------: | ------: | --------: |
+| get_device_info \* | &check; | &check; | &check; |   &check; |
+| get_trigger_logs   | &check; | &check; | &check; |           |
+
+\* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on the results of `get_child_device_list`.
 
 ## Examples
 
