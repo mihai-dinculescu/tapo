@@ -47,6 +47,9 @@ cargo run --example tapo_l530
 
 See all examples in [/examples][examples].
 
+### Wrapper API
+[tapo-rest][tapo_rest] is a REST wrapper of this library that can be deployed as a service or serve as an advanced example.
+
 ## Contributing
 
 Contributions are welcome and encouraged! See [/CONTRIBUTING.md][contributing].
@@ -88,5 +91,6 @@ Inspired by [petretiandrea/plugp100][inspired_by].
 [license]: https://github.com/mihai-dinculescu/tapo/blob/main/LICENSE
 [crates_downloads_badge]: https://img.shields.io/crates/d/tapo?label=downloads
 [examples]: https://github.com/mihai-dinculescu/tapo/tree/main/examples
+[tapo_rest]: https://github.com/ClementNerma/tapo-rest
 [contributing]: https://github.com/mihai-dinculescu/tapo/blob/main/CONTRIBUTING.md
 [inspired_by]: https://github.com/petretiandrea/plugp100
