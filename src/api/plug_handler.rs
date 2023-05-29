@@ -33,20 +33,20 @@ impl PlugHandler {
         self.client.set_device_info(json).await
     }
 
-    /// Gets *device info* as [`PlugDeviceInfoResult`].
+    /// Returns *device info* as [`PlugDeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`PlugHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<PlugDeviceInfoResult, Error> {
         self.client.get_device_info().await
     }
 
-    /// Gets *device info* as [`serde_json::Value`].
+    /// Returns *device info* as [`serde_json::Value`].
     /// It contains all the properties returned from the Tapo API.
     pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
         self.client.get_device_info().await
     }
 
-    /// Gets *device usage* as [`DeviceUsageResult`].
+    /// Returns *device usage* as [`DeviceUsageResult`].
     pub async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
         self.client.get_device_usage().await
     }

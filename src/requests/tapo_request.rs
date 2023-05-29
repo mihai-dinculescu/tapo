@@ -28,6 +28,8 @@ pub(crate) enum TapoRequest {
     #[serde(rename = "multipleRequest")]
     MultipleRequest(Box<TapoParams<MultipleRequestParams>>),
     GetTriggerLogs(Box<TapoParams<GetTriggerLogsParams>>),
+    #[serde(rename = "get_temp_humidity_records")]
+    GetTemperatureHumidityRecords(Box<TapoParams<EmptyParams>>),
 }
 
 #[derive(Debug, Serialize)]

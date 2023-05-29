@@ -78,7 +78,7 @@ pub enum S200BLog {
 }
 
 impl S200BResult {
-    /// Gets *device info* as [`S200BResult`].
+    /// Returns *device info* as [`S200BResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     pub async fn get_device_info(&self, handler: &HubHandler) -> Result<S200BResult, Error> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));

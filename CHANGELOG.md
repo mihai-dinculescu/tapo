@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Added
+
+- Added `get_temperature_humidity_records` to the `T310` and `T315` sensors.
+
 ### Changed
 
 - The creation of device handlers has been simplified.

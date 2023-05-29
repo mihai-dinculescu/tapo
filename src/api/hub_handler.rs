@@ -27,20 +27,20 @@ impl HubHandler {
         Ok(self)
     }
 
-    /// Gets *device info* as [`HubDeviceInfoResult`].
+    /// Returns *device info* as [`HubDeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`HubHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<HubDeviceInfoResult, Error> {
         self.client.get_device_info().await
     }
 
-    /// Gets *device info* as [`serde_json::Value`].
+    /// Returns *device info* as [`serde_json::Value`].
     /// It contains all the properties returned from the Tapo API.
     pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
         self.client.get_device_info().await
     }
 
-    /// Gets *child device list* as [`ChildDeviceListResult`].
+    /// Returns *child device list* as [`ChildDeviceListResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API
     /// or to support all the possible devices connected to the hub.
     pub async fn get_child_device_list(&self) -> Result<Vec<ChildDeviceResult>, Error> {
@@ -50,13 +50,13 @@ impl HubHandler {
             .map(|r| r.devices)
     }
 
-    /// Gets *child device list* as [`serde_json::Value`].
+    /// Returns *child device list* as [`serde_json::Value`].
     /// It contains all the properties returned from the Tapo API.
     pub async fn get_child_device_list_json(&self) -> Result<serde_json::Value, Error> {
         self.client.get_child_device_list().await
     }
 
-    /// Gets *child device component list* as [`serde_json::Value`].
+    /// Returns *child device component list* as [`serde_json::Value`].
     /// This information is useful in debugging or when investigating new functionality to add.
     pub async fn get_child_device_component_list_json(&self) -> Result<serde_json::Value, Error> {
         self.client.get_child_device_component_list().await
