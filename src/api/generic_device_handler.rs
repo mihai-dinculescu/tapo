@@ -1,36 +1,26 @@
-use std::marker::PhantomData;
-
-use crate::api::{ApiClient, ApiClientExt, Authenticated, Unauthenticated};
+use crate::api::{ApiClient, ApiClientExt};
 use crate::error::Error;
 use crate::requests::GenericSetDeviceInfoParams;
 use crate::responses::{DeviceUsageResult, GenericDeviceInfoResult};
 
 /// Handler for generic devices. It provides the functionality common to all Tapo [devices](https://www.tapo.com/en/).
-pub struct GenericDeviceHandler<S = Unauthenticated> {
+pub struct GenericDeviceHandler {
     client: ApiClient,
-    status: PhantomData<S>,
 }
 
-impl<S> GenericDeviceHandler<S> {
+impl GenericDeviceHandler {
     pub(crate) fn new(client: ApiClient) -> Self {
-        Self {
-            client,
-            status: PhantomData,
-        }
+        Self { client }
     }
 
-    /// Attempts to login. Each subsequent call will refresh the session.
-    pub async fn login(mut self) -> Result<GenericDeviceHandler<Authenticated>, Error> {
-        self.client.login().await?;
+    /// Attempts to refresh the authentication session.
+    pub async fn login(mut self) -> Result<Self, Error> {
+        let session = self.client.get_session_ref()?;
+        self.client.login(session.url.clone()).await?;
 
-        Ok(GenericDeviceHandler {
-            client: self.client,
-            status: PhantomData,
-        })
+        Ok(self)
     }
-}
 
-impl GenericDeviceHandler<Authenticated> {
     /// Turns *on* the device.
     pub async fn on(&self) -> Result<(), Error> {
         let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;

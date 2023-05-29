@@ -1,9 +1,8 @@
 use std::fmt;
-use std::marker::PhantomData;
 
 use serde::de::DeserializeOwned;
 
-use crate::api::{ApiClient, Authenticated, Unauthenticated};
+use crate::api::ApiClient;
 use crate::error::Error;
 use crate::requests::TapoRequest;
 use crate::responses::{
@@ -11,31 +10,23 @@ use crate::responses::{
 };
 
 /// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) hubs.
-pub struct HubHandler<S = Unauthenticated> {
+pub struct HubHandler {
     client: ApiClient,
-    status: PhantomData<S>,
 }
 
-impl<S> HubHandler<S> {
+impl HubHandler {
     pub(crate) fn new(client: ApiClient) -> Self {
-        Self {
-            client,
-            status: PhantomData,
-        }
+        Self { client }
     }
 
-    /// Attempts to login. Each subsequent call will refresh the session.
-    pub async fn login(mut self) -> Result<HubHandler<Authenticated>, Error> {
-        self.client.login().await?;
+    /// Attempts to refresh the authentication session.
+    pub async fn login(mut self) -> Result<Self, Error> {
+        let session = self.client.get_session_ref()?;
+        self.client.login(session.url.clone()).await?;
 
-        Ok(HubHandler {
-            client: self.client,
-            status: PhantomData,
-        })
+        Ok(self)
     }
-}
 
-impl HubHandler<Authenticated> {
     /// Gets *device info* as [`crate::responses::HubDeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::HubHandler::get_device_info_json`].

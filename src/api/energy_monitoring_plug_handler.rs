@@ -1,6 +1,4 @@
-use std::marker::PhantomData;
-
-use crate::api::{ApiClient, ApiClientExt, Authenticated, Unauthenticated};
+use crate::api::{ApiClient, ApiClientExt};
 use crate::error::Error;
 use crate::requests::{EnergyDataInterval, GenericSetDeviceInfoParams};
 use crate::responses::{
@@ -8,31 +6,23 @@ use crate::responses::{
 };
 
 /// Handler for the [P110](https://www.tapo.com/en/search/?q=P110) & [P115](https://www.tapo.com/en/search/?q=P115) devices.
-pub struct EnergyMonitoringPlugHandler<S = Unauthenticated> {
+pub struct EnergyMonitoringPlugHandler {
     client: ApiClient,
-    status: PhantomData<S>,
 }
 
-impl<S> EnergyMonitoringPlugHandler<S> {
+impl EnergyMonitoringPlugHandler {
     pub(crate) fn new(client: ApiClient) -> Self {
-        Self {
-            client,
-            status: PhantomData,
-        }
+        Self { client }
     }
 
-    /// Attempts to login. Each subsequent call will refresh the session.
-    pub async fn login(mut self) -> Result<EnergyMonitoringPlugHandler<Authenticated>, Error> {
-        self.client.login().await?;
+    /// Attempts to refresh the authentication session.
+    pub async fn login(mut self) -> Result<Self, Error> {
+        let session = self.client.get_session_ref()?;
+        self.client.login(session.url.clone()).await?;
 
-        Ok(EnergyMonitoringPlugHandler {
-            client: self.client,
-            status: PhantomData,
-        })
+        Ok(self)
     }
-}
 
-impl EnergyMonitoringPlugHandler<Authenticated> {
     /// Turns *on* the device.
     pub async fn on(&self) -> Result<(), Error> {
         let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;

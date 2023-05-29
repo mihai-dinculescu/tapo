@@ -1,7 +1,9 @@
 use std::fmt;
 
 use async_trait::async_trait;
-use isahc::{config::Configurable, cookies::CookieJar, AsyncReadResponseExt, HttpClient};
+use isahc::config::Configurable;
+use isahc::cookies::CookieJar;
+use isahc::{AsyncReadResponseExt, HttpClient, Request};
 use log::debug;
 use serde::de::DeserializeOwned;
 use serde_json::json;
@@ -24,11 +26,6 @@ use crate::responses::{
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
-
-/// Unauthenticated handler. Call `login` to authenticate.
-pub struct Unauthenticated;
-/// Authenticated handler. The session can be refreshed by calling `login` again.
-pub struct Authenticated;
 
 #[async_trait]
 pub(crate) trait ApiClientExt: std::fmt::Debug + Send + Sync {
@@ -314,20 +311,27 @@ pub(crate) trait ApiClientExt: std::fmt::Debug + Send + Sync {
 #[derive(Debug)]
 pub struct ApiClient {
     client: HttpClient,
-    url: String,
     username: String,
     password: String,
-    cookie_jar: CookieJar,
-    tp_link_cipher: Option<TpLinkCipher>,
-    token: Option<String>,
+    key_pair: KeyPair,
+    session: Option<Session>,
+}
+
+#[derive(Debug)]
+pub(crate) struct Session {
+    pub url: String,
+    pub cookie_jar: CookieJar,
+    pub tp_link_cipher: TpLinkCipher,
+    pub token: Option<String>,
 }
 
 impl ApiClient {
     /// Returns a new instance of [`crate::ApiClient`].
+    /// It it cheaper to `clone` an existing instance than to create a new one when multiple devices need to be controller.
+    /// This is because `clone` reuses the underlying [`isahc::HttpClient`] and [`openssl::rsa::Rsa`] key.
     ///
     /// # Arguments
     ///
-    /// * `ip_address` - the IP address of the device
     /// * `tapo_username` - the Tapo username
     /// * `tapo_password` - the Tapo password
     ///
@@ -338,12 +342,11 @@ impl ApiClient {
     /// #[tokio::main]
     /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ///     let client = ApiClient::new(
-    ///         "192.168.1.100",
     ///         "tapo-username@example.com",
     ///         "tapo-password",
     ///     )?;
     ///
-    ///     let device = client.l530().login().await?;
+    ///     let device = client.l530("192.168.1.100").await?;
     ///
     ///     device.on().await?;
     ///
@@ -351,100 +354,205 @@ impl ApiClient {
     /// }
     /// ```
     pub fn new(
-        ip_address: impl Into<String>,
         tapo_username: impl Into<String>,
         tapo_password: impl Into<String>,
     ) -> Result<ApiClient, Error> {
-        let url = format!("http://{}/app", ip_address.into());
-        debug!("Device url: {url}");
-
-        let cookie_jar = CookieJar::new();
-        let client = HttpClient::builder()
-            .title_case_headers(true)
-            .cookie_jar(cookie_jar.clone())
-            .build()?;
+        let client = HttpClient::builder().title_case_headers(true).build()?;
 
         Ok(Self {
             client,
-            url,
             username: tapo_username.into(),
             password: tapo_password.into(),
-            cookie_jar,
-            tp_link_cipher: None,
-            token: None,
+            key_pair: KeyPair::new()?,
+            session: None,
         })
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::GenericDeviceHandler`].
-    pub fn generic_device(self) -> GenericDeviceHandler<Unauthenticated> {
-        GenericDeviceHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::GenericDeviceHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn generic_device(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<GenericDeviceHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(GenericDeviceHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::LightHandler`].
-    pub fn l510(self) -> LightHandler<Unauthenticated> {
-        LightHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::LightHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn l510(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(LightHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::ColorLightHandler`].
-    pub fn l530(self) -> ColorLightHandler<Unauthenticated> {
-        ColorLightHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::ColorLightHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn l530(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(ColorLightHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::LightHandler`].
-    pub fn l610(self) -> LightHandler<Unauthenticated> {
-        LightHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::LightHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn l610(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(LightHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::ColorLightHandler`].
-    pub fn l630(self) -> ColorLightHandler<Unauthenticated> {
-        ColorLightHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::ColorLightHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn l630(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(ColorLightHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::ColorLightHandler`].
-    pub fn l900(self) -> ColorLightHandler<Unauthenticated> {
-        ColorLightHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::ColorLightHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn l900(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(ColorLightHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::ColorLightStripHandler`].
-    pub fn l920(self) -> ColorLightStripHandler<Unauthenticated> {
-        ColorLightStripHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::ColorLightStripHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn l920(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<ColorLightStripHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(ColorLightStripHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::ColorLightStripHandler`].
-    pub fn l930(self) -> ColorLightStripHandler<Unauthenticated> {
-        ColorLightStripHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::ColorLightStripHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn l930(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<ColorLightStripHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(ColorLightStripHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::PlugHandler`].
-    pub fn p100(self) -> PlugHandler<Unauthenticated> {
-        PlugHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::PlugHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn p100(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(PlugHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::PlugHandler`].
-    pub fn p105(self) -> PlugHandler<Unauthenticated> {
-        PlugHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::PlugHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn p105(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(PlugHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::EnergyMonitoringPlugHandler`].
-    pub fn p110(self) -> EnergyMonitoringPlugHandler<Unauthenticated> {
-        EnergyMonitoringPlugHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::EnergyMonitoringPlugHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn p110(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<EnergyMonitoringPlugHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(EnergyMonitoringPlugHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::EnergyMonitoringPlugHandler`].
-    pub fn p115(self) -> EnergyMonitoringPlugHandler<Unauthenticated> {
-        EnergyMonitoringPlugHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::EnergyMonitoringPlugHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn p115(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<EnergyMonitoringPlugHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(EnergyMonitoringPlugHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into a [`crate::HubHandler`].
-    pub fn h100(self) -> HubHandler<Unauthenticated> {
-        HubHandler::new(self)
+    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::HubHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    pub async fn h100(mut self, ip_address: impl Into<String>) -> Result<HubHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(HubHandler::new(self))
     }
 
-    pub(crate) async fn login(&mut self) -> Result<(), Error> {
-        // we have to clear the cookie jar otherwise all subsequent login requests will fail
-        self.cookie_jar.clear();
+    pub(crate) fn get_session_ref(&self) -> Result<&Session, Error> {
+        self.session
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("The session shouldn't be None").into())
+    }
 
-        self.handshake().await?;
+    pub(crate) fn get_session_mut(&mut self) -> Result<&mut Session, Error> {
+        self.session
+            .as_mut()
+            .ok_or_else(|| anyhow::anyhow!("The session shouldn't be None").into())
+    }
+
+    pub(crate) async fn login(&mut self, url: String) -> Result<(), Error> {
+        self.handshake(url).await?;
         self.login_request().await?;
 
         Ok(())
@@ -575,22 +683,24 @@ impl ApiClient {
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
-    async fn handshake(&mut self) -> Result<(), Error> {
+    async fn handshake(&mut self, url: String) -> Result<(), Error> {
         debug!("Performing handshake...");
-        let key_pair = KeyPair::new()?;
 
-        let params = HandshakeParams::new(key_pair.get_public_key()?);
+        let cookie_jar = CookieJar::new();
+
+        let params = HandshakeParams::new(self.key_pair.get_public_key()?);
         let request = TapoRequest::Handshake(TapoParams::new(params));
         debug!("Handshake request: {}", json!(request));
 
         let body = serde_json::to_vec(&request)?;
 
-        let response: TapoResponse<HandshakeResult> = self
-            .client
-            .post_async(&self.url, body)
-            .await?
-            .json()
-            .await?;
+        let request = Request::post(&url)
+            .cookie_jar(cookie_jar.clone())
+            .body(body)
+            .map_err(isahc::Error::from)?;
+
+        let response: TapoResponse<HandshakeResult> =
+            self.client.send_async(request).await?.json().await?;
 
         debug!("Device responded with: {response:?}");
 
@@ -601,9 +711,14 @@ impl ApiClient {
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
             .key;
 
-        let tp_link_cipher = TpLinkCipher::new(&handshake_key, &key_pair)?;
+        let tp_link_cipher = TpLinkCipher::new(&handshake_key, &self.key_pair)?;
 
-        self.tp_link_cipher = Some(tp_link_cipher);
+        self.session.replace(Session {
+            url,
+            cookie_jar,
+            tp_link_cipher,
+            token: None,
+        });
 
         Ok(())
     }
@@ -620,7 +735,8 @@ impl ApiClient {
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
-        self.token.replace(result.token);
+        let session = self.get_session_mut()?;
+        session.token.replace(result.token);
 
         Ok(())
     }
@@ -636,12 +752,9 @@ impl ApiClient {
         let request_string = serde_json::to_string(&request)?;
         debug!("Request to passthrough: {request_string}");
 
-        let tp_link_cipher = self
-            .tp_link_cipher
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("tp_link_cipher shouldn't be None"))?;
+        let session = self.get_session_ref()?;
 
-        let request_encrypted = tp_link_cipher.encrypt(&request_string)?;
+        let request_encrypted = session.tp_link_cipher.encrypt(&request_string)?;
 
         let secure_passthrough_params = SecurePassthroughParams::new(&request_encrypted);
         let secure_passthrough_request =
@@ -651,21 +764,23 @@ impl ApiClient {
         let url = if with_token {
             format!(
                 "{}?token={}",
-                &self.url,
-                self.token
+                &session.url,
+                session
+                    .token
                     .as_ref()
                     .ok_or_else(|| anyhow::anyhow!("token shouldn't be None"))?
             )
         } else {
-            self.url.clone()
+            session.url.clone()
         };
 
-        let response: TapoResponse<TapoResult> = self
-            .client
-            .post_async(url, serde_json::to_vec(&secure_passthrough_request)?)
-            .await?
-            .json()
-            .await?;
+        let request = Request::post(url)
+            .cookie_jar(session.cookie_jar.clone())
+            .body(serde_json::to_vec(&secure_passthrough_request)?)
+            .map_err(isahc::Error::from)?;
+
+        let response: TapoResponse<TapoResult> =
+            self.client.send_async(request).await?.json().await?;
 
         debug!("Device responded with: {response:?}");
 
@@ -676,7 +791,7 @@ impl ApiClient {
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
             .response;
 
-        let inner_response_decrypted = tp_link_cipher.decrypt(&inner_response_encrypted)?;
+        let inner_response_decrypted = session.tp_link_cipher.decrypt(&inner_response_encrypted)?;
 
         debug!("Device inner response decrypted: {inner_response_decrypted}");
 
@@ -690,6 +805,13 @@ impl ApiClient {
 
         Ok(result)
     }
+}
+
+fn build_url(ip_address: &str) -> String {
+    let url = format!("http://{}/app", ip_address);
+    debug!("Device url: {url}");
+
+    url
 }
 
 #[async_trait]
@@ -707,5 +829,19 @@ impl ApiClientExt for ApiClient {
             .await?;
 
         Ok(())
+    }
+}
+
+impl Clone for ApiClient {
+    /// Clones an instance of [`crate::ApiClient`].
+    /// This is a reasonably cheap operation because the underlying [`isahc::HttpClient`] and [`openssl::rsa::Rsa`] key are reused.
+    fn clone(&self) -> Self {
+        Self {
+            client: self.client.clone(),
+            username: self.username.clone(),
+            password: self.password.clone(),
+            key_pair: self.key_pair.clone(),
+            session: None,
+        }
     }
 }

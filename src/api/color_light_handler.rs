@@ -1,36 +1,26 @@
-use std::marker::PhantomData;
-
-use crate::api::{ApiClient, ApiClientExt, Authenticated, Unauthenticated};
+use crate::api::{ApiClient, ApiClientExt};
 use crate::error::Error;
 use crate::requests::{Color, ColorLightSetDeviceInfoParams, GenericSetDeviceInfoParams};
 use crate::responses::{DeviceUsageResult, L530DeviceInfoResult};
 
 /// Handler for the [L530](https://www.tapo.com/en/search/?q=L530), [L630](https://www.tapo.com/en/search/?q=L630) and [L900](https://www.tapo.com/en/search/?q=L900) devices.
-pub struct ColorLightHandler<S = Unauthenticated> {
+pub struct ColorLightHandler {
     client: ApiClient,
-    status: PhantomData<S>,
 }
 
-impl<S> ColorLightHandler<S> {
+impl ColorLightHandler {
     pub(crate) fn new(client: ApiClient) -> Self {
-        Self {
-            client,
-            status: PhantomData,
-        }
+        Self { client }
     }
 
-    /// Attempts to login. Each subsequent call will refresh the session.
-    pub async fn login(mut self) -> Result<ColorLightHandler<Authenticated>, Error> {
-        self.client.login().await?;
+    /// Attempts to refresh the authentication session.
+    pub async fn login(mut self) -> Result<Self, Error> {
+        let session = self.client.get_session_ref()?;
+        self.client.login(session.url.clone()).await?;
 
-        Ok(ColorLightHandler {
-            client: self.client,
-            status: PhantomData,
-        })
+        Ok(self)
     }
-}
 
-impl ColorLightHandler<Authenticated> {
     /// Turns *on* the device.
     pub async fn on(&self) -> Result<(), Error> {
         let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;

@@ -3,6 +3,7 @@ use log::debug;
 use openssl::symm::{decrypt, encrypt, Cipher};
 use openssl::{pkey, rsa, sha::Sha1};
 
+#[derive(Debug, Clone)]
 pub(crate) struct KeyPair {
     rsa: rsa::Rsa<pkey::Private>,
 }

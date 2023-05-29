@@ -16,13 +16,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .filter(Some("tapo"), log_level)
         .init();
 
-    let ip_address = env::var("IP_ADDRESS")?;
     let tapo_username = env::var("TAPO_USERNAME")?;
     let tapo_password = env::var("TAPO_PASSWORD")?;
+    let ip_address = env::var("IP_ADDRESS")?;
 
-    let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
-        .p110()
-        .login()
+    let device = ApiClient::new(tapo_username, tapo_password)?
+        .p110(ip_address)
         .await?;
 
     info!("Turning device on...");

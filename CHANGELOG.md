@@ -6,17 +6,36 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Changed
+
+- The creation of device handlers has been simplified.
+
+```rust
+// old
+let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
+    .l530()
+    .login()
+    .await?;
+
+// new
+let device = ApiClient::new(tapo_username, tapo_password)?
+    .l530(ip_address)
+    .await?;
+```
+
+- `ApiClient` now implements `Clone` to allow for a cheaper duplication of the client.
+
 ## [v0.7.0] - 2023-05-26
 
 ### Added
 
 - Added initial support for the H100 device, the S200B switch and the T100, T110, T310, T315 sensors. The child devices currently support `get_device_info` and `get_trigger_logs`.
-- All responses now derive `serde::Serialize` to allow for easier serialization in the consumers. (thanks to @ClementNerma)
+- All responses now derive `serde::Serialize` to allow for more straightforward consumer serialisation. (thanks to @ClementNerma)
 - `ApiClient` has been marked as both `Send` and `Sync` to allow for sharing between threads. (thanks to @ClementNerma)
 
 ### Changed
 
-- `GenericDeviceInfoResult`'s `device_on` property has been made optional in order to accommodate for devices that do not provide this field.
+- `GenericDeviceInfoResult`'s `device_on` property has been made optional to accommodate devices that do not provide this field.
 
 ## [v0.6.0] - 2023-05-08
 
@@ -111,6 +130,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.0
 [v0.6.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.6.0
 [v0.5.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.5.0
 [v0.4.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.4.0

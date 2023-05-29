@@ -28,19 +28,19 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 ## Hub (H100) Support
 
-| Feature            |   S200B |    T100 |    T110 | T310,T315 |
-| ------------------ | ------: | ------: | ------: | --------: |
-| get_device_info \* | &check; | &check; | &check; |   &check; |
-| get_trigger_logs   | &check; | &check; | &check; |           |
+| Feature            |   S200B |    T100 |    T110 | T310, T315 |
+| ------------------ | ------: | ------: | ------: | ---------: |
+| get_device_info \* | &check; | &check; | &check; |    &check; |
+| get_trigger_logs   | &check; | &check; | &check; |            |
 
 \* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on the results of `get_child_device_list`.
 
 ## Examples
 
 ```bash
-export IP_ADDRESS=
 export TAPO_USERNAME=
 export TAPO_PASSWORD=
+export IP_ADDRESS=
 
 cargo run --example tapo_l530
 ```

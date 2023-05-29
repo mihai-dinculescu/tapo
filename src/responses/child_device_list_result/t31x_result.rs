@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::api::{Authenticated, HubHandler};
+use crate::api::HubHandler;
 use crate::error::Error;
 use crate::requests::{EmptyParams, TapoParams, TapoRequest};
 use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt};
@@ -73,10 +73,7 @@ impl DecodableResultExt for Box<T31XResult> {
 impl T31XResult {
     /// Gets *device info* as [`crate::responses::T31XResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    pub async fn get_device_info(
-        &self,
-        handler: &HubHandler<Authenticated>,
-    ) -> Result<T31XResult, Error> {
+    pub async fn get_device_info(&self, handler: &HubHandler) -> Result<T31XResult, Error> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
         handler.control_child(self.device_id.clone(), request).await

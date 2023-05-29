@@ -15,13 +15,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .filter(Some("tapo"), log_level)
         .init();
 
-    let ip_address = env::var("IP_ADDRESS")?;
     let tapo_username = env::var("TAPO_USERNAME")?;
     let tapo_password = env::var("TAPO_PASSWORD")?;
+    let ip_address = env::var("IP_ADDRESS")?;
 
-    let hub = ApiClient::new(ip_address, tapo_username, tapo_password)?
-        .h100()
-        .login()
+    let hub = ApiClient::new(tapo_username, tapo_password)?
+        .h100(ip_address)
         .await?;
 
     let device_info = hub.get_device_info().await?;

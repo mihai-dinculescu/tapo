@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::api::{Authenticated, HubHandler};
+use crate::api::HubHandler;
 use crate::error::Error;
 use crate::requests::{EmptyParams, GetTriggerLogsParams, TapoParams, TapoRequest};
 use crate::responses::{
@@ -62,10 +62,7 @@ pub enum T110Log {
 impl T110Result {
     /// Gets *device info* as [`crate::responses::T110Result`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    pub async fn get_device_info(
-        &self,
-        handler: &HubHandler<Authenticated>,
-    ) -> Result<T110Result, Error> {
+    pub async fn get_device_info(&self, handler: &HubHandler) -> Result<T110Result, Error> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
         handler.control_child(self.device_id.clone(), request).await
@@ -81,7 +78,7 @@ impl T110Result {
     /// Use a `start_id` of `0` to get the most recent X logs, where X is capped by `page_size`.
     pub async fn get_trigger_logs(
         &self,
-        handler: &HubHandler<Authenticated>,
+        handler: &HubHandler,
         page_size: u64,
         start_id: u64,
     ) -> Result<TriggerLogsResult<T110Log>, Error> {
