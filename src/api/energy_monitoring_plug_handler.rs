@@ -35,9 +35,9 @@ impl EnergyMonitoringPlugHandler {
         self.client.set_device_info(json).await
     }
 
-    /// Gets *device info* as [`crate::responses::PlugDeviceInfoResult`].
+    /// Gets *device info* as [`PlugDeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::EnergyMonitoringPlugHandler::get_device_info_json`].
+    /// If the deserialization fails, or if a property that you care about it's not present, try [`EnergyMonitoringPlugHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<PlugDeviceInfoResult, Error> {
         self.client.get_device_info().await
     }
@@ -48,17 +48,17 @@ impl EnergyMonitoringPlugHandler {
         self.client.get_device_info().await
     }
 
-    /// Gets *device usage* as [`crate::responses::DeviceUsageResult`].
+    /// Gets *device usage* as [`DeviceUsageResult`].
     pub async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
         self.client.get_device_usage().await
     }
 
-    /// Gets *energy usage* as [`crate::responses::EnergyUsageResult`].
+    /// Gets *energy usage* as [`EnergyUsageResult`].
     pub async fn get_energy_usage(&self) -> Result<EnergyUsageResult, Error> {
         self.client.get_energy_usage().await
     }
 
-    /// Gets *energy data* as [`crate::responses::EnergyDataResult`].
+    /// Gets *energy data* as [`EnergyDataResult`].
     pub async fn get_energy_data(
         &self,
         interval: EnergyDataInterval,

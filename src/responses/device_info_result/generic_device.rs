@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{decode_value, DecodableResultExt, TapoResponseExt};
 
-/// Device info of [`crate::ApiClient<GenericDevice>`].
+/// Device info of a Generic Tapo device.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct GenericDeviceInfoResult {

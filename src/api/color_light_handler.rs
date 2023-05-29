@@ -1,6 +1,6 @@
-use crate::api::{ApiClient, ApiClientExt};
+use crate::api::ApiClient;
 use crate::error::Error;
-use crate::requests::{Color, ColorLightSetDeviceInfoParams, GenericSetDeviceInfoParams};
+use crate::requests::{Color, ColorLightSetDeviceInfoParams};
 use crate::responses::{DeviceUsageResult, L530DeviceInfoResult};
 
 /// Handler for the [L530](https://www.tapo.com/en/search/?q=L530), [L630](https://www.tapo.com/en/search/?q=L630) and [L900](https://www.tapo.com/en/search/?q=L900) devices.
@@ -23,19 +23,23 @@ impl ColorLightHandler {
 
     /// Turns *on* the device.
     pub async fn on(&self) -> Result<(), Error> {
-        let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;
-        self.client.set_device_info(json).await
+        ColorLightSetDeviceInfoParams::new(&self.client)
+            .on()
+            .send()
+            .await
     }
 
     /// Turns *off* the device.
     pub async fn off(&self) -> Result<(), Error> {
-        let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(false)?)?;
-        self.client.set_device_info(json).await
+        ColorLightSetDeviceInfoParams::new(&self.client)
+            .off()
+            .send()
+            .await
     }
 
-    /// Gets *device info* as [`crate::responses::L530DeviceInfoResult`].
+    /// Gets *device info* as [`L530DeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::ColorLightHandler::get_device_info_json`].
+    /// If the deserialization fails, or if a property that you care about it's not present, try [`ColorLightHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<L530DeviceInfoResult, Error> {
         self.client.get_device_info().await
     }
@@ -46,40 +50,32 @@ impl ColorLightHandler {
         self.client.get_device_info().await
     }
 
-    /// Gets *device usage* as [`crate::responses::DeviceUsageResult`].
+    /// Gets *device usage* as [`DeviceUsageResult`].
     pub async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
         self.client.get_device_usage().await
     }
 
-    /// Returns a [`crate::requests::ColorLightSetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
-    /// `send` must be called at the end to apply the changes.
+    /// Returns a [`ColorLightSetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
+    /// [`ColorLightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
     ///
     /// # Example
+    ///
     /// ```rust,no_run
-    /// use tapo::ApiClient;
-    /// use tapo::requests::Color;
-    ///
-    /// #[tokio::main]
-    /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let device = ApiClient::new(
-    ///         "192.168.1.100",
-    ///         "tapo-username@example.com",
-    ///         "tapo-password",
-    ///     )?
-    ///     .l530()
-    ///     .login()
-    ///     .await?;
-    ///
-    ///     device
+    /// # use tapo::ApiClient;
+    /// # use tapo::requests::Color;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// #     .l530("192.168.1.100")
+    /// #     .await?;
+    /// device
     ///     .set()
-    ///     .on()
     ///     .brightness(50)
     ///     .color(Color::HotPink)
     ///     .send()
     ///     .await?;
-    ///
-    ///     Ok(())
-    /// }
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn set(&self) -> ColorLightSetDeviceInfoParams {
         ColorLightSetDeviceInfoParams::new(&self.client)

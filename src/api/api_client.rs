@@ -34,276 +34,18 @@ pub(crate) trait ApiClientExt: std::fmt::Debug + Send + Sync {
 
 /// Tapo API Client. See [examples](https://github.com/mihai-dinculescu/tapo/tree/main/examples).
 ///
-/// # Examples
-/// ## GenericDevice
+/// # Example
+///
 /// ```rust,no_run
 /// use tapo::ApiClient;
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .generic_device()
-///     .login()
+///     let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+///     .l530("192.168.1.100")
 ///     .await?;
 ///
 ///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## L510
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .l510()
-///     .login()
-///     .await?;
-///
-///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## L530
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .l530()
-///     .login()
-///     .await?;
-///
-///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## L610
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .l610()
-///     .login()
-///     .await?;
-///
-///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## L630
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .l630()
-///     .login()
-///     .await?;
-///
-///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## L900
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .l900()
-///     .login()
-///     .await?;
-///
-///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## L920
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .l920()
-///     .login()
-///     .await?;
-///
-///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## L930
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .l930()
-///     .login()
-///     .await?;
-///
-///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## P100
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .p100()
-///     .login()
-///     .await?;
-///
-///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## P105
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .p105()
-///     .login()
-///     .await?;
-///
-///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## P110
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .p110()
-///     .login()
-///     .await?;
-///
-///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## P115
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .p115()
-///     .login()
-///     .await?;
-///
-///     device.on().await?;
-///
-///     Ok(())
-/// }
-/// ```
-///
-/// ## H100
-/// ```rust,no_run
-/// use tapo::ApiClient;
-///
-/// #[tokio::main]
-/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new(
-///         "192.168.1.100",
-///         "tapo-username@example.com",
-///         "tapo-password",
-///     )?
-///     .h100()
-///     .login()
-///     .await?;
-///
-///     let child_device_list = device.get_child_device_list().await?;
-///     println!("Child device list: {child_device_list:?}");
 ///
 ///     Ok(())
 /// }
@@ -326,33 +68,14 @@ pub(crate) struct Session {
 }
 
 impl ApiClient {
-    /// Returns a new instance of [`crate::ApiClient`].
-    /// It it cheaper to `clone` an existing instance than to create a new one when multiple devices need to be controller.
-    /// This is because `clone` reuses the underlying [`isahc::HttpClient`] and [`openssl::rsa::Rsa`] key.
+    /// Returns a new instance of [`ApiClient`].
+    /// It it cheaper to [`ApiClient::clone`] an existing instance than to create a new one when multiple devices need to be controller.
+    /// This is because [`ApiClient::clone`] reuses the underlying [`isahc::HttpClient`] and [`openssl::rsa::Rsa`] key.
     ///
     /// # Arguments
     ///
     /// * `tapo_username` - the Tapo username
     /// * `tapo_password` - the Tapo password
-    ///
-    /// # Example
-    /// ```rust,no_run
-    /// use tapo::ApiClient;
-    ///
-    /// #[tokio::main]
-    /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    ///     let client = ApiClient::new(
-    ///         "tapo-username@example.com",
-    ///         "tapo-password",
-    ///     )?;
-    ///
-    ///     let device = client.l530("192.168.1.100").await?;
-    ///
-    ///     device.on().await?;
-    ///
-    ///     Ok(())
-    /// }
-    /// ```
     pub fn new(
         tapo_username: impl Into<String>,
         tapo_password: impl Into<String>,
@@ -368,11 +91,25 @@ impl ApiClient {
         })
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::GenericDeviceHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`GenericDeviceHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .generic_device("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn generic_device(
         mut self,
         ip_address: impl Into<String>,
@@ -383,11 +120,25 @@ impl ApiClient {
         Ok(GenericDeviceHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::LightHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`LightHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .l510("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn l510(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
         let url = build_url(&ip_address.into());
         self.login(url).await?;
@@ -395,11 +146,25 @@ impl ApiClient {
         Ok(LightHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::ColorLightHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`ColorLightHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .l530("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn l530(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
         let url = build_url(&ip_address.into());
         self.login(url).await?;
@@ -407,11 +172,25 @@ impl ApiClient {
         Ok(ColorLightHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::LightHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`LightHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .l610("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn l610(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
         let url = build_url(&ip_address.into());
         self.login(url).await?;
@@ -419,11 +198,25 @@ impl ApiClient {
         Ok(LightHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::ColorLightHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`ColorLightHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .l630("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn l630(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
         let url = build_url(&ip_address.into());
         self.login(url).await?;
@@ -431,11 +224,25 @@ impl ApiClient {
         Ok(ColorLightHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::ColorLightHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`ColorLightHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .l900("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn l900(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
         let url = build_url(&ip_address.into());
         self.login(url).await?;
@@ -443,11 +250,25 @@ impl ApiClient {
         Ok(ColorLightHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::ColorLightStripHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`ColorLightStripHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .l920("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn l920(
         mut self,
         ip_address: impl Into<String>,
@@ -458,11 +279,25 @@ impl ApiClient {
         Ok(ColorLightStripHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::ColorLightStripHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`ColorLightStripHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .l930("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn l930(
         mut self,
         ip_address: impl Into<String>,
@@ -473,11 +308,25 @@ impl ApiClient {
         Ok(ColorLightStripHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::PlugHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .p100("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn p100(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
         let url = build_url(&ip_address.into());
         self.login(url).await?;
@@ -485,11 +334,25 @@ impl ApiClient {
         Ok(PlugHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::PlugHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .p105("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn p105(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
         let url = build_url(&ip_address.into());
         self.login(url).await?;
@@ -497,11 +360,25 @@ impl ApiClient {
         Ok(PlugHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::EnergyMonitoringPlugHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`EnergyMonitoringPlugHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .p110("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn p110(
         mut self,
         ip_address: impl Into<String>,
@@ -512,11 +389,25 @@ impl ApiClient {
         Ok(EnergyMonitoringPlugHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::EnergyMonitoringPlugHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`EnergyMonitoringPlugHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .p115("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn p115(
         mut self,
         ip_address: impl Into<String>,
@@ -527,11 +418,27 @@ impl ApiClient {
         Ok(EnergyMonitoringPlugHandler::new(self))
     }
 
-    /// Specializes the given [`crate::ApiClient`] into an authenticated [`crate::HubHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`HubHandler`].
     ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .h100("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let child_device_list = device.get_child_device_list().await?;
+    /// println!("Child device list: {child_device_list:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn h100(mut self, ip_address: impl Into<String>) -> Result<HubHandler, Error> {
         let url = build_url(&ip_address.into());
         self.login(url).await?;
@@ -833,7 +740,7 @@ impl ApiClientExt for ApiClient {
 }
 
 impl Clone for ApiClient {
-    /// Clones an instance of [`crate::ApiClient`].
+    /// Clones an instance of [`ApiClient`].
     /// This is a reasonably cheap operation because the underlying [`isahc::HttpClient`] and [`openssl::rsa::Rsa`] key are reused.
     fn clone(&self) -> Self {
         Self {

@@ -59,7 +59,7 @@ pub enum T100Log {
 }
 
 impl T100Result {
-    /// Gets *device info* as [`crate::responses::T100Result`].
+    /// Gets *device info* as [`T100Result`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     pub async fn get_device_info(&self, handler: &HubHandler) -> Result<T100Result, Error> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));

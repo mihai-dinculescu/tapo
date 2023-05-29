@@ -3,9 +3,9 @@ use serde::Serialize;
 use crate::api::ApiClientExt;
 use crate::error::Error;
 
-/// Builder that is used by the [`crate::LightHandler::set`] API to set multiple properties in a single request.
+/// Builder that is used by the [`LightHandler::set`] API to set multiple properties in a single request.
 #[derive(Debug, Serialize)]
-pub struct LightSetDeviceInfoParams<'a> {
+pub(crate) struct LightSetDeviceInfoParams<'a> {
     #[serde(skip)]
     client: &'a dyn ApiClientExt,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -15,20 +15,20 @@ pub struct LightSetDeviceInfoParams<'a> {
 }
 
 impl<'a> LightSetDeviceInfoParams<'a> {
-    /// Turns *on* the device. `send` must be called at the end to apply the changes.
+    /// Turns *on* the device. [`send`] must be called at the end to apply the changes.
     pub fn on(mut self) -> Self {
         self.device_on = Some(true);
         self
     }
 
-    /// Turns *off* the device. `send` must be called at the end to apply the changes.
+    /// Turns *off* the device. [`send`] must be called at the end to apply the changes.
     pub fn off(mut self) -> Self {
         self.device_on = Some(false);
         self
     }
 
-    /// Sets the *brightness*. `send` must be called at the end to apply the changes.
-    /// The device will also be turned *on*, unless [`crate::requests::LightSetDeviceInfoParams::off`] is called.
+    /// Sets the *brightness*. [`send`] must be called at the end to apply the changes.
+    /// The device will also be turned *on*, unless [`off`] is called.
     ///
     /// # Arguments
     ///

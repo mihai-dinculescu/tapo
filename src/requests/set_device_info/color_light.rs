@@ -23,20 +23,20 @@ pub struct ColorLightSetDeviceInfoParams<'a> {
 }
 
 impl<'a> ColorLightSetDeviceInfoParams<'a> {
-    /// Turns *on* the device. `send` must be called at the end to apply the changes.
+    /// Turns *on* the device. [`ColorLightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
     pub fn on(mut self) -> Self {
         self.device_on = Some(true);
         self
     }
 
-    /// Turns *off* the device. `send` must be called at the end to apply the changes.
+    /// Turns *off* the device. [`ColorLightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
     pub fn off(mut self) -> Self {
         self.device_on = Some(false);
         self
     }
 
-    /// Sets the *brightness*. `send` must be called at the end to apply the changes.
-    /// The device will also be turned *on*, unless [`crate::requests::ColorLightSetDeviceInfoParams::off`] is called.
+    /// Sets the *brightness*. [`ColorLightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
+    /// The device will also be turned *on*, unless [`ColorLightSetDeviceInfoParams::off`] is called.
     ///
     /// # Arguments
     ///
@@ -46,8 +46,8 @@ impl<'a> ColorLightSetDeviceInfoParams<'a> {
         self
     }
 
-    /// Sets the *color*. `send` must be called at the end to apply the changes.
-    /// The device will also be turned *on*, unless [`crate::requests::ColorLightSetDeviceInfoParams::off`] is called.
+    /// Sets the *color*. [`ColorLightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
+    /// The device will also be turned *on*, unless [`ColorLightSetDeviceInfoParams::off`] is called.
     ///
     /// # Arguments
     ///
@@ -64,8 +64,8 @@ impl<'a> ColorLightSetDeviceInfoParams<'a> {
         self
     }
 
-    /// Sets the *hue* and *saturation*. `send` must be called at the end to apply the changes.
-    /// The device will also be turned *on*, unless [`crate::requests::ColorLightSetDeviceInfoParams::off`] is called.
+    /// Sets the *hue* and *saturation*. [`ColorLightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
+    /// The device will also be turned *on*, unless [`ColorLightSetDeviceInfoParams::off`] is called.
     ///
     /// # Arguments
     ///
@@ -79,8 +79,8 @@ impl<'a> ColorLightSetDeviceInfoParams<'a> {
         self
     }
 
-    /// Sets the *color temperature*. `send` must be called at the end to apply the changes.
-    /// The device will also be turned *on*, unless [`crate::requests::ColorLightSetDeviceInfoParams::off`] is called.
+    /// Sets the *color temperature*. [`ColorLightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
+    /// The device will also be turned *on*, unless [`ColorLightSetDeviceInfoParams::off`] is called.
     ///
     /// # Arguments
     ///

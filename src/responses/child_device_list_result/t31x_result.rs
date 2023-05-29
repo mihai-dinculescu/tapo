@@ -71,7 +71,7 @@ impl DecodableResultExt for Box<T31XResult> {
 }
 
 impl T31XResult {
-    /// Gets *device info* as [`crate::responses::T31XResult`].
+    /// Gets *device info* as [`T31XResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     pub async fn get_device_info(&self, handler: &HubHandler) -> Result<T31XResult, Error> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));

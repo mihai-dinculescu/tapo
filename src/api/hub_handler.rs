@@ -27,9 +27,9 @@ impl HubHandler {
         Ok(self)
     }
 
-    /// Gets *device info* as [`crate::responses::HubDeviceInfoResult`].
+    /// Gets *device info* as [`HubDeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`crate::HubHandler::get_device_info_json`].
+    /// If the deserialization fails, or if a property that you care about it's not present, try [`HubHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<HubDeviceInfoResult, Error> {
         self.client.get_device_info().await
     }
@@ -40,7 +40,7 @@ impl HubHandler {
         self.client.get_device_info().await
     }
 
-    /// Gets *child device list* as [`crate::responses::ChildDeviceListResult`].
+    /// Gets *child device list* as [`ChildDeviceListResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API
     /// or to support all the possible devices connected to the hub.
     pub async fn get_child_device_list(&self) -> Result<Vec<ChildDeviceResult>, Error> {

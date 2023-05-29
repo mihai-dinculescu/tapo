@@ -50,7 +50,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Using the `set` API to set multiple properties in a single request...");
     device
         .set()
-        .on()
         .brightness(50)
         .color(Color::HotPink)
         .send()
