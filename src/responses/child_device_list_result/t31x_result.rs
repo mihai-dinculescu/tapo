@@ -3,9 +3,7 @@ use serde::{Deserialize, Serialize};
 use time::ext::NumericalDuration;
 use time::{OffsetDateTime, Time};
 
-use crate::api::HubHandler;
 use crate::error::Error;
-use crate::requests::{EmptyParams, TapoParams, TapoRequest};
 use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt};
 
 /// Temperature unit.
@@ -74,7 +72,7 @@ impl DecodableResultExt for Box<T31XResult> {
 }
 
 #[derive(Debug, Deserialize)]
-struct TemperatureHumidityRecordsRaw {
+pub(crate) struct TemperatureHumidityRecordsRaw {
     pub local_time: i64,
     pub past24h_humidity_exception: Vec<i16>,
     pub past24h_humidity: Vec<i16>,
@@ -169,31 +167,6 @@ impl TryFrom<TemperatureHumidityRecordsRaw> for TemperatureHumidityRecords {
             temperature_unit: raw.temp_unit,
             records,
         })
-    }
-}
-
-impl T31XResult {
-    /// Returns *device info* as [`T31XResult`].
-    /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    pub async fn get_device_info(&self, handler: &HubHandler) -> Result<T31XResult, Error> {
-        let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
-
-        handler.control_child(self.device_id.clone(), request).await
-    }
-
-    /// Returns *temperature and humidity records* from the last 24 hours at 15 minute intervals as [`TemperatureHumidityRecords`].
-    pub async fn get_temperature_humidity_records(
-        &self,
-        handler: &HubHandler,
-    ) -> Result<TemperatureHumidityRecords, Error> {
-        let request =
-            TapoRequest::GetTemperatureHumidityRecords(Box::new(TapoParams::new(EmptyParams)));
-
-        let result = handler
-            .control_child::<TemperatureHumidityRecordsRaw>(self.device_id.clone(), request)
-            .await?;
-
-        Ok(result.try_into()?)
     }
 }
 

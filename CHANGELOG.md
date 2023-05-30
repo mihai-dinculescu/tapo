@@ -27,6 +27,7 @@ let device = ApiClient::new(tapo_username, tapo_password)?
     .await?;
 ```
 
+- The creation of child device handlers has been reworked so that they can be created without requiring a call to `get_child_device_list` when the child Device ID is known.
 - `ApiClient` now implements `Clone` to allow for a cheaper duplication of the client.
 
 ### Removed

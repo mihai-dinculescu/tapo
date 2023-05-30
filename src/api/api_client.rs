@@ -67,6 +67,7 @@ pub(crate) struct Session {
     pub token: Option<String>,
 }
 
+/// Tapo API Client constructor.
 impl ApiClient {
     /// Returns a new instance of [`ApiClient`].
     /// It it cheaper to [`ApiClient::clone`] an existing instance than to create a new one when multiple devices need to be controller.
@@ -90,7 +91,10 @@ impl ApiClient {
             session: None,
         })
     }
+}
 
+/// Device handler builders.
+impl ApiClient {
     /// Specializes the given [`ApiClient`] into an authenticated [`GenericDeviceHandler`].
     ///
     /// # Arguments
@@ -445,7 +449,10 @@ impl ApiClient {
 
         Ok(HubHandler::new(self))
     }
+}
 
+/// Tapo API Client private methods.
+impl ApiClient {
     pub(crate) fn get_session_ref(&self) -> Result<&Session, Error> {
         self.session
             .as_ref()
@@ -714,13 +721,6 @@ impl ApiClient {
     }
 }
 
-fn build_url(ip_address: &str) -> String {
-    let url = format!("http://{}/app", ip_address);
-    debug!("Device url: {url}");
-
-    url
-}
-
 #[async_trait]
 impl ApiClientExt for ApiClient {
     async fn set_device_info(&self, device_info_params: serde_json::Value) -> Result<(), Error> {
@@ -751,4 +751,11 @@ impl Clone for ApiClient {
             session: None,
         }
     }
+}
+
+fn build_url(ip_address: &str) -> String {
+    let url = format!("http://{}/app", ip_address);
+    debug!("Device url: {url}");
+
+    url
 }

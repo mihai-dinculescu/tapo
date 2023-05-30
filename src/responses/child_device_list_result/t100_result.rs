@@ -1,11 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::api::HubHandler;
 use crate::error::Error;
-use crate::requests::{EmptyParams, GetTriggerLogsParams, TapoParams, TapoRequest};
-use crate::responses::{
-    decode_value, DecodableResultExt, Status, TapoResponseExt, TriggerLogsResult,
-};
+use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt};
 
 /// T100 motion sensor.
 ///
@@ -56,36 +52,4 @@ impl DecodableResultExt for Box<T100Result> {
 #[allow(missing_docs)]
 pub enum T100Log {
     Motion { id: u64, timestamp: u64 },
-}
-
-impl T100Result {
-    /// Returns *device info* as [`T100Result`].
-    /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    pub async fn get_device_info(&self, handler: &HubHandler) -> Result<T100Result, Error> {
-        let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
-
-        handler.control_child(self.device_id.clone(), request).await
-    }
-
-    /// Returns a list of trigger logs.
-    ///
-    /// # Arguments
-    ///
-    /// * `page_size` - the maximum number of log items to return
-    /// * `start_id` - the log item `id` from which to start returning results in reverse chronological order (newest first)
-    ///
-    /// Use a `start_id` of `0` to get the most recent X logs, where X is capped by `page_size`.
-    pub async fn get_trigger_logs(
-        &self,
-        handler: &HubHandler,
-        page_size: u64,
-        start_id: u64,
-    ) -> Result<TriggerLogsResult<T100Log>, Error> {
-        let child_params = GetTriggerLogsParams::new(page_size, start_id);
-        let child_request = TapoRequest::GetTriggerLogs(Box::new(TapoParams::new(child_params)));
-
-        handler
-            .control_child(self.device_id.clone(), child_request)
-            .await
-    }
 }

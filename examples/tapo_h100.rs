@@ -32,7 +32,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     for child in child_device_list {
         match child {
             ChildDeviceResult::S200B(device) => {
-                let trigger_logs = device.get_trigger_logs(&hub, 5, 0).await?;
+                let s200b = hub.s200b(&device.device_id);
+                let trigger_logs = s200b.get_trigger_logs(5, 0).await?;
 
                 info!(
                     "Found S200B child device with nickname: {}, id: {}, last 5 trigger logs: {:?}",
@@ -40,7 +41,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceResult::T100(device) => {
-                let trigger_logs = device.get_trigger_logs(&hub, 5, 0).await?;
+                let t100 = hub.t100(&device.device_id);
+                let trigger_logs = t100.get_trigger_logs(5, 0).await?;
 
                 info!(
                     "Found T100 child device with nickname: {}, id: {}, detected: {}, last 5 trigger logs: {:?}",
@@ -48,7 +50,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceResult::T110(device) => {
-                let trigger_logs = device.get_trigger_logs(&hub, 5, 0).await?;
+                let t110 = hub.t110(&device.device_id);
+                let trigger_logs = t110.get_trigger_logs(5, 0).await?;
 
                 info!(
                     "Found T110 child device with nickname: {}, id: {}, open: {}, last 5 trigger logs: {:?}",
@@ -56,8 +59,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceResult::T310(device) | ChildDeviceResult::T315(device) => {
-                let temperature_humidity_records =
-                    device.get_temperature_humidity_records(&hub).await?;
+                let t31x = hub.t315(&device.device_id);
+                let temperature_humidity_records = t31x.get_temperature_humidity_records().await?;
 
                 info!(
                     "Found T31X child device with nickname: {}, id: {}, temperature: {} {:?}, humidity: {}%, 24-hour ago record: {:?}",
