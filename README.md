@@ -28,12 +28,13 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 ## Hub (H100) Support
 
-| Feature            |   S200B |    T100 |    T110 | T310, T315 |
-| ------------------ | ------: | ------: | ------: | ---------: |
-| get_device_info \* | &check; | &check; | &check; |    &check; |
-| get_trigger_logs   | &check; | &check; | &check; |            |
+| Feature                          |   S200B |    T100 |    T110 | T310, T315 |
+| -------------------------------- | ------: | ------: | ------: | ---------: |
+| get_device_info \*               | &check; | &check; | &check; |    &check; |
+| get_temperature_humidity_records |         |         |         |    &check; |
+| get_trigger_logs                 | &check; | &check; | &check; |            |
 
-\* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on the results of `get_child_device_list`.
+\* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child handler.
 
 ## Examples
 

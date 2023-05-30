@@ -34,7 +34,7 @@ let device = ApiClient::new(tapo_username, tapo_password)?
 
 ### Removed
 
-- The `L510` and `L610` devices no longer expose the `set()` API because changing more than one property at a time does not make sense for these devices.
+- The `L510` and `L610` devices no longer expose the `set()` API because changing multiple properties simultaneously does not make sense for these devices.
 
 ## [v0.7.0] - 2023-05-26
 
