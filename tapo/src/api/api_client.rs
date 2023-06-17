@@ -32,7 +32,7 @@ pub(crate) trait ApiClientExt: std::fmt::Debug + Send + Sync {
     async fn set_device_info(&self, device_info_params: serde_json::Value) -> Result<(), Error>;
 }
 
-/// Tapo API Client. See [examples](https://github.com/mihai-dinculescu/tapo/tree/main/examples).
+/// Tapo API Client. See [examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo/examples).
 ///
 /// # Example
 ///

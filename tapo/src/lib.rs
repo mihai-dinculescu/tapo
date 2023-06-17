@@ -69,7 +69,7 @@
 //! }
 //! ```
 //!
-//! See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/examples).
+//! See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo/examples).
 
 mod api;
 mod encryption;
