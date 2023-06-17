@@ -92,7 +92,7 @@ Inspired by [petretiandrea/plugp100][inspired_by].
 [license_badge]: https://img.shields.io/crates/l/tapo.svg
 [license]: https://github.com/mihai-dinculescu/tapo/blob/main/LICENSE
 [crates_downloads_badge]: https://img.shields.io/crates/d/tapo?label=downloads
-[examples]: https://github.com/mihai-dinculescu/tapo/tree/main/examples
+[examples]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo/examples
 [tapo_rest]: https://github.com/ClementNerma/tapo-rest
 [contributing]: https://github.com/mihai-dinculescu/tapo/blob/main/CONTRIBUTING.md
 [inspired_by]: https://github.com/petretiandrea/plugp100
