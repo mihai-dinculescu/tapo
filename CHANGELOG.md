@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Changed
+
+- the `login` function on all handlers now takes a `&mut self` instead of `self`.
+
 ## [v0.7.2] - 2023-08-21
 
 ### Added
