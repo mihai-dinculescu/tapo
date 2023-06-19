@@ -21,8 +21,8 @@ impl HubHandler {
         Self { client }
     }
 
-    /// Attempts to refresh the authentication session.
-    pub async fn login(mut self) -> Result<Self, Error> {
+    /// Refreshes the authentication session.
+    pub async fn login(&mut self) -> Result<&mut Self, Error> {
         let session = self.client.get_session_ref()?;
         self.client.login(session.url.clone()).await?;
 
