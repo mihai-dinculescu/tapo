@@ -1,10 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, DefaultState, TapoResponseExt};
+use crate::responses::{decode_value, DecodableResultExt, DefaultStateType, TapoResponseExt};
 
 /// Device info of Tapo P100, P105, P110 and P115. Superset of [`crate::responses::GenericDeviceInfoResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
 pub struct PlugDeviceInfoResult {
     //
@@ -33,14 +34,32 @@ pub struct PlugDeviceInfoResult {
     pub avatar: String,
     pub has_set_location_info: bool,
     pub region: Option<String>,
-    pub longitude: Option<i64>,
     pub latitude: Option<i64>,
+    pub longitude: Option<i64>,
     pub time_diff: Option<i64>,
     //
     // Unique to this device
     //
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
-    pub default_states: DefaultState<PlugStateWrapper>,
+    pub default_states: PlugDefaultState,
+}
+
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl PlugDeviceInfoResult {
+    /// Get all the properties of this result as a dictionary.
+    pub fn to_dict<'a>(&self, py: pyo3::Python<'a>) -> pyo3::PyResult<&'a pyo3::types::PyDict> {
+        let serialized = serde_json::to_value(self)
+            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
+
+        if let Some(object) = serialized.as_object() {
+            let dict = crate::python::serde_object_to_py_dict(py, object)?;
+
+            Ok(dict)
+        } else {
+            Ok(pyo3::types::PyDict::new(py))
+        }
+    }
 }
 
 impl TapoResponseExt for PlugDeviceInfoResult {}
@@ -54,15 +73,18 @@ impl DecodableResultExt for PlugDeviceInfoResult {
     }
 }
 
-/// Plug State wrapper.
+/// Plug Default State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
-pub struct PlugStateWrapper {
+pub struct PlugDefaultState {
+    pub r#type: DefaultStateType,
     pub state: PlugState,
 }
 
 /// Plug State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
 pub struct PlugState {
     pub on: Option<bool>,

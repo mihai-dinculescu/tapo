@@ -74,6 +74,8 @@
 mod api;
 mod encryption;
 mod error;
+#[cfg(feature = "python")]
+mod python;
 mod tapo_date_format;
 
 pub mod requests;
