@@ -23,15 +23,15 @@ pub struct GenericDeviceInfoResult {
     pub specs: String,
     pub lang: String,
     pub device_on: Option<bool>,
+    /// The time in seconds this device has been ON since the last state change (ON/OFF)
+    pub on_time: Option<u64>,
     pub overheated: bool,
     pub nickname: String,
     pub avatar: String,
     pub has_set_location_info: bool,
-    /// The time in seconds this device has been ON since the last state change (ON/OFF)
-    pub on_time: Option<u64>,
     pub region: Option<String>,
-    pub longitude: Option<i64>,
     pub latitude: Option<i64>,
+    pub longitude: Option<i64>,
     pub time_diff: Option<i64>,
 }
 

@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "tapo"
+version = "0.1.0"
+description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L530, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P115), hubs (H100), switches (S200B) and sensors (T100, T110, T310, T315)."
+authors = ["Mihai Dinculescu <mihai.dinculescu@outlook.com>"]
+maintainers = ["Mihai Dinculescu <mihai.dinculescu@outlook.com>"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Topic :: Software Development :: Embedded Systems",
+    "Environment :: Console",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Developers",
+    "Topic :: Home Automation",
+]
+keywords = ["Tapo", "TP-Link", "Smart Home", "Home Automation", "IoT"]
+
+[project]
+name = "tapo"
+readme = "README.md"
+license = { file = "LICENSE" }
+
+[project.urls]
+Homepage = 'https://github.com/mihai-dinculescu/tapo'
+Funding = 'https://github.com/mihai-dinculescu'
+Source = 'https://github.com/mihai-dinculescu/tapo'
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+[tool.poetry.dev-dependencies]
+maturin = ">=1.0,<2.0"
+
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+bindings = 'pyo3'
+features = ["pyo3/extension-module"]
+sdist-include = ["*.so", "LICENSE"]

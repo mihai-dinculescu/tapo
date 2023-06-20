@@ -1,0 +1,16 @@
+[package]
+name = "tapo-py"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "tapo"
+crate-type = ["cdylib"]
+doc = false
+
+[dependencies]
+pyo3 = { workspace = true }
+pyo3-asyncio = { version = "0.18", features = ["attributes", "tokio-runtime"] }
+tapo = { path = "../tapo", features = ["python"] }
+tokio = { workspace = true, default-features = false, features = ["sync"] }

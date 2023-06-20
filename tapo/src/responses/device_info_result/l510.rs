@@ -34,8 +34,8 @@ pub struct L510DeviceInfoResult {
     pub avatar: String,
     pub has_set_location_info: bool,
     pub region: Option<String>,
-    pub longitude: Option<i64>,
     pub latitude: Option<i64>,
+    pub longitude: Option<i64>,
     pub time_diff: Option<i64>,
     //
     // Unique to this device
