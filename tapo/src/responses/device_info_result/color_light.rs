@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, DefaultState, TapoResponseExt};
+use crate::responses::{decode_value, DecodableResultExt, DefaultStateType, TapoResponseExt};
 
-/// Device info of Tapo L150. Superset of [`crate::responses::GenericDeviceInfoResult`].
+/// Device info of Tapo L530, L630 and L900. Superset of [`crate::responses::GenericDeviceInfoResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct L510DeviceInfoResult {
+pub struct ColorLightDeviceInfoResult {
     //
     // Inherited from GenericDeviceInfoResult
     //
@@ -47,12 +47,12 @@ pub struct L510DeviceInfoResult {
     pub saturation: Option<u16>,
     pub color_temp: u16,
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
-    pub default_states: DefaultState<L510StateWrapper>,
+    pub default_states: ColorLightDefaultState,
 }
 
-impl TapoResponseExt for L510DeviceInfoResult {}
+impl TapoResponseExt for ColorLightDeviceInfoResult {}
 
-impl DecodableResultExt for L510DeviceInfoResult {
+impl DecodableResultExt for ColorLightDeviceInfoResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.ssid = decode_value(&self.ssid)?;
         self.nickname = decode_value(&self.nickname)?;
@@ -61,16 +61,20 @@ impl DecodableResultExt for L510DeviceInfoResult {
     }
 }
 
-/// L510 State wrapper.
+/// Color Light Default State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct L510StateWrapper {
-    pub state: L510State,
+pub struct ColorLightDefaultState {
+    pub r#type: DefaultStateType,
+    pub state: ColorLightState,
 }
 
-/// L510 State.
+/// Color Light State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct L510State {
+pub struct ColorLightState {
     pub brightness: u8,
+    pub hue: Option<u16>,
+    pub saturation: Option<u16>,
+    pub color_temp: u16,
 }

@@ -1,7 +1,7 @@
 use crate::api::ApiClient;
 use crate::error::Error;
 use crate::requests::{Color, ColorLightSetDeviceInfoParams};
-use crate::responses::{DeviceUsageResult, L530DeviceInfoResult};
+use crate::responses::{ColorLightDeviceInfoResult, DeviceUsageResult};
 
 /// Handler for the [L530](https://www.tapo.com/en/search/?q=L530), [L630](https://www.tapo.com/en/search/?q=L630) and [L900](https://www.tapo.com/en/search/?q=L900) devices.
 pub struct ColorLightHandler {
@@ -37,10 +37,10 @@ impl ColorLightHandler {
             .await
     }
 
-    /// Returns *device info* as [`L530DeviceInfoResult`].
+    /// Returns *device info* as [`ColorLightDeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`ColorLightHandler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<L530DeviceInfoResult, Error> {
+    pub async fn get_device_info(&self) -> Result<ColorLightDeviceInfoResult, Error> {
         self.client.get_device_info().await
     }
 
