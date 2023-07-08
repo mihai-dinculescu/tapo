@@ -2,12 +2,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::requests::LightingEffect;
-use crate::responses::{decode_value, DecodableResultExt, DefaultState, TapoResponseExt};
+use crate::responses::{decode_value, DecodableResultExt, DefaultStateType, TapoResponseExt};
 
-/// Device info of Tapo L930. Superset of [`crate::responses::GenericDeviceInfoResult`].
+/// Device info of Tapo L920 and L930. Superset of [`crate::responses::GenericDeviceInfoResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct L930DeviceInfoResult {
+pub struct ColorLightStripDeviceInfoResult {
     //
     // Inherited from GenericDeviceInfoResult
     //
@@ -44,12 +44,12 @@ pub struct L930DeviceInfoResult {
     pub color_temp: u16,
     pub color_temp_range: [u16; 2],
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
-    pub default_states: DefaultState<L930StateWrapper>,
+    pub default_states: ColorLightStripDefaultState,
 }
 
-impl TapoResponseExt for L930DeviceInfoResult {}
+impl TapoResponseExt for ColorLightStripDeviceInfoResult {}
 
-impl DecodableResultExt for L930DeviceInfoResult {
+impl DecodableResultExt for ColorLightStripDeviceInfoResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.ssid = decode_value(&self.ssid)?;
         self.nickname = decode_value(&self.nickname)?;
@@ -58,17 +58,18 @@ impl DecodableResultExt for L930DeviceInfoResult {
     }
 }
 
-/// L930 State wrapper.
+/// Color Light Strip Default State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct L930StateWrapper {
-    pub state: L930State,
+pub struct ColorLightStripDefaultState {
+    pub r#type: DefaultStateType,
+    pub state: ColorLightStripState,
 }
 
-/// L930 State.
+/// Color Light Strip State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct L930State {
+pub struct ColorLightStripState {
     pub brightness: Option<u8>,
     pub hue: Option<u16>,
     pub saturation: Option<u16>,

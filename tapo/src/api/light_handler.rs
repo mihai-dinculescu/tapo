@@ -1,7 +1,7 @@
 use crate::api::ApiClient;
 use crate::error::Error;
 use crate::requests::LightSetDeviceInfoParams;
-use crate::responses::{DeviceUsageResult, L510DeviceInfoResult};
+use crate::responses::{DeviceUsageResult, LightDeviceInfoResult};
 
 /// Handler for the [L510](https://www.tapo.com/en/search/?q=L510) and [L610](https://www.tapo.com/en/search/?q=L610) devices.
 pub struct LightHandler {
@@ -37,10 +37,10 @@ impl LightHandler {
             .await
     }
 
-    /// Returns *device info* as [`L510DeviceInfoResult`].
+    /// Returns *device info* as [`LightDeviceInfoResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`LightHandler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<L510DeviceInfoResult, Error> {
+    pub async fn get_device_info(&self) -> Result<LightDeviceInfoResult, Error> {
         self.client.get_device_info().await
     }
 

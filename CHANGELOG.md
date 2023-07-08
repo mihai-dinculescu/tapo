@@ -9,7 +9,10 @@ file. This change log follows the conventions of
 ### Changed
 
 - the `login` function on all handlers now takes a `&mut self` instead of `self`.
-- the `default_states` property of `PlugDeviceInfoResult` is now a struct instead of an enum.
+- `L510DeviceInfoResult` has been renamed to `LightDeviceInfoResult` to better reflect its purpose when used for L510 and L610 devices.
+- `L530DeviceInfoResult` has been renamed to `ColorLightDeviceInfoResult` to better reflect its purpose when used for L530, L630 and L900 devices.
+- `L930DeviceInfoResult` has been renamed to `ColorLightStripDeviceInfoResult` to better reflect its purpose when used for L920 and L930 devices.
+- the `default_states` property of `LightDeviceInfoResult`, `ColorLightDeviceInfoResult`, `ColorLightStripDeviceInfoResult` and `PlugDeviceInfoResult` is now a struct instead of an enum.
 
 ## [v0.7.2] - 2023-08-21
 
