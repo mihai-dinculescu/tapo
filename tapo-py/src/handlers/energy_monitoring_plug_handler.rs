@@ -22,10 +22,15 @@ impl PyEnergyMonitoringPlugHandler {
 
 #[pymethods]
 impl PyEnergyMonitoringPlugHandler {
-    pub fn login<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub fn refresh_session<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
         let handler = self.handler.clone();
         pyo3_asyncio::tokio::future_into_py(py, async move {
-            handler.lock().await.login().await.map_err(ErrorWrapper)?;
+            handler
+                .lock()
+                .await
+                .refresh_session()
+                .await
+                .map_err(ErrorWrapper)?;
             Ok(())
         })
     }

@@ -14,7 +14,7 @@ impl PlugHandler {
     }
 
     /// Refreshes the authentication session.
-    pub async fn login(&mut self) -> Result<&mut Self, Error> {
+    pub async fn refresh_session(&mut self) -> Result<&mut Self, Error> {
         let session = self.client.get_session_ref()?;
         self.client.login(session.url.clone()).await?;
 
