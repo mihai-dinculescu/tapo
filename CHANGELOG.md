@@ -8,7 +8,7 @@ file. This change log follows the conventions of
 
 ### Changed
 
-- the `login` function on all handlers now takes a `&mut self` instead of `self`.
+- the `login` function on all handlers has been renamed to `refresh_session` to better reflect its purpose and it now takes and returns a `&mut self` instead of `self`.
 - `L510DeviceInfoResult` has been renamed to `LightDeviceInfoResult` to better reflect its purpose when used for L510 and L610 devices.
 - `L530DeviceInfoResult` has been renamed to `ColorLightDeviceInfoResult` to better reflect its purpose when used for L530, L630 and L900 devices.
 - `L930DeviceInfoResult` has been renamed to `ColorLightStripDeviceInfoResult` to better reflect its purpose when used for L920 and L930 devices.

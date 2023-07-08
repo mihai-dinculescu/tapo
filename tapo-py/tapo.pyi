@@ -111,7 +111,7 @@ class EnergyMonitoringPlugHandler:
         It should not be called from outside the tapo library.
         """
 
-    async def login(self) -> None:
+    async def refresh_session(self) -> None:
         """Refreshes the authentication session."""
 
     async def on(self) -> None:
