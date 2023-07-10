@@ -1,23 +1,23 @@
-use time::{Date, OffsetDateTime};
+use chrono::NaiveDate;
 
 /// Energy data interval.
 pub enum EnergyDataInterval {
-    /// Hourly interval. `start_datetime` is `end_datetime` is an inclusive interval that must not be greater than 8 days.
+    /// Hourly interval. `start_date` is `end_date` is an inclusive interval that must not be greater than 8 days.
     Hourly {
-        /// Interval start date and time.
-        start_datetime: OffsetDateTime,
-        /// Interval end date and time. Inclusive.
-        /// Must not be greater by more than 8 days than `start_datetime`.
-        end_datetime: OffsetDateTime,
+        /// Interval start date.
+        start_date: NaiveDate,
+        /// Interval end date. Inclusive.
+        /// Must not be greater by more than 8 days than `start_date`.
+        end_date: NaiveDate,
     },
     /// Daily interval. `start_date` must be the first day of a quarter.
     Daily {
         /// Must be the first day of a quarter.
-        start_date: Date,
+        start_date: NaiveDate,
     },
     /// Monthly interval. `start_date` must be the first day of a year.
     Monthly {
         /// Must be the first day of a year.
-        start_date: Date,
+        start_date: NaiveDate,
     },
 }

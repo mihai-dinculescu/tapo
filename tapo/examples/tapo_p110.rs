@@ -1,9 +1,9 @@
 /// P110 Example
 use std::{env, thread, time::Duration};
 
+use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use log::{info, LevelFilter};
 use tapo::{requests::EnergyDataInterval, ApiClient};
-use time::macros::{date, datetime};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -45,27 +45,53 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let energy_usage = device.get_energy_usage().await?;
     info!("Energy usage: {energy_usage:?}");
 
+    let current_date = Utc::now();
+
     let energy_data_hourly = device
         .get_energy_data(EnergyDataInterval::Hourly {
-            start_datetime: datetime!(2023-02-24 00:00 UTC),
-            end_datetime: datetime!(2023-02-24 23:59 UTC),
+            start_date: NaiveDate::from_ymd_opt(
+                current_date.year(),
+                current_date.month(),
+                current_date.day(),
+            )
+            .unwrap(),
+            end_date: NaiveDate::from_ymd_opt(
+                current_date.year(),
+                current_date.month(),
+                current_date.day(),
+            )
+            .unwrap(),
         })
         .await?;
     info!("Energy data (hourly): {energy_data_hourly:?}");
 
     let energy_data_daily = device
         .get_energy_data(EnergyDataInterval::Daily {
-            start_date: date!(2023 - 01 - 01),
+            start_date: NaiveDate::from_ymd_opt(
+                current_date.year(),
+                get_quarter_start_month(&current_date),
+                1,
+            )
+            .unwrap(),
         })
         .await?;
     info!("Energy data (daily): {energy_data_daily:?}");
 
     let energy_data_monthly = device
         .get_energy_data(EnergyDataInterval::Monthly {
-            start_date: date!(2023 - 01 - 01),
+            start_date: NaiveDate::from_ymd_opt(current_date.year(), 1, 1).unwrap(),
         })
         .await?;
     info!("Energy data (monthly): {energy_data_monthly:?}");
 
     Ok(())
+}
+
+fn get_quarter_start_month(current_date: &DateTime<Utc>) -> u32 {
+    match current_date.month() {
+        m if m < 4 => 1,
+        m if m < 7 => 4,
+        m if m < 10 => 7,
+        _ => 10,
+    }
 }
