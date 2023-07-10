@@ -51,6 +51,17 @@ impl DecodableResultExt for Box<T110Result> {
 #[serde(rename_all = "camelCase", tag = "event")]
 #[allow(missing_docs)]
 pub enum T110Log {
-    Close { id: u64, timestamp: u64 },
-    Open { id: u64, timestamp: u64 },
+    Close {
+        id: u64,
+        timestamp: u64,
+    },
+    Open {
+        id: u64,
+        timestamp: u64,
+    },
+    /// Fired when the sensor has been open for more than 1 minute.
+    KeepOpen {
+        id: u64,
+        timestamp: u64,
+    },
 }
