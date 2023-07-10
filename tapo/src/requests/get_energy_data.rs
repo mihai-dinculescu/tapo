@@ -13,23 +13,29 @@ impl GetEnergyDataParams {
     pub fn new(interval: EnergyDataInterval) -> Self {
         match interval {
             EnergyDataInterval::Hourly {
-                start_datetime,
-                end_datetime,
+                start_date,
+                end_date,
             } => Self {
-                start_timestamp: start_datetime.unix_timestamp() as u64,
-                end_timestamp: end_datetime.unix_timestamp() as u64,
+                start_timestamp: start_date.and_hms_opt(0, 0, 0).unwrap().timestamp() as u64,
+                end_timestamp: end_date.and_hms_opt(23, 59, 59).unwrap().timestamp() as u64,
                 interval: 60,
             },
-            EnergyDataInterval::Daily { start_date } => Self {
-                start_timestamp: start_date.midnight().assume_utc().unix_timestamp() as u64,
-                end_timestamp: start_date.midnight().assume_utc().unix_timestamp() as u64,
-                interval: 1440,
-            },
-            EnergyDataInterval::Monthly { start_date } => Self {
-                start_timestamp: start_date.midnight().assume_utc().unix_timestamp() as u64,
-                end_timestamp: start_date.midnight().assume_utc().unix_timestamp() as u64,
-                interval: 43200,
-            },
+            EnergyDataInterval::Daily { start_date } => {
+                let timestamp = start_date.and_hms_opt(0, 0, 0).unwrap().timestamp() as u64;
+                Self {
+                    start_timestamp: timestamp,
+                    end_timestamp: timestamp,
+                    interval: 1440,
+                }
+            }
+            EnergyDataInterval::Monthly { start_date } => {
+                let timestamp = start_date.and_hms_opt(0, 0, 0).unwrap().timestamp() as u64;
+                Self {
+                    start_timestamp: timestamp,
+                    end_timestamp: timestamp,
+                    interval: 43200,
+                }
+            }
         }
     }
 }
