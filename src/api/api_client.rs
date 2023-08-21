@@ -20,9 +20,9 @@ use crate::requests::{
     TapoRequest,
 };
 use crate::responses::{
-    validate_response, ControlChildResult, CurrentPowerResult, DecodableResultExt, DeviceUsageResult, EnergyDataResult,
-    EnergyUsageResult, HandshakeResult, TapoMultipleResponse, TapoResponse, TapoResponseExt,
-    TapoResult, TokenResult,
+    validate_response, ControlChildResult, CurrentPowerResult, DecodableResultExt,
+    DeviceUsageResult, EnergyDataResult, EnergyUsageResult, HandshakeResult, TapoMultipleResponse,
+    TapoResponse, TapoResponseExt, TapoResult, TokenResult,
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
