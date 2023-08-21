@@ -76,4 +76,17 @@ impl PyEnergyMonitoringPlugHandler {
             Ok(device_info)
         })
     }
+
+    pub fn get_energy_usage<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let handler = self.handler.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let device_info = handler
+                .lock()
+                .await
+                .get_energy_usage()
+                .await
+                .map_err(ErrorWrapper)?;
+            Ok(device_info)
+        })
+    }
 }

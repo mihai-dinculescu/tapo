@@ -23,6 +23,7 @@ See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/e
 """
 
 
+from datetime import datetime
 from enum import StrEnum
 from typing import Optional
 
@@ -138,6 +139,13 @@ class EnergyMonitoringPlugHandler:
             DeviceUsageResult: Contains the time in use, the power consumption, and the energy savings of the device.
         """
 
+    async def get_energy_usage(self) -> EnergyUsageResult:
+        """Returns *energy usage* as `EnergyUsageResult`.
+
+        Returns:
+            EnergyUsageResult: Contains local time, current power and the energy usage and runtime for today and for the current month.
+        """
+
 
 class PlugDeviceInfoResult:
     """Device info of Tapo P100, P105, P110 and P115. Superset of `GenericDeviceInfoResult`."""
@@ -158,8 +166,8 @@ class PlugDeviceInfoResult:
     specs: str
     lang: str
     device_on: bool
-    """The time in seconds this device has been ON since the last state change (ON/OFF)."""
     on_time: int
+    """The time in seconds this device has been ON since the last state change (ON/OFF)."""
     overheated: bool
     nickname: str
     avatar: str
@@ -201,12 +209,12 @@ class PlugState:
 class DeviceUsageResult:
     """Contains the time in use, the power consumption, and the energy savings of the device."""
 
-    """Time usage in minutes."""
     time_usage: UsageByPeriodResult
-    """Power usage in watt-hour (Wh)."""
+    """Time usage in minutes."""
     power_usage: UsageByPeriodResult
-    """Saved power in watt-hour (Wh)."""
+    """Power usage in watt-hour (Wh)."""
     saved_power: UsageByPeriodResult
+    """Saved power in watt-hour (Wh)."""
 
     def to_dict(self) -> dict:
         """Get all the properties of this result as a dictionary.
@@ -219,9 +227,33 @@ class DeviceUsageResult:
 class UsageByPeriodResult:
     """Usage by period result for today, the past 7 days, and the past 30 days."""
 
-    """Today."""
     today: int
-    """Past 7 days."""
+    """Today."""
     past7: int
-    """Past 30 days."""
+    """Past 7 days."""
     past30: int
+    """Past 30 days."""
+
+
+class EnergyUsageResult:
+    """Contains local time, current power and the energy usage and runtime for today and for the current month."""
+
+    local_time: datetime
+    """Local time of the device."""
+    current_power: int
+    """Current power in milliwatts (mW)."""
+    today_runtime: int
+    """Today runtime in minutes."""
+    today_energy: int
+    """Today energy usage in watts (W)."""
+    month_runtime: int
+    """Current month runtime in minutes."""
+    month_energy: int
+    """Current month energy usage in watts (W)."""
+
+    def to_dict(self) -> dict:
+        """Get all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """

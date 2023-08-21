@@ -12,7 +12,7 @@ repository = "https://github.com/mihai-dinculescu/tapo"
 
 [features]
 default = []
-python = ["pyo3"]
+python = ["dep:pyo3"]
 
 [dependencies]
 anyhow = "1.0"
@@ -34,7 +34,7 @@ serde_with = "3.0"
 thiserror = "1.0"
 uuid = { version = "1.4", features = ["serde", "v4"] }
 
-pyo3 = { workspace = true, features = ["serde"], optional = true }
+pyo3 = { workspace = true, features = ["serde", "chrono"], optional = true }
 
 [dev-dependencies]
 pretty_env_logger = "0.5"
@@ -42,4 +42,3 @@ tokio = { workspace = true, default-features = false, features = [
     "rt-multi-thread",
     "macros",
 ] }
-time = { version = "0.3", features = ["macros"] }
