@@ -21,6 +21,7 @@ pub(crate) enum TapoRequest {
     GetDeviceUsage(TapoParams<EmptyParams>),
     GetEnergyUsage(TapoParams<EmptyParams>),
     GetEnergyData(TapoParams<GetEnergyDataParams>),
+    GetCurrentPower(TapoParams<EmptyParams>),
     GetChildDeviceList(TapoParams<EmptyParams>),
     GetChildDeviceComponentList(TapoParams<EmptyParams>),
     ControlChild(Box<TapoParams<ControlChildParams>>),

@@ -20,7 +20,7 @@ use crate::requests::{
     TapoRequest,
 };
 use crate::responses::{
-    validate_response, ControlChildResult, DecodableResultExt, DeviceUsageResult, EnergyDataResult,
+    validate_response, ControlChildResult, CurrentPowerResult, DecodableResultExt, DeviceUsageResult, EnergyDataResult,
     EnergyUsageResult, HandshakeResult, TapoMultipleResponse, TapoResponse, TapoResponseExt,
     TapoResult, TokenResult,
 };
@@ -530,6 +530,15 @@ impl ApiClient {
         let request = TapoRequest::GetEnergyData(TapoParams::new(params));
 
         self.execute_secure_passthrough_request::<EnergyDataResult>(request, true)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
+        debug!("Get Current power...");
+        let request = TapoRequest::GetCurrentPower(TapoParams::new(EmptyParams));
+
+        self.execute_secure_passthrough_request::<CurrentPowerResult>(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }

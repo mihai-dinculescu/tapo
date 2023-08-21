@@ -10,13 +10,14 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 ## Device support
 
 | Feature               | GenericDevice | L510, L610 | L530, L630, L900 | L920, L930 | P100, P105 | P110, P115 |
-| --------------------- | ------------: | ---------: | ---------------: | ---------: | ---------: | ---------: |
+|-----------------------| ------------: | ---------: | ---------------: | ---------: | ---------: | ---------: |
 | on                    |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |
 | off                   |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |
 | get_device_info       |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |
 | get_device_usage      |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |
 | get_energy_usage      |               |            |                  |            |            |    &check; |
 | get_energy_data       |               |            |                  |            |            |    &check; |
+| get_current_power     |               |            |                  |            |            |    &check; |
 | set_brightness        |               |    &check; |          &check; |    &check; |            |            |
 | set_color             |               |            |          &check; |    &check; |            |            |
 | set_hue_saturation    |               |            |          &check; |    &check; |            |            |

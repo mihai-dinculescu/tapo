@@ -2,6 +2,7 @@
 
 mod child_device_list_result;
 mod control_child_result;
+mod current_power_result;
 mod decodable_result_ext;
 mod device_info_result;
 mod device_usage_result;
@@ -14,6 +15,7 @@ mod token_result;
 mod trigger_logs_result;
 
 pub use child_device_list_result::*;
+pub use current_power_result::*;
 pub use device_info_result::*;
 pub use device_usage_result::*;
 pub use energy_data_result::*;
