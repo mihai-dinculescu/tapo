@@ -6,6 +6,12 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [v0.7.2] - 2023-08-21
+
+### Added
+
+- Added `get_current_power` to the `P110` and `P115` plugs. (thanks to @Michal-Szczepaniak)
+
 ## [v0.7.1] - 2023-05-30
 
 ### Added
@@ -141,6 +147,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.2
 [v0.7.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.1
 [v0.7.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.0
 [v0.6.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.6.0
