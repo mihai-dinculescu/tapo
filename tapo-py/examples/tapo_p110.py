@@ -29,6 +29,9 @@ async def main():
     device_usage = await device.get_device_usage()
     print(f"Device usage: {device_usage.to_dict()}")
 
+    current_power = await device.get_current_power()
+    print(f"Current power: {current_power.to_dict()}")
+
     energy_usage = await device.get_energy_usage()
     print(f"Energy usage: {energy_usage.to_dict()}")
 

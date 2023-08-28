@@ -234,6 +234,13 @@ class EnergyMonitoringPlugHandler:
             DeviceUsageResult: Contains the time in use, the power consumption, and the energy savings of the device.
         """
 
+    async def get_current_power(self) -> CurrentPowerResult:
+        """Returns *current power* as `CurrentPowerResult`.
+
+        Returns:
+            CurrentPowerResult: Contains the current power reading of the device.
+        """
+
     async def get_energy_usage(self) -> EnergyUsageResult:
         """Returns *energy usage* as `EnergyUsageResult`.
 
@@ -328,6 +335,20 @@ class UsageByPeriodResult:
     """Past 7 days."""
     past30: int
     """Past 30 days."""
+
+
+class CurrentPowerResult:
+    """Contains the current power reading of the device."""
+
+    current_power: int
+    """Current power in watts (W)."""
+
+    def to_dict(self) -> dict:
+        """Get all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """
 
 
 class EnergyUsageResult:
