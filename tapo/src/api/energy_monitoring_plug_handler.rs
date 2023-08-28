@@ -67,7 +67,7 @@ impl EnergyMonitoringPlugHandler {
         self.client.get_energy_data(interval).await
     }
 
-    /// Returns *energy usage* as [`CurrentPowerResult`].
+    /// Returns *current power* as [`CurrentPowerResult`].
     pub async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
         self.client.get_current_power().await
     }
