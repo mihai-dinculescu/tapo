@@ -2,7 +2,7 @@ use pyo3::prelude::*;
 use tapo::ApiClient;
 
 use crate::errors::ErrorWrapper;
-use crate::handlers::PyEnergyMonitoringPlugHandler;
+use crate::handlers::{PyEnergyMonitoringPlugHandler, PyPlugHandler};
 
 #[pyclass(name = "ApiClient")]
 pub struct PyApiClient {
@@ -17,10 +17,34 @@ impl PyApiClient {
         Ok(Self { client })
     }
 
+    pub fn p100<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let client = self.client.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let handler = client.p100(ip_address).await.map_err(ErrorWrapper)?;
+            Ok(PyPlugHandler::new(handler))
+        })
+    }
+
+    pub fn p105<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let client = self.client.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let handler = client.p105(ip_address).await.map_err(ErrorWrapper)?;
+            Ok(PyPlugHandler::new(handler))
+        })
+    }
+
     pub fn p110<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
         let client = self.client.clone();
         pyo3_asyncio::tokio::future_into_py(py, async move {
             let handler = client.p110(ip_address).await.map_err(ErrorWrapper)?;
+            Ok(PyEnergyMonitoringPlugHandler::new(handler))
+        })
+    }
+
+    pub fn p115<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let client = self.client.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let handler = client.p115(ip_address).await.map_err(ErrorWrapper)?;
             Ok(PyEnergyMonitoringPlugHandler::new(handler))
         })
     }

@@ -1,4 +1,4 @@
-"""P110 & P115 Example"""
+"""P100 & P105 Example"""
 
 import asyncio
 import os
@@ -12,7 +12,7 @@ async def main():
     ip_address = os.getenv("IP_ADDRESS")
 
     client = ApiClient(tapo_username, tapo_password)
-    device = await client.p110(ip_address)
+    device = await client.p100(ip_address)
 
     print("Turning device on...")
     await device.on()
@@ -28,9 +28,6 @@ async def main():
 
     device_usage = await device.get_device_usage()
     print(f"Device usage: {device_usage.to_dict()}")
-
-    energy_usage = await device.get_energy_usage()
-    print(f"Energy usage: {energy_usage.to_dict()}")
 
 if __name__ == "__main__":
     asyncio.run(main())

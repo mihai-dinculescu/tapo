@@ -82,6 +82,44 @@ class ApiClient:
         See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
         """
 
+    async def p100(self, ip_address: str) -> PlugHandler:
+        """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100) 
+            & [P105](https://www.tapo.com/en/search/?q=P105) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.p100("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
+    async def p105(self, ip_address: str) -> PlugHandler:
+        """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100) 
+            & [P105](https://www.tapo.com/en/search/?q=P105) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.p105("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
     async def p110(self, ip_address: str) -> EnergyMonitoringPlugHandler:
         """Specializes the given `ApiClient` into an authenticated `EnergyMonitoringPlugHandler`.
 
@@ -99,6 +137,63 @@ class ApiClient:
 
             await device.on()
             ```
+        """
+
+    async def p115(self, ip_address: str) -> EnergyMonitoringPlugHandler:
+        """Specializes the given `ApiClient` into an authenticated `EnergyMonitoringPlugHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            EnergyMonitoringPlugHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110) 
+            & [P115](https://www.tapo.com/en/search/?q=P115) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.p115("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
+
+class PlugHandler:
+    """Handler for the [P100](https://www.tapo.com/en/search/?q=P100) 
+    & [P105](https://www.tapo.com/en/search/?q=P105) devices.
+    """
+
+    def __init__(self, handler: object):
+        """Private constructor.
+        It should not be called from outside the tapo library.
+        """
+
+    async def refresh_session(self) -> None:
+        """Refreshes the authentication session."""
+
+    async def on(self) -> None:
+        """Turns *on* the device."""
+
+    async def off(self) -> None:
+        """Turns *off* the device."""
+
+    async def get_device_info(self) -> PlugDeviceInfoResult:
+        """Returns *device info* as `PlugDeviceInfoResult`.
+        It is not guaranteed to contain all the properties returned from the Tapo API.
+        If the deserialization fails, or if a property that you care about it's not present, 
+        try `PlugDeviceInfoResult.get_device_info_json`.
+
+        Returns:
+            PlugDeviceInfoResult: Device info of Tapo P100, P105, P110 and P115.
+            Superset of `GenericDeviceInfoResult`.
+        """
+
+    async def get_device_usage(self) -> DeviceUsageResult:
+        """Returns *device usage* as `DeviceUsageResult`.
+
+        Returns:
+            DeviceUsageResult: Contains the time in use, the power consumption, and the energy savings of the device.
         """
 
 
