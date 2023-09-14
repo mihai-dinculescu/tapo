@@ -6,7 +6,10 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [v0.7.3] - 2023-09-14
+
 ### Added
+
 - Added support for the newly introduced KLAP protocol, which is required to interact with the latest firmware version of multiple devices.
 
 ### Changed
@@ -164,6 +167,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.3]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.3
 [v0.7.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.2
 [v0.7.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.1
 [v0.7.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.0

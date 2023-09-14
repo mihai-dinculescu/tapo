@@ -5,7 +5,7 @@ If you're thinking to create a PR with large feature/change, please first discus
 
 ## Releases
 
-- Update version in `Cargo.toml`
+- Update version in `tapo/Cargo.toml`
 - Update CHANGELOG.md
 - Commit
 - Add tag
