@@ -55,7 +55,7 @@ impl<'a> ColorLightSetDeviceInfoParams<'a> {
     pub fn color(mut self, color: Color) -> Self {
         let (hue, saturation, color_temperature) = *COLOR_MAP
             .get(&color)
-            .unwrap_or_else(|| panic!("Failed to find the color definition for {color:?}."));
+            .unwrap_or_else(|| panic!("Failed to find the color definition for {color:?}"));
 
         self.hue = hue;
         self.saturation = saturation;

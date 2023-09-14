@@ -72,7 +72,6 @@
 //! See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo/examples).
 
 mod api;
-mod encryption;
 mod error;
 #[cfg(feature = "python")]
 mod python;

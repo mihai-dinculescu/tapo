@@ -1,7 +1,8 @@
 [workspace]
+resolver = "2"
 
 members = ["tapo", "tapo-py"]
 
 [workspace.dependencies]
 pyo3 = "0.18"
-tokio = { version = "1.29", default-features = false }
+tokio = { version = "1.32", default-features = false }

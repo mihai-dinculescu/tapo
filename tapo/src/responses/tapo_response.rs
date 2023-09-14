@@ -30,7 +30,11 @@ pub(crate) fn validate_response<T: TapoResponseExt>(
 ) -> Result<(), Error> {
     match response.error_code {
         0 => Ok(()),
+        -1002 => Err(Error::Tapo(TapoResponseError::InvalidRequest)),
+        -1003 => Err(Error::Tapo(TapoResponseError::MalformedRequest)),
+        -1010 => Err(Error::Tapo(TapoResponseError::InvalidPublicKey)),
         -1501 => Err(Error::Tapo(TapoResponseError::InvalidCredentials)),
+        9999 => Err(Error::Tapo(TapoResponseError::SessionTimeout)),
         code => Err(Error::Tapo(TapoResponseError::Unknown(code))),
     }
 }

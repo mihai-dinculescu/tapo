@@ -7,6 +7,7 @@ mod generic_device_handler;
 mod hub_handler;
 mod light_handler;
 mod plug_handler;
+mod protocol;
 
 pub use api_client::*;
 pub use child_devices::*;

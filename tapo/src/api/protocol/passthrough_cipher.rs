@@ -4,11 +4,11 @@ use openssl::symm::{decrypt, encrypt, Cipher};
 use openssl::{pkey, rsa, sha::Sha1};
 
 #[derive(Debug, Clone)]
-pub(crate) struct KeyPair {
+pub(crate) struct PassthroughKeyPair {
     rsa: rsa::Rsa<pkey::Private>,
 }
 
-impl KeyPair {
+impl PassthroughKeyPair {
     pub fn new() -> anyhow::Result<Self> {
         debug!("Generating RSA key pair...");
         let rsa = rsa::Rsa::generate(1024)?;
@@ -25,13 +25,13 @@ impl KeyPair {
 }
 
 #[derive(Debug)]
-pub(crate) struct TpLinkCipher {
+pub(crate) struct PassthroughCipher {
     key: Vec<u8>,
     iv: Vec<u8>,
 }
 
-impl TpLinkCipher {
-    pub fn new(key: &str, key_pair: &KeyPair) -> anyhow::Result<Self> {
+impl PassthroughCipher {
+    pub fn new(key: &str, key_pair: &PassthroughKeyPair) -> anyhow::Result<Self> {
         debug!("Will decode handshake key {:?}...", &key[..5]);
 
         let key_bytes = general_purpose::STANDARD.decode(key)?;
@@ -46,7 +46,7 @@ impl TpLinkCipher {
             return Err(anyhow::anyhow!("expected 32 bytes, got {decrypt_count}"));
         }
 
-        Ok(TpLinkCipher {
+        Ok(PassthroughCipher {
             key: buf[0..16].to_vec(),
             iv: buf[16..32].to_vec(),
         })
@@ -78,10 +78,12 @@ impl TpLinkCipher {
     }
 }
 
-pub fn sha_digest_username(username: &str) -> String {
-    let mut hasher = Sha1::new();
-    hasher.update(username.as_bytes());
-    let hash = hasher.finish();
+impl PassthroughCipher {
+    pub fn sha1_digest_username(username: String) -> String {
+        let mut hasher = Sha1::new();
+        hasher.update(username.as_bytes());
+        let hash = hasher.finish();
 
-    base16ct::lower::encode_string(&hash)
+        base16ct::lower::encode_string(&hash)
+    }
 }

@@ -2,10 +2,18 @@
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum TapoResponseError {
-    /// The Tapo API was expected to return a non-empty result.
-    EmptyResult,
+    /// Invalid request.
+    InvalidRequest,
+    /// Malformed request.
+    MalformedRequest,
+    /// Invalid public key.
+    InvalidPublicKey,
     /// The credentials provided were invalid.
     InvalidCredentials,
+    /// Session timeout.
+    SessionTimeout,
+    /// Unexpected empty result.
+    EmptyResult,
     /// Unknown Error. This is a catch-all for errors that don't fit into the other categories.
     /// In time, some of these might be added as their own variants.
     Unknown(i32),
