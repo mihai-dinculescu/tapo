@@ -11,6 +11,8 @@ use crate::requests::{
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "method")]
 pub(crate) enum TapoRequest {
+    #[serde(rename = "component_nego")]
+    ComponentNegotiation(TapoParams<EmptyParams>),
     Handshake(TapoParams<HandshakeParams>),
     LoginDevice(TapoParams<LoginDeviceParams>),
     #[serde(rename = "securePassthrough")]
@@ -41,7 +43,7 @@ pub(crate) struct EmptyParams;
 pub(crate) struct TapoParams<T> {
     params: T,
     #[serde(skip_serializing_if = "Option::is_none")]
-    request_time_mils: Option<u64>,
+    request_time_milis: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none", rename = "terminalUUID")]
     terminal_uuid: Option<String>,
 }
@@ -50,13 +52,13 @@ impl<T> TapoParams<T> {
     pub fn new(params: T) -> Self {
         Self {
             params,
-            request_time_mils: None,
+            request_time_milis: None,
             terminal_uuid: None,
         }
     }
 
     pub fn set_request_time_mils(mut self) -> anyhow::Result<Self> {
-        self.request_time_mils
+        self.request_time_milis
             .replace(SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis() as u64);
         Ok(self)
     }

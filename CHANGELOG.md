@@ -6,19 +6,22 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Added
+- Added support for the newly introduced KLAP protocol, which is required to interact with the latest firmware version of multiple devices.
+
 ### Changed
 
-- all uses of `time` have been replaced with `chrono`:
+- All uses of `time` have been replaced with `chrono`:
   - `EnergyDataInterval`'s `time::OffsetDateTime` and `time::Date` fields have been replaced with `chrono::NaiveDate`.
   - `EnergyUsageResult::local_time` field is now `chrono::NaiveDateTime` instead of `time::OffsetDateTime`.
   - `EnergyDataResult::local_time` field is now `chrono::NaiveDateTime` instead of `time::OffsetDateTime`.
   - `TemperatureHumidityRecords`'s and `TemperatureHumidityRecord` `datetime` fields are now `chrono::DateTime<chrono::Utc>` instead of `time::OffsetDateTime`.
 - `EnergyDataInterval::Hourly::start_datetime` and `EnergyDataInterval::Hourly::end_datetime` have been renamed to `start_date` and `end_date` because the time component is not required.
-- the `login` function on all handlers has been renamed to `refresh_session` to better reflect its purpose and it now takes and returns a `&mut self` instead of `self`.
+- The `login` function on all handlers has been renamed to `refresh_session` to better reflect its purpose and it now takes and returns a `&mut self` instead of `self`.
 - `L510DeviceInfoResult` has been renamed to `LightDeviceInfoResult` to better reflect its purpose when used for L510 and L610 devices.
 - `L530DeviceInfoResult` has been renamed to `ColorLightDeviceInfoResult` to better reflect its purpose when used for L530, L630 and L900 devices.
 - `L930DeviceInfoResult` has been renamed to `ColorLightStripDeviceInfoResult` to better reflect its purpose when used for L920 and L930 devices.
-- the `default_states` field of `LightDeviceInfoResult`, `ColorLightDeviceInfoResult`, `ColorLightStripDeviceInfoResult` and `PlugDeviceInfoResult` is now a struct instead of an enum.
+- The `default_states` field of `LightDeviceInfoResult`, `ColorLightDeviceInfoResult`, `ColorLightStripDeviceInfoResult` and `PlugDeviceInfoResult` is now a struct instead of an enum.
 
 ## [v0.7.2] - 2023-08-21
 

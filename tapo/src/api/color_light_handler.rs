@@ -15,9 +15,7 @@ impl ColorLightHandler {
 
     /// Refreshes the authentication session.
     pub async fn refresh_session(&mut self) -> Result<&mut Self, Error> {
-        let session = self.client.get_session_ref()?;
-        self.client.login(session.url.clone()).await?;
-
+        self.client.refresh_session().await?;
         Ok(self)
     }
 
