@@ -6,6 +6,8 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [v0.7.4] - 2023-09-15
+
 ### Fixed
 
 - Fixed the minimum version of the chrono dependency by setting it to 0.4.25.
@@ -182,6 +184,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.4]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.4
 [v0.7.3]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.3
 [v0.7.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.2
 [v0.7.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.1
