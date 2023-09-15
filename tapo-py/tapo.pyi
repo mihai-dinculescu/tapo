@@ -120,14 +120,14 @@ class ApiClient:
             ```
         """
 
-    async def p110(self, ip_address: str) -> EnergyMonitoringPlugHandler:
-        """Specializes the given `ApiClient` into an authenticated `EnergyMonitoringPlugHandler`.
+    async def p110(self, ip_address: str) -> PlugEnergyMonitoringHandler:
+        """Specializes the given `ApiClient` into an authenticated `PlugEnergyMonitoringHandler`.
 
         Args:
             ip_address (str): The IP address of the device
 
         Returns:
-            EnergyMonitoringPlugHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110) 
+            PlugEnergyMonitoringHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110) 
             & [P115](https://www.tapo.com/en/search/?q=P115) devices.
 
         Example:
@@ -139,14 +139,14 @@ class ApiClient:
             ```
         """
 
-    async def p115(self, ip_address: str) -> EnergyMonitoringPlugHandler:
-        """Specializes the given `ApiClient` into an authenticated `EnergyMonitoringPlugHandler`.
+    async def p115(self, ip_address: str) -> PlugEnergyMonitoringHandler:
+        """Specializes the given `ApiClient` into an authenticated `PlugEnergyMonitoringHandler`.
 
         Args:
             ip_address (str): The IP address of the device
 
         Returns:
-            EnergyMonitoringPlugHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110) 
+            PlugEnergyMonitoringHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110) 
             & [P115](https://www.tapo.com/en/search/?q=P115) devices.
 
         Example:
@@ -178,14 +178,14 @@ class PlugHandler:
     async def off(self) -> None:
         """Turns *off* the device."""
 
-    async def get_device_info(self) -> PlugDeviceInfoResult:
-        """Returns *device info* as `PlugDeviceInfoResult`.
+    async def get_device_info(self) -> DeviceInfoPlugResult:
+        """Returns *device info* as `DeviceInfoPlugResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
         If the deserialization fails, or if a property that you care about it's not present, 
-        try `PlugDeviceInfoResult.get_device_info_json`.
+        try `DeviceInfoPlugResult.get_device_info_json`.
 
         Returns:
-            PlugDeviceInfoResult: Device info of Tapo P100, P105, P110 and P115.
+            DeviceInfoPlugResult: Device info of Tapo P100, P105, P110 and P115.
             Superset of `GenericDeviceInfoResult`.
         """
 
@@ -193,11 +193,11 @@ class PlugHandler:
         """Returns *device usage* as `DeviceUsageResult`.
 
         Returns:
-            DeviceUsageResult: Contains the time in use, the power consumption, and the energy savings of the device.
+            DeviceUsageResult: Contains the time usage.
         """
 
 
-class EnergyMonitoringPlugHandler:
+class PlugEnergyMonitoringHandler:
     """Handler for the [P110](https://www.tapo.com/en/search/?q=P110) 
     & [P115](https://www.tapo.com/en/search/?q=P115) devices.
     """
@@ -216,22 +216,22 @@ class EnergyMonitoringPlugHandler:
     async def off(self) -> None:
         """Turns *off* the device."""
 
-    async def get_device_info(self) -> PlugDeviceInfoResult:
-        """Returns *device info* as `PlugDeviceInfoResult`.
+    async def get_device_info(self) -> DeviceInfoPlugResult:
+        """Returns *device info* as `DeviceInfoPlugResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
         If the deserialization fails, or if a property that you care about it's not present, 
-        try `PlugDeviceInfoResult.get_device_info_json`.
+        try `DeviceInfoPlugResult.get_device_info_json`.
 
         Returns:
-            PlugDeviceInfoResult: Device info of Tapo P100, P105, P110 and P115.
+            DeviceInfoPlugResult: Device info of Tapo P100, P105, P110 and P115.
             Superset of `GenericDeviceInfoResult`.
         """
 
-    async def get_device_usage(self) -> DeviceUsageResult:
+    async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:
         """Returns *device usage* as `DeviceUsageResult`.
 
         Returns:
-            DeviceUsageResult: Contains the time in use, the power consumption, and the energy savings of the device.
+            DeviceUsageEnergyMonitoringResult: Contains the time usage, the power consumption, and the energy savings of the device.
         """
 
     async def get_current_power(self) -> CurrentPowerResult:
@@ -249,7 +249,7 @@ class EnergyMonitoringPlugHandler:
         """
 
 
-class PlugDeviceInfoResult:
+class DeviceInfoPlugResult:
     """Device info of Tapo P100, P105, P110 and P115. Superset of `GenericDeviceInfoResult`."""
 
     device_id: str
@@ -308,6 +308,17 @@ class PlugState:
     on: Optional[bool]
 
 
+class UsageByPeriodResult:
+    """Usage by period result for today, the past 7 days, and the past 30 days."""
+
+    today: int
+    """Today."""
+    past7: int
+    """Past 7 days."""
+    past30: int
+    """Past 30 days."""
+
+
 class DeviceUsageResult:
     """Contains the time in use, the power consumption, and the energy savings of the device."""
 
@@ -326,15 +337,22 @@ class DeviceUsageResult:
         """
 
 
-class UsageByPeriodResult:
-    """Usage by period result for today, the past 7 days, and the past 30 days."""
+class DeviceUsageEnergyMonitoringResult:
+    """Contains the time in use, the power consumption, and the energy savings of the device."""
 
-    today: int
-    """Today."""
-    past7: int
-    """Past 7 days."""
-    past30: int
-    """Past 30 days."""
+    time_usage: UsageByPeriodResult
+    """Time usage in minutes."""
+    power_usage: UsageByPeriodResult
+    """Power usage in watt-hour (Wh)."""
+    saved_power: UsageByPeriodResult
+    """Saved power in watt-hour (Wh)."""
+
+    def to_dict(self) -> dict:
+        """Get all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """
 
 
 class CurrentPowerResult:

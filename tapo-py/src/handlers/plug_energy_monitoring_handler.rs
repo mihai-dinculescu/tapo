@@ -1,19 +1,19 @@
 use std::sync::Arc;
 
 use pyo3::prelude::*;
-use tapo::EnergyMonitoringPlugHandler;
+use tapo::PlugEnergyMonitoringHandler;
 use tokio::sync::Mutex;
 
 use crate::errors::ErrorWrapper;
 
 #[derive(Clone)]
-#[pyclass(name = "EnergyMonitoringPlugHandler")]
-pub struct PyEnergyMonitoringPlugHandler {
-    handler: Arc<Mutex<EnergyMonitoringPlugHandler>>,
+#[pyclass(name = "PlugEnergyMonitoringHandler")]
+pub struct PyPlugEnergyMonitoringHandler {
+    handler: Arc<Mutex<PlugEnergyMonitoringHandler>>,
 }
 
-impl PyEnergyMonitoringPlugHandler {
-    pub fn new(handler: EnergyMonitoringPlugHandler) -> Self {
+impl PyPlugEnergyMonitoringHandler {
+    pub fn new(handler: PlugEnergyMonitoringHandler) -> Self {
         Self {
             handler: Arc::new(Mutex::new(handler)),
         }
@@ -21,7 +21,7 @@ impl PyEnergyMonitoringPlugHandler {
 }
 
 #[pymethods]
-impl PyEnergyMonitoringPlugHandler {
+impl PyPlugEnergyMonitoringHandler {
     pub fn refresh_session<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
         let handler = self.handler.clone();
         pyo3_asyncio::tokio::future_into_py(py, async move {

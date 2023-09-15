@@ -3,12 +3,12 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{decode_value, DecodableResultExt, TapoResponseExt};
 
-/// Device info of Tapo H100. Superset of [`crate::responses::GenericDeviceInfoResult`].
+/// Device info of Tapo H100. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct HubDeviceInfoResult {
+pub struct DeviceInfoHubResult {
     //
-    // Inherited from GenericDeviceInfoResult
+    // Inherited from DeviceInfoGenericResult
     //
     pub device_id: String,
     pub r#type: String,
@@ -40,9 +40,9 @@ pub struct HubDeviceInfoResult {
     pub in_alarm_source: String,
 }
 
-impl TapoResponseExt for HubDeviceInfoResult {}
+impl TapoResponseExt for DeviceInfoHubResult {}
 
-impl DecodableResultExt for HubDeviceInfoResult {
+impl DecodableResultExt for DeviceInfoHubResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.ssid = decode_value(&self.ssid)?;
         self.nickname = decode_value(&self.nickname)?;

@@ -8,8 +8,8 @@ use serde::de::DeserializeOwned;
 
 use crate::api::protocol::{TapoProtocol, TapoProtocolExt};
 use crate::api::{
-    ColorLightHandler, ColorLightStripHandler, EnergyMonitoringPlugHandler, GenericDeviceHandler,
-    HubHandler, LightHandler, PlugHandler,
+    ColorLightHandler, ColorLightStripHandler, GenericDeviceHandler, HubHandler, LightHandler,
+    PlugEnergyMonitoringHandler, PlugHandler,
 };
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
@@ -18,8 +18,7 @@ use crate::requests::{
 };
 use crate::responses::{
     validate_response, ControlChildResult, CurrentPowerResult, DecodableResultExt,
-    DeviceUsageResult, EnergyDataResult, EnergyUsageResult, TapoMultipleResponse, TapoResponseExt,
-    TapoResult,
+    EnergyDataResult, EnergyUsageResult, TapoMultipleResponse, TapoResponseExt, TapoResult,
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
@@ -344,7 +343,7 @@ impl ApiClient {
         Ok(PlugHandler::new(self))
     }
 
-    /// Specializes the given [`ApiClient`] into an authenticated [`EnergyMonitoringPlugHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugEnergyMonitoringHandler`].
     ///
     /// # Arguments
     ///
@@ -366,14 +365,14 @@ impl ApiClient {
     pub async fn p110(
         mut self,
         ip_address: impl Into<String>,
-    ) -> Result<EnergyMonitoringPlugHandler, Error> {
+    ) -> Result<PlugEnergyMonitoringHandler, Error> {
         let url = build_url(&ip_address.into());
         self.login(url).await?;
 
-        Ok(EnergyMonitoringPlugHandler::new(self))
+        Ok(PlugEnergyMonitoringHandler::new(self))
     }
 
-    /// Specializes the given [`ApiClient`] into an authenticated [`EnergyMonitoringPlugHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugEnergyMonitoringHandler`].
     ///
     /// # Arguments
     ///
@@ -395,11 +394,11 @@ impl ApiClient {
     pub async fn p115(
         mut self,
         ip_address: impl Into<String>,
-    ) -> Result<EnergyMonitoringPlugHandler, Error> {
+    ) -> Result<PlugEnergyMonitoringHandler, Error> {
         let url = build_url(&ip_address.into());
         self.login(url).await?;
 
-        Ok(EnergyMonitoringPlugHandler::new(self))
+        Ok(PlugEnergyMonitoringHandler::new(self))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`HubHandler`].
@@ -455,12 +454,15 @@ impl ApiClient {
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
     }
 
-    pub(crate) async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
+    pub(crate) async fn get_device_usage<R>(&self) -> Result<R, Error>
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
+    {
         debug!("Get Device usage...");
         let request = TapoRequest::GetDeviceUsage(TapoParams::new(EmptyParams));
 
         self.protocol
-            .execute_request::<DeviceUsageResult>(request, true)
+            .execute_request::<R>(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }

@@ -7,7 +7,7 @@ use crate::api::{S200BHandler, T100Handler, T110Handler, T31XHandler};
 use crate::error::Error;
 use crate::requests::TapoRequest;
 use crate::responses::{
-    ChildDeviceListResult, ChildDeviceResult, HubDeviceInfoResult, TapoResponseExt,
+    ChildDeviceListResult, ChildDeviceResult, DeviceInfoHubResult, TapoResponseExt,
 };
 
 /// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) hubs.
@@ -27,10 +27,10 @@ impl HubHandler {
         Ok(self)
     }
 
-    /// Returns *device info* as [`HubDeviceInfoResult`].
+    /// Returns *device info* as [`DeviceInfoHubResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`HubHandler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<HubDeviceInfoResult, Error> {
+    pub async fn get_device_info(&self) -> Result<DeviceInfoHubResult, Error> {
         self.client.get_device_info().await
     }
 

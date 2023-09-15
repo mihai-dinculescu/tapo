@@ -1,7 +1,7 @@
 use crate::api::{ApiClient, ApiClientExt};
 use crate::error::Error;
 use crate::requests::GenericSetDeviceInfoParams;
-use crate::responses::{DeviceUsageResult, GenericDeviceInfoResult};
+use crate::responses::DeviceInfoGenericResult;
 
 /// Handler for generic devices. It provides the functionality common to all Tapo [devices](https://www.tapo.com/en/).
 pub struct GenericDeviceHandler {
@@ -31,10 +31,10 @@ impl GenericDeviceHandler {
         self.client.set_device_info(json).await
     }
 
-    /// Returns *device info* as [`GenericDeviceInfoResult`].
+    /// Returns *device info* as [`DeviceInfoGenericResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`GenericDeviceHandler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<GenericDeviceInfoResult, Error> {
+    pub async fn get_device_info(&self) -> Result<DeviceInfoGenericResult, Error> {
         self.client.get_device_info().await
     }
 
@@ -42,10 +42,5 @@ impl GenericDeviceHandler {
     /// It contains all the properties returned from the Tapo API.
     pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
         self.client.get_device_info().await
-    }
-
-    /// Returns *device usage* as [`DeviceUsageResult`].
-    pub async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
-        self.client.get_device_usage().await
     }
 }

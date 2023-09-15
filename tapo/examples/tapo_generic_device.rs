@@ -35,8 +35,5 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let device_info = device.get_device_info().await?;
     info!("Device info: {device_info:?}");
 
-    let device_usage = device.get_device_usage().await?;
-    info!("Device usage: {device_usage:?}");
-
     Ok(())
 }

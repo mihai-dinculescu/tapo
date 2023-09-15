@@ -1,7 +1,7 @@
 use crate::api::{ApiClient, ApiClientExt};
 use crate::error::Error;
 use crate::requests::GenericSetDeviceInfoParams;
-use crate::responses::{DeviceUsageResult, PlugDeviceInfoResult};
+use crate::responses::{DeviceInfoPlugResult, DeviceUsageResult};
 
 /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100) & [P105](https://www.tapo.com/en/search/?q=P105) devices.
 pub struct PlugHandler {
@@ -31,10 +31,10 @@ impl PlugHandler {
         self.client.set_device_info(json).await
     }
 
-    /// Returns *device info* as [`PlugDeviceInfoResult`].
+    /// Returns *device info* as [`DeviceInfoPlugResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`PlugHandler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<PlugDeviceInfoResult, Error> {
+    pub async fn get_device_info(&self) -> Result<DeviceInfoPlugResult, Error> {
         self.client.get_device_info().await
     }
 

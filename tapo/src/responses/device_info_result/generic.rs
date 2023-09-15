@@ -6,7 +6,7 @@ use crate::responses::{decode_value, DecodableResultExt, TapoResponseExt};
 /// Device info of a Generic Tapo device.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct GenericDeviceInfoResult {
+pub struct DeviceInfoGenericResult {
     pub device_id: String,
     pub r#type: String,
     pub model: String,
@@ -35,9 +35,9 @@ pub struct GenericDeviceInfoResult {
     pub time_diff: Option<i64>,
 }
 
-impl TapoResponseExt for GenericDeviceInfoResult {}
+impl TapoResponseExt for DeviceInfoGenericResult {}
 
-impl DecodableResultExt for GenericDeviceInfoResult {
+impl DecodableResultExt for DeviceInfoGenericResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.ssid = decode_value(&self.ssid)?;
         self.nickname = decode_value(&self.nickname)?;

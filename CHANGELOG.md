@@ -10,6 +10,17 @@ file. This change log follows the conventions of
 
 - Fixed the minimum version of the chrono dependency by setting it to 0.4.25.
 
+### Changes
+
+- `DeviceUsageResult` has been split into `DeviceUsageResult` and `DeviceUsageEnergyMonitoringResult`. The former is now returned for the P100 and P105 devices while the latter is returned for all the other devices that support energy monitoring.
+- `EnergyMonitoringPlugHandler` has been renamed to `PlugEnergyMonitoringHandler`.
+- All `___DeviceInfoResult` structs have been renamed to `DeviceInfo___Result`.
+- All `___DefaultState` structs have been renamed to `Default___State`.
+
+### Removed
+
+- `get_device_usage` has been removed from the `GenericDeviceHandler` because it is not supported by all devices.
+
 ## [v0.7.3] - 2023-09-14
 
 ### Added

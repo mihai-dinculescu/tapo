@@ -1,7 +1,7 @@
 use crate::api::ApiClient;
 use crate::error::Error;
 use crate::requests::LightSetDeviceInfoParams;
-use crate::responses::{DeviceUsageResult, LightDeviceInfoResult};
+use crate::responses::{DeviceInfoLightResult, DeviceUsageEnergyMonitoringResult};
 
 /// Handler for the [L510](https://www.tapo.com/en/search/?q=L510) and [L610](https://www.tapo.com/en/search/?q=L610) devices.
 pub struct LightHandler {
@@ -35,10 +35,10 @@ impl LightHandler {
             .await
     }
 
-    /// Returns *device info* as [`LightDeviceInfoResult`].
+    /// Returns *device info* as [`DeviceInfoLightResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`LightHandler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<LightDeviceInfoResult, Error> {
+    pub async fn get_device_info(&self) -> Result<DeviceInfoLightResult, Error> {
         self.client.get_device_info().await
     }
 
@@ -48,8 +48,8 @@ impl LightHandler {
         self.client.get_device_info().await
     }
 
-    /// Returns *device usage* as [`DeviceUsageResult`].
-    pub async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
+    /// Returns *device usage* as [`DeviceUsageEnergyMonitoringResult`].
+    pub async fn get_device_usage(&self) -> Result<DeviceUsageEnergyMonitoringResult, Error> {
         self.client.get_device_usage().await
     }
 

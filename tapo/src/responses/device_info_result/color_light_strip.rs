@@ -4,12 +4,12 @@ use crate::error::Error;
 use crate::requests::LightingEffect;
 use crate::responses::{decode_value, DecodableResultExt, DefaultStateType, TapoResponseExt};
 
-/// Device info of Tapo L920 and L930. Superset of [`crate::responses::GenericDeviceInfoResult`].
+/// Device info of Tapo L920 and L930. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct ColorLightStripDeviceInfoResult {
+pub struct DeviceInfoColorLightStripResult {
     //
-    // Inherited from GenericDeviceInfoResult
+    // Inherited from DeviceInfoGenericResult
     //
     pub device_id: String,
     pub r#type: String,
@@ -44,12 +44,12 @@ pub struct ColorLightStripDeviceInfoResult {
     pub color_temp: u16,
     pub color_temp_range: [u16; 2],
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
-    pub default_states: ColorLightStripDefaultState,
+    pub default_states: DefaultColorLightStripState,
 }
 
-impl TapoResponseExt for ColorLightStripDeviceInfoResult {}
+impl TapoResponseExt for DeviceInfoColorLightStripResult {}
 
-impl DecodableResultExt for ColorLightStripDeviceInfoResult {
+impl DecodableResultExt for DeviceInfoColorLightStripResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.ssid = decode_value(&self.ssid)?;
         self.nickname = decode_value(&self.nickname)?;
@@ -61,7 +61,7 @@ impl DecodableResultExt for ColorLightStripDeviceInfoResult {
 /// Color Light Strip Default State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct ColorLightStripDefaultState {
+pub struct DefaultColorLightStripState {
     pub r#type: DefaultStateType,
     pub state: ColorLightStripState,
 }

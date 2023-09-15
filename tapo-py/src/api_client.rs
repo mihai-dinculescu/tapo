@@ -2,7 +2,7 @@ use pyo3::prelude::*;
 use tapo::ApiClient;
 
 use crate::errors::ErrorWrapper;
-use crate::handlers::{PyEnergyMonitoringPlugHandler, PyPlugHandler};
+use crate::handlers::{PyPlugEnergyMonitoringHandler, PyPlugHandler};
 
 #[pyclass(name = "ApiClient")]
 pub struct PyApiClient {
@@ -37,7 +37,7 @@ impl PyApiClient {
         let client = self.client.clone();
         pyo3_asyncio::tokio::future_into_py(py, async move {
             let handler = client.p110(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyEnergyMonitoringPlugHandler::new(handler))
+            Ok(PyPlugEnergyMonitoringHandler::new(handler))
         })
     }
 
@@ -45,7 +45,7 @@ impl PyApiClient {
         let client = self.client.clone();
         pyo3_asyncio::tokio::future_into_py(py, async move {
             let handler = client.p115(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyEnergyMonitoringPlugHandler::new(handler))
+            Ok(PyPlugEnergyMonitoringHandler::new(handler))
         })
     }
 }

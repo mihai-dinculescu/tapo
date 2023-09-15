@@ -2,16 +2,16 @@ use crate::api::{ApiClient, ApiClientExt};
 use crate::error::Error;
 use crate::requests::{EnergyDataInterval, GenericSetDeviceInfoParams};
 use crate::responses::{
-    CurrentPowerResult, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
-    PlugDeviceInfoResult,
+    CurrentPowerResult, DeviceInfoPlugResult, DeviceUsageEnergyMonitoringResult, EnergyDataResult,
+    EnergyUsageResult,
 };
 
 /// Handler for the [P110](https://www.tapo.com/en/search/?q=P110) & [P115](https://www.tapo.com/en/search/?q=P115) devices.
-pub struct EnergyMonitoringPlugHandler {
+pub struct PlugEnergyMonitoringHandler {
     client: ApiClient,
 }
 
-impl EnergyMonitoringPlugHandler {
+impl PlugEnergyMonitoringHandler {
     pub(crate) fn new(client: ApiClient) -> Self {
         Self { client }
     }
@@ -34,10 +34,10 @@ impl EnergyMonitoringPlugHandler {
         self.client.set_device_info(json).await
     }
 
-    /// Returns *device info* as [`PlugDeviceInfoResult`].
+    /// Returns *device info* as [`DeviceInfoPlugResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`EnergyMonitoringPlugHandler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<PlugDeviceInfoResult, Error> {
+    /// If the deserialization fails, or if a property that you care about it's not present, try [`PlugEnergyMonitoringHandler::get_device_info_json`].
+    pub async fn get_device_info(&self) -> Result<DeviceInfoPlugResult, Error> {
         self.client.get_device_info().await
     }
 
@@ -47,8 +47,8 @@ impl EnergyMonitoringPlugHandler {
         self.client.get_device_info().await
     }
 
-    /// Returns *device usage* as [`DeviceUsageResult`].
-    pub async fn get_device_usage(&self) -> Result<DeviceUsageResult, Error> {
+    /// Returns *device usage* as [`DeviceUsageEnergyMonitoringResult`].
+    pub async fn get_device_usage(&self) -> Result<DeviceUsageEnergyMonitoringResult, Error> {
         self.client.get_device_usage().await
     }
 
