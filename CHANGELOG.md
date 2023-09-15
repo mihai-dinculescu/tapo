@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed the minimum version of the chrono dependency by setting it to 0.4.25.
+
 ## [v0.7.3] - 2023-09-14
 
 ### Added

@@ -19,7 +19,7 @@ anyhow = "1.0"
 async-trait = "0.1"
 base16ct = { version = "0.2", features = ["alloc"] }
 base64 = "0.21"
-chrono = { version = "0.4", default-features = false, features = [
+chrono = { version = "0.4.25", default-features = false, features = [
     "clock",
     "serde",
 ] }
