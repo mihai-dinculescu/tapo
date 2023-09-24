@@ -37,7 +37,7 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 \* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child handler.
 
-## Examples
+## Examples (Rust)
 
 ```bash
 export TAPO_USERNAME=
@@ -49,8 +49,12 @@ cargo run --example tapo_l530
 
 See all examples in [/examples][examples].
 
-### Wrapper API
+### Wrapper REST API
 [tapo-rest][tapo_rest] is a REST wrapper of this library that can be deployed as a service or serve as an advanced example.
+
+## Examples (Python)
+
+The Python wrapper is still WIP. Examples will be added when it's ready for use.
 
 ## Contributing
 
