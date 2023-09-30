@@ -2,7 +2,7 @@ use chrono::NaiveDate;
 
 /// Energy data interval.
 pub enum EnergyDataInterval {
-    /// Hourly interval. `start_date` is `end_date` is an inclusive interval that must not be greater than 8 days.
+    /// Hourly interval. `start_date` and `end_date` are an inclusive interval that must not be greater than 8 days.
     Hourly {
         /// Interval start date.
         start_date: NaiveDate,

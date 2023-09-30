@@ -18,7 +18,7 @@ impl TapoResponseExt for DeviceUsageEnergyMonitoringResult {}
 #[cfg(feature = "python")]
 #[pyo3::pymethods]
 impl DeviceUsageEnergyMonitoringResult {
-    /// Get all the properties of this result as a dictionary.
+    /// Gets all the properties of this result as a dictionary.
     pub fn to_dict<'a>(&self, py: pyo3::Python<'a>) -> pyo3::PyResult<&'a pyo3::types::PyDict> {
         let serialized = serde_json::to_value(self)
             .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;

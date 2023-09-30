@@ -24,28 +24,28 @@ pub struct EnergyUsageResult {
     /// Hourly energy usage for the past 24 hours in watts (W).
     #[deprecated(
         since = "0.4.0",
-        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::EnergyMonitoringPlugHandler::get_energy_data` instead."
+        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::PlugEnergyMonitoringHandler::get_energy_data` instead."
     )]
     #[cfg(not(feature = "python"))]
     pub past24h: Option<Vec<u64>>,
     /// Hourly energy usage by day for the past 7 days in watts (W).
     #[deprecated(
         since = "0.4.0",
-        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::EnergyMonitoringPlugHandler::get_energy_data` instead."
+        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::PlugEnergyMonitoringHandler::get_energy_data` instead."
     )]
     #[cfg(not(feature = "python"))]
     pub past7d: Option<Vec<Vec<u64>>>,
     /// Daily energy usage for the past 30 days in watts (W).
     #[deprecated(
         since = "0.4.0",
-        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::EnergyMonitoringPlugHandler::get_energy_data` instead."
+        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::PlugEnergyMonitoringHandler::get_energy_data` instead."
     )]
     #[cfg(not(feature = "python"))]
     pub past30d: Option<Vec<u64>>,
     /// Monthly energy usage for the past year in watts (W).
     #[deprecated(
         since = "0.4.0",
-        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::EnergyMonitoringPlugHandler::get_energy_data` instead."
+        note = "P110 firmware v1.1.6 no longer returns this field. Use `tapo::PlugEnergyMonitoringHandler::get_energy_data` instead."
     )]
     #[cfg(not(feature = "python"))]
     pub past1y: Option<Vec<u64>>,
@@ -55,7 +55,7 @@ impl TapoResponseExt for EnergyUsageResult {}
 #[cfg(feature = "python")]
 #[pyo3::pymethods]
 impl EnergyUsageResult {
-    /// Get all the properties of this result as a dictionary.
+    /// Gets all the properties of this result as a dictionary.
     pub fn to_dict<'a>(&self, py: pyo3::Python<'a>) -> pyo3::PyResult<&'a pyo3::types::PyDict> {
         let serialized = serde_json::to_value(self)
             .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;

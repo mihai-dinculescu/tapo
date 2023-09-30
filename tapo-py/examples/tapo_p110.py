@@ -2,8 +2,9 @@
 
 import asyncio
 import os
+from datetime import datetime
 
-from tapo import ApiClient
+from tapo import ApiClient, EnergyDataInterval
 
 
 async def main():
@@ -34,6 +35,27 @@ async def main():
 
     energy_usage = await device.get_energy_usage()
     print(f"Energy usage: {energy_usage.to_dict()}")
+
+    today = datetime.today()
+    energy_data_hourly = await device.get_energy_data(EnergyDataInterval.Hourly, today)
+    print(f"Energy data (hourly): {energy_data_hourly.to_dict()}")
+
+    energy_data_daily = await device.get_energy_data(
+        EnergyDataInterval.Daily,
+        datetime(today.year, get_quarter_start_month(today), 1),
+    )
+    print(f"Energy data (daily): {energy_data_daily.to_dict()}")
+
+    energy_data_monthly = await device.get_energy_data(
+        EnergyDataInterval.Monthly,
+        datetime(today.year, 1, 1),
+    )
+    print(f"Energy data (monthly): {energy_data_monthly.to_dict()}")
+
+
+def get_quarter_start_month(today: datetime) -> int:
+    return 3 * ((today.month - 1) // 3) + 1
+
 
 if __name__ == "__main__":
     asyncio.run(main())

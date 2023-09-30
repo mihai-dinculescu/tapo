@@ -1,10 +1,20 @@
 use std::sync::Arc;
 
+use chrono::NaiveDate;
 use pyo3::prelude::*;
+use tapo::requests::EnergyDataInterval;
 use tapo::PlugEnergyMonitoringHandler;
 use tokio::sync::Mutex;
 
 use crate::errors::ErrorWrapper;
+
+#[derive(Clone)]
+#[pyclass(name = "EnergyDataInterval")]
+pub enum PyEnergyDataInterval {
+    Hourly,
+    Daily,
+    Monthly,
+}
 
 #[derive(Clone)]
 #[pyclass(name = "PlugEnergyMonitoringHandler")]
@@ -97,6 +107,34 @@ impl PyPlugEnergyMonitoringHandler {
                 .lock()
                 .await
                 .get_energy_usage()
+                .await
+                .map_err(ErrorWrapper)?;
+            Ok(device_info)
+        })
+    }
+
+    pub fn get_energy_data<'a>(
+        &'a self,
+        py: Python<'a>,
+        interval: PyEnergyDataInterval,
+        start_date: NaiveDate,
+        end_date: Option<NaiveDate>,
+    ) -> PyResult<&'a PyAny> {
+        let handler = self.handler.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let interval = match interval {
+                PyEnergyDataInterval::Hourly => EnergyDataInterval::Hourly {
+                    start_date,
+                    end_date: end_date.unwrap_or(start_date),
+                },
+                PyEnergyDataInterval::Daily => EnergyDataInterval::Daily { start_date },
+                PyEnergyDataInterval::Monthly => EnergyDataInterval::Monthly { start_date },
+            };
+
+            let device_info = handler
+                .lock()
+                .await
+                .get_energy_data(interval)
                 .await
                 .map_err(ErrorWrapper)?;
             Ok(device_info)
