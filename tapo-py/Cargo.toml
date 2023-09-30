@@ -9,9 +9,13 @@ name = "tapo"
 crate-type = ["cdylib"]
 doc = false
 
+[features]
+default = []
+openssl-vendored = ["tapo/openssl-vendored"]
+
 [dependencies]
 chrono = { workspace = true, default-features = false }
-pyo3 = { workspace = true, features = ["chrono"] }
+pyo3 = { workspace = true, features = ["chrono", "extension-module"] }
 pyo3-asyncio = { workspace = true, features = ["attributes", "tokio-runtime"] }
 tapo = { path = "../tapo", features = ["python"] }
 tokio = { workspace = true, default-features = false, features = ["sync"] }

@@ -13,6 +13,7 @@ repository = "https://github.com/mihai-dinculescu/tapo"
 [features]
 default = []
 python = ["dep:pyo3"]
+openssl-vendored = ["openssl/vendored"]
 
 [dependencies]
 anyhow = "1.0"

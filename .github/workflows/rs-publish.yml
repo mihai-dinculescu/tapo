@@ -1,4 +1,4 @@
-name: Crates.io
+name: Rust publish
 on:
   release:
     types:
