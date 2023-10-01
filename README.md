@@ -1,11 +1,27 @@
 # Tapo
 
+
+[![License][license_badge]][license]
 [![Crates][crates_badge]][crates]
-[![Documentation][documentation_badge]][documentation]
-[![CI][ci_badge]][ci]
-[![license][license_badge]][license]
-[![Crates.io][crates_downloads_badge]][crates]\
+[![Documentation][crates_documentation_badge]][crates_documentation]
+[![Crates.io][crates_downloads_badge]][crates]
+[![PyPI][pypi_badge]][pypi]
+[![Python][pypi_versions_badge]][pypi]
+[![PyPI][pypi_downloads_badge]][pypi]\
 Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L530, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P115), hubs (H100), switches (S200B) and sensors (T100, T110, T310, T315).
+
+[license_badge]: https://img.shields.io/crates/l/tapo.svg
+[license]: https://github.com/mihai-dinculescu/tapo/blob/main/LICENSE
+[crates_badge]: https://img.shields.io/crates/v/tapo.svg?logo=rust&color=F75101
+[crates]: https://crates.io/crates/tapo
+[crates_documentation_badge]: https://img.shields.io/docsrs/tapo.svg?logo=rust&color=F75101
+[crates_documentation]: https://docs.rs/tapo
+[crates_downloads_badge]: https://img.shields.io/crates/d/tapo?label=downloads&color=F75101
+
+[pypi_badge]: https://img.shields.io/pypi/v/tapo.svg?logo=pypi&color=00ADD4
+[pypi]: https://pypi.org/project/tapo
+[pypi_versions_badge]: https://img.shields.io/pypi/pyversions/tapo.svg?logo=python&color=00ADD4
+[pypi_downloads_badge]: https://img.shields.io/pepy/dt/tapo?color=00ADD4
 
 ## Device support
 
@@ -139,15 +155,6 @@ cd vcpkg
 
 Inspired by [petretiandrea/plugp100][inspired_by].
 
-[crates_badge]: https://img.shields.io/crates/v/tapo.svg
-[crates]: https://crates.io/crates/tapo
-[documentation_badge]: https://docs.rs/tapo/badge.svg
-[documentation]: https://docs.rs/tapo
-[ci_badge]: https://github.com/mihai-dinculescu/tapo/workflows/CI/badge.svg?branch=main
-[ci]: https://github.com/mihai-dinculescu/tapo/actions
-[license_badge]: https://img.shields.io/crates/l/tapo.svg
-[license]: https://github.com/mihai-dinculescu/tapo/blob/main/LICENSE
-[crates_downloads_badge]: https://img.shields.io/crates/d/tapo?label=downloads
 [examples]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo/examples
 [examples-py]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples
 [tapo_rest]: https://github.com/ClementNerma/tapo-rest
