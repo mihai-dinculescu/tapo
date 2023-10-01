@@ -6,6 +6,11 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [Python v0.1.1][py-v0.1.1] - 2023-10-01
+
+This is the first version of the Python wrapper library.
+It supports the plug devices P100, P105, P110 and P115.
+
 ## [v0.7.4] - 2023-09-15
 
 ### Fixed
@@ -184,6 +189,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [unreleased]: https://github.com/mihai-dinculescu/tapo
+[py-v0.1.1]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.1
 [v0.7.4]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.4
 [v0.7.3]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.3
 [v0.7.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.2
