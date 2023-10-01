@@ -16,12 +16,12 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 [crates]: https://crates.io/crates/tapo
 [crates_documentation_badge]: https://img.shields.io/docsrs/tapo.svg?logo=rust&color=F75101
 [crates_documentation]: https://docs.rs/tapo
-[crates_downloads_badge]: https://img.shields.io/crates/d/tapo?label=downloads&color=F75101
+[crates_downloads_badge]: https://img.shields.io/crates/d/tapo?logo=rust&label=downloads&color=F75101
 
 [pypi_badge]: https://img.shields.io/pypi/v/tapo.svg?logo=pypi&color=00ADD4
 [pypi]: https://pypi.org/project/tapo
 [pypi_versions_badge]: https://img.shields.io/pypi/pyversions/tapo.svg?logo=python&color=00ADD4
-[pypi_downloads_badge]: https://img.shields.io/pepy/dt/tapo?color=00ADD4
+[pypi_downloads_badge]: https://img.shields.io/pepy/dt/tapo?logo=python&color=00ADD4
 
 ## Device support
 
