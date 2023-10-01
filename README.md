@@ -9,15 +9,18 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 ## Device support
 
+&check; - Rust only\
+&#x2705; - Rust and Python
+
 | Feature               | GenericDevice | L510, L610 | L530, L630, L900 | L920, L930 | P100, P105 | P110, P115 |
 | --------------------- | ------------: | ---------: | ---------------: | ---------: | ---------: | ---------: |
-| on                    |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |
-| off                   |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |
-| get_device_info       |       &check; |    &check; |          &check; |    &check; |    &check; |    &check; |
-| get_device_usage      |               |    &check; |          &check; |    &check; |    &check; |    &check; |
-| get_energy_usage      |               |            |                  |            |            |    &check; |
-| get_energy_data       |               |            |                  |            |            |    &check; |
-| get_current_power     |               |            |                  |            |            |    &check; |
+| on                    |       &check; |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| off                   |       &check; |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| get_device_info       |       &check; |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| get_device_usage      |               |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| get_energy_usage      |               |            |                  |            |            |   &#x2705; |
+| get_energy_data       |               |            |                  |            |            |   &#x2705; |
+| get_current_power     |               |            |                  |            |            |   &#x2705; |
 | set_brightness        |               |    &check; |          &check; |    &check; |            |            |
 | set_color             |               |            |          &check; |    &check; |            |            |
 | set_hue_saturation    |               |            |          &check; |    &check; |            |            |
@@ -37,7 +40,27 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 \* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child handler.
 
-## Examples (Rust)
+
+## Rust
+
+### Usage
+
+> Cargo.toml
+```toml
+[dependencies]
+tapo = "0.7"
+```
+
+> main.rs
+```rust
+let device = ApiClient::new("<tapo-username>", "tapo-password")?
+    .p110("<device ip address>")
+    .await?;
+
+device.on().await?;
+```
+
+### Examples
 
 ```bash
 export TAPO_USERNAME=
@@ -47,14 +70,43 @@ export IP_ADDRESS=
 cargo run --example tapo_l530
 ```
 
-See all examples in [/examples][examples].
+See all examples in [/tapo/examples][examples].
 
 ### Wrapper REST API
 [tapo-rest][tapo_rest] is a REST wrapper of this library that can be deployed as a service or serve as an advanced example.
 
-## Examples (Python)
+## Python
 
-The Python wrapper is still WIP. Examples will be added when it's ready for use.
+### Usage
+
+```bash
+pip install tapo
+```
+
+```python
+client = ApiClient("<tapo-username>", "tapo-password")
+device = await client.p110("<device ip address>")
+
+await device.on()
+```
+
+### Examples
+
+```bash
+cd tapo-py
+poetry install
+poetry shell
+
+export TAPO_USERNAME=
+export TAPO_PASSWORD=
+export IP_ADDRESS=
+```
+
+```bash
+python examples/tapo_p110.py
+```
+
+See all examples in [/tapo-py/examples][examples-py].
 
 ## Contributing
 
@@ -97,6 +149,7 @@ Inspired by [petretiandrea/plugp100][inspired_by].
 [license]: https://github.com/mihai-dinculescu/tapo/blob/main/LICENSE
 [crates_downloads_badge]: https://img.shields.io/crates/d/tapo?label=downloads
 [examples]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo/examples
+[examples-py]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples
 [tapo_rest]: https://github.com/ClementNerma/tapo-rest
 [contributing]: https://github.com/mihai-dinculescu/tapo/blob/main/CONTRIBUTING.md
 [inspired_by]: https://github.com/petretiandrea/plugp100
