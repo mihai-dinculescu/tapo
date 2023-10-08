@@ -6,6 +6,12 @@ file. This change log follows the conventions of
 
 ## [Unreleased]
 
+## [Python Unreleased]
+
+### Added
+
+- Added support for generic devices.
+
 ## [Python v0.1.1][py-v0.1.1] - 2023-10-01
 
 This is the first version of the Python wrapper library.
@@ -188,7 +194,8 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 
 ### Initial Release of Tapo
 
-[unreleased]: https://github.com/mihai-dinculescu/tapo
+[Unreleased]: https://github.com/mihai-dinculescu/tapo
+[Python Unreleased]: https://github.com/mihai-dinculescu/tapo
 [py-v0.1.1]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.1
 [v0.7.4]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.4
 [v0.7.3]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.3

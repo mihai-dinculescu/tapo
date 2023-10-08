@@ -5,6 +5,7 @@ use crate::responses::{decode_value, DecodableResultExt, TapoResponseExt};
 
 /// Device info of a Generic Tapo device.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
 pub struct DeviceInfoGenericResult {
     pub device_id: String,
@@ -23,7 +24,7 @@ pub struct DeviceInfoGenericResult {
     pub specs: String,
     pub lang: String,
     pub device_on: Option<bool>,
-    /// The time in seconds this device has been ON since the last state change (ON/OFF)
+    /// The time in seconds this device has been ON since the last state change (ON/OFF).
     pub on_time: Option<u64>,
     pub overheated: bool,
     pub nickname: String,
@@ -33,6 +34,24 @@ pub struct DeviceInfoGenericResult {
     pub latitude: Option<i64>,
     pub longitude: Option<i64>,
     pub time_diff: Option<i64>,
+}
+
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl DeviceInfoGenericResult {
+    /// Gets all the properties of this result as a dictionary.
+    pub fn to_dict<'a>(&self, py: pyo3::Python<'a>) -> pyo3::PyResult<&'a pyo3::types::PyDict> {
+        let serialized = serde_json::to_value(self)
+            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
+
+        if let Some(object) = serialized.as_object() {
+            let dict = crate::python::serde_object_to_py_dict(py, object)?;
+
+            Ok(dict)
+        } else {
+            Ok(pyo3::types::PyDict::new(py))
+        }
+    }
 }
 
 impl TapoResponseExt for DeviceInfoGenericResult {}

@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             device.on().await?;
         }
         None => {
-            warn!("This device cannot be turned on or off.");
+            warn!("This device does not support on/off functionality.");
         }
     }
 
