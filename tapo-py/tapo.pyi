@@ -194,6 +194,13 @@ class GenericDeviceHandler:
         Returns:
             DeviceInfoGenericResult: Device info of a Generic Tapo device.
         """
+    async def get_device_info_json(self) -> dict:
+        """Returns *device info* as json.
+        It contains all the properties returned from the Tapo API.
+
+        Returns:
+            dict: Device info as a dictionary.
+        """
 
 class PlugHandler:
     """Handler for the [P100](https://www.tapo.com/en/search/?q=P100)
@@ -219,6 +226,13 @@ class PlugHandler:
         Returns:
             DeviceInfoPlugResult: Device info of Tapo P100, P105, P110 and P115.
             Superset of `GenericDeviceInfoResult`.
+        """
+    async def get_device_info_json(self) -> dict:
+        """Returns *device info* as json.
+        It contains all the properties returned from the Tapo API.
+
+        Returns:
+            dict: Device info as a dictionary.
         """
     async def get_device_usage(self) -> DeviceUsageResult:
         """Returns *device usage* as `DeviceUsageResult`.
@@ -251,6 +265,13 @@ class PlugEnergyMonitoringHandler:
         Returns:
             DeviceInfoPlugResult: Device info of Tapo P100, P105, P110 and P115.
             Superset of `GenericDeviceInfoResult`.
+        """
+    async def get_device_info_json(self) -> dict:
+        """Returns *device info* as json.
+        It contains all the properties returned from the Tapo API.
+
+        Returns:
+            dict: Device info as a dictionary.
         """
     async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:
         """Returns *device usage* as `DeviceUsageResult`.

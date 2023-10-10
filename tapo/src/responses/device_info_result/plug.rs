@@ -48,17 +48,11 @@ pub struct DeviceInfoPlugResult {
 #[pyo3::pymethods]
 impl DeviceInfoPlugResult {
     /// Gets all the properties of this result as a dictionary.
-    pub fn to_dict<'a>(&self, py: pyo3::Python<'a>) -> pyo3::PyResult<&'a pyo3::types::PyDict> {
-        let serialized = serde_json::to_value(self)
+    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
+        let value = serde_json::to_value(self)
             .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
 
-        if let Some(object) = serialized.as_object() {
-            let dict = crate::python::serde_object_to_py_dict(py, object)?;
-
-            Ok(dict)
-        } else {
-            Ok(pyo3::types::PyDict::new(py))
-        }
+        crate::python::serde_object_to_py_dict(py, &value)
     }
 }
 

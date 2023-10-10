@@ -73,9 +73,10 @@
 
 mod api;
 mod error;
-#[cfg(feature = "python")]
-mod python;
 mod tapo_date_format;
+
+#[cfg(feature = "python")]
+pub mod python;
 
 pub mod requests;
 pub mod responses;

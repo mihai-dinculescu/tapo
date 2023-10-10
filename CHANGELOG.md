@@ -11,6 +11,7 @@ file. This change log follows the conventions of
 ### Added
 
 - Added support for generic devices.
+- Added `get_device_info_json` to all currently supported devices.
 
 ## [Python v0.1.1][py-v0.1.1] - 2023-10-01
 
