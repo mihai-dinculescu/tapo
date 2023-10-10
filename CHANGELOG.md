@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this
 file. This change log follows the conventions of
 [keepachangelog.com][keepachangelog].
 
-## [Unreleased]
+## [Rust Unreleased][Unreleased]
 
-## [Python Unreleased]
+## [Python Unreleased][Unreleased]
+
+## [Python v0.1.2][py-v0.1.2] - 2023-10-19
 
 ### Added
 
@@ -196,7 +198,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
-[Python Unreleased]: https://github.com/mihai-dinculescu/tapo
+[py-v0.1.2]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.2
 [py-v0.1.1]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.1
 [v0.7.4]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.4
 [v0.7.3]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.3
