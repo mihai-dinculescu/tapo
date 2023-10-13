@@ -8,6 +8,10 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+### Changed
+
+- The minimum required version of Python has been changed to 3.8, up from 3.7.
+
 ## [Python v0.1.2][py-v0.1.2] - 2023-10-19
 
 ### Added

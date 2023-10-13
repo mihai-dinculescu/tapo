@@ -25,14 +25,13 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Intended Audience :: Developers",
     "Topic :: Home Automation",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 
 [project.urls]
 Changelog = 'https://github.com/mihai-dinculescu/tapo/blob/main/CHANGELOG.md'
@@ -41,7 +40,7 @@ Homepage = 'https://github.com/mihai-dinculescu/tapo'
 Source = 'https://github.com/mihai-dinculescu/tapo'
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 
 [tool.poetry.dev-dependencies]
 maturin = ">=1.0,<2.0"
