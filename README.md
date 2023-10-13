@@ -33,6 +33,7 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 | on                    |      &#x2705; |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
 | off                   |      &#x2705; |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
 | get_device_info       |      &#x2705; |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| get_device_info_json  |      &#x2705; |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
 | get_device_usage      |               |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
 | get_energy_usage      |               |            |                  |            |            |   &#x2705; |
 | get_energy_data       |               |            |                  |            |            |   &#x2705; |
