@@ -3,12 +3,14 @@ mod t100_result;
 mod t110_result;
 mod t300_result;
 mod t31x_result;
+mod ke100_result;
 
 pub use s200b_result::*;
 pub use t100_result::*;
 pub use t110_result::*;
 pub use t300_result::*;
 pub use t31x_result::*;
+pub use ke100_result::*;
 
 use serde::{Deserialize, Serialize};
 
@@ -62,6 +64,8 @@ pub enum ChildDeviceResult {
     T310(Box<T31XResult>),
     /// T315 temperature & humidity sensor.
     T315(Box<T31XResult>),
+    /// KE100 TRV.
+    KE100(Box<KE100Result>),
     /// Catch-all for currently unsupported devices.
     /// Please open an issue if you need support for a new device.
     #[serde(other)]
@@ -77,6 +81,7 @@ impl DecodableResultExt for ChildDeviceResult {
             ChildDeviceResult::T300(device) => Ok(ChildDeviceResult::T300(device.decode()?)),
             ChildDeviceResult::T310(device) => Ok(ChildDeviceResult::T310(device.decode()?)),
             ChildDeviceResult::T315(device) => Ok(ChildDeviceResult::T315(device.decode()?)),
+            ChildDeviceResult::KE100(device) => Ok(ChildDeviceResult::KE100(device.decode()?)),
             ChildDeviceResult::Other => Ok(ChildDeviceResult::Other),
         }
     }
