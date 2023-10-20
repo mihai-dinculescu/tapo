@@ -578,7 +578,7 @@ impl ApiClient {
         &self,
         device_id: String,
         child_request: TapoRequest,
-    ) -> Result<R, Error>
+    ) -> Result<Option<R>, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
@@ -605,9 +605,7 @@ impl ApiClient {
 
         validate_response(&response)?;
 
-        response
-            .result
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+        Ok(response.result)
     }
 }
 

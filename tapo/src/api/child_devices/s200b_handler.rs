@@ -1,5 +1,5 @@
 use crate::api::HubHandler;
-use crate::error::Error;
+use crate::error::{Error,TapoResponseError};
 use crate::requests::{EmptyParams, GetTriggerLogsParams, TapoParams, TapoRequest};
 use crate::responses::S200BResult;
 use crate::responses::{S200BLog, TriggerLogsResult};
@@ -25,7 +25,8 @@ impl<'h> S200BHandler<'h> {
 
         self.hub_handler
             .control_child(self.device_id.clone(), request)
-            .await
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     /// Returns a list of trigger logs.
@@ -46,6 +47,7 @@ impl<'h> S200BHandler<'h> {
 
         self.hub_handler
             .control_child(self.device_id.clone(), child_request)
-            .await
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 }

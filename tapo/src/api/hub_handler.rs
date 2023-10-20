@@ -67,7 +67,7 @@ impl HubHandler {
         &self,
         device_id: String,
         request_data: TapoRequest,
-    ) -> Result<R, Error>
+    ) -> Result<Option<R>, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {

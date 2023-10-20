@@ -1,7 +1,7 @@
 use crate::api::HubHandler;
-use crate::error::Error;
+use crate::error::{Error,TapoResponseError};
 use crate::requests::{EmptyParams, TapoParams, TapoRequest, TrvSetDeviceInfoParams};
-use crate::responses::{KE100Result};
+use crate::responses::KE100Result;
 
 /// Handler for the [KE100] device.
 pub struct KE100Handler<'h> {
@@ -24,7 +24,8 @@ impl<'h> KE100Handler<'h> {
 
         self.hub_handler
             .control_child(self.device_id.clone(), request)
-            .await
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     /// Returns *device info* as [`serde_json::Value`].
@@ -34,7 +35,8 @@ impl<'h> KE100Handler<'h> {
 
         self.hub_handler
             .control_child(self.device_id.clone(), request)
-            .await
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
 
@@ -43,13 +45,15 @@ impl<'h> KE100Handler<'h> {
     /// # Arguments
     ///
     /// * `target_temperature` - between 5.0 and 30.0
-    pub async fn set_temperature(&self, target_temperature: u8) -> Result<KE100Result, Error> {
+    pub async fn set_temperature(&self, target_temperature: u8) -> Result<Option<KE100Result>, Error> {
         let json = serde_json::to_value(TrvSetDeviceInfoParams::new().target_temp(target_temperature)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        self.hub_handler
+        let result = self.hub_handler
             .control_child(self.device_id.clone(), request)
-            .await
+            .await;
+
+        Ok(result.unwrap())
     }
 
     /// Turns *on* the device.
@@ -59,7 +63,8 @@ impl<'h> KE100Handler<'h> {
 
         self.hub_handler
             .control_child(self.device_id.clone(), request)
-            .await
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     /// Sets frost protection on the device to *on* or *off*.
@@ -73,7 +78,8 @@ impl<'h> KE100Handler<'h> {
     
         self.hub_handler
             .control_child(self.device_id.clone(), request)
-            .await
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
 }

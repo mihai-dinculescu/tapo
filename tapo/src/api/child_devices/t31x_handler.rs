@@ -1,5 +1,5 @@
 use crate::api::HubHandler;
-use crate::error::Error;
+use crate::error::{Error, TapoResponseError};
 use crate::requests::{EmptyParams, TapoParams, TapoRequest};
 use crate::responses::{T31XResult, TemperatureHumidityRecords, TemperatureHumidityRecordsRaw};
 
@@ -24,7 +24,8 @@ impl<'h> T31XHandler<'h> {
 
         self.hub_handler
             .control_child(self.device_id.clone(), request)
-            .await
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     /// Returns *temperature and humidity records* from the last 24 hours at 15 minute intervals as [`TemperatureHumidityRecords`].
@@ -37,8 +38,9 @@ impl<'h> T31XHandler<'h> {
         let result = self
             .hub_handler
             .control_child::<TemperatureHumidityRecordsRaw>(self.device_id.clone(), request)
-            .await?;
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult));
 
-        Ok(result.try_into()?)
+        Ok(result.unwrap().try_into()?)
     }
 }
