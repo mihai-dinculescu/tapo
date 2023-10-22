@@ -8,6 +8,8 @@ pub(crate) struct TrvSetDeviceInfoParams {
     pub target_temp: Option<u8>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub frost_protection_on: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub child_protection: Option<bool>,
 }
 
 impl TrvSetDeviceInfoParams {
@@ -19,6 +21,10 @@ impl TrvSetDeviceInfoParams {
         self.frost_protection_on = Some(value);
         self.validate()
     }
+    pub fn child_protection(mut self, value: bool) -> Result<Self, Error> {
+        self.child_protection = Some(value);
+        self.validate()
+    }
 
 }
 
@@ -27,10 +33,20 @@ impl TrvSetDeviceInfoParams {
         Self {
             target_temp: None,
             frost_protection_on: None,
+            child_protection: None,
         }
     }
     
-    pub fn validate(self) -> Result<Self, Error> {    
+    pub fn validate(self) -> Result<Self, Error> {
+        if let Some(target_temp) = self.target_temp {
+            if target_temp < 5 || target_temp > 30 {
+                return Err(Error::Validation {
+                    field: "target_temperature".to_string(),
+                    message: "must be between 5 and 30".to_string(),
+                    
+                });
+            }
+        }    
         Ok(self)
     }
 }
