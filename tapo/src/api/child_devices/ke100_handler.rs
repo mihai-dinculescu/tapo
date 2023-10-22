@@ -60,30 +60,24 @@ impl<'h> KE100Handler<'h> {
         Ok(result.unwrap())
     }
 
-    /// Turns *on* the device.
-    pub async fn device_on(&self) -> Result<KE100Result, Error> {
-        let json = serde_json::to_value(TrvSetDeviceInfoParams::new().device_on(true)?)?;
-        let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
-
-        self.hub_handler
-            .control_child(self.device_id.clone(), request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
-    }
-
     /// Sets frost protection on the device to *on* or *off*.
     ///     
     /// # Arguments
     ///
     /// * `frost_protection_on` - true/false
-    pub async fn set_frost_protection(&self, frost_protection_on: bool) -> Result<KE100Result, Error> {
+    pub async fn set_frost_protection(&self, frost_protection_on: bool) -> Result<Option<KE100Result>, Error> {
         let json = serde_json::to_value(TrvSetDeviceInfoParams::new().frost_protection_on(frost_protection_on)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
     
-        self.hub_handler
+        let result = self.hub_handler
             .control_child(self.device_id.clone(), request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+            .await;
+
+        if result.is_err() {
+            return result;
+        }
+        
+        Ok(result.unwrap())
     }
 
 }
