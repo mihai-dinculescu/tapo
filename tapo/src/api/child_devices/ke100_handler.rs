@@ -53,6 +53,10 @@ impl<'h> KE100Handler<'h> {
             .control_child(self.device_id.clone(), request)
             .await;
 
+        if result.is_err() {
+            return result;
+        }
+
         Ok(result.unwrap())
     }
 
