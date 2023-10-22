@@ -12,6 +12,12 @@ pub(crate) struct TrvSetDeviceInfoParams {
     pub child_protection: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub temp_offset: Option<i8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_temp: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_control_temp: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_control_temp: Option<u8>,
 }
 
 impl TrvSetDeviceInfoParams {
@@ -31,6 +37,18 @@ impl TrvSetDeviceInfoParams {
         self.temp_offset = Some(value);
         self.validate()
     }
+    pub fn min_temp(mut self, value: u8) -> Result<Self, Error> {
+        self.min_temp = Some(value);
+        self.validate()
+    }
+    pub fn min_control_temp(mut self, value: u8) -> Result<Self, Error> {
+        self.min_control_temp = Some(value);
+        self.validate()
+    }
+    pub fn max_control_temp(mut self, value: u8) -> Result<Self, Error> {
+        self.max_control_temp = Some(value);
+        self.validate()
+    }
 }
 
 impl TrvSetDeviceInfoParams {
@@ -40,19 +58,13 @@ impl TrvSetDeviceInfoParams {
             frost_protection_on: None,
             child_protection: None,
             temp_offset: None,
+            min_temp: None,
+            min_control_temp: None,
+            max_control_temp: None,
         }
     }
     
     pub fn validate(self) -> Result<Self, Error> {
-        if let Some(target_temp) = self.target_temp {
-            if target_temp < 5 || target_temp > 30 {
-                return Err(Error::Validation {
-                    field: "target_temperature".to_string(),
-                    message: "must be between 5 and 30".to_string(),
-                    
-                });
-            }
-        }
         if let Some(temp_offset) = self.temp_offset {
             if temp_offset < -10 || temp_offset> 10 {
                 return Err(Error::Validation {
