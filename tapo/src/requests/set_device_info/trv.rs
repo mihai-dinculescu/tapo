@@ -10,6 +10,8 @@ pub(crate) struct TrvSetDeviceInfoParams {
     pub frost_protection_on: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub child_protection: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub temp_offset: Option<i8>,
 }
 
 impl TrvSetDeviceInfoParams {
@@ -25,7 +27,10 @@ impl TrvSetDeviceInfoParams {
         self.child_protection = Some(value);
         self.validate()
     }
-
+    pub fn temp_offset(mut self, value: i8) -> Result<Self, Error> {
+        self.temp_offset = Some(value);
+        self.validate()
+    }
 }
 
 impl TrvSetDeviceInfoParams {
@@ -34,6 +39,7 @@ impl TrvSetDeviceInfoParams {
             target_temp: None,
             frost_protection_on: None,
             child_protection: None,
+            temp_offset: None,
         }
     }
     
@@ -43,6 +49,15 @@ impl TrvSetDeviceInfoParams {
                 return Err(Error::Validation {
                     field: "target_temperature".to_string(),
                     message: "must be between 5 and 30".to_string(),
+                    
+                });
+            }
+        }
+        if let Some(temp_offset) = self.temp_offset {
+            if temp_offset < -10 || temp_offset> 10 {
+                return Err(Error::Validation {
+                    field: "temp_offset".to_string(),
+                    message: "must be between -10 and 10".to_string(),
                     
                 });
             }

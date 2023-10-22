@@ -47,7 +47,7 @@ pub struct KE100Result {
     pub max_control_temp: u8,
     pub frost_protection_on: bool,
     pub location: String,
-    pub temp_offset: f32,
+    pub temp_offset: i8,
     pub child_protection: bool,
 }
 

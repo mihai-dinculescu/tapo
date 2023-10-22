@@ -100,4 +100,24 @@ impl<'h> KE100Handler<'h> {
         Ok(result.unwrap())
     }
 
+    /// Sets the *temperature offset*.
+    ///
+    /// # Arguments
+    ///
+    /// * `temp_offset` - between 5 and 30
+    pub async fn set_temp_offset(&self, temp_offset: i8) -> Result<Option<KE100Result>, Error> {
+        let json = serde_json::to_value(TrvSetDeviceInfoParams::new().temp_offset(temp_offset)?)?;
+        let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
+
+        let result = self.hub_handler
+            .control_child(self.device_id.clone(), request)
+            .await;
+
+        if result.is_err() {
+            return result;
+        }
+
+        Ok(result.unwrap())
+    }
+
 }
