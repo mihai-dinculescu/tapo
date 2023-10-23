@@ -141,7 +141,7 @@ impl KlapProtocol {
 
         let request = Request::post(&url)
             .cookie_jar(self.cookie_jar.clone())
-            .body(local_seed.clone())
+            .body(local_seed)
             .map_err(isahc::Error::from)?;
 
         let response = self
@@ -175,9 +175,7 @@ impl KlapProtocol {
         debug!("Performing handshake2...");
         let url = format!("{url}/handshake2");
 
-        let payload = KlapCipher::sha256(
-            &[remote_seed.clone(), local_seed.clone(), auth_hash.clone()].concat(),
-        );
+        let payload = KlapCipher::sha256(&[remote_seed, local_seed, auth_hash].concat());
 
         let request = Request::post(&url)
             .cookie_jar(self.cookie_jar.clone())
