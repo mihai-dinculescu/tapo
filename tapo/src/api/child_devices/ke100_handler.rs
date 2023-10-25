@@ -45,7 +45,7 @@ impl<'h> KE100Handler<'h> {
     /// # Arguments
     ///
     /// * `target_temperature` - between min_control_temp and max_control_temp
-    pub async fn set_temperature(&self, target_temperature: u8) -> Result<Option<KE100Result>, Error> {
+    pub async fn set_temperature(&self, target_temperature: u8) -> Result<(), Error> {
 
         let control_range = self.get_control_range().await?;
 
@@ -59,15 +59,11 @@ impl<'h> KE100Handler<'h> {
         let json = serde_json::to_value(TrvSetDeviceInfoParams::new().target_temp(target_temperature)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        let result = self.hub_handler
+        self.hub_handler
             .control_child(self.device_id.clone(), request)
-            .await;
+            .await?;
 
-        if result.is_err() {
-            return result;
-        }
-
-        Ok(result.unwrap())
+        Ok(())
     }
 
     /// Sets the *min temperature*, which is applied in frost protection mode.
