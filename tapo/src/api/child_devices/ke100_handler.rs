@@ -60,7 +60,7 @@ impl<'h> KE100Handler<'h> {
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
         self.hub_handler
-            .control_child(self.device_id.clone(), request)
+            .control_child::<serde_json::Value>(self.device_id.clone(), request)
             .await?;
 
         Ok(())
@@ -71,19 +71,15 @@ impl<'h> KE100Handler<'h> {
     /// # Arguments
     ///
     /// * `min_temperature` - between 5 and 15
-    pub async fn set_min_temperature(&self, min_temperature: u8) -> Result<Option<KE100Result>, Error> {
+    pub async fn set_min_temperature(&self, min_temperature: u8) -> Result<(), Error> {
         let json = serde_json::to_value(TrvSetDeviceInfoParams::new().min_temp(min_temperature)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        let result = self.hub_handler
-            .control_child(self.device_id.clone(), request)
-            .await;
+        self.hub_handler
+            .control_child::<serde_json::Value>(self.device_id.clone(), request)
+            .await?;
 
-        if result.is_err() {
-            return result;
-        }
-
-        Ok(result.unwrap())
+        Ok(())
     }
 
     /// Sets the *minimal control temperature*.
@@ -91,19 +87,15 @@ impl<'h> KE100Handler<'h> {
     /// # Arguments
     ///
     /// * `min_control_temperature`
-    pub async fn set_min_control_temperature(&self, min_control_temperature: u8) -> Result<Option<KE100Result>, Error> {
+    pub async fn set_min_control_temperature(&self, min_control_temperature: u8) -> Result<(), Error> {
         let json = serde_json::to_value(TrvSetDeviceInfoParams::new().min_control_temp(min_control_temperature)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        let result = self.hub_handler
-            .control_child(self.device_id.clone(), request)
-            .await;
+        self.hub_handler
+            .control_child::<serde_json::Value>(self.device_id.clone(), request)
+            .await?;
 
-        if result.is_err() {
-            return result;
-        }
-
-        Ok(result.unwrap())
+        Ok(())
     }
 
     /// Sets the *maximum control temperature*.
@@ -111,19 +103,15 @@ impl<'h> KE100Handler<'h> {
     /// # Arguments
     ///
     /// * `max_control_temperature`
-    pub async fn set_max_control_temperature(&self, max_control_temperature: u8) -> Result<Option<KE100Result>, Error> {
+    pub async fn set_max_control_temperature(&self, max_control_temperature: u8) -> Result<(), Error> {
         let json = serde_json::to_value(TrvSetDeviceInfoParams::new().max_control_temp(max_control_temperature)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        let result = self.hub_handler
-            .control_child(self.device_id.clone(), request)
-            .await;
+        self.hub_handler
+            .control_child::<serde_json::Value>(self.device_id.clone(), request)
+            .await?;
 
-        if result.is_err() {
-            return result;
-        }
-
-        Ok(result.unwrap())
+        Ok(())
     }
 
     /// Sets frost protection on the device to *on* or *off*.
@@ -131,19 +119,15 @@ impl<'h> KE100Handler<'h> {
     /// # Arguments
     ///
     /// * `frost_protection_on` - true/false
-    pub async fn set_frost_protection(&self, frost_protection_on: bool) -> Result<Option<KE100Result>, Error> {
+    pub async fn set_frost_protection(&self, frost_protection_on: bool) -> Result<(), Error> {
         let json = serde_json::to_value(TrvSetDeviceInfoParams::new().frost_protection_on(frost_protection_on)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
     
-        let result = self.hub_handler
-            .control_child(self.device_id.clone(), request)
-            .await;
+        self.hub_handler
+            .control_child::<serde_json::Value>(self.device_id.clone(), request)
+            .await?;
 
-        if result.is_err() {
-            return result;
-        }
-        
-        Ok(result.unwrap())
+        Ok(())
     }
 
     /// Sets child protection on the device to *on* or *off*.
@@ -151,19 +135,15 @@ impl<'h> KE100Handler<'h> {
     /// # Arguments
     ///
     /// * `child_protection_on` - true/false
-    pub async fn set_child_protection(&self, child_protection_on: bool) -> Result<Option<KE100Result>, Error> {
+    pub async fn set_child_protection(&self, child_protection_on: bool) -> Result<(), Error> {
         let json = serde_json::to_value(TrvSetDeviceInfoParams::new().child_protection(child_protection_on)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
     
-        let result = self.hub_handler
-            .control_child(self.device_id.clone(), request)
-            .await;
+        self.hub_handler
+            .control_child::<serde_json::Value>(self.device_id.clone(), request)
+            .await?;
 
-        if result.is_err() {
-            return result;
-        }
-        
-        Ok(result.unwrap())
+        Ok(())
     }
 
     /// Sets the *temperature offset*.
@@ -171,19 +151,15 @@ impl<'h> KE100Handler<'h> {
     /// # Arguments
     ///
     /// * `temp_offset` - between 5 and 30
-    pub async fn set_temp_offset(&self, temp_offset: i8) -> Result<Option<KE100Result>, Error> {
+    pub async fn set_temp_offset(&self, temp_offset: i8) -> Result<(), Error> {
         let json = serde_json::to_value(TrvSetDeviceInfoParams::new().temp_offset(temp_offset)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        let result = self.hub_handler
-            .control_child(self.device_id.clone(), request)
-            .await;
+        self.hub_handler
+            .control_child::<serde_json::Value>(self.device_id.clone(), request)
+            .await?;
 
-        if result.is_err() {
-            return result;
-        }
-
-        Ok(result.unwrap())
+        Ok(())
     }
 
     /// Returns *min_control_temp* and *max_control_temp* as Vec<u8>.
