@@ -3,7 +3,8 @@ use crate::error::Error;
 use crate::requests::LightSetDeviceInfoParams;
 use crate::responses::{DeviceInfoLightResult, DeviceUsageEnergyMonitoringResult};
 
-/// Handler for the [L510](https://www.tapo.com/en/search/?q=L510) and [L610](https://www.tapo.com/en/search/?q=L610) devices.
+/// Handler for the [L510](https://www.tapo.com/en/search/?q=L510), [L520](https://www.tapo.com/en/search/?q=L520)
+/// and [L610](https://www.tapo.com/en/search/?q=L610) devices.
 pub struct LightHandler {
     client: ApiClient,
 }
@@ -51,6 +52,32 @@ impl LightHandler {
     /// Returns *device usage* as [`DeviceUsageEnergyMonitoringResult`].
     pub async fn get_device_usage(&self) -> Result<DeviceUsageEnergyMonitoringResult, Error> {
         self.client.get_device_usage().await
+    }
+
+    /// Returns a [`LightSetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
+    /// [`LightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # use tapo::requests::Color;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// #     .l510("192.168.1.100")
+    /// #     .await?;
+    /// device
+    ///     .set()
+    ///     .brightness(50)
+    ///     .off()
+    ///     .send()
+    ///     .await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn set(&self) -> LightSetDeviceInfoParams {
+        LightSetDeviceInfoParams::new(&self.client)
     }
 
     /// Sets the *brightness* and turns *on* the device.

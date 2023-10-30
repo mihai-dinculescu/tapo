@@ -168,6 +168,32 @@ impl ApiClient {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .l520("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn l520(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(LightHandler::new(self))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`LightHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
     ///     .l610("192.168.1.100")
     ///     .await?;
     /// device.on().await?;

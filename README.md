@@ -8,7 +8,7 @@
 [![PyPI][pypi_badge]][pypi]
 [![Python][pypi_versions_badge]][pypi]
 [![PyPI][pypi_downloads_badge]][pypi]\
-Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L530, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P115), hubs (H100), switches (S200B) and sensors (T100, T110, T310, T315).
+Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L530, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P115), hubs (H100), switches (S200B) and sensors (T100, T110, T310, T315).
 
 [license_badge]: https://img.shields.io/crates/l/tapo.svg
 [license]: https://github.com/mihai-dinculescu/tapo/blob/main/LICENSE
@@ -28,22 +28,22 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 &check; - Rust only\
 &#x2705; - Rust and Python
 
-| Feature               | GenericDevice | L510, L610 | L530, L630, L900 | L920, L930 | P100, P105 | P110, P115 |
-| --------------------- | ------------: | ---------: | ---------------: | ---------: | ---------: | ---------: |
-| on                    |      &#x2705; |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
-| off                   |      &#x2705; |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
-| get_device_info       |      &#x2705; |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
-| get_device_info_json  |      &#x2705; |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
-| get_device_usage      |               |    &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
-| get_energy_usage      |               |            |                  |            |            |   &#x2705; |
-| get_energy_data       |               |            |                  |            |            |   &#x2705; |
-| get_current_power     |               |            |                  |            |            |   &#x2705; |
-| set_brightness        |               |    &check; |          &check; |    &check; |            |            |
-| set_color             |               |            |          &check; |    &check; |            |            |
-| set_hue_saturation    |               |            |          &check; |    &check; |            |            |
-| set_color_temperature |               |            |          &check; |    &check; |            |            |
-| set_lighting_effect   |               |            |                  |    &check; |            |            |
-| set() API \*          |               |            |          &check; |    &check; |            |            |
+| Feature               | GenericDevice | L510, L520, L610 | L530, L630, L900 | L920, L930 | P100, P105 | P110, P115 |
+| --------------------- | ------------: | ---------------: | ---------------: | ---------: | ---------: | ---------: |
+| on                    |      &#x2705; |          &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| off                   |      &#x2705; |          &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| get_device_info       |      &#x2705; |          &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| get_device_info_json  |      &#x2705; |          &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| get_device_usage      |               |          &check; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| get_energy_usage      |               |                  |                  |            |            |   &#x2705; |
+| get_energy_data       |               |                  |                  |            |            |   &#x2705; |
+| get_current_power     |               |                  |                  |            |            |   &#x2705; |
+| set_brightness        |               |          &check; |          &check; |    &check; |            |            |
+| set_color             |               |                  |          &check; |    &check; |            |            |
+| set_hue_saturation    |               |                  |          &check; |    &check; |            |            |
+| set_color_temperature |               |                  |          &check; |    &check; |            |            |
+| set_lighting_effect   |               |                  |                  |    &check; |            |            |
+| set() API \*          |               |          &check; |          &check; |    &check; |            |            |
 
 \* The `set()` API allows multiple properties to be set in a single request.
 

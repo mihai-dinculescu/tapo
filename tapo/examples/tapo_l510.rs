@@ -1,4 +1,4 @@
-/// L510 Example
+/// L510, L520 & L610 Example
 use std::{env, thread, time::Duration};
 
 use log::{info, LevelFilter};
@@ -26,17 +26,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Turning device on...");
     device.on().await?;
 
+    info!("Waiting 2 seconds...");
+    thread::sleep(Duration::from_secs(2));
+
     info!("Setting the brightness to 30%...");
     device.set_brightness(30).await?;
 
     info!("Waiting 2 seconds...");
     thread::sleep(Duration::from_secs(2));
 
+    info!("Turning device off...");
+    device.off().await?;
+
     info!("Waiting 2 seconds...");
     thread::sleep(Duration::from_secs(2));
 
-    info!("Turning device off...");
-    device.off().await?;
+    info!("Using the `set` API to set multiple properties in a single request...");
+    // By default, adjusting the brightness turns the device on,
+    // so we need to explicitly set it off.
+    device.set().brightness(50).off().send().await?;
 
     let device_info = device.get_device_info().await?;
     info!("Device info: {device_info:?}");
