@@ -12,6 +12,8 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+## [Python v0.1.3][py-v0.1.3] - 2023-11-4
+
 ### Added
 
 - Added support for the L510, L520 and L610 light bulbs.
@@ -214,6 +216,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[py-v0.1.3]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.3
 [py-v0.1.2]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.2
 [py-v0.1.1]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.1
 [v0.7.4]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.4
