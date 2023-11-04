@@ -41,11 +41,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Waiting 2 seconds...");
     thread::sleep(Duration::from_secs(2));
 
-    info!("Using the `set` API to set multiple properties in a single request...");
-    // By default, adjusting the brightness turns the device on,
-    // so we need to explicitly set it off.
-    device.set().brightness(50).off().send().await?;
-
     let device_info = device.get_device_info().await?;
     info!("Device info: {device_info:?}");
 

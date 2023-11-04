@@ -5,7 +5,7 @@ use crate::error::Error;
 
 /// Builder that is used by the [`crate::LightHandler::set`] API to set multiple properties in a single request.
 #[derive(Debug, Serialize)]
-pub struct LightSetDeviceInfoParams<'a> {
+pub(crate) struct LightSetDeviceInfoParams<'a> {
     #[serde(skip)]
     client: &'a dyn ApiClientExt,
     #[serde(skip_serializing_if = "Option::is_none")]

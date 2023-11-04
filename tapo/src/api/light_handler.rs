@@ -54,32 +54,6 @@ impl LightHandler {
         self.client.get_device_usage().await
     }
 
-    /// Returns a [`LightSetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
-    /// [`LightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
-    ///
-    /// # Example
-    ///
-    /// ```rust,no_run
-    /// # use tapo::ApiClient;
-    /// # use tapo::requests::Color;
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// # let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
-    /// #     .l510("192.168.1.100")
-    /// #     .await?;
-    /// device
-    ///     .set()
-    ///     .brightness(50)
-    ///     .off()
-    ///     .send()
-    ///     .await?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub fn set(&self) -> LightSetDeviceInfoParams {
-        LightSetDeviceInfoParams::new(&self.client)
-    }
-
     /// Sets the *brightness* and turns *on* the device.
     ///
     /// # Arguments

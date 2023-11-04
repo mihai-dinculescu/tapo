@@ -9,7 +9,6 @@ file. This change log follows the conventions of
 ### Added
 
 - Added a dedicated handler for the L520 devices.
-- Added support for the `set` API to the L510, L520 and L610 devices.
 
 ## [Python Unreleased][Unreleased]
 
