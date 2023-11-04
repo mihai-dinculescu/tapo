@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "tapo"
 version = "0.1.2"
-description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with plugs (P100, P105, P110, P115)."
+description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L610) and plugs (P100, P105, P110, P115)."
 authors = ["Mihai Dinculescu <mihai.dinculescu@outlook.com>"]
 
 [project]
 name = "tapo"
 version = "0.1.2"
-description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with plugs (P100, P105, P110, P115)."
+description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L610) and plugs (P100, P105, P110, P115)."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
@@ -18,7 +18,7 @@ maintainers = [
 ]
 keywords = ["Tapo", "TP-Link", "Smart Home", "Home Automation", "IoT"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Topic :: Software Development :: Embedded Systems",
     "Environment :: Console",
     "Operating System :: OS Independent",

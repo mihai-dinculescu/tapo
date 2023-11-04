@@ -2,7 +2,9 @@ use pyo3::prelude::*;
 use tapo::ApiClient;
 
 use crate::errors::ErrorWrapper;
-use crate::handlers::{PyGenericDeviceHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler};
+use crate::handlers::{
+    PyGenericDeviceHandler, PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler,
+};
 
 #[pyclass(name = "ApiClient")]
 pub struct PyApiClient {
@@ -25,6 +27,30 @@ impl PyApiClient {
                 .await
                 .map_err(ErrorWrapper)?;
             Ok(PyGenericDeviceHandler::new(handler))
+        })
+    }
+
+    pub fn l510<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let client = self.client.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let handler = client.l510(ip_address).await.map_err(ErrorWrapper)?;
+            Ok(PyLightHandler::new(handler))
+        })
+    }
+
+    pub fn l520<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let client = self.client.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let handler = client.l520(ip_address).await.map_err(ErrorWrapper)?;
+            Ok(PyLightHandler::new(handler))
+        })
+    }
+
+    pub fn l610<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let client = self.client.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let handler = client.l610(ip_address).await.map_err(ErrorWrapper)?;
+            Ok(PyLightHandler::new(handler))
         })
     }
 

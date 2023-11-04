@@ -54,26 +54,41 @@ impl PyPlugHandler {
     pub fn get_device_info<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
         let handler = self.handler.clone();
         pyo3_asyncio::tokio::future_into_py(py, async move {
-            let device_info = handler
+            let result = handler
                 .lock()
                 .await
                 .get_device_info()
                 .await
                 .map_err(ErrorWrapper)?;
-            Ok(device_info)
+            Ok(result)
+        })
+    }
+
+    pub fn get_device_info_json<'a>(&self, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let handler = self.handler.clone();
+
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let result = handler
+                .lock()
+                .await
+                .get_device_info_json()
+                .await
+                .map_err(ErrorWrapper)?;
+
+            Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
         })
     }
 
     pub fn get_device_usage<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
         let handler = self.handler.clone();
         pyo3_asyncio::tokio::future_into_py(py, async move {
-            let device_info = handler
+            let result = handler
                 .lock()
                 .await
                 .get_device_usage()
                 .await
                 .map_err(ErrorWrapper)?;
-            Ok(device_info)
+            Ok(result)
         })
     }
 }

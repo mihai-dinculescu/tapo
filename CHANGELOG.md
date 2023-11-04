@@ -13,9 +13,17 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+### Added
+
+- Added support for the L510, L520 and L610 light bulbs.
+
 ### Changed
 
 - The minimum required version of Python has been changed to 3.8, up from 3.7.
+
+### Fixed
+
+- Fixed an issue that was preventing `get_device_info_json` from working on the plug devices.
 
 ## [Python v0.1.2][py-v0.1.2] - 2023-10-19
 

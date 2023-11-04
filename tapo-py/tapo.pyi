@@ -97,6 +97,63 @@ class ApiClient:
             await device.on()
             ```
         """
+    async def l510(self, ip_address: str) -> LightHandler:
+        """Specializes the given `ApiClient` into an authenticated `LightHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            LightHandler: Handler for the [L510](https://www.tapo.com/en/search/?q=L510),
+            [L520](https://www.tapo.com/en/search/?q=L520) and
+            [L610](https://www.tapo.com/en/search/?q=L610) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.l510("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+    async def l520(self, ip_address: str) -> LightHandler:
+        """Specializes the given `ApiClient` into an authenticated `LightHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            LightHandler: Handler for the [L510](https://www.tapo.com/en/search/?q=L510),
+            [L520](https://www.tapo.com/en/search/?q=L520) and
+            [L610](https://www.tapo.com/en/search/?q=L610) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.l520("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+    async def l610(self, ip_address: str) -> LightHandler:
+        """Specializes the given `ApiClient` into an authenticated `LightHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            LightHandler: Handler for the [L510](https://www.tapo.com/en/search/?q=L510),
+            [L520](https://www.tapo.com/en/search/?q=L520) and
+            [L610](https://www.tapo.com/en/search/?q=L610) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.l610("192.168.1.100")
+
+            await device.on()
+            ```
+        """
     async def p100(self, ip_address: str) -> PlugHandler:
         """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
 
@@ -202,6 +259,52 @@ class GenericDeviceHandler:
             dict: Device info as a dictionary.
         """
 
+class LightHandler:
+    """Handler for the [L510](https://www.tapo.com/en/search/?q=L510),
+    [L520](https://www.tapo.com/en/search/?q=L520) and
+    [L610](https://www.tapo.com/en/search/?q=L610) devices.
+    """
+
+    def __init__(self, handler: object):
+        """Private constructor.
+        It should not be called from outside the tapo library.
+        """
+    async def refresh_session(self) -> None:
+        """Refreshes the authentication session."""
+    async def on(self) -> None:
+        """Turns *on* the device."""
+    async def off(self) -> None:
+        """Turns *off* the device."""
+    async def get_device_info(self) -> DeviceInfoLightResult:
+        """Returns *device info* as `DeviceInfoLightResult`.
+        It is not guaranteed to contain all the properties returned from the Tapo API.
+        If the deserialization fails, or if a property that you care about it's not present,
+        try `DeviceInfoLightResult.get_device_info_json`.
+
+        Returns:
+            DeviceInfoLightResult: Device info of Tapo L510, L520 and L610.
+            Superset of `GenericDeviceInfoResult`.
+        """
+    async def get_device_info_json(self) -> dict:
+        """Returns *device info* as json.
+        It contains all the properties returned from the Tapo API.
+
+        Returns:
+            dict: Device info as a dictionary.
+        """
+    async def get_device_usage(self) -> DeviceUsageResult:
+        """Returns *device usage* as `DeviceUsageResult`.
+
+        Returns:
+            DeviceUsageResult: Contains the time usage.
+        """
+    async def set_brightness(self, brightness: int) -> None:
+        """Sets the *brightness* and turns *on* the device.
+
+        Args:
+            brightness (int): between 1 and 100
+        """
+
 class PlugHandler:
     """Handler for the [P100](https://www.tapo.com/en/search/?q=P100)
     & [P105](https://www.tapo.com/en/search/?q=P105) devices.
@@ -305,6 +408,12 @@ class PlugEnergyMonitoringHandler:
             EnergyDataResult: Energy data for the requested `EnergyDataInterval`.
         """
 
+class DefaultStateType(StrEnum):
+    """The type of the default state."""
+
+    Custom = "custom"
+    LastStates = "last_states"
+
 class DeviceInfoGenericResult:
     """Device info of a Generic Tapo device."""
 
@@ -342,6 +451,64 @@ class DeviceInfoGenericResult:
             dict: The result as a dictionary.
         """
 
+class DeviceInfoLightResult:
+    """Device info of Tapo L510, L520 and L610. Superset of `GenericDeviceInfoResult`."""
+
+    device_id: str
+    type: str
+    model: str
+    hw_id: str
+    hw_ver: str
+    fw_id: str
+    fw_ver: str
+    oem_id: str
+    mac: str
+    ip: str
+    ssid: str
+    signal_level: int
+    rssi: int
+    specs: str
+    lang: str
+    device_on: bool
+    on_time: int
+    """The time in seconds this device has been ON since the last state change (ON/OFF)."""
+    overheated: bool
+    nickname: str
+    avatar: str
+    has_set_location_info: bool
+    region: Optional[str]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    time_diff: Optional[int]
+
+    # Unique to this device
+    brightness: int
+    dynamic_light_effect_enable: bool
+    dynamic_light_effect_id: Optional[str]
+    hue: Optional[int]
+    saturation: Optional[int]
+    color_temp: int
+    default_states: DefaultLightState
+    """The default state of a device to be used when internet connectivity is lost after a power cut."""
+
+    def to_dict(self) -> dict:
+        """Gets all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """
+
+class DefaultLightState:
+    """Light Default State."""
+
+    type: DefaultStateType
+    state: LightState
+
+class LightState:
+    """Light State."""
+
+    brightness: int
+
 class DeviceInfoPlugResult:
     """Device info of Tapo P100, P105, P110 and P115. Superset of `GenericDeviceInfoResult`."""
 
@@ -371,7 +538,10 @@ class DeviceInfoPlugResult:
     latitude: Optional[float]
     longitude: Optional[float]
     time_diff: Optional[int]
+
+    # Unique to this device
     default_states: PlugDefaultState
+    """The default state of a device to be used when internet connectivity is lost after a power cut."""
 
     def to_dict(self) -> dict:
         """Gets all the properties of this result as a dictionary.
@@ -385,12 +555,6 @@ class PlugDefaultState:
 
     type: DefaultStateType
     state: PlugState
-
-class DefaultStateType(StrEnum):
-    """The type of the default state."""
-
-    Custom = "custom"
-    LastStates = "last_states"
 
 class PlugState:
     """Plug State."""
