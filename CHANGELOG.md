@@ -6,14 +6,16 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.7.5][v0.7.5] - 2023-11-05
+
 ### Added
 
 - Added support for the T300 water sensor.
 - Added a dedicated handler for the L520 devices.
 
-## [Python Unreleased][Unreleased]
-
-## [Python v0.1.3][py-v0.1.3] - 2023-11-4
+## [Python v0.1.3][py-v0.1.3] - 2023-11-04
 
 ### Added
 
@@ -217,6 +219,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.5]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.5
 [py-v0.1.3]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.3
 [py-v0.1.2]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.2
 [py-v0.1.1]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.1
