@@ -8,6 +8,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- Added support for the T300 water sensor.
 - Added a dedicated handler for the L520 devices.
 
 ## [Python Unreleased][Unreleased]

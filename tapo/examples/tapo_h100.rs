@@ -36,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let trigger_logs = s200b.get_trigger_logs(5, 0).await?;
 
                 info!(
-                    "Found S200B child device with nickname: {}, id: {}, last 5 trigger logs: {:?}",
+                    "Found S200B child device with nickname: {}, id: {}, last 5 trigger logs: {:?}.",
                     device.nickname, device.device_id, trigger_logs
                 );
             }
@@ -45,7 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let trigger_logs = t100.get_trigger_logs(5, 0).await?;
 
                 info!(
-                    "Found T100 child device with nickname: {}, id: {}, detected: {}, last 5 trigger logs: {:?}",
+                    "Found T100 child device with nickname: {}, id: {}, detected: {}, last 5 trigger logs: {:?}.",
                     device.nickname, device.device_id, device.detected, trigger_logs
                 );
             }
@@ -54,8 +54,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let trigger_logs = t110.get_trigger_logs(5, 0).await?;
 
                 info!(
-                    "Found T110 child device with nickname: {}, id: {}, open: {}, last 5 trigger logs: {:?}",
+                    "Found T110 child device with nickname: {}, id: {}, open: {}, last 5 trigger logs: {:?}.",
                     device.nickname, device.device_id, device.open, trigger_logs
+                );
+            }
+            ChildDeviceResult::T300(device) => {
+                let t300 = hub.t300(&device.device_id);
+                let trigger_logs = t300.get_trigger_logs(5, 0).await?;
+
+                info!(
+                    "Found T300 child device with nickname: {}, id: {}, in_alarm: {}, water_leak_status: {:?}, last 5 trigger logs: {:?}.",
+                    device.nickname,
+                    device.device_id,
+                    device.in_alarm,
+                    device.water_leak_status,
+                    trigger_logs
                 );
             }
             ChildDeviceResult::T310(device) | ChildDeviceResult::T315(device) => {
@@ -63,7 +76,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let temperature_humidity_records = t31x.get_temperature_humidity_records().await?;
 
                 info!(
-                    "Found T31X child device with nickname: {}, id: {}, temperature: {} {:?}, humidity: {}%, 24-hour ago record: {:?}",
+                    "Found T31X child device with nickname: {}, id: {}, temperature: {} {:?}, humidity: {}%, 24-hour ago record: {:?}.",
                     device.nickname,
                     device.device_id,
                     device.current_temperature,
