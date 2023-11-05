@@ -1,7 +1,6 @@
 """Tapo API Client.
 
-Tested with light bulbs (L510, L520, L530, L610, L630), light strips (L900, L920, L930),
-plugs (P100, P105, P110, P115), hubs (H100), switches (S200B) and sensors (T100, T110, T310, T315).
+Tested with light bulbs (L510, L520, L610) and plugs (P100, P105, P110, P115).
 
 Example:
     ```python
@@ -29,8 +28,7 @@ from typing import Optional, List
 class ApiClient:
     """Tapo API Client.
 
-    Tested with light bulbs (L510, L520, L530, L610, L630), light strips (L900, L920, L930),
-    plugs (P100, P105, P110, P115), hubs (H100), switches (S200B) and sensors (T100, T110, T310, T315).
+    Tested with light bulbs (L510, L520, L610) and plugs (P100, P105, P110, P115).
 
     Example:
         ```python
