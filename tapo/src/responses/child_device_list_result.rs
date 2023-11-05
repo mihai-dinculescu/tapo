@@ -64,7 +64,7 @@ pub enum ChildDeviceResult {
     T310(Box<T31XResult>),
     /// T315 temperature & humidity sensor.
     T315(Box<T31XResult>),
-    /// KE100 TRV.
+    /// KE100 thermostatic radiator valve (TRV).
     KE100(Box<KE100Result>),
     /// Catch-all for currently unsupported devices.
     /// Please open an issue if you need support for a new device.

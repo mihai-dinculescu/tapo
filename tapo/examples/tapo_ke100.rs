@@ -18,9 +18,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tapo_username = env::var("TAPO_USERNAME")?;
     let tapo_password = env::var("TAPO_PASSWORD")?;
     let ip_address = env::var("IP_ADDRESS")?;
-    // ID of the KE100 device. Can be obtained from executing `get_child_device_component_list_json()`` on the hub device.
+    // ID of the KE100 device. Can be obtained from executing `get_child_device_component_list()`` on the hub device.
     let device_id = env::var("DEVICE_ID")?;
-    let target_temp: u8 = env::var("TEMPERATURE")?.parse().unwrap();
+    let target_temperature: u8 = env::var("TARGET_TEMPERATURE")?.parse()?;
 
     let hub = ApiClient::new(tapo_username, tapo_password)?
         .h100(ip_address)
@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Device info: {device_info:?}");
 
     // Set temperature on target device
-    device.set_temperature(target_temp).await?;
+    device.set_target_temperature(target_temperature).await?;
 
     // Get the device info of the child device
     let device_info = device.get_device_info().await?;

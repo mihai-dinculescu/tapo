@@ -1,16 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt};
-
-/// Temperature unit.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-#[allow(missing_docs)]
-pub enum TemperatureUnit {
-    Celsius,
-    Fahrenheit,
-}
+use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt, TemperatureUnit};
 
 
 /// KE100 TRV.
@@ -41,13 +32,18 @@ pub struct KE100Result {
     pub r#type: String,
     #[serde(rename = "temp_unit")]
     pub temperature_unit: TemperatureUnit,
-    pub current_temp: f32,
-    pub target_temp: f32,
-    pub min_control_temp: u8,
-    pub max_control_temp: u8,
+    #[serde(rename = "current_temp")]
+    pub current_temperature: f32,
+    #[serde(rename = "target_temp")]
+    pub target_temperature: f32,
+    #[serde(rename = "min_control_temp")]
+    pub min_control_temperature: u8,
+    #[serde(rename = "max_control_temp")]
+    pub max_control_temperature: u8,
     pub frost_protection_on: bool,
     pub location: String,
-    pub temp_offset: i8,
+    #[serde(rename = "temp_offset")]
+    pub temperature_offset: i8,
     pub child_protection: bool,
 }
 

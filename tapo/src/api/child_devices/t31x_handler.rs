@@ -41,6 +41,6 @@ impl<'h> T31XHandler<'h> {
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult));
 
-        Ok(result.unwrap().try_into()?)
+        Ok(result?.try_into()?)
     }
 }
