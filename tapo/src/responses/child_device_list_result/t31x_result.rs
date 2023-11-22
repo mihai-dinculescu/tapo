@@ -63,7 +63,7 @@ pub struct T31XResult {
 
 impl TapoResponseExt for T31XResult {}
 
-impl DecodableResultExt for Box<T31XResult> {
+impl DecodableResultExt for T31XResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.nickname = decode_value(&self.nickname)?;
         Ok(self)

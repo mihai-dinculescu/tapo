@@ -50,7 +50,7 @@ pub struct T300Result {
 
 impl TapoResponseExt for T300Result {}
 
-impl DecodableResultExt for Box<T300Result> {
+impl DecodableResultExt for T300Result {
     fn decode(mut self) -> Result<Self, Error> {
         self.nickname = decode_value(&self.nickname)?;
         Ok(self)

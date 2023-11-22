@@ -71,12 +71,24 @@ pub enum ChildDeviceResult {
 impl DecodableResultExt for ChildDeviceResult {
     fn decode(self) -> Result<Self, Error> {
         match self {
-            ChildDeviceResult::S200B(device) => Ok(ChildDeviceResult::S200B(device.decode()?)),
-            ChildDeviceResult::T100(device) => Ok(ChildDeviceResult::T100(device.decode()?)),
-            ChildDeviceResult::T110(device) => Ok(ChildDeviceResult::T110(device.decode()?)),
-            ChildDeviceResult::T300(device) => Ok(ChildDeviceResult::T300(device.decode()?)),
-            ChildDeviceResult::T310(device) => Ok(ChildDeviceResult::T310(device.decode()?)),
-            ChildDeviceResult::T315(device) => Ok(ChildDeviceResult::T315(device.decode()?)),
+            ChildDeviceResult::S200B(device) => {
+                Ok(ChildDeviceResult::S200B(Box::new(device.decode()?)))
+            }
+            ChildDeviceResult::T100(device) => {
+                Ok(ChildDeviceResult::T100(Box::new(device.decode()?)))
+            }
+            ChildDeviceResult::T110(device) => {
+                Ok(ChildDeviceResult::T110(Box::new(device.decode()?)))
+            }
+            ChildDeviceResult::T300(device) => {
+                Ok(ChildDeviceResult::T300(Box::new(device.decode()?)))
+            }
+            ChildDeviceResult::T310(device) => {
+                Ok(ChildDeviceResult::T310(Box::new(device.decode()?)))
+            }
+            ChildDeviceResult::T315(device) => {
+                Ok(ChildDeviceResult::T315(Box::new(device.decode()?)))
+            }
             ChildDeviceResult::Other => Ok(ChildDeviceResult::Other),
         }
     }

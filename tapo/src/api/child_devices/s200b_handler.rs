@@ -1,7 +1,7 @@
 use crate::api::HubHandler;
 use crate::error::Error;
 use crate::requests::{EmptyParams, GetTriggerLogsParams, TapoParams, TapoRequest};
-use crate::responses::S200BResult;
+use crate::responses::{DecodableResultExt, S200BResult};
 use crate::responses::{S200BLog, TriggerLogsResult};
 
 /// Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) devices.
@@ -24,8 +24,9 @@ impl<'h> S200BHandler<'h> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
         self.hub_handler
-            .control_child(self.device_id.clone(), request)
+            .control_child::<S200BResult>(self.device_id.clone(), request)
             .await
+            .map(|result| result.decode())?
     }
 
     /// Returns a list of trigger logs.

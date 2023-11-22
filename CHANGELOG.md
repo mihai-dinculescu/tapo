@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Fixed
+
+- Fixed an issue that preventing the `nickname` field from being decoded in the `get_device_info` results of child devices of the H100 hub.
+
 ## [Python Unreleased][Unreleased]
 
 ## [Rust v0.7.5][v0.7.5] - 2023-11-05
