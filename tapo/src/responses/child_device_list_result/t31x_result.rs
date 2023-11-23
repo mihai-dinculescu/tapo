@@ -3,7 +3,16 @@ use itertools::izip;
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt, TemperatureUnit};
+use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt};
+
+/// Temperature unit.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[allow(missing_docs)]
+pub enum TemperatureUnit {
+    Celsius,
+    Fahrenheit,
+}
 
 /// T310/T315 temperature & humidity sensor.
 ///

@@ -1,7 +1,7 @@
 use crate::api::HubHandler;
 use crate::error::{Error,TapoResponseError};
 use crate::requests::{EmptyParams, TapoParams, TapoRequest, TrvSetDeviceInfoParams};
-use crate::responses::KE100Result;
+use crate::responses::{KE100Result, TemperatureUnit};
 
 /// Handler for the [KE100] device.
 pub struct KE100Handler<'h> {
@@ -45,7 +45,8 @@ impl<'h> KE100Handler<'h> {
     /// # Arguments
     ///
     /// * `target_temperature` - between min_control_temp and max_control_temp
-    pub async fn set_target_temperature(&self, target_temperature: u8) -> Result<(), Error> {
+    /// * `temperature_unit` - enum with one value: Celsius
+    pub async fn set_target_temperature(&self, target_temperature: u8, temperature_unit: TemperatureUnit) -> Result<(), Error> {
 
         //let control_range = self.get_control_range().await?;
         let device_info = self.get_device_info().await?;
@@ -57,7 +58,7 @@ impl<'h> KE100Handler<'h> {
             });
         }
 
-        let json = serde_json::to_value(TrvSetDeviceInfoParams::new().target_temperature(target_temperature)?)?;
+        let json = serde_json::to_value(TrvSetDeviceInfoParams::new().target_temperature(target_temperature, temperature_unit)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
         self.hub_handler
@@ -72,8 +73,9 @@ impl<'h> KE100Handler<'h> {
     /// # Arguments
     ///
     /// * `min_control_temperature`
-    pub async fn set_min_control_temperature(&self, min_control_temperature: u8) -> Result<(), Error> {
-        let json = serde_json::to_value(TrvSetDeviceInfoParams::new().min_control_temperature(min_control_temperature)?)?;
+    /// * `temperature_unit` - enum with one value: Celsius
+    pub async fn set_min_control_temperature(&self, min_control_temperature: u8, temperature_unit: TemperatureUnit) -> Result<(), Error> {
+        let json = serde_json::to_value(TrvSetDeviceInfoParams::new().min_control_temperature(min_control_temperature, temperature_unit)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
         self.hub_handler
@@ -88,8 +90,9 @@ impl<'h> KE100Handler<'h> {
     /// # Arguments
     ///
     /// * `max_control_temperature`
-    pub async fn set_max_control_temperature(&self, max_control_temperature: u8) -> Result<(), Error> {
-        let json = serde_json::to_value(TrvSetDeviceInfoParams::new().max_control_temperature(max_control_temperature)?)?;
+    /// * `temperature_unit` - enum with one value: Celsius
+    pub async fn set_max_control_temperature(&self, max_control_temperature: u8, temperature_unit: TemperatureUnit) -> Result<(), Error> {
+        let json = serde_json::to_value(TrvSetDeviceInfoParams::new().max_control_temperature(max_control_temperature, temperature_unit)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
         self.hub_handler
@@ -135,9 +138,10 @@ impl<'h> KE100Handler<'h> {
     ///
     /// # Arguments
     ///
-    /// * `temperature_offset` - between 5 and 30
-    pub async fn set_temperature_offset(&self, temperature_offset: i8) -> Result<(), Error> {
-        let json = serde_json::to_value(TrvSetDeviceInfoParams::new().temperature_offset(temperature_offset)?)?;
+    /// * `temperature_offset` - between -10 and 10
+    /// * `temperature_unit` - enum with one value: Celsius
+    pub async fn set_temperature_offset(&self, temperature_offset: i8, temperature_unit: TemperatureUnit) -> Result<(), Error> {
+        let json = serde_json::to_value(TrvSetDeviceInfoParams::new().temperature_offset(temperature_offset, temperature_unit)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
         self.hub_handler

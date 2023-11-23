@@ -33,8 +33,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let device_info = device.get_device_info().await?;
     info!("Device info: {device_info:?}");
 
-    // Set temperature on target device
-    device.set_target_temperature(target_temperature).await?;
+    // Set temperature on target device and set temperature unit to Celsius.
+    // KE100 currently only supports Celsius as temperature unti.
+    device.set_target_temperature(target_temperature, tapo::responses::TemperatureUnit::Celsius).await?;
 
     // Get the device info of the child device
     let device_info = device.get_device_info().await?;

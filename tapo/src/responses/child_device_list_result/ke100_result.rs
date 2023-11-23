@@ -1,8 +1,17 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt, TemperatureUnit};
+use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt};
 
+/// Temperature unit.
+/// Currently only "Celsius" is supported by KE100
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[allow(missing_docs)]
+pub enum TemperatureUnit {
+    Celsius,
+
+}
 
 /// KE100 TRV.
 ///
