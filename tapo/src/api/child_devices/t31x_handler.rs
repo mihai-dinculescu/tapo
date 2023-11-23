@@ -1,7 +1,9 @@
 use crate::api::HubHandler;
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{EmptyParams, TapoParams, TapoRequest};
-use crate::responses::{T31XResult, TemperatureHumidityRecords, TemperatureHumidityRecordsRaw};
+use crate::responses::{
+    DecodableResultExt, T31XResult, TemperatureHumidityRecords, TemperatureHumidityRecordsRaw,
+};
 
 /// Handler for the [T310](https://www.tapo.com/en/search/?q=T310) and [T315](https://www.tapo.com/en/search/?q=T315) devices.
 pub struct T31XHandler<'h> {
@@ -23,9 +25,10 @@ impl<'h> T31XHandler<'h> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
         self.hub_handler
-            .control_child(self.device_id.clone(), request)
+            .control_child::<T31XResult>(self.device_id.clone(), request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+            .map(|result| result.decode())?
     }
 
     /// Returns *temperature and humidity records* from the last 24 hours at 15 minute intervals as [`TemperatureHumidityRecords`].

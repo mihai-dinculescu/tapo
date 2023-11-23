@@ -58,7 +58,7 @@ pub struct KE100Result {
 
 impl TapoResponseExt for KE100Result {}
 
-impl DecodableResultExt for Box<KE100Result> {
+impl DecodableResultExt for KE100Result {
     fn decode(mut self) -> Result<Self, Error> {
         self.nickname = decode_value(&self.nickname)?;
         Ok(self)

@@ -1,7 +1,7 @@
 use crate::api::HubHandler;
 use crate::error::{Error,TapoResponseError};
 use crate::requests::{EmptyParams, TapoParams, TapoRequest, TrvSetDeviceInfoParams};
-use crate::responses::{KE100Result, TemperatureUnit};
+use crate::responses::{KE100Result, TemperatureUnit, DecodableResultExt};
 
 /// Handler for the [KE100] device.
 pub struct KE100Handler<'h> {
@@ -23,9 +23,10 @@ impl<'h> KE100Handler<'h> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
         self.hub_handler
-            .control_child(self.device_id.clone(), request)
+            .control_child::<KE100Result>(self.device_id.clone(), request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+            .map(|result| result.decode())?
     }
 
     /// Returns *device info* as [`serde_json::Value`].
