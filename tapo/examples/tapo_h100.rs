@@ -85,6 +85,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     temperature_humidity_records.records.first()
                 );
             }
+            ChildDeviceResult::KE100(device) => {
+                info!(
+                    "Found KE100 child device with nickname: {}, id: {}, current temperature: {} {:?} and target temperature: {} {:?}.",
+                    device.nickname,
+                    device.device_id,
+                    device.current_temperature,
+                    device.temperature_unit,
+                    device.target_temperature,
+                    device.temperature_unit,
+                );
+            }
             _ => {
                 info!("Found unsupported device.")
             }
