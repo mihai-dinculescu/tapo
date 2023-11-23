@@ -5,6 +5,6 @@ members = ["tapo", "tapo-py"]
 
 [workspace.dependencies]
 chrono = { version = "0.4.25", default-features = false }
-pyo3 = { version = "0.19" }
-pyo3-asyncio = "0.19"
-tokio = { version = "1.33", default-features = false }
+pyo3 = { version = "0.20" }
+pyo3-asyncio = "0.20"
+tokio = { version = "1.34", default-features = false }
