@@ -3,7 +3,7 @@ use std::fmt;
 use serde::de::DeserializeOwned;
 
 use crate::api::ApiClient;
-use crate::api::{S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler, KE100Handler};
+use crate::api::{KE100Handler, S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler};
 use crate::error::Error;
 use crate::requests::TapoRequest;
 use crate::responses::{

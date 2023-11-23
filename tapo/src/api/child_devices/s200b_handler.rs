@@ -1,5 +1,5 @@
 use crate::api::HubHandler;
-use crate::error::{Error,TapoResponseError};
+use crate::error::{Error, TapoResponseError};
 use crate::requests::{EmptyParams, GetTriggerLogsParams, TapoParams, TapoRequest};
 use crate::responses::{DecodableResultExt, S200BResult};
 use crate::responses::{S200BLog, TriggerLogsResult};

@@ -2,6 +2,7 @@
 use std::env;
 
 use log::{info, LevelFilter};
+use tapo::responses::TemperatureUnitKE100;
 use tapo::ApiClient;
 
 #[tokio::main]
@@ -18,7 +19,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tapo_username = env::var("TAPO_USERNAME")?;
     let tapo_password = env::var("TAPO_PASSWORD")?;
     let ip_address = env::var("IP_ADDRESS")?;
-    // ID of the KE100 device. Can be obtained from executing `get_child_device_component_list()`` on the hub device.
+    // ID of the KE100 device.
+    // Can be obtained from executing `get_child_device_component_list()` on the hub device.
     let device_id = env::var("DEVICE_ID")?;
     let target_temperature: u8 = env::var("TARGET_TEMPERATURE")?.parse()?;
 
@@ -34,8 +36,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Device info: {device_info:?}");
 
     // Set temperature on target device and set temperature unit to Celsius.
-    // KE100 currently only supports Celsius as temperature unti.
-    device.set_target_temperature(target_temperature, tapo::responses::TemperatureUnit::Celsius).await?;
+    // KE100 currently only supports Celsius as temperature unit.
+    info!("Setting target temperature to {target_temperature} degrees Celsius...");
+    device
+        .set_target_temperature(target_temperature, TemperatureUnitKE100::Celsius)
+        .await?;
 
     // Get the device info of the child device
     let device_info = device.get_device_info().await?;

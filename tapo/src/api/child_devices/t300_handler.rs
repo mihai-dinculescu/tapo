@@ -1,5 +1,5 @@
 use crate::api::HubHandler;
-use crate::error::{Error,TapoResponseError};
+use crate::error::{Error, TapoResponseError};
 use crate::requests::{EmptyParams, GetTriggerLogsParams, TapoParams, TapoRequest};
 use crate::responses::{DecodableResultExt, T300Result};
 use crate::responses::{T300Log, TriggerLogsResult};
@@ -46,12 +46,9 @@ impl<'h> T300Handler<'h> {
         let child_params = GetTriggerLogsParams::new(page_size, start_id);
         let child_request = TapoRequest::GetTriggerLogs(Box::new(TapoParams::new(child_params)));
 
-        let result = self
-            .hub_handler
+        self.hub_handler
             .control_child::<TriggerLogsResult<T300Log>>(self.device_id.clone(), child_request)
             .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult));
-
-        Ok(result?)
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 }

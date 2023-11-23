@@ -1,16 +1,16 @@
+mod ke100_result;
 mod s200b_result;
 mod t100_result;
 mod t110_result;
 mod t300_result;
 mod t31x_result;
-mod ke100_result;
 
+pub use ke100_result::*;
 pub use s200b_result::*;
 pub use t100_result::*;
 pub use t110_result::*;
 pub use t300_result::*;
 pub use t31x_result::*;
-pub use ke100_result::*;
 
 use serde::{Deserialize, Serialize};
 
@@ -52,6 +52,8 @@ pub enum Status {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "model")]
 pub enum ChildDeviceResult {
+    /// KE100 thermostatic radiator valve (TRV).
+    KE100(Box<KE100Result>),
     /// S200B button switch.
     S200B(Box<S200BResult>),
     /// T100 motion sensor.
@@ -64,8 +66,6 @@ pub enum ChildDeviceResult {
     T310(Box<T31XResult>),
     /// T315 temperature & humidity sensor.
     T315(Box<T31XResult>),
-    /// KE100 thermostatic radiator valve (TRV).
-    KE100(Box<KE100Result>),
     /// Catch-all for currently unsupported devices.
     /// Please open an issue if you need support for a new device.
     #[serde(other)]
@@ -75,6 +75,9 @@ pub enum ChildDeviceResult {
 impl DecodableResultExt for ChildDeviceResult {
     fn decode(self) -> Result<Self, Error> {
         match self {
+            ChildDeviceResult::KE100(device) => {
+                Ok(ChildDeviceResult::KE100(Box::new(device.decode()?)))
+            }
             ChildDeviceResult::S200B(device) => {
                 Ok(ChildDeviceResult::S200B(Box::new(device.decode()?)))
             }
@@ -92,9 +95,6 @@ impl DecodableResultExt for ChildDeviceResult {
             }
             ChildDeviceResult::T315(device) => {
                 Ok(ChildDeviceResult::T315(Box::new(device.decode()?)))
-            }
-            ChildDeviceResult::KE100(device) => {
-                Ok(ChildDeviceResult::KE100(Box::new(device.decode()?)))
             }
             ChildDeviceResult::Other => Ok(ChildDeviceResult::Other),
         }
