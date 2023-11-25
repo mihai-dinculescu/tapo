@@ -1,5 +1,5 @@
 use crate::api::HubHandler;
-use crate::error::Error;
+use crate::error::{Error, TapoResponseError};
 use crate::requests::{EmptyParams, GetTriggerLogsParams, TapoParams, TapoRequest};
 use crate::responses::{DecodableResultExt, T300Result};
 use crate::responses::{T300Log, TriggerLogsResult};
@@ -25,7 +25,8 @@ impl<'h> T300Handler<'h> {
 
         self.hub_handler
             .control_child::<T300Result>(self.device_id.clone(), request)
-            .await
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
             .map(|result| result.decode())?
     }
 
@@ -46,7 +47,8 @@ impl<'h> T300Handler<'h> {
         let child_request = TapoRequest::GetTriggerLogs(Box::new(TapoParams::new(child_params)));
 
         self.hub_handler
-            .control_child(self.device_id.clone(), child_request)
-            .await
+            .control_child::<TriggerLogsResult<T300Log>>(self.device_id.clone(), child_request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 }

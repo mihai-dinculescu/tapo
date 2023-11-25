@@ -1,5 +1,5 @@
 use crate::api::HubHandler;
-use crate::error::Error;
+use crate::error::{Error, TapoResponseError};
 use crate::requests::{EmptyParams, TapoParams, TapoRequest};
 use crate::responses::{
     DecodableResultExt, T31XResult, TemperatureHumidityRecords, TemperatureHumidityRecordsRaw,
@@ -26,7 +26,8 @@ impl<'h> T31XHandler<'h> {
 
         self.hub_handler
             .control_child::<T31XResult>(self.device_id.clone(), request)
-            .await
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
             .map(|result| result.decode())?
     }
 
@@ -40,7 +41,8 @@ impl<'h> T31XHandler<'h> {
         let result = self
             .hub_handler
             .control_child::<TemperatureHumidityRecordsRaw>(self.device_id.clone(), request)
-            .await?;
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
         Ok(result.try_into()?)
     }

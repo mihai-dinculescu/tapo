@@ -31,6 +31,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for child in child_device_list {
         match child {
+            ChildDeviceResult::KE100(device) => {
+                info!(
+                    "Found KE100 child device with nickname: {}, id: {}, current temperature: {} {:?} and target temperature: {} {:?}.",
+                    device.nickname,
+                    device.device_id,
+                    device.current_temperature,
+                    device.temperature_unit,
+                    device.target_temperature,
+                    device.temperature_unit,
+                );
+            }
             ChildDeviceResult::S200B(device) => {
                 let s200b = hub.s200b(&device.device_id);
                 let trigger_logs = s200b.get_trigger_logs(5, 0).await?;

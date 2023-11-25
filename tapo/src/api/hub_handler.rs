@@ -3,7 +3,7 @@ use std::fmt;
 use serde::de::DeserializeOwned;
 
 use crate::api::ApiClient;
-use crate::api::{S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler};
+use crate::api::{KE100Handler, S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler};
 use crate::error::Error;
 use crate::requests::TapoRequest;
 use crate::responses::{
@@ -67,7 +67,7 @@ impl HubHandler {
         &self,
         device_id: String,
         request_data: TapoRequest,
-    ) -> Result<R, Error>
+    ) -> Result<Option<R>, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
@@ -237,5 +237,32 @@ impl HubHandler {
     /// ```
     pub fn t315(&self, device_id: impl Into<String>) -> T31XHandler {
         T31XHandler::new(self, device_id.into())
+    }
+
+    /// Returns a [`KE100Handler`] for the given `device_id`.
+    ///
+    /// # Arguments
+    ///
+    /// * `device_id` - the Device ID of the child device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// // Connect to the hub
+    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .h100("192.168.1.100")
+    ///     .await?;
+    /// // Get a handler for the child device
+    /// let device = hub.ke100("0000000000000000000000000000000000000000");
+    /// // Get the device info of the child device
+    /// let device_info = device.get_device_info().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn ke100(&self, device_id: impl Into<String>) -> KE100Handler {
+        KE100Handler::new(self, device_id.into())
     }
 }

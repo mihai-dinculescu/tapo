@@ -8,7 +8,7 @@
 [![PyPI][pypi_badge]][pypi]
 [![Python][pypi_versions_badge]][pypi]
 [![PyPI][pypi_downloads_badge]][pypi]\
-Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L530, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P115), hubs (H100), switches (S200B) and sensors (T100, T110, T300, T310, T315).
+Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L530, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P115), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
 
 [license_badge]: https://img.shields.io/crates/l/tapo.svg
 [license]: https://github.com/mihai-dinculescu/tapo/blob/main/LICENSE
@@ -49,11 +49,18 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 ## Hub (H100) Support
 
-| Feature                          |   S200B |    T100 |    T110 |    T300 | T310, T315 |
-| -------------------------------- | ------: | ------: | ------: | ------: | ---------: |
-| get_device_info \*               | &check; | &check; | &check; | &check; |    &check; |
-| get_temperature_humidity_records |         |         |         |         |    &check; |
-| get_trigger_logs                 | &check; | &check; | &check; | &check; |            |
+| Feature                          |   KE100 |   S200B |    T100 |    T110 |    T300 | T310, T315 |
+| -------------------------------- | ------: | ------: | ------: | ------: | ------: | ---------: |
+| get_device_info \*               | &check; | &check; | &check; | &check; | &check; |    &check; |
+| get_device_info_json             | &check; | &check; | &check; | &check; | &check; |    &check; |
+| get_temperature_humidity_records |         |         |         |         |         |    &check; |
+| get_trigger_logs                 |         | &check; | &check; | &check; | &check; |            |
+| set_target_temperature           | &check; |         |         |         |         |            |
+| set_min_control_temperature      | &check; |         |         |         |         |            |
+| set_max_control_temperature      | &check; |         |         |         |         |            |
+| set_temperature_offset           | &check; |         |         |         |         |            |
+| set_frost_protection             | &check; |         |         |         |         |            |
+| set_child_protection             | &check; |         |         |         |         |            |
 
 \* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child handler.
 
