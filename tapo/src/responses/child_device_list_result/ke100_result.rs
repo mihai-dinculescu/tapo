@@ -12,7 +12,7 @@ pub enum TemperatureUnitKE100 {
     Celsius,
 }
 
-/// KE100 TRV.
+/// KE100 thermostatic radiator valve (TRV).
 ///
 /// Specific properties: `temperature_unit`, `current_temperature`, `target_temperature`,
 /// `min_control_temperature, `max_control_temperature`, `temperature_offset`,

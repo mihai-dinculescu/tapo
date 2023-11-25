@@ -51,7 +51,6 @@ impl<'h> KE100Handler<'h> {
         target_temperature: u8,
         temperature_unit: TemperatureUnitKE100,
     ) -> Result<(), Error> {
-        //let control_range = self.get_control_range().await?;
         let device_info = self.get_device_info().await?;
 
         if target_temperature < device_info.min_control_temperature

@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let device_info = device.get_device_info().await?;
     info!("Device info: {device_info:?}");
 
-    // Set temperature on target device and set temperature unit to Celsius.
+    // Set target temperature.
     // KE100 currently only supports Celsius as temperature unit.
     info!("Setting target temperature to {target_temperature} degrees Celsius...");
     device

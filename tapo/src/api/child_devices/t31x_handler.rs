@@ -42,8 +42,8 @@ impl<'h> T31XHandler<'h> {
             .hub_handler
             .control_child::<TemperatureHumidityRecordsRaw>(self.device_id.clone(), request)
             .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult));
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
-        Ok(result?.try_into()?)
+        Ok(result.try_into()?)
     }
 }
