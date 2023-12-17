@@ -4,14 +4,14 @@ use async_trait::async_trait;
 use isahc::cookies::CookieJar;
 use isahc::prelude::Configurable;
 use isahc::{AsyncReadResponseExt, HttpClient, Request};
-use log::debug;
+use log::{debug, warn};
 use rand::rngs::StdRng;
 use rand::{RngCore, SeedableRng};
 use serde::de::DeserializeOwned;
 
 use crate::requests::TapoRequest;
 use crate::responses::{validate_response, TapoResponse, TapoResponseExt};
-use crate::Error;
+use crate::{Error, TapoResponseError};
 
 use super::discovery_protocol::DiscoveryProtocol;
 use super::klap_cipher::KlapCipher;
@@ -157,7 +157,8 @@ impl KlapProtocol {
         let local_hash = KlapCipher::sha256(&[local_seed, remote_seed, auth_hash].concat());
 
         if local_hash != server_hash {
-            return Err(anyhow::anyhow!("Local hash does not match server hash").into());
+            warn!("Local hash does not match server hash");
+            return Err(Error::Tapo(TapoResponseError::InvalidCredentials));
         }
 
         debug!("Handshake1 OK");

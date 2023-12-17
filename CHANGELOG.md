@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Changed
+
+- The `anyhow::anyhow!("Local hash does not match server hash")` error has been replaced with the more specific `tapo::TapoResponseError::InvalidCredentials` error.
+
 ## [Python Unreleased][Unreleased]
+
+### Changed
+
+- The `anyhow::anyhow!("Local hash does not match server hash")` error has been replaced with the more specific `tapo::TapoResponseError::InvalidCredentials` error.
 
 ## [Rust v0.7.6][v0.7.6] - 2023-11-25
 
