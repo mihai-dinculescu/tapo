@@ -4,6 +4,8 @@
 pub enum TapoResponseError {
     /// Invalid request.
     InvalidRequest,
+    /// Invalid response.
+    InvalidResponse,
     /// Malformed request.
     MalformedRequest,
     /// Invalid public key.

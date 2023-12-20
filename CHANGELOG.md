@@ -10,11 +10,19 @@ file. This change log follows the conventions of
 
 - The `anyhow::anyhow!("Local hash does not match server hash")` error has been replaced with the more specific `tapo::TapoResponseError::InvalidCredentials` error.
 
+### Fixed
+
+- A handful of edge cases around the Klap Protocol that were causing panics have been fixed to return `tapo::TapoResponseError::SessionTimeout` or `tapo::TapoResponseError::InvalidResponse` errors instead.
+
 ## [Python Unreleased][Unreleased]
 
 ### Changed
 
 - The `anyhow::anyhow!("Local hash does not match server hash")` error has been replaced with the more specific `tapo::TapoResponseError::InvalidCredentials` error.
+
+### Fixed
+
+- A handful of edge cases around the Klap Protocol that were causing panics have been fixed to return `tapo::TapoResponseError::SessionTimeout` or `tapo::TapoResponseError::InvalidResponse` errors instead.
 
 ## [Rust v0.7.6][v0.7.6] - 2023-11-25
 

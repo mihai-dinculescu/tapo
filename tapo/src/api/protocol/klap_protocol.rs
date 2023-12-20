@@ -62,15 +62,24 @@ impl TapoProtocolExt for KlapProtocol {
             .body(payload)
             .map_err(isahc::Error::from)?;
 
-        let response = self
-            .client
-            .send_async(request)
-            .await?
-            .bytes()
-            .await
-            .map_err(anyhow::Error::from)?;
+        let mut response = self.client.send_async(request).await?;
 
-        let response_decrypted = cipher.decrypt(seq, response)?;
+        if !response.status().is_success() {
+            warn!("Response error: {}", response.status());
+
+            let error = match response.status() {
+                isahc::http::StatusCode::UNAUTHORIZED | isahc::http::StatusCode::FORBIDDEN => {
+                    TapoResponseError::SessionTimeout
+                }
+                _ => TapoResponseError::InvalidResponse,
+            };
+
+            return Err(Error::Tapo(error));
+        }
+
+        let response_body = response.bytes().await.map_err(anyhow::Error::from)?;
+
+        let response_decrypted = cipher.decrypt(seq, response_body)?;
         debug!("Device responded with: {response_decrypted:?}");
 
         let inner_response: TapoResponse<R> = serde_json::from_str(&response_decrypted)?;
@@ -144,16 +153,16 @@ impl KlapProtocol {
             .body(local_seed)
             .map_err(isahc::Error::from)?;
 
-        let response = self
-            .client
-            .send_async(request)
-            .await?
-            .bytes()
-            .await
-            .map_err(anyhow::Error::from)?;
+        let mut response = self.client.send_async(request).await?;
 
-        let (remote_seed, server_hash) = response.split_at(16);
+        if !response.status().is_success() {
+            warn!("Handshake1 error: {}", response.status());
+            return Err(Error::Tapo(TapoResponseError::InvalidResponse));
+        }
 
+        let response_body = response.bytes().await.map_err(anyhow::Error::from)?;
+
+        let (remote_seed, server_hash) = response_body.split_at(16);
         let local_hash = KlapCipher::sha256(&[local_seed, remote_seed, auth_hash].concat());
 
         if local_hash != server_hash {
@@ -186,7 +195,8 @@ impl KlapProtocol {
         let response = self.client.send_async(request).await?;
 
         if !response.status().is_success() {
-            return Err(anyhow::anyhow!("").into());
+            warn!("Handshake2 error: {}", response.status());
+            return Err(Error::Tapo(TapoResponseError::InvalidResponse));
         }
 
         debug!("Handshake2 OK");
