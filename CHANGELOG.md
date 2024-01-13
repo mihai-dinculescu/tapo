@@ -12,16 +12,18 @@ file. This change log follows the conventions of
 
 ### Fixed
 
+- The `default_states` field that's part of the device info response has been changed for the L510, L520, and L610 devices to match the actual response from the device.
 - A handful of edge cases around the Klap Protocol that were causing panics have been fixed to return `tapo::TapoResponseError::SessionTimeout` or `tapo::TapoResponseError::InvalidResponse` errors instead.
 
 ## [Python Unreleased][Unreleased]
 
 ### Changed
 
-- The `anyhow::anyhow!("Local hash does not match server hash")` error has been replaced with the more specific `tapo::TapoResponseError::InvalidCredentials` error.
+- The "Local hash does not match server hash" error has been replaced with the more specific `tapo::TapoResponseError::InvalidCredentials` error.
 
 ### Fixed
 
+- The `default_states` field that's part of the device info response has been changed for the L510, L520, and L610 devices to match the actual response from the device.
 - A handful of edge cases around the Klap Protocol that were causing panics have been fixed to return `tapo::TapoResponseError::SessionTimeout` or `tapo::TapoResponseError::InvalidResponse` errors instead.
 
 ## [Rust v0.7.6][v0.7.6] - 2023-11-25

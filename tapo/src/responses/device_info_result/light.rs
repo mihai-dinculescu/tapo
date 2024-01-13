@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, DefaultStateType, TapoResponseExt};
+use crate::responses::{
+    decode_value, DecodableResultExt, DefaultBrightnessState, DefaultPowerType, TapoResponseExt,
+};
 
 /// Device info of Tapo L510, L520 and L610. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -79,14 +81,6 @@ impl DecodableResultExt for DeviceInfoLightResult {
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
 pub struct DefaultLightState {
-    pub r#type: DefaultStateType,
-    pub state: LightState,
-}
-
-/// Light State.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
-#[allow(missing_docs)]
-pub struct LightState {
-    pub brightness: u8,
+    pub brightness: DefaultBrightnessState,
+    pub re_power_type: DefaultPowerType,
 }

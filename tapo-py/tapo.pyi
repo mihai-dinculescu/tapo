@@ -412,6 +412,18 @@ class DefaultStateType(StrEnum):
     Custom = "custom"
     LastStates = "last_states"
 
+class DefaultPowerType(StrEnum):
+    """The type of the default power state."""
+
+    AlwaysOn = "always_on"
+    LastStates = "last_states"
+
+class DefaultBrightnessState:
+    """Default brightness state."""
+
+    type: DefaultStateType
+    value: int
+
 class DeviceInfoGenericResult:
     """Device info of a Generic Tapo device."""
 
@@ -499,13 +511,8 @@ class DeviceInfoLightResult:
 class DefaultLightState:
     """Light Default State."""
 
-    type: DefaultStateType
-    state: LightState
-
-class LightState:
-    """Light State."""
-
-    brightness: int
+    brightness: DefaultBrightnessState
+    re_power_type: DefaultPowerType
 
 class DeviceInfoPlugResult:
     """Device info of Tapo P100, P105, P110 and P115. Superset of `GenericDeviceInfoResult`."""
