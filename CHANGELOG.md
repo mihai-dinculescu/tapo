@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Fixed
+
+- The device info response for the L510, L520, and L610 devices has been fixed to have the `re_power_type` field as optional.
+
 ## [Python Unreleased][Unreleased]
+
+### Fixed
+
+- The device info response for the L510, L520, and L610 devices has been fixed to have the `re_power_type` field as optional.
 
 ## [Rust v0.7.7][v0.7.7] - 2024-01-13
 

@@ -512,7 +512,7 @@ class DefaultLightState:
     """Light Default State."""
 
     brightness: DefaultBrightnessState
-    re_power_type: DefaultPowerType
+    re_power_type: Optional[DefaultPowerType]
 
 class DeviceInfoPlugResult:
     """Device info of Tapo P100, P105, P110 and P115. Superset of `GenericDeviceInfoResult`."""

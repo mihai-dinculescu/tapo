@@ -82,5 +82,5 @@ impl DecodableResultExt for DeviceInfoLightResult {
 #[allow(missing_docs)]
 pub struct DefaultLightState {
     pub brightness: DefaultBrightnessState,
-    pub re_power_type: DefaultPowerType,
+    pub re_power_type: Option<DefaultPowerType>,
 }
