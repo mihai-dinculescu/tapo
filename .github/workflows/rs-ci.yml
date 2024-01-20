@@ -13,12 +13,9 @@ jobs:
     name: Rust checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
       - uses: davidB/rust-cargo-make@v1
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Run format
         run: cargo make format
       - name: Run check
