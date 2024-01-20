@@ -19,6 +19,7 @@ pub(crate) enum TapoRequest {
     SecurePassthrough(TapoParams<SecurePassthroughParams>),
     SetDeviceInfo(Box<TapoParams<serde_json::Value>>),
     SetLightingEffect(Box<TapoParams<LightingEffect>>),
+    DeviceReset(TapoParams<EmptyParams>),
     GetDeviceInfo(TapoParams<EmptyParams>),
     GetDeviceUsage(TapoParams<EmptyParams>),
     GetEnergyUsage(TapoParams<EmptyParams>),

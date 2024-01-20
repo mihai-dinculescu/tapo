@@ -466,6 +466,17 @@ impl ApiClient {
         self.protocol.refresh_session().await
     }
 
+    pub(crate) async fn device_reset(&self) -> Result<(), Error> {
+        debug!("Device reset...");
+        let request = TapoRequest::DeviceReset(TapoParams::new(EmptyParams));
+
+        self.protocol
+            .execute_request::<serde_json::Value>(request, true)
+            .await?;
+
+        Ok(())
+    }
+
     pub(crate) async fn get_device_info<R>(&self) -> Result<R, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,

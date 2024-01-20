@@ -30,18 +30,19 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 | Feature               | GenericDevice | L510, L520, L610 | L530, L630, L900 | L920, L930 | P100, P105 | P110, P115 |
 | --------------------- | ------------: | ---------------: | ---------------: | ---------: | ---------: | ---------: |
-| on                    |      &#x2705; |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
-| off                   |      &#x2705; |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| device_reset          |               |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| get_current_power     |               |                  |                  |            |            |   &#x2705; |
 | get_device_info       |      &#x2705; |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
 | get_device_info_json  |      &#x2705; |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
 | get_device_usage      |               |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
-| get_energy_usage      |               |                  |                  |            |            |   &#x2705; |
 | get_energy_data       |               |                  |                  |            |            |   &#x2705; |
-| get_current_power     |               |                  |                  |            |            |   &#x2705; |
+| get_energy_usage      |               |                  |                  |            |            |   &#x2705; |
+| off                   |      &#x2705; |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| on                    |      &#x2705; |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
 | set_brightness        |               |         &#x2705; |          &check; |    &check; |            |            |
 | set_color             |               |                  |          &check; |    &check; |            |            |
-| set_hue_saturation    |               |                  |          &check; |    &check; |            |            |
 | set_color_temperature |               |                  |          &check; |    &check; |            |            |
+| set_hue_saturation    |               |                  |          &check; |    &check; |            |            |
 | set_lighting_effect   |               |                  |                  |    &check; |            |            |
 | set() API \*          |               |                  |          &check; |    &check; |            |            |
 
@@ -55,12 +56,12 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 | get_device_info_json             | &check; | &check; | &check; | &check; | &check; |    &check; |
 | get_temperature_humidity_records |         |         |         |         |         |    &check; |
 | get_trigger_logs                 |         | &check; | &check; | &check; | &check; |            |
-| set_target_temperature           | &check; |         |         |         |         |            |
-| set_min_control_temperature      | &check; |         |         |         |         |            |
-| set_max_control_temperature      | &check; |         |         |         |         |            |
-| set_temperature_offset           | &check; |         |         |         |         |            |
-| set_frost_protection             | &check; |         |         |         |         |            |
 | set_child_protection             | &check; |         |         |         |         |            |
+| set_frost_protection             | &check; |         |         |         |         |            |
+| set_max_control_temperature      | &check; |         |         |         |         |            |
+| set_min_control_temperature      | &check; |         |         |         |         |            |
+| set_target_temperature           | &check; |         |         |         |         |            |
+| set_temperature_offset           | &check; |         |         |         |         |            |
 
 \* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child handler.
 

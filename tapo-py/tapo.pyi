@@ -273,6 +273,17 @@ class LightHandler:
         """Turns *on* the device."""
     async def off(self) -> None:
         """Turns *off* the device."""
+    async def device_reset(self) -> None:
+        """*Hardware resets* the device.
+
+        Warning:
+            This action will reset the device to its factory settings.
+            The connection to the Wi-Fi network and the Tapo app will be lost,
+            and the device will need to be reconfigured.
+
+        This feature is especially useful when the device is difficult to access
+        and requires reconfiguration.
+        """
     async def get_device_info(self) -> DeviceInfoLightResult:
         """Returns *device info* as `DeviceInfoLightResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
@@ -318,6 +329,17 @@ class PlugHandler:
         """Turns *on* the device."""
     async def off(self) -> None:
         """Turns *off* the device."""
+    async def device_reset(self) -> None:
+        """*Hardware resets* the device.
+
+        Warning:
+            This action will reset the device to its factory settings.
+            The connection to the Wi-Fi network and the Tapo app will be lost,
+            and the device will need to be reconfigured.
+
+        This feature is especially useful when the device is difficult to access
+        and requires reconfiguration.
+        """
     async def get_device_info(self) -> DeviceInfoPlugResult:
         """Returns *device info* as `DeviceInfoPlugResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
@@ -357,6 +379,17 @@ class PlugEnergyMonitoringHandler:
         """Turns *on* the device."""
     async def off(self) -> None:
         """Turns *off* the device."""
+    async def device_reset(self) -> None:
+        """*Hardware resets* the device.
+
+        Warning:
+            This action will reset the device to its factory settings.
+            The connection to the Wi-Fi network and the Tapo app will be lost,
+            and the device will need to be reconfigured.
+
+        This feature is especially useful when the device is difficult to access
+        and requires reconfiguration.
+        """
     async def get_device_info(self) -> DeviceInfoPlugResult:
         """Returns *device info* as `DeviceInfoPlugResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.

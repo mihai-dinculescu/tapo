@@ -61,6 +61,19 @@ impl PyPlugEnergyMonitoringHandler {
         })
     }
 
+    pub fn device_reset<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let handler = self.handler.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            handler
+                .lock()
+                .await
+                .device_reset()
+                .await
+                .map_err(ErrorWrapper)?;
+            Ok(())
+        })
+    }
+
     pub fn get_device_info<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
         let handler = self.handler.clone();
         pyo3_asyncio::tokio::future_into_py(py, async move {
