@@ -6,11 +6,23 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.7.8][v0.7.8] - 2024-01-22
+
+### Added
+
+- Added the `device_reset` method to all plugs and lights.
+
 ### Fixed
 
 - The device info response for the L510, L520, and L610 devices has been fixed to have the `re_power_type` field as optional.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.1.5][py-v0.1.5] - 2024-01-22
+
+### Added
+
+- Added the `device_reset` method to all plugs and lights.
 
 ### Fixed
 
@@ -259,6 +271,8 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.8]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.8
+[py-v0.1.5]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.5
 [v0.7.7]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.7
 [py-v0.1.4]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.1.4
 [v0.7.6]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.6
