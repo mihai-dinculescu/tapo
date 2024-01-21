@@ -129,32 +129,6 @@ impl ApiClient {
         Ok(LightHandler::new(self))
     }
 
-    /// Specializes the given [`ApiClient`] into an authenticated [`ColorLightHandler`].
-    ///
-    /// # Arguments
-    ///
-    /// * `ip_address` - the IP address of the device
-    ///
-    /// # Example
-    ///
-    /// ```rust,no_run
-    /// # use tapo::ApiClient;
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
-    ///     .l530("192.168.1.100")
-    ///     .await?;
-    /// device.on().await?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn l530(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
-
-        Ok(ColorLightHandler::new(self))
-    }
-
     /// Specializes the given [`ApiClient`] into an authenticated [`LightHandler`].
     ///
     /// # Arguments
@@ -179,6 +153,32 @@ impl ApiClient {
         self.login(url).await?;
 
         Ok(LightHandler::new(self))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`ColorLightHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    ///     .l530("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn l530(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
+        let url = build_url(&ip_address.into());
+        self.login(url).await?;
+
+        Ok(ColorLightHandler::new(self))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`LightHandler`].

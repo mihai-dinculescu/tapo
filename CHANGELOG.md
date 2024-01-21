@@ -8,6 +8,10 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+### Added
+
+- Added support for the L530, L630, and L900 color light bulbs.
+
 ## [Rust v0.7.8][v0.7.8] - 2024-01-22
 
 ### Added

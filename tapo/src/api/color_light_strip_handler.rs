@@ -110,7 +110,7 @@ impl ColorLightStripHandler {
     ///
     /// # Arguments
     ///
-    /// * `color` - one of [crate::requests::Color]
+    /// * `color` - one of [crate::requests::Color] as defined in the Google Home app
     pub async fn set_color(&self, color: Color) -> Result<(), Error> {
         ColorLightSetDeviceInfoParams::new(&self.client)
             .color(color)

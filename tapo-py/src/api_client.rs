@@ -3,7 +3,8 @@ use tapo::ApiClient;
 
 use crate::errors::ErrorWrapper;
 use crate::handlers::{
-    PyGenericDeviceHandler, PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler,
+    PyColorLightHandler, PyGenericDeviceHandler, PyLightHandler, PyPlugEnergyMonitoringHandler,
+    PyPlugHandler,
 };
 
 #[pyclass(name = "ApiClient")]
@@ -46,11 +47,35 @@ impl PyApiClient {
         })
     }
 
+    pub fn l530<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let client = self.client.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let handler = client.l530(ip_address).await.map_err(ErrorWrapper)?;
+            Ok(PyColorLightHandler::new(handler))
+        })
+    }
+
     pub fn l610<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
         let client = self.client.clone();
         pyo3_asyncio::tokio::future_into_py(py, async move {
             let handler = client.l610(ip_address).await.map_err(ErrorWrapper)?;
             Ok(PyLightHandler::new(handler))
+        })
+    }
+
+    pub fn l630<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let client = self.client.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let handler = client.l630(ip_address).await.map_err(ErrorWrapper)?;
+            Ok(PyColorLightHandler::new(handler))
+        })
+    }
+
+    pub fn l900<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let client = self.client.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let handler = client.l900(ip_address).await.map_err(ErrorWrapper)?;
+            Ok(PyColorLightHandler::new(handler))
         })
     }
 

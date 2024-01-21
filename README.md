@@ -30,19 +30,19 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 | Feature               | GenericDevice | L510, L520, L610 | L530, L630, L900 | L920, L930 | P100, P105 | P110, P115 |
 | --------------------- | ------------: | ---------------: | ---------------: | ---------: | ---------: | ---------: |
-| device_reset          |               |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| device_reset          |               |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
 | get_current_power     |               |                  |                  |            |            |   &#x2705; |
-| get_device_info       |      &#x2705; |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
-| get_device_info_json  |      &#x2705; |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
-| get_device_usage      |               |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
+| get_device_info       |      &#x2705; |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
+| get_device_info_json  |      &#x2705; |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
+| get_device_usage      |               |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
 | get_energy_data       |               |                  |                  |            |            |   &#x2705; |
 | get_energy_usage      |               |                  |                  |            |            |   &#x2705; |
-| off                   |      &#x2705; |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
-| on                    |      &#x2705; |         &#x2705; |          &check; |    &check; |   &#x2705; |   &#x2705; |
-| set_brightness        |               |         &#x2705; |          &check; |    &check; |            |            |
-| set_color             |               |                  |          &check; |    &check; |            |            |
-| set_color_temperature |               |                  |          &check; |    &check; |            |            |
-| set_hue_saturation    |               |                  |          &check; |    &check; |            |            |
+| off                   |      &#x2705; |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
+| on                    |      &#x2705; |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
+| set_brightness        |               |         &#x2705; |         &#x2705; |    &check; |            |            |
+| set_color             |               |                  |         &#x2705; |    &check; |            |            |
+| set_color_temperature |               |                  |         &#x2705; |    &check; |            |            |
+| set_hue_saturation    |               |                  |         &#x2705; |    &check; |            |            |
 | set_lighting_effect   |               |                  |                  |    &check; |            |            |
 | set() API \*          |               |                  |          &check; |    &check; |            |            |
 
