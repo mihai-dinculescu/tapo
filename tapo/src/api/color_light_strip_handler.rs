@@ -1,7 +1,8 @@
-use crate::api::ApiClient;
 use crate::error::Error;
 use crate::requests::{Color, ColorLightSetDeviceInfoParams, LightingEffect};
 use crate::responses::{DeviceInfoColorLightStripResult, DeviceUsageEnergyMonitoringResult};
+
+use super::{ApiClient, ApiClientExt, HandlerExt};
 
 /// Handler for the [L920](https://www.tapo.com/en/search/?q=L920) and [L930](https://www.tapo.com/en/search/?q=L930) devices.
 pub struct ColorLightStripHandler {
@@ -21,18 +22,12 @@ impl ColorLightStripHandler {
 
     /// Turns *on* the device.
     pub async fn on(&self) -> Result<(), Error> {
-        ColorLightSetDeviceInfoParams::new(&self.client)
-            .on()
-            .send()
-            .await
+        ColorLightSetDeviceInfoParams::new().on().send(self).await
     }
 
     /// Turns *off* the device.
     pub async fn off(&self) -> Result<(), Error> {
-        ColorLightSetDeviceInfoParams::new(&self.client)
-            .off()
-            .send()
-            .await
+        ColorLightSetDeviceInfoParams::new().off().send(self).await
     }
 
     /// *Hardware resets* the device.
@@ -83,13 +78,13 @@ impl ColorLightStripHandler {
     ///     .set()
     ///     .brightness(50)
     ///     .color(Color::HotPink)
-    ///     .send()
+    ///     .send(&device)
     ///     .await?;
     /// # Ok(())
     /// # }
     /// ```
     pub fn set(&self) -> ColorLightSetDeviceInfoParams {
-        ColorLightSetDeviceInfoParams::new(&self.client)
+        ColorLightSetDeviceInfoParams::new()
     }
 
     /// Sets the *brightness* and turns *on* the device.
@@ -99,9 +94,9 @@ impl ColorLightStripHandler {
     ///
     /// * `brightness` - between 1 and 100
     pub async fn set_brightness(&self, brightness: u8) -> Result<(), Error> {
-        ColorLightSetDeviceInfoParams::new(&self.client)
+        ColorLightSetDeviceInfoParams::new()
             .brightness(brightness)
-            .send()
+            .send(self)
             .await
     }
 
@@ -112,9 +107,9 @@ impl ColorLightStripHandler {
     ///
     /// * `color` - one of [crate::requests::Color] as defined in the Google Home app
     pub async fn set_color(&self, color: Color) -> Result<(), Error> {
-        ColorLightSetDeviceInfoParams::new(&self.client)
+        ColorLightSetDeviceInfoParams::new()
             .color(color)
-            .send()
+            .send(self)
             .await
     }
 
@@ -126,9 +121,9 @@ impl ColorLightStripHandler {
     /// * `hue` - between 1 and 360
     /// * `saturation` - between 1 and 100
     pub async fn set_hue_saturation(&self, hue: u16, saturation: u8) -> Result<(), Error> {
-        ColorLightSetDeviceInfoParams::new(&self.client)
+        ColorLightSetDeviceInfoParams::new()
             .hue_saturation(hue, saturation)
-            .send()
+            .send(self)
             .await
     }
 
@@ -139,9 +134,9 @@ impl ColorLightStripHandler {
     ///
     /// * `color_temperature` - between 2500 and 6500
     pub async fn set_color_temperature(&self, color_temperature: u16) -> Result<(), Error> {
-        ColorLightSetDeviceInfoParams::new(&self.client)
+        ColorLightSetDeviceInfoParams::new()
             .color_temperature(color_temperature)
-            .send()
+            .send(self)
             .await
     }
 
@@ -157,5 +152,11 @@ impl ColorLightStripHandler {
         self.client
             .set_lighting_effect(lighting_effect.into())
             .await
+    }
+}
+
+impl HandlerExt for ColorLightStripHandler {
+    fn get_client(&self) -> &impl ApiClientExt {
+        &self.client
     }
 }

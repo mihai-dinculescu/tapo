@@ -52,7 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .set()
         .brightness(50)
         .color(Color::HotPink)
-        .send()
+        .send(&device)
         .await?;
 
     info!("Waiting 2 seconds...");

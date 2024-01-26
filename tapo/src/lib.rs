@@ -50,7 +50,7 @@
 //!         .set()
 //!         .brightness(50)
 //!         .color(Color::HotPink)
-//!         .send()
+//!         .send(&device)
 //!         .await?;
 //!
 //!     println!("Waiting 2 seconds...");

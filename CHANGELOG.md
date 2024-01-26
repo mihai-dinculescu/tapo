@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Changed
+
+- The `send()` method of the `.set()` API now takes a reference to the device handler in order to allow for better ergonomics.
+
 ## [Python Unreleased][Unreleased]
 
 ### Added

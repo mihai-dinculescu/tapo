@@ -23,8 +23,10 @@ use crate::responses::{
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 
+/// Implemented by all ApiClient implementations.
 #[async_trait]
-pub(crate) trait ApiClientExt: std::fmt::Debug + Send + Sync {
+pub trait ApiClientExt: std::fmt::Debug + Send + Sync {
+    /// Sets the device info.
     async fn set_device_info(&self, device_info_params: serde_json::Value) -> Result<(), Error>;
 }
 
