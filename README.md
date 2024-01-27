@@ -44,7 +44,7 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 | set_color_temperature |               |                  |         &#x2705; |    &check; |            |            |
 | set_hue_saturation    |               |                  |         &#x2705; |    &check; |            |            |
 | set_lighting_effect   |               |                  |                  |    &check; |            |            |
-| set() API \*          |               |                  |          &check; |    &check; |            |            |
+| set() API \*          |               |                  |         &#x2705; |    &check; |            |            |
 
 \* The `set()` API allows multiple properties to be set in a single request.
 

@@ -41,6 +41,12 @@ async def main():
     print("Waiting 2 seconds...")
     await asyncio.sleep(2)
 
+    print("Using the `set` API to set multiple properties in a single request...")
+    await device.set().brightness(50).color(Color.HotPink).send(device)
+
+    print("Waiting 2 seconds...")
+    await asyncio.sleep(2)
+
     print("Turning device off...")
     await device.off()
 
