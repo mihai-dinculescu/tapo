@@ -137,7 +137,7 @@ impl ColorLightHandler {
 }
 
 impl HandlerExt for ColorLightHandler {
-    fn get_client(&self) -> &impl ApiClientExt {
+    fn get_client(&self) -> &dyn ApiClientExt {
         &self.client
     }
 }

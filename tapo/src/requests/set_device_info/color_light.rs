@@ -2,7 +2,7 @@ use serde::Serialize;
 
 use crate::error::Error;
 use crate::requests::color::{Color, COLOR_MAP};
-use crate::{ApiClientExt, HandlerExt};
+use crate::HandlerExt;
 
 /// Builder that is used by the [`crate::ColorLightHandler::set`] API to set multiple properties in a single request.
 #[derive(Debug, Clone, Default, Serialize)]
@@ -183,7 +183,7 @@ mod tests {
     struct MockHandler;
 
     impl HandlerExt for MockHandler {
-        fn get_client(&self) -> &impl ApiClientExt {
+        fn get_client(&self) -> &dyn ApiClientExt {
             &MockApiClient
         }
     }
