@@ -44,11 +44,6 @@ pub struct DeviceInfoLightResult {
     // Unique to this device
     //
     pub brightness: u8,
-    pub dynamic_light_effect_enable: bool,
-    pub dynamic_light_effect_id: Option<String>,
-    pub hue: Option<u16>,
-    pub saturation: Option<u16>,
-    pub color_temp: u16,
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
     pub default_states: DefaultLightState,
 }

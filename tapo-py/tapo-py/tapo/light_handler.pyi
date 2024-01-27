@@ -93,11 +93,6 @@ class DeviceInfoLightResult:
 
     # Unique to this device
     brightness: int
-    dynamic_light_effect_enable: bool
-    dynamic_light_effect_id: Optional[str]
-    hue: Optional[int]
-    saturation: Optional[int]
-    color_temp: int
     default_states: DefaultLightState
     """The default state of a device to be used when internet connectivity is lost after a power cut."""
 

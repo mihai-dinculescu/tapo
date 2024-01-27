@@ -10,6 +10,10 @@ file. This change log follows the conventions of
 
 - The `send()` method of the `.set()` API now takes a reference to the device handler in order to allow for better ergonomics.
 
+### Fixed
+
+- The device info response for the L510, L520, and L610 devices has been fixed.
+
 ## [Python Unreleased][Unreleased]
 
 ### Added
@@ -19,6 +23,7 @@ file. This change log follows the conventions of
 ### Fixed
 
 - Fixed a misconfiguration that was preventing the sdist package from working properly.
+- The device info response for the L510, L520, and L610 devices has been fixed.
 
 ## [Rust v0.7.8][v0.7.8] - 2024-01-22
 
