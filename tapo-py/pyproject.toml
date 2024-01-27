@@ -50,6 +50,7 @@ requires = ["maturin>=1.0,<2.0"]
 build-backend = "maturin"
 
 [tool.maturin]
+python-source = "tapo-py"
 bindings = 'pyo3'
 features = ["pyo3/extension-module"]
-sdist-include = ["README.md", "CHANGELOG.md", "LICENSE"]
+include = ["README.md", "CHANGELOG.md", "LICENSE", "tapo-py/tapo-py/tapo/*"]

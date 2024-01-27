@@ -16,6 +16,10 @@ file. This change log follows the conventions of
 
 - Added support for the L530, L630, and L900 color light bulbs.
 
+### Fixed
+
+- Fixed a misconfiguration that was preventing the sdist package from working properly.
+
 ## [Rust v0.7.8][v0.7.8] - 2024-01-22
 
 ### Added
