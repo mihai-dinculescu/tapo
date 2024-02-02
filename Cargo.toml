@@ -7,4 +7,4 @@ members = ["tapo", "tapo-py"]
 chrono = { version = "0.4.25", default-features = false }
 pyo3 = { version = "0.20" }
 pyo3-asyncio = "0.20"
-tokio = { version = "1.35", default-features = false }
+tokio = { version = "1.36", default-features = false }
