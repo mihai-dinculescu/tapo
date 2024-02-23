@@ -15,8 +15,8 @@ pub struct PyApiClient {
 #[pymethods]
 impl PyApiClient {
     #[new]
-    pub fn new(tapo_username: String, tapo_password: String) -> Result<Self, ErrorWrapper> {
-        let client = ApiClient::new(tapo_username, tapo_password);
+    pub fn new(tapo_username: String, tapo_password: String, timeout_secs: Option<u8>) -> Result<Self, ErrorWrapper> {
+        let client = ApiClient::new(tapo_username, tapo_password, timeout_secs)?;
         Ok(Self { client })
     }
 
