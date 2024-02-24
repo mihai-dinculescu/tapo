@@ -58,7 +58,10 @@ impl<'h> KE100Handler<'h> {
         {
             return Err(Error::Validation {
                 field: "target_temperature".to_string(),
-                message: format!("Target temperature must be between {} (min_control_temperature) and {} (max_control_temperature)", device_info.min_control_temperature, device_info.max_control_temperature),
+                message: format!(
+                    "Target temperature must be between {} (min_control_temperature) and {} (max_control_temperature)",
+                    device_info.min_control_temperature, device_info.max_control_temperature
+                ),
             });
         }
 
