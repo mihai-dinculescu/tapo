@@ -21,8 +21,6 @@ use super::TapoProtocolExt;
 pub(crate) struct KlapProtocol {
     client: HttpClient,
     cookie_jar: CookieJar,
-    username: String,
-    password: String,
     rng: StdRng,
     url: Option<String>,
     cipher: Option<KlapCipher>,
@@ -30,14 +28,19 @@ pub(crate) struct KlapProtocol {
 
 #[async_trait]
 impl TapoProtocolExt for KlapProtocol {
-    async fn login(&mut self, url: String) -> Result<(), Error> {
-        self.handshake(url).await?;
+    async fn login(
+        &mut self,
+        url: String,
+        username: String,
+        password: String,
+    ) -> Result<(), Error> {
+        self.handshake(url, username, password).await?;
         Ok(())
     }
 
-    async fn refresh_session(&mut self) -> Result<(), Error> {
+    async fn refresh_session(&mut self, username: String, password: String) -> Result<(), Error> {
         let url = self.url.as_ref().expect("This should never happen").clone();
-        self.handshake(url).await?;
+        self.handshake(url, username, password).await?;
         Ok(())
     }
 
@@ -92,34 +95,33 @@ impl TapoProtocolExt for KlapProtocol {
     }
 
     fn clone_as_discovery(&self) -> DiscoveryProtocol {
-        DiscoveryProtocol::new(
-            self.client.clone(),
-            self.username.clone(),
-            self.password.clone(),
-        )
+        DiscoveryProtocol::new(self.client.clone())
     }
 }
 
 impl KlapProtocol {
-    pub fn new(client: HttpClient, username: String, password: String) -> Self {
+    pub fn new(client: HttpClient) -> Self {
         Self {
             client,
             cookie_jar: CookieJar::new(),
-            username,
-            password,
             rng: StdRng::from_entropy(),
             url: None,
             cipher: None,
         }
     }
 
-    async fn handshake(&mut self, url: String) -> Result<(), Error> {
+    async fn handshake(
+        &mut self,
+        url: String,
+        username: String,
+        password: String,
+    ) -> Result<(), Error> {
         self.cookie_jar.clear();
 
         let auth_hash = KlapCipher::sha256(
             &[
-                KlapCipher::sha1(self.username.as_bytes()),
-                KlapCipher::sha1(self.password.as_bytes()),
+                KlapCipher::sha1(username.as_bytes()),
+                KlapCipher::sha1(password.as_bytes()),
             ]
             .concat(),
         )

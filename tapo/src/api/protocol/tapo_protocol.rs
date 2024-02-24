@@ -20,8 +20,9 @@ pub(crate) struct TapoProtocol {
 
 #[async_trait]
 pub(crate) trait TapoProtocolExt {
-    async fn login(&mut self, url: String) -> Result<(), Error>;
-    async fn refresh_session(&mut self) -> Result<(), Error>;
+    async fn login(&mut self, url: String, username: String, password: String)
+        -> Result<(), Error>;
+    async fn refresh_session(&mut self, username: String, password: String) -> Result<(), Error>;
     async fn execute_request<R>(
         &self,
         request: TapoRequest,
@@ -51,22 +52,31 @@ impl Clone for TapoProtocolType {
 
 #[async_trait]
 impl TapoProtocolExt for TapoProtocol {
-    async fn login(&mut self, url: String) -> Result<(), Error> {
+    async fn login(
+        &mut self,
+        url: String,
+        username: String,
+        password: String,
+    ) -> Result<(), Error> {
         if let TapoProtocolType::Discovery(protocol) = &mut self.protocol {
             self.protocol = protocol.discover(&url).await?;
         }
 
         match &mut self.protocol {
-            TapoProtocolType::Passthrough(protocol) => protocol.login(url).await,
-            TapoProtocolType::Klap(protocol) => protocol.login(url).await,
+            TapoProtocolType::Passthrough(protocol) => {
+                protocol.login(url, username, password).await
+            }
+            TapoProtocolType::Klap(protocol) => protocol.login(url, username, password).await,
             _ => Err(anyhow::anyhow!("The protocol discovery should have happened already").into()),
         }
     }
 
-    async fn refresh_session(&mut self) -> Result<(), Error> {
+    async fn refresh_session(&mut self, username: String, password: String) -> Result<(), Error> {
         match &mut self.protocol {
-            TapoProtocolType::Passthrough(protocol) => protocol.refresh_session().await,
-            TapoProtocolType::Klap(protocol) => protocol.refresh_session().await,
+            TapoProtocolType::Passthrough(protocol) => {
+                protocol.refresh_session(username, password).await
+            }
+            TapoProtocolType::Klap(protocol) => protocol.refresh_session(username, password).await,
             _ => Err(anyhow::anyhow!("The protocol discovery should have happened already").into()),
         }
     }
@@ -98,11 +108,9 @@ impl TapoProtocolExt for TapoProtocol {
 }
 
 impl TapoProtocol {
-    pub fn new(client: HttpClient, username: String, password: String) -> Self {
+    pub fn new(client: HttpClient) -> Self {
         Self {
-            protocol: TapoProtocolType::Discovery(DiscoveryProtocol::new(
-                client, username, password,
-            )),
+            protocol: TapoProtocolType::Discovery(DiscoveryProtocol::new(client)),
         }
     }
 }

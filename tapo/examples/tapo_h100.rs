@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tapo_password = env::var("TAPO_PASSWORD")?;
     let ip_address = env::var("IP_ADDRESS")?;
 
-    let hub = ApiClient::new(tapo_username, tapo_password)?
+    let hub = ApiClient::new(tapo_username, tapo_password)
         .h100(ip_address)
         .await?;
 

@@ -71,7 +71,7 @@ impl ColorLightStripHandler {
     /// # use tapo::requests::Color;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// # let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// # let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     /// #     .l930("192.168.1.100")
     /// #     .await?;
     /// device

@@ -11,17 +11,11 @@ use super::{passthrough_protocol::PassthroughProtocol, TapoProtocolType};
 #[derive(Debug, Clone)]
 pub(crate) struct DiscoveryProtocol {
     client: HttpClient,
-    username: String,
-    password: String,
 }
 
 impl DiscoveryProtocol {
-    pub fn new(client: HttpClient, username: String, password: String) -> Self {
-        Self {
-            client,
-            username,
-            password,
-        }
+    pub fn new(client: HttpClient) -> Self {
+        Self { client }
     }
 
     pub async fn discover(&mut self, url: &str) -> Result<TapoProtocolType, Error> {
@@ -30,15 +24,11 @@ impl DiscoveryProtocol {
             debug!("Supported. Setting up the Passthrough protocol...");
             Ok(TapoProtocolType::Passthrough(PassthroughProtocol::new(
                 self.client.clone(),
-                self.username.clone(),
-                self.password.clone(),
             )?))
         } else {
             debug!("Not supported. Setting up the Klap protocol...");
             Ok(TapoProtocolType::Klap(KlapProtocol::new(
                 self.client.clone(),
-                self.username.clone(),
-                self.password.clone(),
             )))
         }
     }

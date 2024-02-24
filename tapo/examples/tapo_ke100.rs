@@ -24,7 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let device_id = env::var("DEVICE_ID")?;
     let target_temperature: u8 = env::var("TARGET_TEMPERATURE")?.parse()?;
 
-    let hub = ApiClient::new(tapo_username, tapo_password)?
+    let hub = ApiClient::new(tapo_username, tapo_password)
         .h100(ip_address)
         .await?;
 

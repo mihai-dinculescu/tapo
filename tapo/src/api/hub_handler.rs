@@ -90,7 +90,7 @@ impl HubHandler {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
-    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
@@ -117,7 +117,7 @@ impl HubHandler {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
-    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
@@ -144,7 +144,7 @@ impl HubHandler {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
-    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
@@ -171,7 +171,7 @@ impl HubHandler {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
-    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
@@ -198,7 +198,7 @@ impl HubHandler {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
-    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
@@ -225,7 +225,7 @@ impl HubHandler {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
-    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
@@ -252,7 +252,7 @@ impl HubHandler {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
-    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device

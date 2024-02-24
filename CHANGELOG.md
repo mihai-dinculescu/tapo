@@ -6,6 +6,11 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Changed
+
+- The implementation of `ApiClient::new` has been improved to allow for the return of `ApiClient` instead of `Result<ApiClient, Error>`.
+- The default timeout for all requests has been reduced to 30 seconds from 300 seconds.
+
 ## [Python Unreleased][Unreleased]
 
 ## [Rust v0.7.9][v0.7.9] - 2024-01-27

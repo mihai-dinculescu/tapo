@@ -1,4 +1,5 @@
 use std::fmt;
+use std::time::Duration;
 
 use async_trait::async_trait;
 use isahc::prelude::Configurable;
@@ -39,7 +40,7 @@ pub trait ApiClientExt: std::fmt::Debug + Send + Sync {
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<(), Box<dyn std::error::Error>> {
-///     let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+///     let device = ApiClient::new("tapo-username@example.com", "tapo-password")
 ///     .l530("192.168.1.100")
 ///     .await?;
 ///
@@ -50,7 +51,10 @@ pub trait ApiClientExt: std::fmt::Debug + Send + Sync {
 /// ```
 #[derive(Debug, Clone)]
 pub struct ApiClient {
-    protocol: TapoProtocol,
+    tapo_username: String,
+    tapo_password: String,
+    timeout: Option<Duration>,
+    protocol: Option<TapoProtocol>,
 }
 
 /// Tapo API Client constructor.
@@ -63,14 +67,13 @@ impl ApiClient {
     ///
     /// * `tapo_username` - the Tapo username
     /// * `tapo_password` - the Tapo password
-    pub fn new(
-        tapo_username: impl Into<String>,
-        tapo_password: impl Into<String>,
-    ) -> Result<ApiClient, Error> {
-        let client = HttpClient::builder().title_case_headers(true).build()?;
-        Ok(Self {
-            protocol: TapoProtocol::new(client, tapo_username.into(), tapo_password.into()),
-        })
+    pub fn new(tapo_username: impl Into<String>, tapo_password: impl Into<String>) -> ApiClient {
+        Self {
+            tapo_username: tapo_username.into(),
+            tapo_password: tapo_password.into(),
+            timeout: None,
+            protocol: None,
+        }
     }
 }
 
@@ -88,7 +91,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .generic_device("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -116,7 +119,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .l510("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -141,7 +144,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .l520("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -166,7 +169,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .l530("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -191,7 +194,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .l610("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -216,7 +219,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .l630("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -241,7 +244,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .l900("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -266,7 +269,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .l920("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -294,7 +297,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .l930("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -322,7 +325,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .p100("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -347,7 +350,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .p105("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -372,7 +375,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .p110("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -400,7 +403,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .p115("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -428,7 +431,7 @@ impl ApiClient {
     /// # use tapo::ApiClient;
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")?
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .h100("192.168.1.100")
     ///     .await?;
     ///
@@ -450,18 +453,28 @@ impl ApiClient {
         let url = format!("http://{}/app", ip_address.into());
         debug!("Device url: {url}");
 
-        self.protocol.login(url).await
+        let tapo_username = self.tapo_username.clone();
+        let tapo_password = self.tapo_password.clone();
+
+        self.get_protocol_mut()?
+            .login(url, tapo_username, tapo_password)
+            .await
     }
 
     pub(crate) async fn refresh_session(&mut self) -> Result<(), Error> {
-        self.protocol.refresh_session().await
+        let tapo_username = self.tapo_username.clone();
+        let tapo_password = self.tapo_password.clone();
+
+        self.get_protocol_mut()?
+            .refresh_session(tapo_username, tapo_password)
+            .await
     }
 
     pub(crate) async fn device_reset(&self) -> Result<(), Error> {
         debug!("Device reset...");
         let request = TapoRequest::DeviceReset(TapoParams::new(EmptyParams));
 
-        self.protocol
+        self.get_protocol()?
             .execute_request::<serde_json::Value>(request, true)
             .await?;
 
@@ -475,7 +488,7 @@ impl ApiClient {
         debug!("Get Device info...");
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
-        self.protocol
+        self.get_protocol()?
             .execute_request::<R>(request, true)
             .await?
             .map(|result| result.decode())
@@ -489,7 +502,7 @@ impl ApiClient {
         debug!("Get Device usage...");
         let request = TapoRequest::GetDeviceUsage(TapoParams::new(EmptyParams));
 
-        self.protocol
+        self.get_protocol()?
             .execute_request::<R>(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -507,7 +520,7 @@ impl ApiClient {
                 .set_terminal_uuid(TERMINAL_UUID),
         ));
 
-        self.protocol
+        self.get_protocol()?
             .execute_request::<TapoResult>(request, true)
             .await?;
 
@@ -518,7 +531,7 @@ impl ApiClient {
         debug!("Get Energy usage...");
         let request = TapoRequest::GetEnergyUsage(TapoParams::new(EmptyParams));
 
-        self.protocol
+        self.get_protocol()?
             .execute_request::<EnergyUsageResult>(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -532,7 +545,7 @@ impl ApiClient {
         let params = GetEnergyDataParams::new(interval);
         let request = TapoRequest::GetEnergyData(TapoParams::new(params));
 
-        self.protocol
+        self.get_protocol()?
             .execute_request::<EnergyDataResult>(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -542,7 +555,7 @@ impl ApiClient {
         debug!("Get Current power...");
         let request = TapoRequest::GetCurrentPower(TapoParams::new(EmptyParams));
 
-        self.protocol
+        self.get_protocol()?
             .execute_request::<CurrentPowerResult>(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -555,7 +568,7 @@ impl ApiClient {
         debug!("Get Child device list...");
         let request = TapoRequest::GetChildDeviceList(TapoParams::new(EmptyParams));
 
-        self.protocol
+        self.get_protocol()?
             .execute_request::<R>(request, true)
             .await?
             .map(|result| result.decode())
@@ -569,7 +582,7 @@ impl ApiClient {
         debug!("Get Child device component list...");
         let request = TapoRequest::GetChildDeviceComponentList(TapoParams::new(EmptyParams));
 
-        self.protocol
+        self.get_protocol()?
             .execute_request::<R>(request, true)
             .await?
             .map(|result| result.decode())
@@ -592,7 +605,7 @@ impl ApiClient {
         let request = TapoRequest::ControlChild(Box::new(TapoParams::new(params)));
 
         let responses = self
-            .protocol
+            .get_protocol()?
             .execute_request::<ControlChildResult<TapoMultipleResponse<R>>>(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
@@ -609,6 +622,33 @@ impl ApiClient {
 
         Ok(response.result)
     }
+
+    fn get_protocol_mut(&mut self) -> Result<&mut TapoProtocol, Error> {
+        if self.protocol.is_none() {
+            let timeout = self.timeout.unwrap_or_else(|| Duration::from_secs(30));
+
+            let client = HttpClient::builder()
+                .title_case_headers(true)
+                .timeout(timeout)
+                .build()?;
+            let protocol = TapoProtocol::new(client);
+            self.protocol.replace(protocol);
+        }
+
+        self.protocol.as_mut().ok_or_else(|| {
+            Error::Other(anyhow::anyhow!(
+                "The protocol should have been initialized already."
+            ))
+        })
+    }
+
+    fn get_protocol(&self) -> Result<&TapoProtocol, Error> {
+        self.protocol.as_ref().ok_or_else(|| {
+            Error::Other(anyhow::anyhow!(
+                "The protocol should have been initialized already."
+            ))
+        })
+    }
 }
 
 #[async_trait]
@@ -622,7 +662,7 @@ impl ApiClientExt for ApiClient {
                 .set_terminal_uuid(TERMINAL_UUID),
         ));
 
-        self.protocol
+        self.get_protocol()?
             .execute_request::<TapoResult>(set_device_info_request, true)
             .await?;
 

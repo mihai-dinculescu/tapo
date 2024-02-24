@@ -24,8 +24,6 @@ use super::tapo_protocol::TapoProtocolExt;
 #[derive(Debug)]
 pub(crate) struct PassthroughProtocol {
     client: HttpClient,
-    username: String,
-    password: String,
     key_pair: PassthroughKeyPair,
     session: Option<Session>,
 }
@@ -40,16 +38,21 @@ struct Session {
 
 #[async_trait]
 impl TapoProtocolExt for PassthroughProtocol {
-    async fn login(&mut self, url: String) -> Result<(), Error> {
+    async fn login(
+        &mut self,
+        url: String,
+        username: String,
+        password: String,
+    ) -> Result<(), Error> {
         self.handshake(url).await?;
-        self.login_request().await?;
+        self.login_request(username, password).await?;
 
         Ok(())
     }
 
-    async fn refresh_session(&mut self) -> Result<(), Error> {
+    async fn refresh_session(&mut self, username: String, password: String) -> Result<(), Error> {
         let url = self.get_session_ref().url.clone();
-        self.login(url).await
+        self.login(url, username, password).await
     }
 
     async fn execute_request<R>(
@@ -117,23 +120,14 @@ impl TapoProtocolExt for PassthroughProtocol {
     }
 
     fn clone_as_discovery(&self) -> DiscoveryProtocol {
-        DiscoveryProtocol::new(
-            self.client.clone(),
-            self.username.clone(),
-            self.password.clone(),
-        )
+        DiscoveryProtocol::new(self.client.clone())
     }
 }
 
 impl PassthroughProtocol {
-    pub fn new(client: HttpClient, username: String, password: String) -> Result<Self, Error> {
-        let username_digest = PassthroughCipher::sha1_digest_username(username);
-        debug!("Username digest: {username_digest}");
-
+    pub fn new(client: HttpClient) -> Result<Self, Error> {
         Ok(Self {
             client,
-            username: general_purpose::STANDARD.encode(username_digest),
-            password: general_purpose::STANDARD.encode(password),
             key_pair: PassthroughKeyPair::new()?,
             session: None,
         })
@@ -177,10 +171,16 @@ impl PassthroughProtocol {
         Ok(())
     }
 
-    async fn login_request(&mut self) -> Result<(), Error> {
-        debug!("Will login with username '{}'...", self.username);
+    async fn login_request(&mut self, username: String, password: String) -> Result<(), Error> {
+        let username_digest = PassthroughCipher::sha1_digest_username(username);
+        debug!("Username digest: {username_digest}");
 
-        let params = TapoParams::new(LoginDeviceParams::new(&self.username, &self.password))
+        let username = general_purpose::STANDARD.encode(username_digest);
+        let password = general_purpose::STANDARD.encode(password);
+
+        debug!("Will login with username '{}'...", username);
+
+        let params = TapoParams::new(LoginDeviceParams::new(&username, &password))
             .set_request_time_mils()?;
         let request = TapoRequest::LoginDevice(params);
 
