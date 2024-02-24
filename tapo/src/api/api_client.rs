@@ -99,8 +99,7 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<GenericDeviceHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(GenericDeviceHandler::new(self))
     }
@@ -125,8 +124,7 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l510(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(LightHandler::new(self))
     }
@@ -151,8 +149,7 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l520(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(LightHandler::new(self))
     }
@@ -177,8 +174,7 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l530(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(ColorLightHandler::new(self))
     }
@@ -203,8 +199,7 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l610(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(LightHandler::new(self))
     }
@@ -229,8 +224,7 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l630(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(ColorLightHandler::new(self))
     }
@@ -255,8 +249,7 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l900(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(ColorLightHandler::new(self))
     }
@@ -284,8 +277,7 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<ColorLightStripHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(ColorLightStripHandler::new(self))
     }
@@ -313,8 +305,7 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<ColorLightStripHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(ColorLightStripHandler::new(self))
     }
@@ -339,8 +330,7 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn p100(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(PlugHandler::new(self))
     }
@@ -365,8 +355,7 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn p105(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(PlugHandler::new(self))
     }
@@ -394,8 +383,7 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<PlugEnergyMonitoringHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(PlugEnergyMonitoringHandler::new(self))
     }
@@ -423,8 +411,7 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<PlugEnergyMonitoringHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(PlugEnergyMonitoringHandler::new(self))
     }
@@ -451,8 +438,7 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn h100(mut self, ip_address: impl Into<String>) -> Result<HubHandler, Error> {
-        let url = build_url(&ip_address.into());
-        self.login(url).await?;
+        self.login(ip_address).await?;
 
         Ok(HubHandler::new(self))
     }
@@ -460,7 +446,10 @@ impl ApiClient {
 
 /// Tapo API Client private methods.
 impl ApiClient {
-    pub(crate) async fn login(&mut self, url: String) -> Result<(), Error> {
+    pub(crate) async fn login(&mut self, ip_address: impl Into<String>) -> Result<(), Error> {
+        let url = format!("http://{}/app", ip_address.into());
+        debug!("Device url: {url}");
+
         self.protocol.login(url).await
     }
 
@@ -639,11 +628,4 @@ impl ApiClientExt for ApiClient {
 
         Ok(())
     }
-}
-
-fn build_url(ip_address: &str) -> String {
-    let url = format!("http://{}/app", ip_address);
-    debug!("Device url: {url}");
-
-    url
 }
