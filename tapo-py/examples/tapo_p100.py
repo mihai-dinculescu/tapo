@@ -11,7 +11,7 @@ async def main():
     tapo_password = os.getenv("TAPO_PASSWORD")
     ip_address = os.getenv("IP_ADDRESS")
 
-    client = ApiClient(tapo_username, tapo_password)
+    client = ApiClient(tapo_username, tapo_password, timeout_secs=3)
     device = await client.p100(ip_address)
 
     print("Turning device on...")
