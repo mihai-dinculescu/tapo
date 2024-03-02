@@ -60,13 +60,15 @@ pub struct ApiClient {
 /// Tapo API Client constructor.
 impl ApiClient {
     /// Returns a new instance of [`ApiClient`].
-    /// It it cheaper to [`ApiClient::clone`] an existing instance than to create a new one when multiple devices need to be controller.
+    /// It is cheaper to [`ApiClient::clone`] an existing instance than to create a new one when multiple devices need to be controller.
     /// This is because [`ApiClient::clone`] reuses the underlying [`isahc::HttpClient`] and [`openssl::rsa::Rsa`] key.
     ///
     /// # Arguments
     ///
     /// * `tapo_username` - the Tapo username
     /// * `tapo_password` - the Tapo password
+    ///
+    /// Note: uses default connection timeout value of 30 secs
     pub fn new(tapo_username: impl Into<String>, tapo_password: impl Into<String>) -> ApiClient {
         Self {
             tapo_username: tapo_username.into(),
@@ -74,6 +76,16 @@ impl ApiClient {
             timeout: None,
             protocol: None,
         }
+    }
+
+    /// changes connection timout from default value to new custom value
+    ///
+    /// # Arguments
+    ///
+    /// * `timeout` - the timeout value
+    pub fn set_timeout(mut self, timeout: Duration) -> ApiClient {
+        self.timeout = Some(timeout);
+        self
     }
 }
 

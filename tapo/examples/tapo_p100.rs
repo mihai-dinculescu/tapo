@@ -20,6 +20,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ip_address = env::var("IP_ADDRESS")?;
 
     let device = ApiClient::new(tapo_username, tapo_password)
+        .set_timeout(Duration::from_secs(3))
         .p100(ip_address)
         .await?;
 
