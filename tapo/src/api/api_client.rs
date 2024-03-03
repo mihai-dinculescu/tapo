@@ -83,7 +83,7 @@ impl ApiClient {
     /// # Arguments
     ///
     /// * `timeout` - the timeout value
-    pub fn set_timeout(mut self, timeout: Duration) -> ApiClient {
+    pub fn with_timeout(mut self, timeout: Duration) -> ApiClient {
         self.timeout = Some(timeout);
         self
     }
