@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, NaiveDateTime, Timelike, Utc};
+use chrono::{DateTime, Duration, Timelike, Utc};
 use itertools::izip;
 use serde::{Deserialize, Serialize};
 
@@ -114,9 +114,7 @@ impl TryFrom<TemperatureHumidityRecordsRaw> for TemperatureHumidityRecords {
     type Error = anyhow::Error;
 
     fn try_from(raw: TemperatureHumidityRecordsRaw) -> Result<Self, Self::Error> {
-        let datetime = NaiveDateTime::from_timestamp_opt(raw.local_time, 0)
-            .unwrap_or_default()
-            .and_utc();
+        let datetime = DateTime::from_timestamp(raw.local_time, 0).unwrap_or_default();
 
         let interval_minute = if datetime.minute() >= 45 {
             45
@@ -160,7 +158,7 @@ impl TryFrom<TemperatureHumidityRecordsRaw> for TemperatureHumidityRecords {
             }
 
             interval_time = interval_time
-                .checked_sub_signed(Duration::minutes(15))
+                .checked_sub_signed(Duration::try_minutes(15).unwrap())
                 .ok_or_else(|| anyhow::anyhow!("Failed to subtract from interval"))?;
         }
 
@@ -176,6 +174,8 @@ impl TryFrom<TemperatureHumidityRecordsRaw> for TemperatureHumidityRecords {
 
 #[cfg(test)]
 mod tests {
+    use chrono::NaiveDateTime;
+
     use super::*;
 
     #[test]

@@ -16,12 +16,24 @@ impl GetEnergyDataParams {
                 start_date,
                 end_date,
             } => Self {
-                start_timestamp: start_date.and_hms_opt(0, 0, 0).unwrap().timestamp() as u64,
-                end_timestamp: end_date.and_hms_opt(23, 59, 59).unwrap().timestamp() as u64,
+                start_timestamp: start_date
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap()
+                    .and_utc()
+                    .timestamp() as u64,
+                end_timestamp: end_date
+                    .and_hms_opt(23, 59, 59)
+                    .unwrap()
+                    .and_utc()
+                    .timestamp() as u64,
                 interval: 60,
             },
             EnergyDataInterval::Daily { start_date } => {
-                let timestamp = start_date.and_hms_opt(0, 0, 0).unwrap().timestamp() as u64;
+                let timestamp = start_date
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap()
+                    .and_utc()
+                    .timestamp() as u64;
                 Self {
                     start_timestamp: timestamp,
                     end_timestamp: timestamp,
@@ -29,7 +41,11 @@ impl GetEnergyDataParams {
                 }
             }
             EnergyDataInterval::Monthly { start_date } => {
-                let timestamp = start_date.and_hms_opt(0, 0, 0).unwrap().timestamp() as u64;
+                let timestamp = start_date
+                    .and_hms_opt(0, 0, 0)
+                    .unwrap()
+                    .and_utc()
+                    .timestamp() as u64;
                 Self {
                     start_timestamp: timestamp,
                     end_timestamp: timestamp,

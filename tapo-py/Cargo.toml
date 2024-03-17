@@ -17,5 +17,6 @@ openssl-vendored = ["tapo/openssl-vendored"]
 chrono = { workspace = true, default-features = false }
 pyo3 = { workspace = true, features = ["chrono", "extension-module"] }
 pyo3-asyncio = { workspace = true, features = ["attributes", "tokio-runtime"] }
-tapo = { path = "../tapo", features = ["python"] }
 tokio = { workspace = true, default-features = false, features = ["sync"] }
+
+tapo = { path = "../tapo", features = ["python"] }
