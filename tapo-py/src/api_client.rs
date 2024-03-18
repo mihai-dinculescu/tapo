@@ -1,3 +1,4 @@
+use std::time::Duration;
 use pyo3::prelude::*;
 use tapo::ApiClient;
 
@@ -15,8 +16,9 @@ pub struct PyApiClient {
 #[pymethods]
 impl PyApiClient {
     #[new]
-    pub fn new(tapo_username: String, tapo_password: String) -> Result<Self, ErrorWrapper> {
-        let client = ApiClient::new(tapo_username, tapo_password);
+    pub fn new(tapo_username: String, tapo_password: String, timeout_secs: Option<u64>) -> Result<Self, ErrorWrapper> {
+        let client = ApiClient::new(tapo_username, tapo_password)
+            .with_timeout(Duration::from_secs(timeout_secs.unwrap_or(30)));
         Ok(Self { client })
     }
 
