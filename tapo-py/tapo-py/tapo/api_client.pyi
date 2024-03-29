@@ -21,11 +21,12 @@ Example:
 See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
 """
 
+from typing import Optional
+from .color_light_handler import ColorLightHandler
 from .generic_device_handler import GenericDeviceHandler
 from .light_handler import LightHandler
-from .color_light_handler import ColorLightHandler
-from .plug_handler import PlugHandler
 from .plug_energy_monitoring_handler import PlugEnergyMonitoringHandler
+from .plug_handler import PlugHandler
 
 class ApiClient:
     """Tapo API Client.
@@ -51,12 +52,13 @@ class ApiClient:
     See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
     """
 
-    def __init__(self, tapo_username: str, tapo_password: str) -> None:
+    def __init__(self, tapo_username: str, tapo_password: str, timeout_s: int = 30) -> None:
         """Returns a new instance of `ApiClient`.
 
         Args:
-            tapo_username (str): The Tapo username
-            tapo_password (str): The Tapo password
+            tapo_username (str): The Tapo username.
+            tapo_password (str): The Tapo password.
+            timeout_s (int): The connection timeout in seconds. The default value is 30 seconds.
 
         Returns:
             ApiClient: Tapo API Client.
@@ -79,6 +81,7 @@ class ApiClient:
 
         See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
         """
+
     async def generic_device(self, ip_address: str) -> GenericDeviceHandler:
         """Specializes the given `ApiClient` into an authenticated `GenericDeviceHandler`.
 
@@ -97,6 +100,7 @@ class ApiClient:
             await device.on()
             ```
         """
+
     async def l510(self, ip_address: str) -> LightHandler:
         """Specializes the given `ApiClient` into an authenticated `LightHandler`.
 
@@ -114,6 +118,7 @@ class ApiClient:
             await device.on()
             ```
         """
+
     async def l520(self, ip_address: str) -> LightHandler:
         """Specializes the given `ApiClient` into an authenticated `LightHandler`.
 
@@ -131,6 +136,7 @@ class ApiClient:
             await device.on()
             ```
         """
+
     async def l530(self, ip_address: str) -> ColorLightHandler:
         """Specializes the given `ApiClient` into an authenticated `ColorLightHandler`.
 
@@ -148,6 +154,7 @@ class ApiClient:
             await device.on()
             ```
         """
+
     async def l610(self, ip_address: str) -> LightHandler:
         """Specializes the given `ApiClient` into an authenticated `LightHandler`.
 
@@ -165,6 +172,7 @@ class ApiClient:
             await device.on()
             ```
         """
+
     async def l630(self, ip_address: str) -> ColorLightHandler:
         """Specializes the given `ApiClient` into an authenticated `ColorLightHandler`.
 
@@ -182,6 +190,7 @@ class ApiClient:
             await device.on()
             ```
         """
+
     async def l900(self, ip_address: str) -> ColorLightHandler:
         """Specializes the given `ApiClient` into an authenticated `ColorLightHandler`.
 
@@ -199,6 +208,7 @@ class ApiClient:
             await device.on()
             ```
         """
+
     async def p100(self, ip_address: str) -> PlugHandler:
         """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
 
@@ -216,6 +226,7 @@ class ApiClient:
             await device.on()
             ```
         """
+
     async def p105(self, ip_address: str) -> PlugHandler:
         """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
 
@@ -233,6 +244,7 @@ class ApiClient:
             await device.on()
             ```
         """
+
     async def p110(self, ip_address: str) -> PlugEnergyMonitoringHandler:
         """Specializes the given `ApiClient` into an authenticated `PlugEnergyMonitoringHandler`.
 
@@ -250,6 +262,7 @@ class ApiClient:
             await device.on()
             ```
         """
+
     async def p115(self, ip_address: str) -> PlugEnergyMonitoringHandler:
         """Specializes the given `ApiClient` into an authenticated `PlugEnergyMonitoringHandler`.
 
