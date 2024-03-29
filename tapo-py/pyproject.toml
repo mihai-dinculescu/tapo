@@ -54,3 +54,6 @@ python-source = "tapo-py"
 bindings = 'pyo3'
 features = ["pyo3/extension-module"]
 include = ["README.md", "CHANGELOG.md", "LICENSE", "tapo-py/tapo-py/tapo/*"]
+
+[tool.black]
+line-length = 100
