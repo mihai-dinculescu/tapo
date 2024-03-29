@@ -2,24 +2,24 @@ use std::fmt;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use isahc::HttpClient;
 use isahc::prelude::Configurable;
+use isahc::HttpClient;
 use log::debug;
 use serde::de::DeserializeOwned;
 
+use crate::api::protocol::{TapoProtocol, TapoProtocolExt};
 use crate::api::{
     ColorLightHandler, ColorLightStripHandler, GenericDeviceHandler, HubHandler, LightHandler,
     PlugEnergyMonitoringHandler, PlugHandler,
 };
-use crate::api::protocol::{TapoProtocol, TapoProtocolExt};
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     ControlChildParams, EmptyParams, EnergyDataInterval, GetEnergyDataParams, LightingEffect,
     MultipleRequestParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
-    ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
-    EnergyUsageResult, TapoMultipleResponse, TapoResponseExt, TapoResult, validate_response,
+    validate_response, ControlChildResult, CurrentPowerResult, DecodableResultExt,
+    EnergyDataResult, EnergyUsageResult, TapoMultipleResponse, TapoResponseExt, TapoResult,
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
@@ -68,7 +68,8 @@ impl ApiClient {
     /// * `tapo_username` - the Tapo username
     /// * `tapo_password` - the Tapo password
     ///
-    /// Note: uses default connection timeout value of 30 secs
+    /// Note: The default connection timeout is 30 seconds.
+    /// Use [`ApiClient::with_timeout`] to change it.
     pub fn new(tapo_username: impl Into<String>, tapo_password: impl Into<String>) -> ApiClient {
         Self {
             tapo_username: tapo_username.into(),
@@ -78,11 +79,11 @@ impl ApiClient {
         }
     }
 
-    /// changes connection timout from default value to new custom value
+    /// Changes the connection timeout from the default value to the given value.
     ///
     /// # Arguments
     ///
-    /// * `timeout` - the timeout value
+    /// * `timeout` - The new connection timeout value.
     pub fn with_timeout(mut self, timeout: Duration) -> ApiClient {
         self.timeout = Some(timeout);
         self
@@ -494,8 +495,8 @@ impl ApiClient {
     }
 
     pub(crate) async fn get_device_info<R>(&self) -> Result<R, Error>
-        where
-            R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
     {
         debug!("Get Device info...");
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
@@ -508,8 +509,8 @@ impl ApiClient {
     }
 
     pub(crate) async fn get_device_usage<R>(&self) -> Result<R, Error>
-        where
-            R: fmt::Debug + DeserializeOwned + TapoResponseExt,
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
         debug!("Get Device usage...");
         let request = TapoRequest::GetDeviceUsage(TapoParams::new(EmptyParams));
@@ -574,8 +575,8 @@ impl ApiClient {
     }
 
     pub(crate) async fn get_child_device_list<R>(&self) -> Result<R, Error>
-        where
-            R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
     {
         debug!("Get Child device list...");
         let request = TapoRequest::GetChildDeviceList(TapoParams::new(EmptyParams));
@@ -588,8 +589,8 @@ impl ApiClient {
     }
 
     pub(crate) async fn get_child_device_component_list<R>(&self) -> Result<R, Error>
-        where
-            R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
     {
         debug!("Get Child device component list...");
         let request = TapoRequest::GetChildDeviceComponentList(TapoParams::new(EmptyParams));
@@ -606,8 +607,8 @@ impl ApiClient {
         device_id: String,
         child_request: TapoRequest,
     ) -> Result<Option<R>, Error>
-        where
-            R: fmt::Debug + DeserializeOwned + TapoResponseExt,
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
         debug!("Control child...");
         let params = MultipleRequestParams::new(vec![child_request]);

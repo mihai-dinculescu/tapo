@@ -10,8 +10,14 @@ file. This change log follows the conventions of
 
 - The implementation of `ApiClient::new` has been improved to allow for the return of `ApiClient` instead of `Result<ApiClient, Error>`.
 - The default timeout for all requests has been reduced to 30 seconds from 300 seconds.
+- `ApiClient::with_timeout` has been added to allow for the setting of a custom timeout for all requests (thanks to @skoky).
 
 ## [Python Unreleased][Unreleased]
+
+### Changed
+
+- The default timeout for all requests has been reduced to 30 seconds from 300 seconds.
+- The `timeout_s` optional parameter has been added to the `ApiClient` constructor to allow for the setting of a custom timeout for all requests (thanks to @skoky).
 
 ## [Rust v0.7.9][v0.7.9] - 2024-01-27
 

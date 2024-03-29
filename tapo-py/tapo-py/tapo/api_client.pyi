@@ -21,12 +21,12 @@ Example:
 See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
 """
 
+from typing import Optional
 from .color_light_handler import ColorLightHandler
 from .generic_device_handler import GenericDeviceHandler
 from .light_handler import LightHandler
 from .plug_energy_monitoring_handler import PlugEnergyMonitoringHandler
 from .plug_handler import PlugHandler
-
 
 class ApiClient:
     """Tapo API Client.
@@ -52,13 +52,13 @@ class ApiClient:
     See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
     """
 
-    def __init__(self, tapo_username: str, tapo_password: str, timeout_secs: int = 10) -> None:
+    def __init__(self, tapo_username: str, tapo_password: str, timeout_s: int = 30) -> None:
         """Returns a new instance of `ApiClient`.
 
         Args:
-            tapo_username (str): The Tapo username
-            tapo_password (str): The Tapo password
-            timeout_secs (int): connection timeout secs, default value 10secs
+            tapo_username (str): The Tapo username.
+            tapo_password (str): The Tapo password.
+            timeout_s (int): The connection timeout in seconds. The default value is 30 seconds.
 
         Returns:
             ApiClient: Tapo API Client.
@@ -70,7 +70,7 @@ class ApiClient:
 
 
             async def main():
-                client = ApiClient("tapo-username@example.com", "tapo-password", 10)
+                client = ApiClient("tapo-username@example.com", "tapo-password")
                 device = await client.l530("192.168.1.100")
 
                 await device.on()
