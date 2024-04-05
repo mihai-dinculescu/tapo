@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "tapo"
-version = "0.2.0"
-description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L610) and plugs (P100, P105, P110, P115)."
+version = "0.2.1"
+description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L530, L610, L630) and plugs (P100, P105, P110, P115)."
 authors = ["Mihai Dinculescu <mihai.dinculescu@outlook.com>"]
 
 [project]
 name = "tapo"
-version = "0.2.0"
-description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L610) and plugs (P100, P105, P110, P115)."
+version = "0.2.1"
+description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L530, L610, L630) and plugs (P100, P105, P110, P115)."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
