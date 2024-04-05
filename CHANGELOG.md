@@ -6,13 +6,17 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.7.10][v0.7.10] - 2024-04-05
+
 ### Changed
 
 - The implementation of `ApiClient::new` has been improved to allow for the return of `ApiClient` instead of `Result<ApiClient, Error>`.
 - The default timeout for all requests has been reduced to 30 seconds from 300 seconds.
 - `ApiClient::with_timeout` has been added to allow for the setting of a custom timeout for all requests (thanks to @skoky).
 
-## [Python Unreleased][Unreleased]
+## [Python v0.2.1][py-v0.2.1] - 2024-04-05
 
 ### Changed
 
@@ -303,6 +307,8 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.10]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.10
+[py-v0.2.1]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.2.1
 [v0.7.9]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.9
 [py-v0.2.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.2.0
 [v0.7.8]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.8
