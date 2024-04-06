@@ -10,7 +10,7 @@ use serde::de::DeserializeOwned;
 use crate::api::protocol::{TapoProtocol, TapoProtocolExt};
 use crate::api::{
     ColorLightHandler, ColorLightStripHandler, GenericDeviceHandler, HubHandler, LightHandler,
-    PlugEnergyMonitoringHandler, PlugHandler,
+    PlugEnergyMonitoringHandler, PlugHandler, PowerStripHandler
 };
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
@@ -402,6 +402,35 @@ impl ApiClient {
         self.login(ip_address).await?;
 
         Ok(PlugEnergyMonitoringHandler::new(self))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugEnergyMonitoringHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .p300("192.168.1.100")
+    ///     .await?;
+    /// let child_device_list = device.get_child_device_list().await?;
+    /// println!("Child device list: {child_device_list:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn p300(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<PowerStripHandler, Error> {
+        self.login(ip_address).await?;
+
+        Ok(PowerStripHandler::new(self))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`PlugEnergyMonitoringHandler`].
