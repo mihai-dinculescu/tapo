@@ -30,6 +30,17 @@ impl<'h> P300ChildHandler<'h> {
             .map(|result| result.decode())?
     }
 
+    /// Returns *device info* as [`serde_json::Value`].
+    /// It is not guaranteed to contain all the properties returned from the Tapo API.
+    pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
+        let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
+
+        self.power_strip_handler
+            .control_child::<serde_json::Value>(self.device_id.clone(), request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
     /// Turns *on* the device.
     pub async fn on(&self) -> Result<(), Error> {
         let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;
