@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, DefaultPlugState, TapoResponseExt};
+use crate::responses::{decode_value, DecodableResultExt, TapoResponseExt};
 
 /// Power Strip child device list result.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -27,37 +27,38 @@ impl TapoResponseExt for ChildDeviceListPowerStripResult {}
 
 /// P300 power strip child plug.
 ///
-/// Specific properties: `detected`.
+/// Specific properties: `auto_off_remain_time`, `auto_off_status`,
+/// `bind_count`, `overheat_status`, `position`, `slot_number`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct PlugPowerStripResult {
-    //
-    // Inherited from DeviceInfoGenericResult
-    //
+    pub auto_off_remain_time: u64,
+    pub auto_off_status: AutoOffStatus,
+    pub avatar: String,
+    pub bind_count: u8,
+    pub category: String,
     pub device_id: String,
-    pub r#type: String,
-    pub model: String,
-    pub hw_id: String,
-    pub hw_ver: String,
+    pub device_on: bool,
     pub fw_id: String,
     pub fw_ver: String,
-    pub oem_id: String,
-    pub mac: String,
-    pub device_on: bool,
-    /// The time in seconds this device has been ON since the last state change (ON/OFF).
-    pub on_time: u64,
-    pub nickname: String,
-    pub avatar: String,
     pub has_set_location_info: bool,
-    pub region: Option<String>,
+    pub hw_id: String,
+    pub hw_ver: String,
     pub latitude: Option<i64>,
     pub longitude: Option<i64>,
-    pub time_diff: Option<i64>,
-    //
-    // Unique to this device
-    //
-    /// The default state of a device to be used when internet connectivity is lost after a power cut.
-    pub default_states: DefaultPlugState,
+    pub mac: String,
+    pub model: String,
+    pub nickname: String,
+    pub oem_id: String,
+    /// The time in seconds this device has been ON since the last state change (ON/OFF).
+    pub on_time: u64,
+    pub original_device_id: String,
+    pub overheat_status: OverheatStatus,
+    pub position: u8,
+    pub region: Option<String>,
+    pub slot_number: u8,
+    pub status_follow_edge: bool,
+    pub r#type: String,
 }
 
 impl TapoResponseExt for PlugPowerStripResult {}
@@ -67,4 +68,21 @@ impl DecodableResultExt for PlugPowerStripResult {
         self.nickname = decode_value(&self.nickname)?;
         Ok(self)
     }
+}
+
+/// Auto Off Status.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", tag = "event")]
+#[allow(missing_docs)]
+pub enum AutoOffStatus {
+    On,
+    Off,
+}
+
+/// Overheat Status.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", tag = "event")]
+#[allow(missing_docs)]
+pub enum OverheatStatus {
+    Normal,
 }
