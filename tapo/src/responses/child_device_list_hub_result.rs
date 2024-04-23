@@ -17,17 +17,17 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{DecodableResultExt, TapoResponseExt};
 
-/// Child device list result.
+/// Hub child device list result.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ChildDeviceListResult {
-    /// Child devices
+pub(crate) struct ChildDeviceListHubResult {
+    /// Hub child devices
     #[serde(rename = "child_device_list")]
-    pub devices: Vec<ChildDeviceResult>,
+    pub devices: Vec<ChildDeviceHubResult>,
 }
 
-impl DecodableResultExt for ChildDeviceListResult {
+impl DecodableResultExt for ChildDeviceListHubResult {
     fn decode(self) -> Result<Self, Error> {
-        Ok(ChildDeviceListResult {
+        Ok(ChildDeviceListHubResult {
             devices: self
                 .devices
                 .into_iter()
@@ -37,7 +37,7 @@ impl DecodableResultExt for ChildDeviceListResult {
     }
 }
 
-impl TapoResponseExt for ChildDeviceListResult {}
+impl TapoResponseExt for ChildDeviceListHubResult {}
 
 /// Device status.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,10 +48,10 @@ pub enum Status {
     Offline,
 }
 
-/// Child device result.
+/// Hub child device result.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "model")]
-pub enum ChildDeviceResult {
+pub enum ChildDeviceHubResult {
     /// KE100 thermostatic radiator valve (TRV).
     KE100(Box<KE100Result>),
     /// S200B button switch.
@@ -72,31 +72,31 @@ pub enum ChildDeviceResult {
     Other,
 }
 
-impl DecodableResultExt for ChildDeviceResult {
+impl DecodableResultExt for ChildDeviceHubResult {
     fn decode(self) -> Result<Self, Error> {
         match self {
-            ChildDeviceResult::KE100(device) => {
-                Ok(ChildDeviceResult::KE100(Box::new(device.decode()?)))
+            ChildDeviceHubResult::KE100(device) => {
+                Ok(ChildDeviceHubResult::KE100(Box::new(device.decode()?)))
             }
-            ChildDeviceResult::S200B(device) => {
-                Ok(ChildDeviceResult::S200B(Box::new(device.decode()?)))
+            ChildDeviceHubResult::S200B(device) => {
+                Ok(ChildDeviceHubResult::S200B(Box::new(device.decode()?)))
             }
-            ChildDeviceResult::T100(device) => {
-                Ok(ChildDeviceResult::T100(Box::new(device.decode()?)))
+            ChildDeviceHubResult::T100(device) => {
+                Ok(ChildDeviceHubResult::T100(Box::new(device.decode()?)))
             }
-            ChildDeviceResult::T110(device) => {
-                Ok(ChildDeviceResult::T110(Box::new(device.decode()?)))
+            ChildDeviceHubResult::T110(device) => {
+                Ok(ChildDeviceHubResult::T110(Box::new(device.decode()?)))
             }
-            ChildDeviceResult::T300(device) => {
-                Ok(ChildDeviceResult::T300(Box::new(device.decode()?)))
+            ChildDeviceHubResult::T300(device) => {
+                Ok(ChildDeviceHubResult::T300(Box::new(device.decode()?)))
             }
-            ChildDeviceResult::T310(device) => {
-                Ok(ChildDeviceResult::T310(Box::new(device.decode()?)))
+            ChildDeviceHubResult::T310(device) => {
+                Ok(ChildDeviceHubResult::T310(Box::new(device.decode()?)))
             }
-            ChildDeviceResult::T315(device) => {
-                Ok(ChildDeviceResult::T315(Box::new(device.decode()?)))
+            ChildDeviceHubResult::T315(device) => {
+                Ok(ChildDeviceHubResult::T315(Box::new(device.decode()?)))
             }
-            ChildDeviceResult::Other => Ok(ChildDeviceResult::Other),
+            ChildDeviceHubResult::Other => Ok(ChildDeviceHubResult::Other),
         }
     }
 }

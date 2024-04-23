@@ -5,6 +5,7 @@ mod generic;
 mod hub;
 mod light;
 mod plug;
+mod power_strip;
 
 pub use color_light::*;
 pub use color_light_strip::*;
@@ -13,3 +14,4 @@ pub use generic::*;
 pub use hub::*;
 pub use light::*;
 pub use plug::*;
+pub use power_strip::*;

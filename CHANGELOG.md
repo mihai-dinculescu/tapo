@@ -6,6 +6,14 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- Added support for the P300 power strip (thanks to @Michal-Szczepaniak).
+
+### Changed
+
+- `ChildDeviceResult` has been renamed to `ChildDeviceHubResult` to facilitate adding support for other devices with children.
+
 ## [Python Unreleased][Unreleased]
 
 ## [Rust v0.7.10][v0.7.10] - 2024-04-05
