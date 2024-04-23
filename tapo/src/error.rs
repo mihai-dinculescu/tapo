@@ -42,6 +42,9 @@ pub enum Error {
     /// HTTP Error.
     #[error("Http: {0}")]
     Http(#[from] isahc::Error),
+    /// Device not found
+    #[error("Device not found")]
+    DeviceNotFound,
     /// Other Error. This is a catch-all for errors that don't fit into the other categories.
     #[error(transparent)]
     Other(#[from] anyhow::Error),

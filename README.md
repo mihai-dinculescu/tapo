@@ -28,23 +28,27 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 &check; - Rust only\
 &#x2705; - Rust and Python
 
-| Feature               | GenericDevice | L510, L520, L610 | L530, L630, L900 | L920, L930 | P100, P105 | P110, P115 |
-| --------------------- | ------------: | ---------------: | ---------------: | ---------: | ---------: | ---------: |
-| device_reset          |               |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
-| get_current_power     |               |                  |                  |            |            |   &#x2705; |
-| get_device_info       |      &#x2705; |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
-| get_device_info_json  |      &#x2705; |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
-| get_device_usage      |               |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
-| get_energy_data       |               |                  |                  |            |            |   &#x2705; |
-| get_energy_usage      |               |                  |                  |            |            |   &#x2705; |
-| off                   |      &#x2705; |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
-| on                    |      &#x2705; |         &#x2705; |         &#x2705; |    &check; |   &#x2705; |   &#x2705; |
-| set_brightness        |               |         &#x2705; |         &#x2705; |    &check; |            |            |
-| set_color             |               |                  |         &#x2705; |    &check; |            |            |
-| set_color_temperature |               |                  |         &#x2705; |    &check; |            |            |
-| set_hue_saturation    |               |                  |         &#x2705; |    &check; |            |            |
-| set_lighting_effect   |               |                  |                  |    &check; |            |            |
-| set() API \*          |               |                  |         &#x2705; |    &check; |            |            |
+| Feature<br/><br/><br/>               | GenericDevice<br/><br/><br/> | L510<br/>L520<br/>L610 | L530<br/>L630<br/>L900<br/> | L920<br/>L930<br/><br/> | P100<br/>P105<br/><br/> | P110<br/>P115<br/><br/> | P300<br/><br/><br/> | H100<br/><br/><br/> |
+| ------------------------------------ | ---------------------------: | ---------------------: | --------------------------: | ----------------------: | ----------------------: | ----------------------: | ------------------: | ------------------: |
+| device_reset                         |                              |               &#x2705; |                    &#x2705; |                 &check; |                &#x2705; |                &#x2705; |                     |                     |
+| get_child_device_component_list_json |                              |                        |                             |                         |                         |                         |             &check; |             &check; |
+| get_child_device_list                |                              |                        |                             |                         |                         |                         |             &check; |             &check; |
+| get_child_device_list_json           |                              |                        |                             |                         |                         |                         |             &check; |             &check; |
+| get_current_power                    |                              |                        |                             |                         |                         |                &#x2705; |                     |                     |
+| get_device_info                      |                     &#x2705; |               &#x2705; |                    &#x2705; |                 &check; |                &#x2705; |                &#x2705; |             &check; |             &check; |
+| get_device_info_json                 |                     &#x2705; |               &#x2705; |                    &#x2705; |                 &check; |                &#x2705; |                &#x2705; |             &check; |             &check; |
+| get_device_usage                     |                              |               &#x2705; |                    &#x2705; |                 &check; |                &#x2705; |                &#x2705; |                     |                     |
+| get_energy_data                      |                              |                        |                             |                         |                         |                &#x2705; |                     |                     |
+| get_energy_usage                     |                              |                        |                             |                         |                         |                &#x2705; |                     |                     |
+| off                                  |                     &#x2705; |               &#x2705; |                    &#x2705; |                 &check; |                &#x2705; |                &#x2705; |                     |                     |
+| on                                   |                     &#x2705; |               &#x2705; |                    &#x2705; |                 &check; |                &#x2705; |                &#x2705; |                     |                     |
+| refresh_session                      |                     &#x2705; |               &#x2705; |                    &#x2705; |                 &check; |                &#x2705; |                &#x2705; |             &check; |             &check; |
+| set_brightness                       |                              |               &#x2705; |                    &#x2705; |                 &check; |                         |                         |                     |                     |
+| set_color                            |                              |                        |                    &#x2705; |                 &check; |                         |                         |                     |                     |
+| set_color_temperature                |                              |                        |                    &#x2705; |                 &check; |                         |                         |                     |                     |
+| set_hue_saturation                   |                              |                        |                    &#x2705; |                 &check; |                         |                         |                     |                     |
+| set_lighting_effect                  |                              |                        |                             |                 &check; |                         |                         |                     |                     |
+| set() API \*                         |                              |                        |                    &#x2705; |                 &check; |                         |                         |                     |                     |
 
 \* The `set()` API allows multiple properties to be set in a single request.
 
