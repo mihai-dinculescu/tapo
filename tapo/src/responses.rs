@@ -1,6 +1,7 @@
 //! Tapo response objects.
 
-mod child_device_list_result;
+mod child_device_list_hub_result;
+mod child_device_list_power_strip_result;
 mod control_child_result;
 mod current_power_result;
 mod decodable_result_ext;
@@ -15,7 +16,8 @@ mod tapo_result;
 mod token_result;
 mod trigger_logs_result;
 
-pub use child_device_list_result::*;
+pub use child_device_list_hub_result::*;
+pub use child_device_list_power_strip_result::*;
 pub use current_power_result::*;
 pub use device_info_result::*;
 pub use device_usage_energy_monitoring_result::*;

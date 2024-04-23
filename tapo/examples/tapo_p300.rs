@@ -2,7 +2,7 @@
 use std::{env, thread, time::Duration};
 
 use log::{info, LevelFilter};
-use tapo::{responses::ChildDeviceResult, ApiClient};
+use tapo::ApiClient;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -19,46 +19,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tapo_password = env::var("TAPO_PASSWORD")?;
     let ip_address = env::var("IP_ADDRESS")?;
 
-    info!("connecting...");
-
-    let strip = ApiClient::new(tapo_username, tapo_password)
+    let power_strip = ApiClient::new(tapo_username, tapo_password)
         .p300(ip_address)
         .await?;
 
-    let device_info = strip.get_device_info().await?;
+    let device_info = power_strip.get_device_info().await?;
     info!("Device info: {device_info:?}");
 
     info!("Getting child devices...");
-    let child_device_list = strip.get_child_device_list().await?;
+    let child_device_list = power_strip.get_child_device_list().await?;
 
     for child in child_device_list {
-        match child {
-            ChildDeviceResult::P300(child) => {
-                info!(
-                    "Found P300 child device with nickname: {}, id: {}, state: {}.",
-                    child.nickname,
-                    child.device_id,
-                    child.device_on,
-                );
+        info!(
+            "Found plug with nickname: {}, id: {}, state: {}.",
+            child.nickname, child.device_id, child.device_on,
+        );
 
-                let device = strip.p300(child.device_id);
+        let plug = power_strip.plug(child.device_id);
 
+        info!("Turning device on...");
+        plug.on().await?;
 
-                info!("Turning device on...");
-                device.on().await?;
+        info!("Waiting 2 seconds...");
+        thread::sleep(Duration::from_secs(2));
 
-                info!("Waiting 2 seconds...");
-                thread::sleep(Duration::from_secs(2));
+        info!("Turning device off...");
+        plug.off().await?;
 
-                info!("Turning device off...");
-                device.off().await?;
-
-                info!("Waiting 2 seconds...");
-            }
-            _ => {
-                info!("Found unsupported device.")
-            }
-        }
+        info!("Waiting 2 seconds...");
     }
 
     Ok(())

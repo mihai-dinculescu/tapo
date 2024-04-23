@@ -10,7 +10,7 @@ use serde::de::DeserializeOwned;
 use crate::api::protocol::{TapoProtocol, TapoProtocolExt};
 use crate::api::{
     ColorLightHandler, ColorLightStripHandler, GenericDeviceHandler, HubHandler, LightHandler,
-    PlugEnergyMonitoringHandler, PlugHandler, PowerStripHandler
+    PlugEnergyMonitoringHandler, PlugHandler, PowerStripHandler,
 };
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
@@ -404,7 +404,7 @@ impl ApiClient {
         Ok(PlugEnergyMonitoringHandler::new(self))
     }
 
-    /// Specializes the given [`ApiClient`] into an authenticated [`PlugEnergyMonitoringHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`PowerStripHandler`].
     ///
     /// # Arguments
     ///
@@ -424,10 +424,7 @@ impl ApiClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn p300(
-        mut self,
-        ip_address: impl Into<String>,
-    ) -> Result<PowerStripHandler, Error> {
+    pub async fn p300(mut self, ip_address: impl Into<String>) -> Result<PowerStripHandler, Error> {
         self.login(ip_address).await?;
 
         Ok(PowerStripHandler::new(self))

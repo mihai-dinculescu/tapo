@@ -1,20 +1,42 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, DefaultStateType, TapoResponseExt};
+use crate::responses::{decode_value, DecodableResultExt, DefaultPlugState, TapoResponseExt};
 
-/// P300 child plug.
+/// Power Strip child device list result.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub(crate) struct ChildDeviceListPowerStripResult {
+    /// Power Strip child devices
+    #[serde(rename = "child_device_list")]
+    pub sub_plugs: Vec<PlugPowerStripResult>,
+}
+
+impl DecodableResultExt for ChildDeviceListPowerStripResult {
+    fn decode(self) -> Result<Self, Error> {
+        Ok(ChildDeviceListPowerStripResult {
+            sub_plugs: self
+                .sub_plugs
+                .into_iter()
+                .map(|d| d.decode())
+                .collect::<Result<Vec<_>, _>>()?,
+        })
+    }
+}
+
+impl TapoResponseExt for ChildDeviceListPowerStripResult {}
+
+/// P300 power strip child plug.
 ///
 /// Specific properties: `detected`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct P300ChildResult {
+pub struct PlugPowerStripResult {
     //
     // Inherited from DeviceInfoGenericResult
     //
     pub device_id: String,
     pub r#type: String,
-    // pub model: String,
+    pub model: String,
     pub hw_id: String,
     pub hw_ver: String,
     pub fw_id: String,
@@ -38,19 +60,11 @@ pub struct P300ChildResult {
     pub default_states: DefaultPlugState,
 }
 
-impl TapoResponseExt for P300ChildResult {}
+impl TapoResponseExt for PlugPowerStripResult {}
 
-impl DecodableResultExt for P300ChildResult {
+impl DecodableResultExt for PlugPowerStripResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.nickname = decode_value(&self.nickname)?;
         Ok(self)
     }
-}
-
-/// Plug Default State.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
-#[allow(missing_docs)]
-pub struct DefaultPlugState {
-    pub r#type: DefaultStateType,
 }

@@ -7,7 +7,7 @@ use crate::api::{KE100Handler, S200BHandler, T100Handler, T110Handler, T300Handl
 use crate::error::Error;
 use crate::requests::TapoRequest;
 use crate::responses::{
-    ChildDeviceListResult, ChildDeviceResult, DeviceInfoHubResult, TapoResponseExt,
+    ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoHubResult, TapoResponseExt,
 };
 
 /// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) hubs.
@@ -40,12 +40,12 @@ impl HubHandler {
         self.client.get_device_info().await
     }
 
-    /// Returns *child device list* as [`ChildDeviceListResult`].
+    /// Returns *child device list* as [`ChildDeviceHubResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API
     /// or to support all the possible devices connected to the hub.
-    pub async fn get_child_device_list(&self) -> Result<Vec<ChildDeviceResult>, Error> {
+    pub async fn get_child_device_list(&self) -> Result<Vec<ChildDeviceHubResult>, Error> {
         self.client
-            .get_child_device_list::<ChildDeviceListResult>()
+            .get_child_device_list::<ChildDeviceListHubResult>()
             .await
             .map(|r| r.devices)
     }

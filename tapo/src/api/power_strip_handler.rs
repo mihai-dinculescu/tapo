@@ -2,11 +2,14 @@ use std::fmt;
 
 use serde::de::DeserializeOwned;
 
-use crate::api::{ApiClient, ApiClientExt};
-use crate::api::P300ChildHandler;
+use crate::api::ApiClient;
+use crate::api::PlugPowerStripHandler;
 use crate::error::Error;
 use crate::requests::TapoRequest;
-use crate::responses::{ChildDeviceListResult, ChildDeviceResult, DeviceInfoPowerStripResult, TapoResponseExt};
+use crate::responses::{
+    ChildDeviceListPowerStripResult, DeviceInfoPowerStripResult, PlugPowerStripResult,
+    TapoResponseExt,
+};
 
 /// Handler for the [P300](https://www.tapo.com/en/search/?q=P300) devices.
 pub struct PowerStripHandler {
@@ -26,7 +29,7 @@ impl PowerStripHandler {
 
     /// Returns *device info* as [`DeviceInfoPowerStripResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`HubHandler::get_device_info_json`].
+    /// If the deserialization fails, or if a property that you care about it's not present, try [`PowerStripHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<DeviceInfoPowerStripResult, Error> {
         self.client.get_device_info().await
     }
@@ -37,14 +40,14 @@ impl PowerStripHandler {
         self.client.get_device_info().await
     }
 
-    /// Returns *child device list* as [`ChildDeviceListResult`].
+    /// Returns *child device list* as [`PlugPowerStripResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API
     /// or to support all the possible devices connected to the hub.
-    pub async fn get_child_device_list(&self) -> Result<Vec<ChildDeviceResult>, Error> {
+    pub async fn get_child_device_list(&self) -> Result<Vec<PlugPowerStripResult>, Error> {
         self.client
-            .get_child_device_list::<ChildDeviceListResult>()
+            .get_child_device_list::<ChildDeviceListPowerStripResult>()
             .await
-            .map(|r| r.devices)
+            .map(|r| r.sub_plugs)
     }
 
     /// Returns *child device list* as [`serde_json::Value`].
@@ -74,7 +77,7 @@ impl PowerStripHandler {
 
 /// Child device handler builders.
 impl PowerStripHandler {
-    /// Returns a [`P300ChildHandler`] for the given `device_id`.
+    /// Returns a [`PlugPowerStripHandler`] for the given `device_id`.
     ///
     /// # Arguments
     ///
@@ -87,17 +90,17 @@ impl PowerStripHandler {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
-    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
+    /// let power_strip = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .p300("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.p300("0000000000000000000000000000000000000000");
+    /// let device = power_strip.plug("0000000000000000000000000000000000000000");
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub fn p300(&self, device_id: impl Into<String>) -> P300ChildHandler {
-        P300ChildHandler::new(self, device_id.into())
+    pub fn plug(&self, device_id: impl Into<String>) -> PlugPowerStripHandler {
+        PlugPowerStripHandler::new(self, device_id.into())
     }
 }

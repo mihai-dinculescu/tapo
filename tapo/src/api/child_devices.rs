@@ -1,15 +1,15 @@
 mod ke100_handler;
+mod plug_power_strip_handler;
 mod s200b_handler;
 mod t100_handler;
 mod t110_handler;
 mod t300_handler;
 mod t31x_handler;
-mod p300_child_handler;
 
 pub use ke100_handler::*;
+pub use plug_power_strip_handler::*;
 pub use s200b_handler::*;
 pub use t100_handler::*;
 pub use t110_handler::*;
 pub use t300_handler::*;
 pub use t31x_handler::*;
-pub use p300_child_handler::*;
