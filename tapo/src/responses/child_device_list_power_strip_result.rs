@@ -72,7 +72,7 @@ impl DecodableResultExt for PlugPowerStripResult {
 
 /// Auto Off Status.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", tag = "event")]
+#[serde(rename_all = "camelCase")]
 #[allow(missing_docs)]
 pub enum AutoOffStatus {
     On,
@@ -81,7 +81,7 @@ pub enum AutoOffStatus {
 
 /// Overheat Status.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", tag = "event")]
+#[serde(rename_all = "camelCase")]
 #[allow(missing_docs)]
 pub enum OverheatStatus {
     Normal,
