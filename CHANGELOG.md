@@ -16,6 +16,10 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+### Added
+
+- Added partial support for the H100 hub and it's child devices. Currently, only the `get_device_info` function is supported for the child devices through the hub's `get_child_device_list` method.
+
 ## [Rust v0.7.10][v0.7.10] - 2024-04-05
 
 ### Changed

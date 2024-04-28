@@ -21,9 +21,9 @@ Example:
 See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
 """
 
-from typing import Optional
 from .color_light_handler import ColorLightHandler
 from .generic_device_handler import GenericDeviceHandler
+from .hub_handler import HubHandler
 from .light_handler import LightHandler
 from .plug_energy_monitoring_handler import PlugEnergyMonitoringHandler
 from .plug_handler import PlugHandler
@@ -278,5 +278,24 @@ class ApiClient:
             device = await client.p115("192.168.1.100")
 
             await device.on()
+            ```
+        """
+
+    async def h100(self, ip_address: str) -> HubHandler:
+        """Specializes the given `ApiClient` into an authenticated `HubHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            HubHandler: Handler for the [H100](https://www.tapo.com/en/search/?q=H100) hubs.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            hub = await client.h100("192.168.1.100")
+
+            child_device_list = await hub.get_child_device_list()
+            print(f"Child device list: {child_device_list.to_dict()}")
             ```
         """

@@ -42,6 +42,7 @@ impl TapoResponseExt for ChildDeviceListHubResult {}
 /// Device status.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
 pub enum Status {
     Online,

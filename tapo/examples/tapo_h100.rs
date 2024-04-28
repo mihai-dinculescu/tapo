@@ -2,7 +2,8 @@
 use std::env;
 
 use log::{info, LevelFilter};
-use tapo::{responses::ChildDeviceHubResult, ApiClient};
+use tapo::responses::ChildDeviceHubResult;
+use tapo::ApiClient;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

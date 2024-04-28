@@ -4,8 +4,8 @@ use tapo::ApiClient;
 
 use crate::errors::ErrorWrapper;
 use crate::handlers::{
-    PyColorLightHandler, PyGenericDeviceHandler, PyLightHandler, PyPlugEnergyMonitoringHandler,
-    PyPlugHandler,
+    PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
+    PyPlugEnergyMonitoringHandler, PyPlugHandler,
 };
 
 #[pyclass(name = "ApiClient")]
@@ -118,6 +118,14 @@ impl PyApiClient {
         pyo3_asyncio::tokio::future_into_py(py, async move {
             let handler = client.p115(ip_address).await.map_err(ErrorWrapper)?;
             Ok(PyPlugEnergyMonitoringHandler::new(handler))
+        })
+    }
+
+    pub fn h100<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+        let client = self.client.clone();
+        pyo3_asyncio::tokio::future_into_py(py, async move {
+            let handler = client.h100(ip_address).await.map_err(ErrorWrapper)?;
+            Ok(PyHubHandler::new(handler))
         })
     }
 }

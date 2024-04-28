@@ -5,6 +5,7 @@ use crate::responses::{decode_value, DecodableResultExt, TapoResponseExt};
 
 /// Device info of Tapo H100. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
 pub struct DeviceInfoHubResult {
     //
@@ -38,6 +39,18 @@ pub struct DeviceInfoHubResult {
     //
     pub in_alarm: bool,
     pub in_alarm_source: String,
+}
+
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl DeviceInfoHubResult {
+    /// Gets all the properties of this result as a dictionary.
+    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
+        let value = serde_json::to_value(self)
+            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
+
+        crate::python::serde_object_to_py_dict(py, &value)
+    }
 }
 
 impl TapoResponseExt for DeviceInfoHubResult {}
