@@ -1,6 +1,7 @@
 """Tapo API Client.
 
-Tested with light bulbs (L510, L520, L530, L610, L630) and plugs (P100, P105, P110, P115).
+Tested with light bulbs (L510, L520, L530, L610, L630), plugs (P100, P105, P110, P115),
+hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
 
 Example:
     ```python
@@ -31,7 +32,8 @@ from .plug_handler import PlugHandler
 class ApiClient:
     """Tapo API Client.
 
-    Tested with light bulbs (L510, L520, L530, L610, L630) and plugs (P100, P105, P110, P115).
+    Tested with light bulbs (L510, L520, L530, L610, L630), plugs (P100, P105, P110, P115),
+    hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
 
     Example:
         ```python
