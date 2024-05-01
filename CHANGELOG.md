@@ -9,16 +9,23 @@ file. This change log follows the conventions of
 ### Added
 
 - Added support for the P300 power strip (thanks to @Michal-Szczepaniak).
+- `RgbLightStripHandler` and `DeviceInfoRgbLightStripResult` have been added to support the L900 devices separately from the L530 and L630 devices.
 
 ### Changed
 
 - `ChildDeviceResult` has been renamed to `ChildDeviceHubResult` to facilitate adding support for other devices with children.
+- `ColorLightStripHandler` has been renamed to `RgbicLightStripHandler` to better reflect it's purpose.
+- `DeviceInfoColorLightStripResult` has been renamed to `DeviceInfoRgbicLightStripResult` to better reflect it's purpose.
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
 - Added partial support for the H100 hub and it's child devices. Currently, only the `get_device_info` function is supported for the child devices through the hub's `get_child_device_list` method.
+
+### Removed
+
+- `l900` has been removed from the `ApiClient` until proper support is added.
 
 ## [Rust v0.7.10][v0.7.10] - 2024-04-05
 

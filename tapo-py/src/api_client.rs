@@ -81,14 +81,6 @@ impl PyApiClient {
         })
     }
 
-    pub fn l900<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
-        let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client.l900(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyColorLightHandler::new(handler))
-        })
-    }
-
     pub fn p100<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
         let client = self.client.clone();
         pyo3_asyncio::tokio::future_into_py(py, async move {

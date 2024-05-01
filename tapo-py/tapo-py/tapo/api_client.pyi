@@ -193,24 +193,6 @@ class ApiClient:
             ```
         """
 
-    async def l900(self, ip_address: str) -> ColorLightHandler:
-        """Specializes the given `ApiClient` into an authenticated `ColorLightHandler`.
-
-        Args:
-            ip_address (str): The IP address of the device
-
-        Returns:
-            ColorLightHandler: Handler for the [L530](https://www.tapo.com/en/search/?q=L530), [L630](https://www.tapo.com/en/search/?q=L630) and [L900](https://www.tapo.com/en/search/?q=L900) devices.
-
-        Example:
-            ```python
-            client = ApiClient("tapo-username@example.com", "tapo-password")
-            device = await client.l900("192.168.1.100")
-
-            await device.on()
-            ```
-        """
-
     async def p100(self, ip_address: str) -> PlugHandler:
         """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
 

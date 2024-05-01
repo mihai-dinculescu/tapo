@@ -1,4 +1,4 @@
-/// L530, L630 & L900 Example
+/// L530 & L630 Example
 use std::{env, thread, time::Duration};
 
 use log::{info, LevelFilter};

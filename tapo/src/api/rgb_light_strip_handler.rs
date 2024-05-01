@@ -1,15 +1,15 @@
 use crate::error::Error;
-use crate::requests::{Color, ColorLightSetDeviceInfoParams, LightingEffect};
-use crate::responses::{DeviceInfoColorLightStripResult, DeviceUsageEnergyMonitoringResult};
+use crate::requests::{Color, ColorLightSetDeviceInfoParams};
+use crate::responses::{DeviceInfoRgbLightStripResult, DeviceUsageEnergyMonitoringResult};
 
 use super::{ApiClient, ApiClientExt, HandlerExt};
 
-/// Handler for the [L920](https://www.tapo.com/en/search/?q=L920) and [L930](https://www.tapo.com/en/search/?q=L930) devices.
-pub struct ColorLightStripHandler {
+/// Handler for the [L900](https://www.tapo.com/en/search/?q=L900) devices.
+pub struct RgbLightStripHandler {
     client: ApiClient,
 }
 
-impl ColorLightStripHandler {
+impl RgbLightStripHandler {
     pub(crate) fn new(client: ApiClient) -> Self {
         Self { client }
     }
@@ -42,10 +42,10 @@ impl ColorLightStripHandler {
         self.client.device_reset().await
     }
 
-    /// Returns *device info* as [`DeviceInfoColorLightStripResult`].
+    /// Returns *device info* as [`DeviceInfoRgbLightStripResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`ColorLightStripHandler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<DeviceInfoColorLightStripResult, Error> {
+    /// If the deserialization fails, or if a property that you care about it's not present, try [`RgbLightStripHandler::get_device_info_json`].
+    pub async fn get_device_info(&self) -> Result<DeviceInfoRgbLightStripResult, Error> {
         self.client.get_device_info().await
     }
 
@@ -62,7 +62,6 @@ impl ColorLightStripHandler {
 
     /// Returns a [`ColorLightSetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
     /// [`ColorLightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
-    /// For *lighting effects*, use [`ColorLightStripHandler::set_lighting_effect`] instead.
     ///
     /// # Example
     ///
@@ -72,7 +71,7 @@ impl ColorLightStripHandler {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let device = ApiClient::new("tapo-username@example.com", "tapo-password")
-    /// #     .l930("192.168.1.100")
+    /// #     .l900("192.168.1.100")
     /// #     .await?;
     /// device
     ///     .set()
@@ -139,23 +138,9 @@ impl ColorLightStripHandler {
             .send(self)
             .await
     }
-
-    /// Sets a *lighting effect* and turns *on* the device.
-    ///
-    /// # Arguments
-    ///
-    /// * `lighting_effect` - [crate::requests::LightingEffectPreset] or [crate::requests::LightingEffect].
-    pub async fn set_lighting_effect(
-        &self,
-        lighting_effect: impl Into<LightingEffect>,
-    ) -> Result<(), Error> {
-        self.client
-            .set_lighting_effect(lighting_effect.into())
-            .await
-    }
 }
 
-impl HandlerExt for ColorLightStripHandler {
+impl HandlerExt for RgbLightStripHandler {
     fn get_client(&self) -> &dyn ApiClientExt {
         &self.client
     }
