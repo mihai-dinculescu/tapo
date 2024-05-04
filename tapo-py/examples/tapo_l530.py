@@ -3,7 +3,8 @@
 import asyncio
 import os
 
-from tapo import ApiClient, Color
+from tapo import ApiClient
+from tapo.requests import Color
 
 
 async def main():

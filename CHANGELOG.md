@@ -23,6 +23,10 @@ file. This change log follows the conventions of
 
 - Added partial support for the H100 hub and it's child devices. Currently, only the `get_device_info` function is supported for the child devices through the hub's `get_child_device_list` method.
 
+### Changed
+
+- A large number of types have been reorganized to me more in line with the Rust library. This includes moving many of them under the `requests` and `responses` sub modules.
+
 ### Removed
 
 - `l900` has been removed from the `ApiClient` until proper support is added.

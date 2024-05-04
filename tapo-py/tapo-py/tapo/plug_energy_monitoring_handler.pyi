@@ -1,9 +1,13 @@
 from datetime import datetime
-from enum import StrEnum
-from typing import List
 
-from .types import DeviceUsageEnergyMonitoringResult
-from .plug_handler import DeviceInfoPlugResult
+from tapo.requests import EnergyDataInterval
+from tapo.responses import (
+    CurrentPowerResult,
+    DeviceInfoPlugResult,
+    DeviceUsageEnergyMonitoringResult,
+    EnergyDataResult,
+    EnergyUsageResult,
+)
 
 class PlugEnergyMonitoringHandler:
     """Handler for the [P110](https://www.tapo.com/en/search/?q=P110) & [P115](https://www.tapo.com/en/search/?q=P115) devices."""
@@ -87,78 +91,3 @@ class PlugEnergyMonitoringHandler:
         Returns:
             EnergyDataResult: Energy data for the requested `EnergyDataInterval`.
         """
-
-class CurrentPowerResult:
-    """Contains the current power reading of the device."""
-
-    current_power: int
-    """Current power in watts (W)."""
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class EnergyUsageResult:
-    """Contains local time, current power and the energy usage and runtime for today and for the current month."""
-
-    local_time: datetime
-    """Local time of the device."""
-    current_power: int
-    """Current power in milliwatts (mW)."""
-    today_runtime: int
-    """Today runtime in minutes."""
-    today_energy: int
-    """Today energy usage in watts (W)."""
-    month_runtime: int
-    """Current month runtime in minutes."""
-    month_energy: int
-    """Current month energy usage in watts (W)."""
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class EnergyDataResult:
-    """Energy data for the requested `EnergyDataInterval`."""
-
-    local_time: datetime
-    """Local time of the device."""
-
-    data: List[int]
-    """Energy data for the given `interval` in watts (W)."""
-
-    start_timestamp: int
-    """Interval start timestamp in milliseconds."""
-
-    end_timestamp: int
-    """Interval end timestamp in milliseconds."""
-
-    interval: int
-    """Interval in minutes."""
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class EnergyDataInterval(StrEnum):
-    """Energy data interval."""
-
-    Hourly = "Hourly"
-    """Hourly interval. `start_date` and `end_date` are an inclusive interval
-    that must not be greater than 8 days.
-    """
-
-    Daily = "Daily"
-    """Daily interval. `start_date` must be the first day of a quarter."""
-
-    Monthly = "Monthly"
-    """Monthly interval. `start_date` must be the first day of a year."""

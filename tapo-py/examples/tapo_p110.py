@@ -4,7 +4,8 @@ import asyncio
 import os
 from datetime import datetime
 
-from tapo import ApiClient, EnergyDataInterval
+from tapo import ApiClient
+from tapo.requests import EnergyDataInterval
 
 
 async def main():

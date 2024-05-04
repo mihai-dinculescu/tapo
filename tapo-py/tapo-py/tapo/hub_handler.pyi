@@ -1,6 +1,14 @@
-from typing import List, Optional, Union
+from typing import List, Union
 
-from tapo.responses import KE100Result, S200BResult, T100Result, T110Result, T300Result, T31XResult
+from tapo.responses import (
+    DeviceInfoHubResult,
+    KE100Result,
+    S200BResult,
+    T100Result,
+    T110Result,
+    T300Result,
+    T31XResult,
+)
 
 class HubHandler:
     """Handler for the [H100](https://www.tapo.com/en/search/?q=H100) hubs."""
@@ -61,42 +69,4 @@ class HubHandler:
 
         Returns:
             dict: Device info as a dictionary.
-        """
-
-class DeviceInfoHubResult:
-    """Device info of Tapo H100. Superset of `GenericDeviceInfoResult`."""
-
-    device_id: str
-    type: str
-    model: str
-    hw_id: str
-    hw_ver: str
-    fw_id: str
-    fw_ver: str
-    oem_id: str
-    mac: str
-    ip: str
-    ssid: str
-    signal_level: int
-    rssi: int
-    specs: str
-    lang: str
-    overheated: bool
-    nickname: str
-    avatar: str
-    has_set_location_info: bool
-    region: Optional[str]
-    latitude: Optional[float]
-    longitude: Optional[float]
-    time_diff: Optional[int]
-
-    # Unique to this device
-    in_alarm: bool
-    in_alarm_source: str
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
         """
