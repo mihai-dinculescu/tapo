@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.7.11][v0.7.11] - 2024-05-04
+
 ### Added
 
 - Added support for the P300 power strip (thanks to @Michal-Szczepaniak).
@@ -17,7 +21,7 @@ file. This change log follows the conventions of
 - `ColorLightStripHandler` has been renamed to `RgbicLightStripHandler` to better reflect it's purpose.
 - `DeviceInfoColorLightStripResult` has been renamed to `DeviceInfoRgbicLightStripResult` to better reflect it's purpose.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.3.0][py-v0.3.0] - 2024-05-04
 
 ### Added
 
@@ -330,6 +334,8 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.11]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.11
+[py-v0.3.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.3.0
 [v0.7.10]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.10
 [py-v0.2.1]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.2.1
 [v0.7.9]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.9
