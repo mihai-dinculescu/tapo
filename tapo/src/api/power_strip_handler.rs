@@ -78,7 +78,7 @@ impl PowerStripHandler {
 
 /// Child device handler builders.
 impl PowerStripHandler {
-    /// Returns a [`PlugPowerStripHandler`] for the given [`PlugIdentifier`].
+    /// Returns a [`PlugPowerStripHandler`] for the given [`Plug`].
     ///
     /// # Arguments
     ///
@@ -87,7 +87,7 @@ impl PowerStripHandler {
     /// # Example
     ///
     /// ```rust,no_run
-    /// # use tapo::{ApiClient, PlugIdentifier};
+    /// # use tapo::{ApiClient, Plug};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
@@ -95,31 +95,29 @@ impl PowerStripHandler {
     ///     .p300("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = power_strip
-    ///     .plug(PlugIdentifier::ByDeviceId("0000000000000000000000000000000000000000"))
-    ///     .await?;
+    /// let device = power_strip.plug(Plug::ByDeviceId("0000000000000000000000000000000000000000")).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn plug<'a>(
-        &self,
-        identifier: PlugIdentifier<'a>,
-    ) -> Result<PlugPowerStripHandler, Error> {
+    pub async fn plug<'a>(&self, identifier: Plug<'a>) -> Result<PlugPowerStripHandler, Error> {
+        let children = self.get_child_device_list().await?;
+
         let device_id = match identifier {
-            PlugIdentifier::ByDeviceId(device_id) => device_id.to_string(),
-            PlugIdentifier::ByNickname(nickname) => self
-                .get_child_device_list()
-                .await?
+            Plug::ByDeviceId(device_id) => children
+                .iter()
+                .find(|child| child.device_id == device_id)
+                .ok_or_else(|| Error::DeviceNotFound)?
+                .device_id
+                .clone(),
+            Plug::ByNickname(nickname) => children
                 .iter()
                 .find(|child| child.nickname == nickname)
                 .ok_or_else(|| Error::DeviceNotFound)?
                 .device_id
                 .clone(),
-            PlugIdentifier::ByPosition(position) => self
-                .get_child_device_list()
-                .await?
+            Plug::ByPosition(position) => children
                 .iter()
                 .find(|child| child.position == position)
                 .ok_or_else(|| Error::DeviceNotFound)?
@@ -131,8 +129,8 @@ impl PowerStripHandler {
     }
 }
 
-/// Plug Identifier.
-pub enum PlugIdentifier<'a> {
+/// Power strip plug.
+pub enum Plug<'a> {
     ///  By Device ID.
     ByDeviceId(&'a str),
     /// By Nickname.

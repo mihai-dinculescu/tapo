@@ -10,6 +10,31 @@ use crate::responses::{
     ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoHubResult, TapoResponseExt,
 };
 
+macro_rules! get_device_id {
+    ($self:expr, $identifier:expr, $value:path) => {{
+        let children = $self.get_child_device_list().await?;
+
+        match $identifier {
+            HubDevice::ByDeviceId(device_id) => children
+                .iter()
+                .filter_map(|d| match d {
+                    $value(child) if child.device_id == device_id => Some(child.device_id.clone()),
+                    _ => None,
+                })
+                .next()
+                .ok_or_else(|| Error::DeviceNotFound)?,
+            HubDevice::ByNickname(nickname) => children
+                .iter()
+                .filter_map(|d| match d {
+                    $value(child) if child.nickname == nickname => Some(child.device_id.clone()),
+                    _ => None,
+                })
+                .next()
+                .ok_or_else(|| Error::DeviceNotFound)?,
+        }
+    }};
+}
+
 /// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) hubs.
 pub struct HubHandler {
     client: ApiClient,
@@ -78,16 +103,16 @@ impl HubHandler {
 
 /// Child device handler builders.
 impl HubHandler {
-    /// Returns a [`S200BHandler`] for the given `device_id`.
+    /// Returns a [`KE100Handler`] for the given [`HubDevice`].
     ///
     /// # Arguments
     ///
-    /// * `device_id` - the Device ID of the child device
+    /// * `identifier` - a hub device identifier
     ///
     /// # Example
     ///
     /// ```rust,no_run
-    /// # use tapo::ApiClient;
+    /// # use tapo::{ApiClient, HubDevice};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
@@ -95,26 +120,27 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.s200b("0000000000000000000000000000000000000000");
+    /// let device = hub.ke100(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub fn s200b(&self, device_id: impl Into<String>) -> S200BHandler {
-        S200BHandler::new(self, device_id.into())
+    pub async fn ke100<'a>(&self, identifier: HubDevice<'a>) -> Result<KE100Handler, Error> {
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::KE100);
+        Ok(KE100Handler::new(self, device_id))
     }
 
-    /// Returns a [`T100Handler`] for the given `device_id`.
+    /// Returns a [`S200BHandler`] for the given [`HubDevice`].
     ///
     /// # Arguments
     ///
-    /// * `device_id` - the Device ID of the child device
+    /// * `identifier` - a hub device identifier
     ///
     /// # Example
     ///
     /// ```rust,no_run
-    /// # use tapo::ApiClient;
+    /// # use tapo::{ApiClient, HubDevice};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
@@ -122,26 +148,27 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.t100("0000000000000000000000000000000000000000");
+    /// let device = hub.s200b(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub fn t100(&self, device_id: impl Into<String>) -> T100Handler {
-        T100Handler::new(self, device_id.into())
+    pub async fn s200b<'a>(&self, identifier: HubDevice<'a>) -> Result<S200BHandler, Error> {
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::S200B);
+        Ok(S200BHandler::new(self, device_id))
     }
 
-    /// Returns a [`T110Handler`] for the given `device_id`.
+    /// Returns a [`T100Handler`] for the given [`HubDevice`].
     ///
     /// # Arguments
     ///
-    /// * `device_id` - the Device ID of the child device
+    /// * `identifier` - a hub device identifier
     ///
     /// # Example
     ///
     /// ```rust,no_run
-    /// # use tapo::ApiClient;
+    /// # use tapo::{ApiClient, HubDevice};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
@@ -149,26 +176,27 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.t110("0000000000000000000000000000000000000000");
+    /// let device = hub.t100(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub fn t110(&self, device_id: impl Into<String>) -> T110Handler {
-        T110Handler::new(self, device_id.into())
+    pub async fn t100<'a>(&self, identifier: HubDevice<'a>) -> Result<T100Handler, Error> {
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T100);
+        Ok(T100Handler::new(self, device_id))
     }
 
-    /// Returns a [`T300Handler`] for the given `device_id`.
+    /// Returns a [`T110Handler`] for the given [`HubDevice`].
     ///
     /// # Arguments
     ///
-    /// * `device_id` - the Device ID of the child device
+    /// * `identifier` - a hub device identifier
     ///
     /// # Example
     ///
     /// ```rust,no_run
-    /// # use tapo::ApiClient;
+    /// # use tapo::{ApiClient, HubDevice};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
@@ -176,26 +204,27 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.t300("0000000000000000000000000000000000000000");
+    /// let device = hub.t110(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub fn t300(&self, device_id: impl Into<String>) -> T300Handler {
-        T300Handler::new(self, device_id.into())
+    pub async fn t110<'a>(&self, identifier: HubDevice<'a>) -> Result<T110Handler, Error> {
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T110);
+        Ok(T110Handler::new(self, device_id))
     }
 
-    /// Returns a [`T31XHandler`] for the given `device_id`.
+    /// Returns a [`T300Handler`] for the given [`HubDevice`].
     ///
     /// # Arguments
     ///
-    /// * `device_id` - the Device ID of the child device
+    /// * `identifier` - a hub device identifier
     ///
     /// # Example
     ///
     /// ```rust,no_run
-    /// # use tapo::ApiClient;
+    /// # use tapo::{ApiClient, HubDevice};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
@@ -203,26 +232,27 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.t310("0000000000000000000000000000000000000000");
+    /// let device = hub.t300(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub fn t310(&self, device_id: impl Into<String>) -> T31XHandler {
-        T31XHandler::new(self, device_id.into())
+    pub async fn t300<'a>(&self, identifier: HubDevice<'a>) -> Result<T300Handler, Error> {
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T300);
+        Ok(T300Handler::new(self, device_id))
     }
 
-    /// Returns a [`T31XHandler`] for the given `device_id`.
+    /// Returns a [`T31XHandler`] for the given [`HubDevice`].
     ///
     /// # Arguments
     ///
-    /// * `device_id` - the Device ID of the child device
+    /// * `identifier` - a hub device identifier
     ///
     /// # Example
     ///
     /// ```rust,no_run
-    /// # use tapo::ApiClient;
+    /// # use tapo::{ApiClient, HubDevice};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
@@ -230,26 +260,27 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.t315("0000000000000000000000000000000000000000");
+    /// let device = hub.t310(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub fn t315(&self, device_id: impl Into<String>) -> T31XHandler {
-        T31XHandler::new(self, device_id.into())
+    pub async fn t310<'a>(&self, identifier: HubDevice<'a>) -> Result<T31XHandler, Error> {
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T310);
+        Ok(T31XHandler::new(self, device_id))
     }
 
-    /// Returns a [`KE100Handler`] for the given `device_id`.
+    /// Returns a [`T31XHandler`] for the given [`HubDevice`].
     ///
     /// # Arguments
     ///
-    /// * `device_id` - the Device ID of the child device
+    /// * `identifier` - a hub device identifier
     ///
     /// # Example
     ///
     /// ```rust,no_run
-    /// # use tapo::ApiClient;
+    /// # use tapo::{ApiClient, HubDevice};
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
@@ -257,13 +288,22 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.ke100("0000000000000000000000000000000000000000");
+    /// let device = hub.t315(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub fn ke100(&self, device_id: impl Into<String>) -> KE100Handler {
-        KE100Handler::new(self, device_id.into())
+    pub async fn t315<'a>(&self, identifier: HubDevice<'a>) -> Result<T31XHandler, Error> {
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T310);
+        Ok(T31XHandler::new(self, device_id))
     }
+}
+
+/// Hub Device.
+pub enum HubDevice<'a> {
+    /// By Device ID.
+    ByDeviceId(&'a str),
+    /// By Nickname.
+    ByNickname(&'a str),
 }

@@ -3,7 +3,7 @@ use std::env;
 
 use log::{info, LevelFilter};
 use tapo::responses::ChildDeviceHubResult;
-use tapo::ApiClient;
+use tapo::{ApiClient, HubDevice};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceHubResult::S200B(device) => {
-                let s200b = hub.s200b(&device.device_id);
+                let s200b = hub.s200b(HubDevice::ByDeviceId(&device.device_id)).await?;
                 let trigger_logs = s200b.get_trigger_logs(5, 0).await?;
 
                 info!(
@@ -53,7 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceHubResult::T100(device) => {
-                let t100 = hub.t100(&device.device_id);
+                let t100 = hub.t100(HubDevice::ByDeviceId(&device.device_id)).await?;
                 let trigger_logs = t100.get_trigger_logs(5, 0).await?;
 
                 info!(
@@ -62,7 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceHubResult::T110(device) => {
-                let t110 = hub.t110(&device.device_id);
+                let t110 = hub.t110(HubDevice::ByDeviceId(&device.device_id)).await?;
                 let trigger_logs = t110.get_trigger_logs(5, 0).await?;
 
                 info!(
@@ -71,7 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceHubResult::T300(device) => {
-                let t300 = hub.t300(&device.device_id);
+                let t300 = hub.t300(HubDevice::ByDeviceId(&device.device_id)).await?;
                 let trigger_logs = t300.get_trigger_logs(5, 0).await?;
 
                 info!(
@@ -84,7 +84,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceHubResult::T310(device) | ChildDeviceHubResult::T315(device) => {
-                let t31x = hub.t315(&device.device_id);
+                let t31x = hub.t315(HubDevice::ByDeviceId(&device.device_id)).await?;
                 let temperature_humidity_records = t31x.get_temperature_humidity_records().await?;
 
                 info!(

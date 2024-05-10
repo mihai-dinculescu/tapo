@@ -6,6 +6,12 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Changed
+
+- H100's create child device handler methods now take a `HubDevice` `enum` instead of a `String` and are now `async` to allow for more flexibility. This enables the caller to find child devices by either device ID or nickname.
+- `PlugIdentifier` has been renamed to `Plug`.
+- `Plug::ByDeviceId` now verifies that the provided device ID is found and returns an `Error::DeviceNotFound` error when it's not.
+
 ## [Python Unreleased][Unreleased]
 
 ## [Rust v0.7.11][v0.7.11] - 2024-05-04
@@ -18,8 +24,8 @@ file. This change log follows the conventions of
 ### Changed
 
 - `ChildDeviceResult` has been renamed to `ChildDeviceHubResult` to facilitate adding support for other devices with children.
-- `ColorLightStripHandler` has been renamed to `RgbicLightStripHandler` to better reflect it's purpose.
-- `DeviceInfoColorLightStripResult` has been renamed to `DeviceInfoRgbicLightStripResult` to better reflect it's purpose.
+- `ColorLightStripHandler` has been renamed to `RgbicLightStripHandler` to better reflect its purpose.
+- `DeviceInfoColorLightStripResult` has been renamed to `DeviceInfoRgbicLightStripResult` to better reflect its purpose.
 
 ## [Python v0.3.0][py-v0.3.0] - 2024-05-04
 

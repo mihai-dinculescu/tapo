@@ -67,7 +67,7 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 | set_target_temperature           | &check;  |          |          |          |          |            |
 | set_temperature_offset           | &check;  |          |          |          |          |            |
 
-\* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child handler.
+\* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child device handler.
 
 
 ## Rust
