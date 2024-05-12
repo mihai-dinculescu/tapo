@@ -1,12 +1,12 @@
 //! Python utilities.
 
-use pyo3::types::{PyDict, PyList};
-use pyo3::{IntoPy, Py, PyResult, Python, ToPyObject};
+use pyo3::types::{PyDict, PyDictMethods, PyList, PyListMethods};
+use pyo3::{Py, PyResult, Python, ToPyObject};
 use serde_json::Value;
 
 /// Converts a serde object to a Python dictionary.
 pub fn serde_object_to_py_dict(py: Python, value: &Value) -> PyResult<Py<PyDict>> {
-    let dict = PyDict::new(py);
+    let dict = PyDict::new_bound(py);
 
     if let Some(object) = value.as_object() {
         for (key, value) in object {
@@ -15,14 +15,14 @@ pub fn serde_object_to_py_dict(py: Python, value: &Value) -> PyResult<Py<PyDict>
         }
     }
 
-    Ok(dict.into_py(py))
+    Ok(dict.into())
 }
 
 fn map_value(py: Python, value: &Value) -> PyResult<impl ToPyObject> {
     let mapped_value = match value {
         Value::Object(_) => serde_object_to_py_dict(py, value)?.to_object(py),
         Value::Array(value) => {
-            let array = PyList::empty(py);
+            let array = PyList::empty_bound(py);
 
             for item in value {
                 let mapped_item = map_value(py, item)?;

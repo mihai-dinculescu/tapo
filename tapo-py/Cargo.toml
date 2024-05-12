@@ -18,7 +18,6 @@ chrono = { workspace = true, default-features = false }
 pyo3 = { workspace = true, features = [
     "chrono",
     "extension-module",
-    "gil-refs",
     "experimental-async",
 ] }
 tokio = { workspace = true, default-features = false, features = ["sync"] }

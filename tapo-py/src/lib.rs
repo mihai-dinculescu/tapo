@@ -19,11 +19,11 @@ use tapo::responses::{
 
 #[pymodule]
 #[pyo3(name = "tapo")]
-fn tapo_py(py: Python, module: &PyModule) -> PyResult<()> {
+fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PyApiClient>()?;
 
-    let requests = PyModule::new(py, "tapo.requests")?;
-    let responses = PyModule::new(py, "tapo.responses")?;
+    let requests = PyModule::new_bound(py, "tapo.requests")?;
+    let responses = PyModule::new_bound(py, "tapo.responses")?;
 
     // requests
     requests.add_class::<PyEnergyDataInterval>()?;
@@ -73,13 +73,13 @@ fn tapo_py(py: Python, module: &PyModule) -> PyResult<()> {
     responses.add_class::<DefaultPlugState>()?;
     responses.add_class::<PlugState>()?;
 
-    let sys = py.import("sys")?;
+    module.add_submodule(&requests)?;
+    module.add_submodule(&responses)?;
+
+    let sys = py.import_bound("sys")?;
     let modules = sys.getattr("modules")?;
     modules.set_item("tapo.requests", requests)?;
     modules.set_item("tapo.responses", responses)?;
-
-    module.add_submodule(requests)?;
-    module.add_submodule(responses)?;
 
     Ok(())
 }

@@ -68,7 +68,7 @@ impl PyHubHandler {
             .map_err(ErrorWrapper)?;
 
         let results = Python::with_gil(|py| {
-            let results = PyList::empty(py);
+            let results = PyList::empty_bound(py);
 
             for child in children {
                 match child {
@@ -99,7 +99,7 @@ impl PyHubHandler {
                 }
             }
 
-            results.into_py(py)
+            results.into()
         });
 
         Ok(results)
