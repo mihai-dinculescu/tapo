@@ -295,7 +295,7 @@ impl HubHandler {
     /// # }
     /// ```
     pub async fn t315<'a>(&self, identifier: HubDevice<'a>) -> Result<T31XHandler, Error> {
-        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T310);
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T315);
         Ok(T31XHandler::new(self, device_id))
     }
 }

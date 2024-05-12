@@ -83,7 +83,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     trigger_logs
                 );
             }
-            ChildDeviceHubResult::T310(device) | ChildDeviceHubResult::T315(device) => {
+            ChildDeviceHubResult::T310(device) => {
+                let t31x = hub.t310(HubDevice::ByDeviceId(&device.device_id)).await?;
+                let temperature_humidity_records = t31x.get_temperature_humidity_records().await?;
+
+                info!(
+                    "Found T31X child device with nickname: {}, id: {}, temperature: {} {:?}, humidity: {}%, 24-hour ago record: {:?}.",
+                    device.nickname,
+                    device.device_id,
+                    device.current_temperature,
+                    device.temperature_unit,
+                    device.current_humidity,
+                    temperature_humidity_records.records.first()
+                );
+            }
+            ChildDeviceHubResult::T315(device) => {
                 let t31x = hub.t315(HubDevice::ByDeviceId(&device.device_id)).await?;
                 let temperature_humidity_records = t31x.get_temperature_humidity_records().await?;
 
