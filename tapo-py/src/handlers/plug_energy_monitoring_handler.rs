@@ -2,7 +2,12 @@ use std::sync::Arc;
 
 use chrono::NaiveDate;
 use pyo3::prelude::*;
+use pyo3::types::PyDict;
 use tapo::requests::EnergyDataInterval;
+use tapo::responses::{
+    CurrentPowerResult, DeviceInfoPlugResult, DeviceUsageEnergyMonitoringResult, EnergyDataResult,
+    EnergyUsageResult,
+};
 use tapo::PlugEnergyMonitoringHandler;
 use tokio::sync::Mutex;
 
@@ -32,140 +37,117 @@ impl PyPlugEnergyMonitoringHandler {
 
 #[pymethods]
 impl PyPlugEnergyMonitoringHandler {
-    pub fn refresh_session<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn refresh_session(&self) -> PyResult<()> {
         let handler = self.handler.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            handler
-                .lock()
-                .await
-                .refresh_session()
-                .await
-                .map_err(ErrorWrapper)?;
-            Ok(())
-        })
+        handler
+            .lock()
+            .await
+            .refresh_session()
+            .await
+            .map_err(ErrorWrapper)?;
+        Ok(())
     }
 
-    pub fn on<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn on(&self) -> PyResult<()> {
         let handler = self.handler.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            handler.lock().await.on().await.map_err(ErrorWrapper)?;
-            Ok(())
-        })
+        handler.lock().await.on().await.map_err(ErrorWrapper)?;
+        Ok(())
     }
 
-    pub fn off<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn off(&self) -> PyResult<()> {
         let handler = self.handler.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            handler.lock().await.off().await.map_err(ErrorWrapper)?;
-            Ok(())
-        })
+        handler.lock().await.off().await.map_err(ErrorWrapper)?;
+        Ok(())
     }
 
-    pub fn device_reset<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn device_reset(&self) -> PyResult<()> {
         let handler = self.handler.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            handler
-                .lock()
-                .await
-                .device_reset()
-                .await
-                .map_err(ErrorWrapper)?;
-            Ok(())
-        })
+        handler
+            .lock()
+            .await
+            .device_reset()
+            .await
+            .map_err(ErrorWrapper)?;
+        Ok(())
     }
 
-    pub fn get_device_info<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn get_device_info(&self) -> PyResult<DeviceInfoPlugResult> {
         let handler = self.handler.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let result = handler
-                .lock()
-                .await
-                .get_device_info()
-                .await
-                .map_err(ErrorWrapper)?;
-            Ok(result)
-        })
+        let result = handler
+            .lock()
+            .await
+            .get_device_info()
+            .await
+            .map_err(ErrorWrapper)?;
+        Ok(result)
     }
 
-    pub fn get_device_info_json<'a>(&self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
         let handler = self.handler.clone();
-
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let result = handler
-                .lock()
-                .await
-                .get_device_info_json()
-                .await
-                .map_err(ErrorWrapper)?;
-
-            Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
-        })
+        let result = handler
+            .lock()
+            .await
+            .get_device_info_json()
+            .await
+            .map_err(ErrorWrapper)?;
+        Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
-    pub fn get_device_usage<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn get_device_usage(&self) -> PyResult<DeviceUsageEnergyMonitoringResult> {
         let handler = self.handler.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let result = handler
-                .lock()
-                .await
-                .get_device_usage()
-                .await
-                .map_err(ErrorWrapper)?;
-            Ok(result)
-        })
+        let result = handler
+            .lock()
+            .await
+            .get_device_usage()
+            .await
+            .map_err(ErrorWrapper)?;
+        Ok(result)
     }
 
-    pub fn get_current_power<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn get_current_power(&self) -> PyResult<CurrentPowerResult> {
         let handler = self.handler.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let result = handler
-                .lock()
-                .await
-                .get_current_power()
-                .await
-                .map_err(ErrorWrapper)?;
-            Ok(result)
-        })
+        let result = handler
+            .lock()
+            .await
+            .get_current_power()
+            .await
+            .map_err(ErrorWrapper)?;
+        Ok(result)
     }
 
-    pub fn get_energy_usage<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn get_energy_usage(&self) -> PyResult<EnergyUsageResult> {
         let handler = self.handler.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let result = handler
-                .lock()
-                .await
-                .get_energy_usage()
-                .await
-                .map_err(ErrorWrapper)?;
-            Ok(result)
-        })
+        let result = handler
+            .lock()
+            .await
+            .get_energy_usage()
+            .await
+            .map_err(ErrorWrapper)?;
+        Ok(result)
     }
 
-    pub fn get_energy_data<'a>(
-        &'a self,
-        py: Python<'a>,
+    pub async fn get_energy_data(
+        &self,
         interval: PyEnergyDataInterval,
         start_date: NaiveDate,
         end_date: Option<NaiveDate>,
-    ) -> PyResult<&'a PyAny> {
-        let handler = self.handler.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let interval = match interval {
-                PyEnergyDataInterval::Hourly => EnergyDataInterval::Hourly {
-                    start_date,
-                    end_date: end_date.unwrap_or(start_date),
-                },
-                PyEnergyDataInterval::Daily => EnergyDataInterval::Daily { start_date },
-                PyEnergyDataInterval::Monthly => EnergyDataInterval::Monthly { start_date },
-            };
+    ) -> PyResult<EnergyDataResult> {
+        let interval = match interval {
+            PyEnergyDataInterval::Hourly => EnergyDataInterval::Hourly {
+                start_date,
+                end_date: end_date.unwrap_or(start_date),
+            },
+            PyEnergyDataInterval::Daily => EnergyDataInterval::Daily { start_date },
+            PyEnergyDataInterval::Monthly => EnergyDataInterval::Monthly { start_date },
+        };
 
-            let result = handler
-                .lock()
-                .await
-                .get_energy_data(interval)
-                .await
-                .map_err(ErrorWrapper)?;
-            Ok(result)
-        })
+        let handler = self.handler.clone();
+        let result = handler
+            .lock()
+            .await
+            .get_energy_data(interval)
+            .await
+            .map_err(ErrorWrapper)?;
+        Ok(result)
     }
 }

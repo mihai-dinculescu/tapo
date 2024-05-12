@@ -30,94 +30,72 @@ impl PyApiClient {
         Ok(Self { client })
     }
 
-    pub fn generic_device<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn generic_device(&self, ip_address: String) -> PyResult<PyGenericDeviceHandler> {
         let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client
-                .generic_device(ip_address)
-                .await
-                .map_err(ErrorWrapper)?;
-            Ok(PyGenericDeviceHandler::new(handler))
-        })
+        let handler = client
+            .generic_device(ip_address)
+            .await
+            .map_err(ErrorWrapper)?;
+        Ok(PyGenericDeviceHandler::new(handler))
     }
 
-    pub fn l510<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn l510(&self, ip_address: String) -> PyResult<PyLightHandler> {
         let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client.l510(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyLightHandler::new(handler))
-        })
+        let handler = client.l510(ip_address).await.map_err(ErrorWrapper)?;
+        Ok(PyLightHandler::new(handler))
     }
 
-    pub fn l520<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn l520(&self, ip_address: String) -> PyResult<PyLightHandler> {
         let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client.l520(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyLightHandler::new(handler))
-        })
+        let handler = client.l520(ip_address).await.map_err(ErrorWrapper)?;
+        Ok(PyLightHandler::new(handler))
     }
 
-    pub fn l530<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn l530(&self, ip_address: String) -> PyResult<PyColorLightHandler> {
         let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client.l530(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyColorLightHandler::new(handler))
-        })
+        let handler = client.l530(ip_address).await.map_err(ErrorWrapper)?;
+        Ok(PyColorLightHandler::new(handler))
     }
 
-    pub fn l610<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn l610(&self, ip_address: String) -> PyResult<PyLightHandler> {
         let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client.l610(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyLightHandler::new(handler))
-        })
+        let handler = client.l610(ip_address).await.map_err(ErrorWrapper)?;
+        Ok(PyLightHandler::new(handler))
     }
 
-    pub fn l630<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn l630(&self, ip_address: String) -> PyResult<PyColorLightHandler> {
         let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client.l630(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyColorLightHandler::new(handler))
-        })
+        let handler = client.l630(ip_address).await.map_err(ErrorWrapper)?;
+        Ok(PyColorLightHandler::new(handler))
     }
 
-    pub fn p100<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn p100(&self, ip_address: String) -> PyResult<PyPlugHandler> {
         let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client.p100(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyPlugHandler::new(handler))
-        })
+        let handler = client.p100(ip_address).await.map_err(ErrorWrapper)?;
+        Ok(PyPlugHandler::new(handler))
     }
 
-    pub fn p105<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn p105(&self, ip_address: String) -> PyResult<PyPlugHandler> {
         let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client.p105(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyPlugHandler::new(handler))
-        })
+        let handler = client.p105(ip_address).await.map_err(ErrorWrapper)?;
+        Ok(PyPlugHandler::new(handler))
     }
 
-    pub fn p110<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn p110(&self, ip_address: String) -> PyResult<PyPlugEnergyMonitoringHandler> {
         let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client.p110(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyPlugEnergyMonitoringHandler::new(handler))
-        })
+        let handler = client.p110(ip_address).await.map_err(ErrorWrapper)?;
+        Ok(PyPlugEnergyMonitoringHandler::new(handler))
     }
 
-    pub fn p115<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn p115(&self, ip_address: String) -> PyResult<PyPlugEnergyMonitoringHandler> {
         let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client.p115(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyPlugEnergyMonitoringHandler::new(handler))
-        })
+        let handler = client.p115(ip_address).await.map_err(ErrorWrapper)?;
+        Ok(PyPlugEnergyMonitoringHandler::new(handler))
     }
 
-    pub fn h100<'a>(&'a self, ip_address: String, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn h100(&self, ip_address: String) -> PyResult<PyHubHandler> {
         let client = self.client.clone();
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let handler = client.h100(ip_address).await.map_err(ErrorWrapper)?;
-            Ok(PyHubHandler::new(handler))
-        })
+        let handler = client.h100(ip_address).await.map_err(ErrorWrapper)?;
+        Ok(PyHubHandler::new(handler))
     }
 }

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use pyo3::prelude::*;
-use pyo3::types::PyList;
-use tapo::responses::ChildDeviceHubResult;
+use pyo3::types::{PyDict, PyList};
+use tapo::responses::{ChildDeviceHubResult, DeviceInfoHubResult};
 use tapo::HubHandler;
 use tokio::sync::Mutex;
 
@@ -24,124 +24,106 @@ impl PyHubHandler {
 
 #[pymethods]
 impl PyHubHandler {
-    pub fn refresh_session<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn refresh_session(&self) -> PyResult<()> {
         let handler = self.handler.clone();
-
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            handler
-                .lock()
-                .await
-                .refresh_session()
-                .await
-                .map_err(ErrorWrapper)?;
-            Ok(())
-        })
+        handler
+            .lock()
+            .await
+            .refresh_session()
+            .await
+            .map_err(ErrorWrapper)?;
+        Ok(())
     }
 
-    pub fn get_device_info<'a>(&'a self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn get_device_info(&self) -> PyResult<DeviceInfoHubResult> {
         let handler = self.handler.clone();
-
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let result = handler
-                .lock()
-                .await
-                .get_device_info()
-                .await
-                .map_err(ErrorWrapper)?;
-            Ok(result)
-        })
+        let result = handler
+            .lock()
+            .await
+            .get_device_info()
+            .await
+            .map_err(ErrorWrapper)?;
+        Ok(result)
     }
 
-    pub fn get_device_info_json<'a>(&self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
         let handler = self.handler.clone();
-
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let result = handler
-                .lock()
-                .await
-                .get_device_info_json()
-                .await
-                .map_err(ErrorWrapper)?;
-
-            Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
-        })
+        let result = handler
+            .lock()
+            .await
+            .get_device_info_json()
+            .await
+            .map_err(ErrorWrapper)?;
+        Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
-    pub fn get_child_device_list<'a>(&self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn get_child_device_list(&self) -> PyResult<Py<PyList>> {
         let handler = self.handler.clone();
 
-        pyo3_asyncio::tokio::future_into_py::<_, Py<PyList>>(py, async move {
-            let children = handler
-                .lock()
-                .await
-                .get_child_device_list()
-                .await
-                .map_err(ErrorWrapper)?;
+        let children = handler
+            .lock()
+            .await
+            .get_child_device_list()
+            .await
+            .map_err(ErrorWrapper)?;
 
-            Ok(Python::with_gil(|py| {
-                let results = PyList::empty(py);
+        let results = Python::with_gil(|py| {
+            let results = PyList::empty(py);
 
-                for child in children {
-                    match child {
-                        ChildDeviceHubResult::KE100(x) => {
-                            let _ = results.append(x.into_py(py));
-                        }
-                        ChildDeviceHubResult::S200B(x) => {
-                            let _ = results.append(x.into_py(py));
-                        }
-                        ChildDeviceHubResult::T100(x) => {
-                            let _ = results.append(x.into_py(py));
-                        }
-                        ChildDeviceHubResult::T110(x) => {
-                            let _ = results.append(x.into_py(py));
-                        }
-                        ChildDeviceHubResult::T300(x) => {
-                            let _ = results.append(x.into_py(py));
-                        }
-                        ChildDeviceHubResult::T310(x) => {
-                            let _ = results.append(x.into_py(py));
-                        }
-                        ChildDeviceHubResult::T315(x) => {
-                            let _ = results.append(x.into_py(py));
-                        }
-                        _ => {
-                            let _ = results.append(py.None());
-                        }
+            for child in children {
+                match child {
+                    ChildDeviceHubResult::KE100(x) => {
+                        let _ = results.append(x.into_py(py));
+                    }
+                    ChildDeviceHubResult::S200B(x) => {
+                        let _ = results.append(x.into_py(py));
+                    }
+                    ChildDeviceHubResult::T100(x) => {
+                        let _ = results.append(x.into_py(py));
+                    }
+                    ChildDeviceHubResult::T110(x) => {
+                        let _ = results.append(x.into_py(py));
+                    }
+                    ChildDeviceHubResult::T300(x) => {
+                        let _ = results.append(x.into_py(py));
+                    }
+                    ChildDeviceHubResult::T310(x) => {
+                        let _ = results.append(x.into_py(py));
+                    }
+                    ChildDeviceHubResult::T315(x) => {
+                        let _ = results.append(x.into_py(py));
+                    }
+                    _ => {
+                        let _ = results.append(py.None());
                     }
                 }
+            }
 
-                results.into_py(py)
-            }))
-        })
+            results.into_py(py)
+        });
+
+        Ok(results)
     }
 
-    pub fn get_child_device_list_json<'a>(&self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn get_child_device_list_json(&self) -> PyResult<Py<PyDict>> {
         let handler = self.handler.clone();
-
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let result = handler
-                .lock()
-                .await
-                .get_child_device_list_json()
-                .await
-                .map_err(ErrorWrapper)?;
-
-            Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
-        })
+        let result = handler
+            .lock()
+            .await
+            .get_child_device_list_json()
+            .await
+            .map_err(ErrorWrapper)?;
+        Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
-    pub fn get_child_device_component_list_json<'a>(&self, py: Python<'a>) -> PyResult<&'a PyAny> {
+    pub async fn get_child_device_component_list_json(&self) -> PyResult<Py<PyDict>> {
         let handler = self.handler.clone();
-
-        pyo3_asyncio::tokio::future_into_py(py, async move {
-            let result = handler
-                .lock()
-                .await
-                .get_child_device_component_list_json()
-                .await
-                .map_err(ErrorWrapper)?;
-
-            Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
-        })
+        let result = handler
+            .lock()
+            .await
+            .get_child_device_component_list_json()
+            .await
+            .map_err(ErrorWrapper)?;
+        Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 }

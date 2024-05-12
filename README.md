@@ -54,18 +54,18 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 ## Hub (H100) Child Devices Support
 
-| Feature                          |  KE100   |  S200B   |   T100   |   T110   |   T300   | T310, T315 |
-| -------------------------------- | :------: | :------: | :------: | :------: | :------: | :--------: |
-| get_device_info \*               | &#x2705; | &#x2705; | &#x2705; | &#x2705; | &#x2705; |  &#x2705;  |
-| get_device_info_json             | &#x2705; | &#x2705; | &#x2705; | &#x2705; | &#x2705; |  &#x2705;  |
-| get_temperature_humidity_records |          |          |          |          |          |  &check;   |
-| get_trigger_logs                 |          | &check;  | &check;  | &check;  | &check;  |            |
-| set_child_protection             | &check;  |          |          |          |          |            |
-| set_frost_protection             | &check;  |          |          |          |          |            |
-| set_max_control_temperature      | &check;  |          |          |          |          |            |
-| set_min_control_temperature      | &check;  |          |          |          |          |            |
-| set_target_temperature           | &check;  |          |          |          |          |            |
-| set_temperature_offset           | &check;  |          |          |          |          |            |
+| Feature<br/><br/>                | KE100<br/><br/> | S200B<br/><br/> | T100<br/><br/> | T110<br/><br/> | T300<br/><br/> | T310<br/>T315 |
+| -------------------------------- | :-------------: | :-------------: | :------------: | :------------: | :------------: | :-----------: |
+| get_device_info \*               |    &#x2705;     |    &#x2705;     |    &#x2705;    |    &#x2705;    |    &#x2705;    |   &#x2705;    |
+| get_device_info_json             |    &#x2705;     |    &#x2705;     |    &#x2705;    |    &#x2705;    |    &#x2705;    |   &#x2705;    |
+| get_temperature_humidity_records |                 |                 |                |                |                |    &check;    |
+| get_trigger_logs                 |                 |     &check;     |    &check;     |    &check;     |    &check;     |               |
+| set_child_protection             |     &check;     |                 |                |                |                |               |
+| set_frost_protection             |     &check;     |                 |                |                |                |               |
+| set_max_control_temperature      |     &check;     |                 |                |                |                |               |
+| set_min_control_temperature      |     &check;     |                 |                |                |                |               |
+| set_target_temperature           |     &check;     |                 |                |                |                |               |
+| set_temperature_offset           |     &check;     |                 |                |                |                |               |
 
 \* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child device handler.
 
