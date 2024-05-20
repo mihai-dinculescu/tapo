@@ -26,7 +26,6 @@ pub struct DeviceInfoHubResult {
     pub rssi: i16,
     pub specs: String,
     pub lang: String,
-    pub overheated: bool,
     pub nickname: String,
     pub avatar: String,
     pub has_set_location_info: bool,
@@ -37,8 +36,9 @@ pub struct DeviceInfoHubResult {
     //
     // Unique to this device
     //
-    pub in_alarm: bool,
     pub in_alarm_source: String,
+    pub in_alarm: bool,
+    pub overheated: bool,
 }
 
 #[cfg(feature = "python")]

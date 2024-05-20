@@ -12,11 +12,19 @@ file. This change log follows the conventions of
 - `PlugIdentifier` has been renamed to `Plug`.
 - `Plug::ByDeviceId` now verifies that the provided device ID is found and returns an `Error::DeviceNotFound` error when it's not.
 
+### Removed
+
+- The `overheated` property has been removed from `DeviceInfoGenericResult` because it's not present in the response of all devices.
+
 ## [Python Unreleased][Unreleased]
 
 ### Fixed
 
 - All handlers are now correctly exported and can be imported from the `tapo` module.
+
+### Removed
+
+- The `overheated` property has been removed from `DeviceInfoGenericResult` because it's not present in the response of all devices.
 
 ## [Rust v0.7.11][v0.7.11] - 2024-05-04
 

@@ -30,7 +30,6 @@ pub struct DeviceInfoColorLightResult {
     /// The time in seconds this device has been ON since the last state change (ON/OFF).
     /// On v2 hardware this is always None.
     pub on_time: Option<u64>,
-    pub overheated: bool,
     pub nickname: String,
     pub avatar: String,
     pub has_set_location_info: bool,
@@ -42,13 +41,14 @@ pub struct DeviceInfoColorLightResult {
     // Unique to this device
     //
     pub brightness: u8,
-    pub dynamic_light_effect_enable: bool,
-    pub dynamic_light_effect_id: Option<String>,
-    pub hue: Option<u16>,
-    pub saturation: Option<u16>,
     pub color_temp: u16,
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
     pub default_states: DefaultColorLightState,
+    pub dynamic_light_effect_enable: bool,
+    pub dynamic_light_effect_id: Option<String>,
+    pub hue: Option<u16>,
+    pub overheated: bool,
+    pub saturation: Option<u16>,
 }
 
 #[cfg(feature = "python")]

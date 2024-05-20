@@ -26,7 +26,6 @@ pub struct DeviceInfoGenericResult {
     pub device_on: Option<bool>,
     /// The time in seconds this device has been ON since the last state change (ON/OFF).
     pub on_time: Option<u64>,
-    pub overheated: bool,
     pub nickname: String,
     pub avatar: String,
     pub has_set_location_info: bool,

@@ -18,7 +18,6 @@ class DeviceInfoHubResult:
     rssi: int
     specs: str
     lang: str
-    overheated: bool
     nickname: str
     avatar: str
     has_set_location_info: bool
@@ -28,8 +27,9 @@ class DeviceInfoHubResult:
     time_diff: Optional[int]
 
     # Unique to this device
-    in_alarm: bool
     in_alarm_source: str
+    in_alarm: bool
+    overheated: bool
 
     def to_dict(self) -> dict:
         """Gets all the properties of this result as a dictionary.

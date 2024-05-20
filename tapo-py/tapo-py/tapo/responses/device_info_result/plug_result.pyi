@@ -23,7 +23,6 @@ class DeviceInfoPlugResult:
     device_on: bool
     on_time: int
     """The time in seconds this device has been ON since the last state change (ON/OFF)."""
-    overheated: bool
     nickname: str
     avatar: str
     has_set_location_info: bool
@@ -35,6 +34,7 @@ class DeviceInfoPlugResult:
     # Unique to this device
     default_states: DefaultPlugState
     """The default state of a device to be used when internet connectivity is lost after a power cut."""
+    overheated: bool
 
     def to_dict(self) -> dict:
         """Gets all the properties of this result as a dictionary.

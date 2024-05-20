@@ -27,7 +27,6 @@ pub struct DeviceInfoRgbicLightStripResult {
     pub specs: String,
     pub lang: String,
     pub device_on: bool,
-    pub overheated: bool,
     pub nickname: String,
     pub avatar: String,
     pub has_set_location_info: bool,
@@ -39,12 +38,13 @@ pub struct DeviceInfoRgbicLightStripResult {
     // Unique to this device
     //
     pub brightness: u8,
-    pub hue: Option<u16>,
-    pub saturation: Option<u16>,
-    pub color_temp: u16,
     pub color_temp_range: [u16; 2],
+    pub color_temp: u16,
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
     pub default_states: DefaultRgbicLightStripState,
+    pub hue: Option<u16>,
+    pub overheated: bool,
+    pub saturation: Option<u16>,
 }
 
 impl TapoResponseExt for DeviceInfoRgbicLightStripResult {}

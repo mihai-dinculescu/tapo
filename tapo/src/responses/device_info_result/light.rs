@@ -32,7 +32,6 @@ pub struct DeviceInfoLightResult {
     /// The time in seconds this device has been ON since the last state change (ON/OFF).
     /// On v2 hardware this is always None.
     pub on_time: Option<u64>,
-    pub overheated: bool,
     pub nickname: String,
     pub avatar: String,
     pub has_set_location_info: bool,
@@ -46,6 +45,7 @@ pub struct DeviceInfoLightResult {
     pub brightness: u8,
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
     pub default_states: DefaultLightState,
+    pub overheated: bool,
 }
 
 #[cfg(feature = "python")]

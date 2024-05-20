@@ -23,7 +23,6 @@ class DeviceInfoColorLightResult:
     device_on: bool
     on_time: int
     """The time in seconds this device has been ON since the last state change (ON/OFF)."""
-    overheated: bool
     nickname: str
     avatar: str
     has_set_location_info: bool
@@ -34,13 +33,14 @@ class DeviceInfoColorLightResult:
 
     # Unique to this device
     brightness: int
-    dynamic_light_effect_enable: bool
-    dynamic_light_effect_id: Optional[str]
-    hue: Optional[int]
-    saturation: Optional[int]
     color_temp: int
     default_states: DefaultColorLightState
     """The default state of a device to be used when internet connectivity is lost after a power cut."""
+    dynamic_light_effect_enable: bool
+    dynamic_light_effect_id: Optional[str]
+    hue: Optional[int]
+    overheated: bool
+    saturation: Optional[int]
 
     def to_dict(self) -> dict:
         """Gets all the properties of this result as a dictionary.
