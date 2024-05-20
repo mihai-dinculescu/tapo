@@ -5,7 +5,11 @@ mod handlers;
 use pyo3::prelude::*;
 
 use api_client::PyApiClient;
-use handlers::{PyColorLightSetDeviceInfoParams, PyEnergyDataInterval};
+use handlers::{
+    PyColorLightHandler, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval,
+    PyGenericDeviceHandler, PyHubHandler, PyLightHandler, PyPlugEnergyMonitoringHandler,
+    PyPlugHandler,
+};
 use tapo::requests::Color;
 use tapo::responses::{
     ColorLightState, CurrentPowerResult, DefaultBrightnessState, DefaultColorLightState,
@@ -21,6 +25,12 @@ use tapo::responses::{
 #[pyo3(name = "tapo")]
 fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PyApiClient>()?;
+    module.add_class::<PyColorLightHandler>()?;
+    module.add_class::<PyGenericDeviceHandler>()?;
+    module.add_class::<PyHubHandler>()?;
+    module.add_class::<PyLightHandler>()?;
+    module.add_class::<PyPlugEnergyMonitoringHandler>()?;
+    module.add_class::<PyPlugHandler>()?;
 
     let requests = PyModule::new_bound(py, "tapo.requests")?;
     let responses = PyModule::new_bound(py, "tapo.responses")?;

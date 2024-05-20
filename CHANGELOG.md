@@ -14,6 +14,10 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+### Fixed
+
+- All handlers are now correctly exported and can be imported from the `tapo` module.
+
 ## [Rust v0.7.11][v0.7.11] - 2024-05-04
 
 ### Added
@@ -31,7 +35,7 @@ file. This change log follows the conventions of
 
 ### Added
 
-- Added partial support for the H100 hub and it's child devices. Currently, only the `get_device_info` function is supported for the child devices through the hub's `get_child_device_list` method.
+- Added partial support for the H100 hub and its child devices. Currently, only the `get_device_info` function is supported for the child devices through the hub's `get_child_device_list` method.
 
 ### Changed
 
