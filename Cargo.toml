@@ -4,6 +4,7 @@ resolver = "2"
 members = ["tapo", "tapo-py"]
 
 [workspace.dependencies]
-chrono = { version = "0.4.25", default-features = false }
+chrono = { version = "0.4.34", default-features = false }
 pyo3 = { version = "0.21" }
+pyo3-asyncio = "0.20"
 tokio = { version = "1.37", default-features = false }
