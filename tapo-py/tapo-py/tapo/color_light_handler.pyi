@@ -84,7 +84,7 @@ class ColorLightHandler:
         """Sets the *hue*, *saturation* and turns *on* the device.
 
         Args:
-            hue (int): between 1 and 360
+            hue (int): between 0 and 360
             saturation (int): between 1 and 100
         """
 

@@ -114,7 +114,7 @@ impl ColorLightHandler {
     ///
     /// # Arguments
     ///
-    /// * `hue` - between 1 and 360
+    /// * `hue` - between 0 and 360
     /// * `saturation` - between 1 and 100
     pub async fn set_hue_saturation(&self, hue: u16, saturation: u8) -> Result<(), Error> {
         ColorLightSetDeviceInfoParams::new()

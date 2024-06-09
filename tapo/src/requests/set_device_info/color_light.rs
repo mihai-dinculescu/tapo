@@ -67,7 +67,7 @@ impl ColorLightSetDeviceInfoParams {
     ///
     /// # Arguments
     ///
-    /// * `hue` - between 1 and 360
+    /// * `hue` - between 0 and 360
     /// * `saturation` - between 1 and 100
     pub fn hue_saturation(mut self, hue: u16, saturation: u8) -> Self {
         self.hue = Some(hue);
@@ -84,8 +84,8 @@ impl ColorLightSetDeviceInfoParams {
     ///
     /// * `color_temperature` - between 2500 and 6500
     pub fn color_temperature(mut self, value: u16) -> Self {
-        self.hue = Some(0);
-        self.saturation = Some(100);
+        self.hue = None;
+        self.saturation = None;
         self.color_temperature = Some(value);
 
         self
@@ -128,10 +128,10 @@ impl ColorLightSetDeviceInfoParams {
         }
 
         if let Some(hue) = self.hue {
-            if self.color_temperature.unwrap_or_default() == 0 && !(1..=360).contains(&hue) {
+            if !(0..=360).contains(&hue) {
                 return Err(Error::Validation {
                     field: "hue".to_string(),
-                    message: "must be between 1 and 360".to_string(),
+                    message: "must be between 0 and 360".to_string(),
                 });
             }
         }
@@ -209,8 +209,8 @@ mod tests {
         let params = params.hue_saturation(50, 50);
         let params = params.color_temperature(3000);
 
-        assert_eq!(params.hue, Some(0));
-        assert_eq!(params.saturation, Some(100));
+        assert_eq!(params.hue, None);
+        assert_eq!(params.saturation, None);
         assert_eq!(params.color_temperature, Some(3000));
 
         assert!(params.send(&MockHandler).await.is_ok())
@@ -246,17 +246,10 @@ mod tests {
     #[tokio::test]
     async fn hue_validation() {
         let params = ColorLightSetDeviceInfoParams::new();
-        let result = params.hue_saturation(0, 50).send(&MockHandler).await;
-        assert!(matches!(
-            result.err(),
-            Some(Error::Validation { field, message }) if field == "hue" && message == "must be between 1 and 360"
-        ));
-
-        let params = ColorLightSetDeviceInfoParams::new();
         let result = params.hue_saturation(361, 50).send(&MockHandler).await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "hue" && message == "must be between 1 and 360"
+            Some(Error::Validation { field, message }) if field == "hue" && message == "must be between 0 and 360"
         ));
     }
 

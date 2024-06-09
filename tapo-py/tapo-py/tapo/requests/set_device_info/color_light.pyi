@@ -39,7 +39,7 @@ class ColorLightSetDeviceInfoParams:
         The device will also be turned *on*, unless `ColorLightSetDeviceInfoParams.off` is called.
 
         Args:
-            hue (int): between 1 and 360
+            hue (int): between 0 and 360
             saturation (int): between 1 and 100
         """
 
