@@ -12,6 +12,10 @@ file. This change log follows the conventions of
 - `PlugIdentifier` has been renamed to `Plug`.
 - `Plug::ByDeviceId` now verifies that the provided device ID is found and returns an `Error::DeviceNotFound` error when it's not.
 
+### Fixed
+
+- The `chrono` dependency has been updated to `0.4.34` to fix the minimum version requirement.
+
 ### Removed
 
 - The `overheated` property has been removed from `DeviceInfoGenericResult` because it's not present in the response of all devices.
