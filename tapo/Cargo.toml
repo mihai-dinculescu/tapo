@@ -26,7 +26,7 @@ chrono = { workspace = true, default-features = false, features = [
 ] }
 isahc = { version = "1.7", features = ["json", "cookies"] }
 itertools = "0.13"
-lazy_static = "1.4"
+lazy_static = "1.5"
 log = "0.4"
 openssl = "0.10"
 openssl-src = "=300.2.3"
