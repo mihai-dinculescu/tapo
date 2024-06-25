@@ -11,6 +11,8 @@ pub(crate) struct GetEnergyDataParams {
 
 impl GetEnergyDataParams {
     pub fn new(interval: EnergyDataInterval) -> Self {
+        let timezone = chrono::Local::now().timezone();
+
         match interval {
             EnergyDataInterval::Hourly {
                 start_date,
@@ -19,12 +21,14 @@ impl GetEnergyDataParams {
                 start_timestamp: start_date
                     .and_hms_opt(0, 0, 0)
                     .unwrap()
-                    .and_utc()
+                    .and_local_timezone(timezone)
+                    .unwrap()
                     .timestamp() as u64,
                 end_timestamp: end_date
                     .and_hms_opt(23, 59, 59)
                     .unwrap()
-                    .and_utc()
+                    .and_local_timezone(timezone)
+                    .unwrap()
                     .timestamp() as u64,
                 interval: 60,
             },
@@ -32,7 +36,8 @@ impl GetEnergyDataParams {
                 let timestamp = start_date
                     .and_hms_opt(0, 0, 0)
                     .unwrap()
-                    .and_utc()
+                    .and_local_timezone(timezone)
+                    .unwrap()
                     .timestamp() as u64;
                 Self {
                     start_timestamp: timestamp,
@@ -44,7 +49,8 @@ impl GetEnergyDataParams {
                 let timestamp = start_date
                     .and_hms_opt(0, 0, 0)
                     .unwrap()
-                    .and_utc()
+                    .and_local_timezone(timezone)
+                    .unwrap()
                     .timestamp() as u64;
                 Self {
                     start_timestamp: timestamp,

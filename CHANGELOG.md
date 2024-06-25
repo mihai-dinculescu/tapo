@@ -15,6 +15,7 @@ file. This change log follows the conventions of
 ### Fixed
 
 - `ColorLightSetDeviceInfoParams` `hue` field validation has been changed from `between 1 and 360` to `between 0 and 360` to match the device's expected range.
+- Fixed an issue where the `EnergyDataResult`'s `start_timestamp` and `end_timestamp` was not correctly adjusting for timezone offsets.
 - The `chrono` dependency has been updated to `0.4.34` to fix the minimum version requirement.
 
 ### Removed
@@ -26,6 +27,7 @@ file. This change log follows the conventions of
 ### Fixed
 
 - `ColorLightSetDeviceInfoParams` `hue` field validation has been changed from `between 1 and 360` to `between 0 and 360` to match the device's expected range.
+- Fixed an issue where the `EnergyDataResult`'s `start_timestamp` and `end_timestamp` was not correctly adjusting for timezone offsets.
 - All handlers are now correctly exported and can be imported from the `tapo` module.
 
 ### Removed
