@@ -120,13 +120,14 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.ke100(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
+    /// let device_id = "0000000000000000000000000000000000000000".to_string();
+    /// let device = hub.ke100(HubDevice::ByDeviceId(device_id)).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn ke100<'a>(&self, identifier: HubDevice<'a>) -> Result<KE100Handler, Error> {
+    pub async fn ke100(&self, identifier: HubDevice) -> Result<KE100Handler, Error> {
         let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::KE100);
         Ok(KE100Handler::new(self, device_id))
     }
@@ -148,13 +149,14 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.s200b(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
+    /// let device_id = "0000000000000000000000000000000000000000".to_string();
+    /// let device = hub.s200b(HubDevice::ByDeviceId(device_id)).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn s200b<'a>(&self, identifier: HubDevice<'a>) -> Result<S200BHandler, Error> {
+    pub async fn s200b(&self, identifier: HubDevice) -> Result<S200BHandler, Error> {
         let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::S200B);
         Ok(S200BHandler::new(self, device_id))
     }
@@ -176,13 +178,14 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.t100(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
+    /// let device_id = "0000000000000000000000000000000000000000".to_string();
+    /// let device = hub.t100(HubDevice::ByDeviceId(device_id)).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn t100<'a>(&self, identifier: HubDevice<'a>) -> Result<T100Handler, Error> {
+    pub async fn t100(&self, identifier: HubDevice) -> Result<T100Handler, Error> {
         let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T100);
         Ok(T100Handler::new(self, device_id))
     }
@@ -204,13 +207,14 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.t110(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
+    /// let device_id = "0000000000000000000000000000000000000000".to_string();
+    /// let device = hub.t110(HubDevice::ByDeviceId(device_id)).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn t110<'a>(&self, identifier: HubDevice<'a>) -> Result<T110Handler, Error> {
+    pub async fn t110(&self, identifier: HubDevice) -> Result<T110Handler, Error> {
         let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T110);
         Ok(T110Handler::new(self, device_id))
     }
@@ -232,13 +236,14 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.t300(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
+    /// let device_id = "0000000000000000000000000000000000000000".to_string();
+    /// let device = hub.t300(HubDevice::ByDeviceId(device_id)).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn t300<'a>(&self, identifier: HubDevice<'a>) -> Result<T300Handler, Error> {
+    pub async fn t300(&self, identifier: HubDevice) -> Result<T300Handler, Error> {
         let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T300);
         Ok(T300Handler::new(self, device_id))
     }
@@ -260,13 +265,14 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.t310(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
+    /// let device_id = "0000000000000000000000000000000000000000".to_string();
+    /// let device = hub.t310(HubDevice::ByDeviceId(device_id)).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn t310<'a>(&self, identifier: HubDevice<'a>) -> Result<T31XHandler, Error> {
+    pub async fn t310(&self, identifier: HubDevice) -> Result<T31XHandler, Error> {
         let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T310);
         Ok(T31XHandler::new(self, device_id))
     }
@@ -288,22 +294,23 @@ impl HubHandler {
     ///     .h100("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = hub.t315(HubDevice::ByDeviceId("0000000000000000000000000000000000000000")).await?;
+    /// let device_id = "0000000000000000000000000000000000000000".to_string();
+    /// let device = hub.t315(HubDevice::ByDeviceId(device_id)).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn t315<'a>(&self, identifier: HubDevice<'a>) -> Result<T31XHandler, Error> {
+    pub async fn t315(&self, identifier: HubDevice) -> Result<T31XHandler, Error> {
         let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T315);
         Ok(T31XHandler::new(self, device_id))
     }
 }
 
 /// Hub Device.
-pub enum HubDevice<'a> {
+pub enum HubDevice {
     /// By Device ID.
-    ByDeviceId(&'a str),
+    ByDeviceId(String),
     /// By Nickname.
-    ByNickname(&'a str),
+    ByNickname(String),
 }

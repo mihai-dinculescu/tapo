@@ -44,7 +44,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceHubResult::S200B(device) => {
-                let s200b = hub.s200b(HubDevice::ByDeviceId(&device.device_id)).await?;
+                let s200b = hub
+                    .s200b(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
                 let trigger_logs = s200b.get_trigger_logs(5, 0).await?;
 
                 info!(
@@ -53,7 +55,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceHubResult::T100(device) => {
-                let t100 = hub.t100(HubDevice::ByDeviceId(&device.device_id)).await?;
+                let t100 = hub
+                    .t100(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
                 let trigger_logs = t100.get_trigger_logs(5, 0).await?;
 
                 info!(
@@ -62,7 +66,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceHubResult::T110(device) => {
-                let t110 = hub.t110(HubDevice::ByDeviceId(&device.device_id)).await?;
+                let t110 = hub
+                    .t110(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
                 let trigger_logs = t110.get_trigger_logs(5, 0).await?;
 
                 info!(
@@ -71,7 +77,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceHubResult::T300(device) => {
-                let t300 = hub.t300(HubDevice::ByDeviceId(&device.device_id)).await?;
+                let t300 = hub
+                    .t300(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
                 let trigger_logs = t300.get_trigger_logs(5, 0).await?;
 
                 info!(
@@ -84,7 +92,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceHubResult::T310(device) => {
-                let t31x = hub.t310(HubDevice::ByDeviceId(&device.device_id)).await?;
+                let t31x = hub
+                    .t310(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
                 let temperature_humidity_records = t31x.get_temperature_humidity_records().await?;
 
                 info!(
@@ -98,7 +108,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 );
             }
             ChildDeviceHubResult::T315(device) => {
-                let t31x = hub.t315(HubDevice::ByDeviceId(&device.device_id)).await?;
+                let t31x = hub
+                    .t315(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
                 let temperature_humidity_records = t31x.get_temperature_humidity_records().await?;
 
                 info!(

@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             child.nickname, child.device_id, child.device_on,
         );
 
-        let plug = power_strip.plug(Plug::ByDeviceId(&child.device_id)).await?;
+        let plug = power_strip.plug(Plug::ByDeviceId(child.device_id)).await?;
 
         info!("Turning device on...");
         plug.on().await?;

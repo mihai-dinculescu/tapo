@@ -95,13 +95,14 @@ impl PowerStripHandler {
     ///     .p300("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
-    /// let device = power_strip.plug(Plug::ByDeviceId("0000000000000000000000000000000000000000")).await?;
+    /// let device_id = "0000000000000000000000000000000000000000".to_string();
+    /// let device = power_strip.plug(Plug::ByDeviceId(device_id)).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn plug<'a>(&self, identifier: Plug<'a>) -> Result<PlugPowerStripHandler, Error> {
+    pub async fn plug(&self, identifier: Plug) -> Result<PlugPowerStripHandler, Error> {
         let children = self.get_child_device_list().await?;
 
         let device_id = match identifier {
@@ -130,11 +131,11 @@ impl PowerStripHandler {
 }
 
 /// Power strip plug.
-pub enum Plug<'a> {
+pub enum Plug {
     ///  By Device ID.
-    ByDeviceId(&'a str),
+    ByDeviceId(String),
     /// By Nickname.
-    ByNickname(&'a str),
+    ByNickname(String),
     /// By Position.
     ByPosition(u8),
 }

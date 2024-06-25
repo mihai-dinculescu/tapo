@@ -11,6 +11,8 @@ file. This change log follows the conventions of
 - H100's create child device handler methods now take a `HubDevice` `enum` instead of a `String` and are now `async` to allow for more flexibility. This enables the caller to find child devices by either device ID or nickname.
 - `PlugIdentifier` has been renamed to `Plug`.
 - `Plug::ByDeviceId` now verifies that the provided device ID is found and returns an `Error::DeviceNotFound` error when it's not.
+- `HubDevice` variants now take a `String` instead of a `&str` to allow for more flexibility.
+- `Plug` variants now take a `String` instead of a `&str` to allow for more flexibility.
 
 ### Fixed
 

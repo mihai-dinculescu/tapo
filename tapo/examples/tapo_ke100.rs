@@ -29,7 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     // Get a handler for the child device
-    let device = hub.ke100(HubDevice::ByDeviceId(&device_id)).await?;
+    let device = hub.ke100(HubDevice::ByDeviceId(device_id)).await?;
 
     // Get the device info of the child device
     let device_info = device.get_device_info().await?;
