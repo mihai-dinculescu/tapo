@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.7.12][v0.7.12] - 2024-06-27
+
 ### Changed
 
 - H100's create child device handler methods now take a `HubDevice` `enum` instead of a `String` and are now `async` to allow for more flexibility. This enables the caller to find child devices by either device ID or nickname.
@@ -24,7 +28,7 @@ file. This change log follows the conventions of
 
 - The `overheated` property has been removed from `DeviceInfoGenericResult` because it's not present in the response of all devices.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.3.1][py-v0.3.1] - 2024-06-27
 
 ### Fixed
 
@@ -362,6 +366,8 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.12]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.12
+[py-v0.3.1]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.3.1
 [v0.7.11]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.11
 [py-v0.3.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.3.0
 [v0.7.10]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.10

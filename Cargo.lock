@@ -1150,7 +1150,7 @@ dependencies = [
 
 [[package]]
 name = "tapo"
-version = "0.7.11"
+version = "0.7.12"
 dependencies = [
  "anyhow",
  "async-trait",
