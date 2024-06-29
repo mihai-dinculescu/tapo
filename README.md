@@ -82,7 +82,7 @@ tapo = "0.7"
 
 > main.rs
 ```rust
-let device = ApiClient::new("<tapo-username>", "tapo-password")?
+let device = ApiClient::new("<tapo-username>", "tapo-password")
     .p110("<device ip address>")
     .await?;
 
