@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Changed
+
+- To align with the latest API updates, the `overheated` field for plugs has been replaced by three enums: `overcurrent_status`, `overheat_status`, and `power_protection_status` (thanks to @padenot).
+
 ## [Python Unreleased][Unreleased]
+
+### Changed
+
+- To align with the latest API updates, the `overheated` field for plugs has been replaced by three enums: `overcurrent_status`, `overheat_status`, and `power_protection_status`.
 
 ## [Rust v0.7.12][v0.7.12] - 2024-06-27
 
