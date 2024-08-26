@@ -6,11 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.7.13][v0.7.13] - 2024-08-26
+
 ### Changed
 
 - To align with the latest API updates, the `overheated` field for plugs has been replaced by three enums: `overcurrent_status`, `overheat_status`, and `power_protection_status` (thanks to @padenot).
 
-## [Python Unreleased][Unreleased]
+## [Python v0.3.2][py-v0.3.2] - 2024-08-26
 
 ### Changed
 
@@ -374,6 +378,8 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.13]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.13
+[py-v0.3.2]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.3.2
 [v0.7.12]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.12
 [py-v0.3.1]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.3.1
 [v0.7.11]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.11
