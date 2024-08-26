@@ -1,6 +1,6 @@
 from typing import Optional
 
-from tapo.responses.default_state import DefaultStateType
+from tapo.responses.device_info_result.default_state import DefaultStateType
 
 class DeviceInfoColorLightResult:
     """Device info of Tapo L530, L630 and L900. Superset of `GenericDeviceInfoResult`."""

@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
+use crate::responses::device_info_result::OverheatStatus;
 use crate::responses::{decode_value, DecodableResultExt, TapoResponseExt};
 
 /// Power Strip child device list result.
@@ -77,12 +78,4 @@ impl DecodableResultExt for PlugPowerStripResult {
 pub enum AutoOffStatus {
     On,
     Off,
-}
-
-/// Overheat Status.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-#[allow(missing_docs)]
-pub enum OverheatStatus {
-    Normal,
 }
