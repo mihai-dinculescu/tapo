@@ -6,7 +6,7 @@ use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt
 /// Water leak status.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
 #[allow(missing_docs)]
 pub enum WaterLeakStatus {
     Normal,

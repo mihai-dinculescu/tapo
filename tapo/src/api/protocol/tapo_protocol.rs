@@ -1,12 +1,13 @@
 use std::fmt;
 
 use async_trait::async_trait;
-use isahc::HttpClient;
+use reqwest::cookie::Cookie;
+use reqwest::Client;
 use serde::de::DeserializeOwned;
 
-use crate::requests::TapoRequest;
 use crate::responses::TapoResponseExt;
 use crate::Error;
+use crate::{requests::TapoRequest, TapoResponseError};
 
 use super::{
     discovery_protocol::DiscoveryProtocol, klap_protocol::KlapProtocol,
@@ -108,9 +109,18 @@ impl TapoProtocolExt for TapoProtocol {
 }
 
 impl TapoProtocol {
-    pub fn new(client: HttpClient) -> Self {
+    pub fn new(client: Client) -> Self {
         Self {
             protocol: TapoProtocolType::Discovery(DiscoveryProtocol::new(client)),
+        }
+    }
+
+    pub fn get_cookie<'a>(mut cookies: impl Iterator<Item = Cookie<'a>>) -> Result<String, Error> {
+        let cookie = cookies.find(|c| c.name() == "TP_SESSIONID");
+
+        match cookie {
+            Some(cookie) => Ok(format!("{}={}", cookie.name(), cookie.value())),
+            None => Err(Error::Tapo(TapoResponseError::InvalidResponse)),
         }
     }
 }

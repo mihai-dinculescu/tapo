@@ -7,7 +7,7 @@ use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt
 /// Currently *Celsius* is the only unit supported by KE100.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
 #[allow(missing_docs)]
 pub enum TemperatureUnitKE100 {
     Celsius,

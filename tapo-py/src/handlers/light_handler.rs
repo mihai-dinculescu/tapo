@@ -6,6 +6,7 @@ use tapo::responses::{DeviceInfoLightResult, DeviceUsageEnergyMonitoringResult};
 use tapo::LightHandler;
 use tokio::sync::Mutex;
 
+use crate::call_handler_method;
 use crate::errors::ErrorWrapper;
 
 #[derive(Clone)]
@@ -25,80 +26,35 @@ impl PyLightHandler {
 #[pymethods]
 impl PyLightHandler {
     pub async fn refresh_session(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler
-            .lock()
-            .await
-            .refresh_session()
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, LightHandler::refresh_session, discard_result)
     }
 
     pub async fn on(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler.lock().await.on().await.map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, LightHandler::on)
     }
 
     pub async fn off(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler.lock().await.off().await.map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, LightHandler::off)
     }
 
     pub async fn device_reset(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler
-            .lock()
-            .await
-            .device_reset()
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, LightHandler::device_reset)
     }
 
     pub async fn get_device_info(&self) -> PyResult<DeviceInfoLightResult> {
-        let handler = self.handler.clone();
-        let result = handler
-            .lock()
-            .await
-            .get_device_info()
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(result)
+        call_handler_method!(self, LightHandler::get_device_info)
     }
 
     pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
-        let result = handler
-            .lock()
-            .await
-            .get_device_info_json()
-            .await
-            .map_err(ErrorWrapper)?;
+        let result = call_handler_method!(self, LightHandler::get_device_info_json)?;
         Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
     pub async fn get_device_usage(&self) -> PyResult<DeviceUsageEnergyMonitoringResult> {
-        let handler = self.handler.clone();
-        let result = handler
-            .lock()
-            .await
-            .get_device_usage()
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(result)
+        call_handler_method!(self, LightHandler::get_device_usage)
     }
 
     pub async fn set_brightness(&self, brightness: u8) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler
-            .lock()
-            .await
-            .set_brightness(brightness)
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, LightHandler::set_brightness, brightness)
     }
 }

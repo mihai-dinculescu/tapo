@@ -10,7 +10,13 @@ impl From<Error> for ErrorWrapper {
     }
 }
 
-impl std::convert::From<ErrorWrapper> for PyErr {
+impl From<anyhow::Error> for ErrorWrapper {
+    fn from(err: anyhow::Error) -> Self {
+        Self(err.into())
+    }
+}
+
+impl From<ErrorWrapper> for PyErr {
     fn from(err: ErrorWrapper) -> PyErr {
         PyException::new_err(format!("{:?}", err.0))
     }

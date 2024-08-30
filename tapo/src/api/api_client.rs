@@ -2,9 +2,8 @@ use std::fmt;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use isahc::prelude::Configurable;
-use isahc::HttpClient;
 use log::debug;
+use reqwest::Client;
 use serde::de::DeserializeOwned;
 
 use crate::api::protocol::{TapoProtocol, TapoProtocolExt};
@@ -669,8 +668,8 @@ impl ApiClient {
         if self.protocol.is_none() {
             let timeout = self.timeout.unwrap_or_else(|| Duration::from_secs(30));
 
-            let client = HttpClient::builder()
-                .title_case_headers(true)
+            let client = Client::builder()
+                .http1_title_case_headers()
                 .timeout(timeout)
                 .build()?;
             let protocol = TapoProtocol::new(client);

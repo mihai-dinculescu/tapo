@@ -7,7 +7,9 @@ use tapo::responses::{DeviceInfoColorLightResult, DeviceUsageEnergyMonitoringRes
 use tapo::ColorLightHandler;
 use tokio::sync::Mutex;
 
+use crate::call_handler_method;
 use crate::errors::ErrorWrapper;
+use crate::runtime::tokio;
 
 #[derive(Clone)]
 #[pyclass(name = "ColorLightHandler")]
@@ -26,70 +28,32 @@ impl PyColorLightHandler {
 #[pymethods]
 impl PyColorLightHandler {
     pub async fn refresh_session(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler
-            .lock()
-            .await
-            .refresh_session()
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, ColorLightHandler::refresh_session, discard_result)
     }
 
     pub async fn on(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler.lock().await.on().await.map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, ColorLightHandler::on)
     }
 
     pub async fn off(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler.lock().await.off().await.map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, ColorLightHandler::off)
     }
 
     pub async fn device_reset(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler
-            .lock()
-            .await
-            .device_reset()
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, ColorLightHandler::device_reset)
     }
 
     pub async fn get_device_info(&self) -> PyResult<DeviceInfoColorLightResult> {
-        let handler = self.handler.clone();
-        let result = handler
-            .lock()
-            .await
-            .get_device_info()
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(result)
+        call_handler_method!(self, ColorLightHandler::get_device_info)
     }
 
     pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
-        let result = handler
-            .lock()
-            .await
-            .get_device_info_json()
-            .await
-            .map_err(ErrorWrapper)?;
+        let result = call_handler_method!(self, ColorLightHandler::get_device_info_json)?;
         Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
     pub async fn get_device_usage(&self) -> PyResult<DeviceUsageEnergyMonitoringResult> {
-        let handler = self.handler.clone();
-        let result = handler
-            .lock()
-            .await
-            .get_device_usage()
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(result)
+        call_handler_method!(self, ColorLightHandler::get_device_usage)
     }
 
     pub fn set(&self) -> PyColorLightSetDeviceInfoParams {
@@ -97,47 +61,23 @@ impl PyColorLightHandler {
     }
 
     pub async fn set_brightness(&self, brightness: u8) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler
-            .lock()
-            .await
-            .set_brightness(brightness)
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, ColorLightHandler::set_brightness, brightness)
     }
 
     pub async fn set_color(&self, color: Color) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler
-            .lock()
-            .await
-            .set_color(color)
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, ColorLightHandler::set_color, color)
     }
 
     pub async fn set_hue_saturation(&self, hue: u16, saturation: u8) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler
-            .lock()
-            .await
-            .set_hue_saturation(hue, saturation)
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(self, ColorLightHandler::set_hue_saturation, hue, saturation)
     }
 
     pub async fn set_color_temperature(&self, color_temperature: u16) -> PyResult<()> {
-        let handler = self.handler.clone();
-        handler
-            .lock()
-            .await
-            .set_color_temperature(color_temperature)
-            .await
-            .map_err(ErrorWrapper)?;
-        Ok(())
+        call_handler_method!(
+            self,
+            ColorLightHandler::set_color_temperature,
+            color_temperature
+        )
     }
 }
 
@@ -195,11 +135,22 @@ impl PyColorLightSetDeviceInfoParams {
 
     pub async fn send(&self, handler: PyColorLightHandler) -> PyResult<()> {
         let params = self.params.clone();
-        let handler_lock = handler.handler.lock().await;
-        params
-            .send(handler_lock.deref())
+
+        tokio()
+            .spawn(async move {
+                let handler_lock = handler.handler.lock().await;
+
+                params
+                    .send(handler_lock.deref())
+                    .await
+                    .map_err(ErrorWrapper)?;
+
+                Ok::<_, ErrorWrapper>(())
+            })
             .await
-            .map_err(ErrorWrapper)?;
+            .map_err(anyhow::Error::from)
+            .map_err(ErrorWrapper::from)??;
+
         Ok(())
     }
 }

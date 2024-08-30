@@ -1,7 +1,11 @@
 use pyo3::prelude::*;
 use std::time::Duration;
-use tapo::ApiClient;
+use tapo::{
+    ApiClient, ColorLightHandler, GenericDeviceHandler, HubHandler, LightHandler,
+    PlugEnergyMonitoringHandler, PlugHandler,
+};
 
+use crate::call_handler_constructor;
 use crate::errors::ErrorWrapper;
 use crate::handlers::{
     PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
@@ -16,6 +20,7 @@ pub struct PyApiClient {
 #[pymethods]
 impl PyApiClient {
     #[new]
+    #[pyo3(signature = (tapo_username, tapo_password, timeout_s=None))]
     pub fn new(
         tapo_username: String,
         tapo_password: String,
@@ -31,71 +36,68 @@ impl PyApiClient {
     }
 
     pub async fn generic_device(&self, ip_address: String) -> PyResult<PyGenericDeviceHandler> {
-        let client = self.client.clone();
-        let handler = client
-            .generic_device(ip_address)
-            .await
-            .map_err(ErrorWrapper)?;
+        let handler: GenericDeviceHandler =
+            call_handler_constructor!(self, tapo::ApiClient::generic_device, ip_address);
         Ok(PyGenericDeviceHandler::new(handler))
     }
 
     pub async fn l510(&self, ip_address: String) -> PyResult<PyLightHandler> {
-        let client = self.client.clone();
-        let handler = client.l510(ip_address).await.map_err(ErrorWrapper)?;
+        let handler: LightHandler =
+            call_handler_constructor!(self, tapo::ApiClient::l510, ip_address);
         Ok(PyLightHandler::new(handler))
     }
 
     pub async fn l520(&self, ip_address: String) -> PyResult<PyLightHandler> {
-        let client = self.client.clone();
-        let handler = client.l520(ip_address).await.map_err(ErrorWrapper)?;
+        let handler: LightHandler =
+            call_handler_constructor!(self, tapo::ApiClient::l520, ip_address);
         Ok(PyLightHandler::new(handler))
     }
 
     pub async fn l530(&self, ip_address: String) -> PyResult<PyColorLightHandler> {
-        let client = self.client.clone();
-        let handler = client.l530(ip_address).await.map_err(ErrorWrapper)?;
+        let handler: ColorLightHandler =
+            call_handler_constructor!(self, tapo::ApiClient::l530, ip_address);
         Ok(PyColorLightHandler::new(handler))
     }
 
     pub async fn l610(&self, ip_address: String) -> PyResult<PyLightHandler> {
-        let client = self.client.clone();
-        let handler = client.l610(ip_address).await.map_err(ErrorWrapper)?;
+        let handler: LightHandler =
+            call_handler_constructor!(self, tapo::ApiClient::l610, ip_address);
         Ok(PyLightHandler::new(handler))
     }
 
     pub async fn l630(&self, ip_address: String) -> PyResult<PyColorLightHandler> {
-        let client = self.client.clone();
-        let handler = client.l630(ip_address).await.map_err(ErrorWrapper)?;
+        let handler: ColorLightHandler =
+            call_handler_constructor!(self, tapo::ApiClient::l630, ip_address);
         Ok(PyColorLightHandler::new(handler))
     }
 
     pub async fn p100(&self, ip_address: String) -> PyResult<PyPlugHandler> {
-        let client = self.client.clone();
-        let handler = client.p100(ip_address).await.map_err(ErrorWrapper)?;
+        let handler: PlugHandler =
+            call_handler_constructor!(self, tapo::ApiClient::p100, ip_address);
         Ok(PyPlugHandler::new(handler))
     }
 
     pub async fn p105(&self, ip_address: String) -> PyResult<PyPlugHandler> {
-        let client = self.client.clone();
-        let handler = client.p105(ip_address).await.map_err(ErrorWrapper)?;
+        let handler: PlugHandler =
+            call_handler_constructor!(self, tapo::ApiClient::p105, ip_address);
         Ok(PyPlugHandler::new(handler))
     }
 
     pub async fn p110(&self, ip_address: String) -> PyResult<PyPlugEnergyMonitoringHandler> {
-        let client = self.client.clone();
-        let handler = client.p110(ip_address).await.map_err(ErrorWrapper)?;
+        let handler: PlugEnergyMonitoringHandler =
+            call_handler_constructor!(self, tapo::ApiClient::p110, ip_address);
         Ok(PyPlugEnergyMonitoringHandler::new(handler))
     }
 
     pub async fn p115(&self, ip_address: String) -> PyResult<PyPlugEnergyMonitoringHandler> {
-        let client = self.client.clone();
-        let handler = client.p115(ip_address).await.map_err(ErrorWrapper)?;
+        let handler: PlugEnergyMonitoringHandler =
+            call_handler_constructor!(self, tapo::ApiClient::p115, ip_address);
         Ok(PyPlugEnergyMonitoringHandler::new(handler))
     }
 
     pub async fn h100(&self, ip_address: String) -> PyResult<PyHubHandler> {
-        let client = self.client.clone();
-        let handler = client.h100(ip_address).await.map_err(ErrorWrapper)?;
+        let handler: HubHandler =
+            call_handler_constructor!(self, tapo::ApiClient::h100, ip_address);
         Ok(PyHubHandler::new(handler))
     }
 }

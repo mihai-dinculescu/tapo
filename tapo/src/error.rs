@@ -41,7 +41,7 @@ pub enum Error {
     Serde(#[from] serde_json::Error),
     /// HTTP Error.
     #[error("Http: {0}")]
-    Http(#[from] isahc::Error),
+    Http(#[from] reqwest::Error),
     /// Device not found
     #[error("Device not found")]
     DeviceNotFound,

@@ -14,12 +14,18 @@ default = []
 openssl-vendored = ["tapo/openssl-vendored"]
 
 [dependencies]
+anyhow = { workspace = true }
 chrono = { workspace = true, default-features = false }
 pyo3 = { workspace = true, features = [
+    "auto-initialize",
     "chrono",
-    "extension-module",
     "experimental-async",
+    "extension-module",
+    "py-clone",
 ] }
-tokio = { workspace = true, default-features = false, features = ["sync"] }
+tokio = { workspace = true, default-features = false, features = [
+    "rt-multi-thread",
+    "sync",
+] }
 
 tapo = { path = "../tapo", features = ["python"] }

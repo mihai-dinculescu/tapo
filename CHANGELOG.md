@@ -8,6 +8,10 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+### Fixed
+
+- Resolved an issue that led to unrecoverable process hangs when a device request timed out.
+
 ## [Rust v0.7.13][v0.7.13] - 2024-08-26
 
 ### Changed
