@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.7.14][v0.7.14] - 2024-08-31
+
 ### Changed
 
 - `DeviceInfoPlugEnergyMonitoringResult` has been added to support the P110 and P115 devices, which have different responses compared to the P100 and P105 devices.
@@ -14,7 +18,7 @@ file. This change log follows the conventions of
 
 - `DeviceInfoPlugResult` has been updated to correctly support the P100 and P105 devices.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.4.0][py-v0.4.0] - 2024-08-31
 
 ### Changed
 
@@ -396,6 +400,8 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.14]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.14
+[py-v0.4.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.4.0
 [v0.7.13]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.13
 [py-v0.3.2]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.3.2
 [v0.7.12]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.12

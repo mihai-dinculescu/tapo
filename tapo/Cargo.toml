@@ -1,6 +1,6 @@
 [package]
 name = "tapo"
-version = "0.7.13"
+version = "0.7.14"
 edition = "2021"
 license = "MIT"
 authors = ["Mihai Dinculescu <mihai.dinculescu@outlook.com>"]
