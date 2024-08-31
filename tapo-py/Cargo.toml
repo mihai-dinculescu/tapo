@@ -17,7 +17,6 @@ openssl-vendored = ["tapo/openssl-vendored"]
 anyhow = { workspace = true }
 chrono = { workspace = true, default-features = false }
 pyo3 = { workspace = true, features = [
-    "auto-initialize",
     "chrono",
     "experimental-async",
     "extension-module",
