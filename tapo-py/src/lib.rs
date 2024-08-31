@@ -16,11 +16,11 @@ use tapo::responses::{
     ColorLightState, CurrentPowerResult, DefaultBrightnessState, DefaultColorLightState,
     DefaultLightState, DefaultPlugState, DefaultPowerType, DefaultStateType,
     DeviceInfoColorLightResult, DeviceInfoGenericResult, DeviceInfoHubResult,
-    DeviceInfoLightResult, DeviceInfoPlugResult, DeviceUsageEnergyMonitoringResult,
-    DeviceUsageResult, EnergyDataResult, EnergyUsageResult, KE100Result, OvercurrentStatus,
-    OverheatStatus, PlugState, PowerProtectionStatus, S200BResult, Status, T100Result, T110Result,
-    T300Result, T31XResult, TemperatureUnit, TemperatureUnitKE100, UsageByPeriodResult,
-    WaterLeakStatus,
+    DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
+    DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
+    KE100Result, OvercurrentStatus, OverheatStatus, PlugState, PowerProtectionStatus, S200BResult,
+    Status, T100Result, T110Result, T300Result, T31XResult, TemperatureUnit, TemperatureUnitKE100,
+    UsageByPeriodResult, WaterLeakStatus,
 };
 
 #[pymodule]
@@ -84,8 +84,9 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     responses.add_class::<DefaultLightState>()?;
 
     // responses: plug
-    responses.add_class::<DeviceInfoPlugResult>()?;
     responses.add_class::<DefaultPlugState>()?;
+    responses.add_class::<DeviceInfoPlugEnergyMonitoringResult>()?;
+    responses.add_class::<DeviceInfoPlugResult>()?;
     responses.add_class::<PlugState>()?;
 
     module.add_submodule(&requests)?;

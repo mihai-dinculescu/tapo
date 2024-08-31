@@ -2,8 +2,8 @@ use crate::api::{ApiClient, ApiClientExt};
 use crate::error::Error;
 use crate::requests::{EnergyDataInterval, GenericSetDeviceInfoParams};
 use crate::responses::{
-    CurrentPowerResult, DeviceInfoPlugResult, DeviceUsageEnergyMonitoringResult, EnergyDataResult,
-    EnergyUsageResult,
+    CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
+    EnergyDataResult, EnergyUsageResult,
 };
 
 /// Handler for the [P110](https://www.tapo.com/en/search/?q=P110) & [P115](https://www.tapo.com/en/search/?q=P115) devices.
@@ -46,10 +46,10 @@ impl PlugEnergyMonitoringHandler {
         self.client.device_reset().await
     }
 
-    /// Returns *device info* as [`DeviceInfoPlugResult`].
+    /// Returns *device info* as [`DeviceInfoPlugEnergyMonitoringResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`PlugEnergyMonitoringHandler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<DeviceInfoPlugResult, Error> {
+    pub async fn get_device_info(&self) -> Result<DeviceInfoPlugEnergyMonitoringResult, Error> {
         self.client.get_device_info().await
     }
 

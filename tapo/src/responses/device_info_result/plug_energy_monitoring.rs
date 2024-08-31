@@ -1,13 +1,16 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, TapoResponseExt};
+use crate::responses::device_info_result::{
+    OvercurrentStatus, OverheatStatus, PowerProtectionStatus,
+};
+use crate::responses::{decode_value, DecodableResultExt, DefaultStateType, TapoResponseExt};
 
-/// Device info of Tapo P100 and P105. Superset of [`crate::responses::DeviceInfoGenericResult`].
+/// Device info of Tapo P110 and P115. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
-pub struct DeviceInfoPlugResult {
+pub struct DeviceInfoPlugEnergyMonitoringResult {
     //
     // Inherited from DeviceInfoGenericResult
     //
@@ -36,11 +39,19 @@ pub struct DeviceInfoPlugResult {
     pub latitude: Option<i64>,
     pub longitude: Option<i64>,
     pub time_diff: Option<i64>,
+    //
+    // Unique to this device
+    //
+    /// The default state of a device to be used when internet connectivity is lost after a power cut.
+    pub default_states: DefaultPlugState,
+    pub overcurrent_status: OvercurrentStatus,
+    pub overheat_status: OverheatStatus,
+    pub power_protection_status: PowerProtectionStatus,
 }
 
 #[cfg(feature = "python")]
 #[pyo3::pymethods]
-impl DeviceInfoPlugResult {
+impl DeviceInfoPlugEnergyMonitoringResult {
     /// Gets all the properties of this result as a dictionary.
     pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
         let value = serde_json::to_value(self)
@@ -50,13 +61,30 @@ impl DeviceInfoPlugResult {
     }
 }
 
-impl TapoResponseExt for DeviceInfoPlugResult {}
+impl TapoResponseExt for DeviceInfoPlugEnergyMonitoringResult {}
 
-impl DecodableResultExt for DeviceInfoPlugResult {
+impl DecodableResultExt for DeviceInfoPlugEnergyMonitoringResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.ssid = decode_value(&self.ssid)?;
         self.nickname = decode_value(&self.nickname)?;
 
         Ok(self)
     }
+}
+
+/// Plug Default State.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[allow(missing_docs)]
+pub struct DefaultPlugState {
+    pub r#type: DefaultStateType,
+    pub state: PlugState,
+}
+
+/// Plug State.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[allow(missing_docs)]
+pub struct PlugState {
+    pub on: Option<bool>,
 }

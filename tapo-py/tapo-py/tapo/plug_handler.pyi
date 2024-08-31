@@ -36,7 +36,7 @@ class PlugHandler:
         try `PlugHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoPlugResult: Device info of Tapo P100, P105, P110 and P115.
+            DeviceInfoPlugResult: Device info of Tapo P100 and P105.
             Superset of `GenericDeviceInfoResult`.
         """
 

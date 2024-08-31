@@ -6,11 +6,24 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Changed
+
+- `DeviceInfoPlugEnergyMonitoringResult` has been added to support the P110 and P115 devices, which have different responses compared to the P100 and P105 devices.
+
+### Fixed
+
+- `DeviceInfoPlugResult` has been updated to correctly support the P100 and P105 devices.
+
 ## [Python Unreleased][Unreleased]
+
+### Changed
+
+- `DeviceInfoPlugEnergyMonitoringResult` has been added to support the P110 and P115 devices, which have different responses compared to the P100 and P105 devices.
 
 ### Fixed
 
 - Resolved an issue that led to unrecoverable process hangs when a device request timed out.
+- `DeviceInfoPlugResult` has been updated to correctly support the P100 and P105 devices.
 
 ## [Rust v0.7.13][v0.7.13] - 2024-08-26
 

@@ -5,8 +5,8 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use tapo::requests::EnergyDataInterval;
 use tapo::responses::{
-    CurrentPowerResult, DeviceInfoPlugResult, DeviceUsageEnergyMonitoringResult, EnergyDataResult,
-    EnergyUsageResult,
+    CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
+    EnergyDataResult, EnergyUsageResult,
 };
 use tapo::PlugEnergyMonitoringHandler;
 use tokio::sync::Mutex;
@@ -58,7 +58,7 @@ impl PyPlugEnergyMonitoringHandler {
         call_handler_method!(self, PlugEnergyMonitoringHandler::device_reset)
     }
 
-    pub async fn get_device_info(&self) -> PyResult<DeviceInfoPlugResult> {
+    pub async fn get_device_info(&self) -> PyResult<DeviceInfoPlugEnergyMonitoringResult> {
         call_handler_method!(self, PlugEnergyMonitoringHandler::get_device_info)
     }
 
