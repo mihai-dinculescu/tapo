@@ -23,6 +23,7 @@ file. This change log follows the conventions of
 ### Fixed
 
 - Resolved an issue that led to unrecoverable process hangs when a device request timed out.
+- The concurrency of device handlers has been significantly enhanced by replacing all `Mutex` instances with `RwLock`.
 - `DeviceInfoPlugResult` has been updated to correctly support the P100 and P105 devices.
 
 ## [Rust v0.7.13][v0.7.13] - 2024-08-26

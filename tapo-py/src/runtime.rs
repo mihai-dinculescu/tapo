@@ -25,15 +25,12 @@ macro_rules! call_handler_constructor {
 
 #[macro_export]
 macro_rules! call_handler_method {
-    ($self:expr, $method:path) => (call_handler_method!($self, $method,));
-    ($self:expr, $method:path, discard_result) => (call_handler_method!($self, $method, discard_result,));
-    ($self:expr, $method:path, $($param:expr),*) => {{
-        let handler = $self.handler.clone();
+    ($handler:expr, $method:path) => (call_handler_method!($handler, $method,));
+    ($handler:expr, $method:path, discard_result) => (call_handler_method!($handler, $method, discard_result,));
+    ($handler:expr, $method:path, $($param:expr),*) => {{
         let result = $crate::runtime::tokio()
             .spawn(async move {
-                let mut handler = handler.lock().await;
-
-                let result = $method(&mut handler, $($param),*)
+                let result = $method($handler, $($param),*)
                     .await
                     .map_err(ErrorWrapper)?;
 
@@ -45,13 +42,10 @@ macro_rules! call_handler_method {
 
         Ok::<_, PyErr>(result)
     }};
-    ($self:expr, $method:path, discard_result, $($param:expr),*) => {{
-        let handler = $self.handler.clone();
+    ($handler:expr, $method:path, discard_result, $($param:expr),*) => {{
         let result = $crate::runtime::tokio()
             .spawn(async move {
-                let mut handler = handler.lock().await;
-
-                $method(&mut handler, $($param),*)
+                $method($handler, $($param),*)
                     .await
                     .map_err(ErrorWrapper)?;
 

@@ -1,3 +1,4 @@
+use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
 use chrono::NaiveDate;
@@ -9,7 +10,7 @@ use tapo::responses::{
     EnergyDataResult, EnergyUsageResult,
 };
 use tapo::PlugEnergyMonitoringHandler;
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 
 use crate::call_handler_method;
 use crate::errors::ErrorWrapper;
@@ -25,13 +26,13 @@ pub enum PyEnergyDataInterval {
 #[derive(Clone)]
 #[pyclass(name = "PlugEnergyMonitoringHandler")]
 pub struct PyPlugEnergyMonitoringHandler {
-    handler: Arc<Mutex<PlugEnergyMonitoringHandler>>,
+    handler: Arc<RwLock<PlugEnergyMonitoringHandler>>,
 }
 
 impl PyPlugEnergyMonitoringHandler {
     pub fn new(handler: PlugEnergyMonitoringHandler) -> Self {
         Self {
-            handler: Arc::new(Mutex::new(handler)),
+            handler: Arc::new(RwLock::new(handler)),
         }
     }
 }
@@ -39,44 +40,77 @@ impl PyPlugEnergyMonitoringHandler {
 #[pymethods]
 impl PyPlugEnergyMonitoringHandler {
     pub async fn refresh_session(&self) -> PyResult<()> {
+        let handler = self.handler.clone();
         call_handler_method!(
-            self,
+            handler.write().await.deref_mut(),
             PlugEnergyMonitoringHandler::refresh_session,
             discard_result
         )
     }
 
     pub async fn on(&self) -> PyResult<()> {
-        call_handler_method!(self, PlugEnergyMonitoringHandler::on)
+        let handler = self.handler.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::on
+        )
     }
 
     pub async fn off(&self) -> PyResult<()> {
-        call_handler_method!(self, PlugEnergyMonitoringHandler::off)
+        let handler = self.handler.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::off
+        )
     }
 
     pub async fn device_reset(&self) -> PyResult<()> {
-        call_handler_method!(self, PlugEnergyMonitoringHandler::device_reset)
+        let handler = self.handler.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::device_reset,
+        )
     }
 
     pub async fn get_device_info(&self) -> PyResult<DeviceInfoPlugEnergyMonitoringResult> {
-        call_handler_method!(self, PlugEnergyMonitoringHandler::get_device_info)
+        let handler = self.handler.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_device_info,
+        )
     }
 
     pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let result = call_handler_method!(self, PlugEnergyMonitoringHandler::get_device_info_json)?;
+        let handler = self.handler.clone();
+        let result = call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_device_info_json,
+        )?;
         Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
     pub async fn get_device_usage(&self) -> PyResult<DeviceUsageEnergyMonitoringResult> {
-        call_handler_method!(self, PlugEnergyMonitoringHandler::get_device_usage)
+        let handler = self.handler.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_device_usage,
+        )
     }
 
     pub async fn get_current_power(&self) -> PyResult<CurrentPowerResult> {
-        call_handler_method!(self, PlugEnergyMonitoringHandler::get_current_power)
+        let handler = self.handler.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_current_power,
+        )
     }
 
     pub async fn get_energy_usage(&self) -> PyResult<EnergyUsageResult> {
-        call_handler_method!(self, PlugEnergyMonitoringHandler::get_energy_usage)
+        let handler = self.handler.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_energy_usage,
+        )
     }
 
     #[pyo3(signature = (interval, start_date, end_date=None))]
@@ -95,8 +129,12 @@ impl PyPlugEnergyMonitoringHandler {
             PyEnergyDataInterval::Monthly => EnergyDataInterval::Monthly { start_date },
         };
 
-        let result =
-            call_handler_method!(self, PlugEnergyMonitoringHandler::get_energy_data, interval)?;
+        let handler = self.handler.clone();
+        let result = call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_energy_data,
+            interval
+        )?;
         Ok(result)
     }
 }
