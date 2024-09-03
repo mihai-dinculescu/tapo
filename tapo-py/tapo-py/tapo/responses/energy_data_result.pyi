@@ -11,10 +11,17 @@ class EnergyDataResult:
     """Energy data for the given `interval` in watts (W)."""
 
     start_timestamp: int
-    """Interval start timestamp in milliseconds."""
+    """Start timestamp of the interval in milliseconds. This value is provided
+    in the `get_energy_data` request and is passed through. Note that
+    it may not align with the returned data if the method is used
+    beyond its specified capabilities.
+    """
 
     end_timestamp: int
-    """Interval end timestamp in milliseconds."""
+    """End timestamp of the interval in milliseconds. This value is provided
+    in the `get_energy_data` request and is passed through. Note that
+    it may not align with the returned data for intervals other than hourly.
+    """
 
     interval: int
     """Interval in minutes."""
