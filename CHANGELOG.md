@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Removed
+
+- The deprecated `past24h`, `past7d`, `past30d` and `past1y` fields have been removed from `EnergyUsageResult`. This data is now available exclusively through `get_energy_data`'s `EnergyDataResult` response.
+
 ## [Python Unreleased][Unreleased]
 
 ## [Rust v0.7.14][v0.7.14] - 2024-08-31
