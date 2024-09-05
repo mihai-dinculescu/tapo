@@ -86,4 +86,8 @@ pub enum S200BLog {
         id: u64,
         timestamp: u64,
     },
+    LowBattery {
+        id: u64,
+        timestamp: u64,
+    },
 }

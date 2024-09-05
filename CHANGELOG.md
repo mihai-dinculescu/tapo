@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- The `LowBattery` variant has been added to the `S200BLog` enum.
+
 ### Changed
 
 - The comments of `start_timestamp` and `end_timestamp` fields in `EnergyDataResult` have been updated to better describe their purpose.
