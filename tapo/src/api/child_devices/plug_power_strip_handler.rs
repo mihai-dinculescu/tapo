@@ -1,20 +1,21 @@
-use crate::api::PowerStripHandler;
+use std::sync::Arc;
+
+use tokio::sync::RwLock;
+
+use crate::api::ApiClient;
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{EmptyParams, GenericSetDeviceInfoParams, TapoParams, TapoRequest};
 use crate::responses::{DecodableResultExt, PlugPowerStripResult};
 
 /// Handler for the [P300](https://www.tapo.com/en/search/?q=P300) child plugs.
-pub struct PlugPowerStripHandler<'h> {
-    power_strip_handler: &'h PowerStripHandler,
+pub struct PlugPowerStripHandler {
+    client: Arc<RwLock<ApiClient>>,
     device_id: String,
 }
 
-impl<'h> PlugPowerStripHandler<'h> {
-    pub(crate) fn new(power_strip_handler: &'h PowerStripHandler, device_id: String) -> Self {
-        Self {
-            power_strip_handler,
-            device_id,
-        }
+impl PlugPowerStripHandler {
+    pub(crate) fn new(client: Arc<RwLock<ApiClient>>, device_id: String) -> Self {
+        Self { client, device_id }
     }
 
     /// Returns *device info* as [`PlugPowerStripResult`].
@@ -22,7 +23,9 @@ impl<'h> PlugPowerStripHandler<'h> {
     pub async fn get_device_info(&self) -> Result<PlugPowerStripResult, Error> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
-        self.power_strip_handler
+        self.client
+            .read()
+            .await
             .control_child::<PlugPowerStripResult>(self.device_id.clone(), request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -34,7 +37,9 @@ impl<'h> PlugPowerStripHandler<'h> {
     pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
-        self.power_strip_handler
+        self.client
+            .read()
+            .await
             .control_child::<serde_json::Value>(self.device_id.clone(), request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -45,7 +50,9 @@ impl<'h> PlugPowerStripHandler<'h> {
         let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        self.power_strip_handler
+        self.client
+            .read()
+            .await
             .control_child::<serde_json::Value>(self.device_id.clone(), request)
             .await?;
 
@@ -57,7 +64,9 @@ impl<'h> PlugPowerStripHandler<'h> {
         let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(false)?)?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        self.power_strip_handler
+        self.client
+            .read()
+            .await
             .control_child::<serde_json::Value>(self.device_id.clone(), request)
             .await?;
 

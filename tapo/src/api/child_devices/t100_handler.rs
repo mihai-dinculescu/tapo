@@ -1,21 +1,22 @@
-use crate::api::HubHandler;
+use std::sync::Arc;
+
+use tokio::sync::RwLock;
+
+use crate::api::ApiClient;
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{EmptyParams, GetTriggerLogsParams, TapoParams, TapoRequest};
 use crate::responses::{DecodableResultExt, T100Result};
 use crate::responses::{T100Log, TriggerLogsResult};
 
 /// Handler for the [T100](https://www.tapo.com/en/search/?q=T100) devices.
-pub struct T100Handler<'h> {
-    hub_handler: &'h HubHandler,
+pub struct T100Handler {
+    client: Arc<RwLock<ApiClient>>,
     device_id: String,
 }
 
-impl<'h> T100Handler<'h> {
-    pub(crate) fn new(hub_handler: &'h HubHandler, device_id: String) -> Self {
-        Self {
-            hub_handler,
-            device_id,
-        }
+impl T100Handler {
+    pub(crate) fn new(client: Arc<RwLock<ApiClient>>, device_id: String) -> Self {
+        Self { client, device_id }
     }
 
     /// Returns *device info* as [`T100Result`].
@@ -23,11 +24,26 @@ impl<'h> T100Handler<'h> {
     pub async fn get_device_info(&self) -> Result<T100Result, Error> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
-        self.hub_handler
+        self.client
+            .read()
+            .await
             .control_child::<T100Result>(self.device_id.clone(), request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
             .map(|result| result.decode())?
+    }
+
+    /// Returns *device info* as [`serde_json::Value`].
+    /// It contains all the properties returned from the Tapo API.
+    pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
+        let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
+
+        self.client
+            .read()
+            .await
+            .control_child::<serde_json::Value>(self.device_id.clone(), request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     /// Returns a list of trigger logs.
@@ -46,7 +62,9 @@ impl<'h> T100Handler<'h> {
         let child_params = GetTriggerLogsParams::new(page_size, start_id);
         let child_request = TapoRequest::GetTriggerLogs(Box::new(TapoParams::new(child_params)));
 
-        self.hub_handler
+        self.client
+            .read()
+            .await
             .control_child(self.device_id.clone(), child_request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))

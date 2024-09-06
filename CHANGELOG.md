@@ -12,6 +12,7 @@ file. This change log follows the conventions of
 
 ### Changed
 
+- The child device handlers for the H100 hub and the P300 power strip have been redesigned to eliminate the use of lifetimes, to facilitate FFI integrations.
 - The comments of `start_timestamp` and `end_timestamp` fields in `EnergyDataResult` have been updated to better describe their purpose.
 
 ### Removed

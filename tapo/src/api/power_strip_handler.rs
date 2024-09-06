@@ -1,29 +1,29 @@
-use std::fmt;
+use std::sync::Arc;
 
-use serde::de::DeserializeOwned;
+use tokio::sync::RwLock;
 
 use crate::api::ApiClient;
 use crate::api::PlugPowerStripHandler;
 use crate::error::Error;
-use crate::requests::TapoRequest;
 use crate::responses::{
     ChildDeviceListPowerStripResult, DeviceInfoPowerStripResult, PlugPowerStripResult,
-    TapoResponseExt,
 };
 
 /// Handler for the [P300](https://www.tapo.com/en/search/?q=P300) devices.
 pub struct PowerStripHandler {
-    client: ApiClient,
+    client: Arc<RwLock<ApiClient>>,
 }
 
 impl PowerStripHandler {
     pub(crate) fn new(client: ApiClient) -> Self {
-        Self { client }
+        Self {
+            client: Arc::new(RwLock::new(client)),
+        }
     }
 
     /// Refreshes the authentication session.
     pub async fn refresh_session(&mut self) -> Result<&mut Self, Error> {
-        self.client.refresh_session().await?;
+        self.client.write().await.refresh_session().await?;
         Ok(self)
     }
 
@@ -32,13 +32,13 @@ impl PowerStripHandler {
     /// If the deserialization fails, or if a property that you care about it's not present,
     /// try [`PowerStripHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<DeviceInfoPowerStripResult, Error> {
-        self.client.get_device_info().await
+        self.client.read().await.get_device_info().await
     }
 
     /// Returns *device info* as [`serde_json::Value`].
     /// It contains all the properties returned from the Tapo API.
     pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
-        self.client.get_device_info().await
+        self.client.read().await.get_device_info().await
     }
 
     /// Returns *child device list* as [`PlugPowerStripResult`].
@@ -46,6 +46,8 @@ impl PowerStripHandler {
     /// or to support all the possible devices connected to the hub.
     pub async fn get_child_device_list(&self) -> Result<Vec<PlugPowerStripResult>, Error> {
         self.client
+            .read()
+            .await
             .get_child_device_list::<ChildDeviceListPowerStripResult>()
             .await
             .map(|r| r.sub_plugs)
@@ -54,25 +56,17 @@ impl PowerStripHandler {
     /// Returns *child device list* as [`serde_json::Value`].
     /// It contains all the properties returned from the Tapo API.
     pub async fn get_child_device_list_json(&self) -> Result<serde_json::Value, Error> {
-        self.client.get_child_device_list().await
+        self.client.read().await.get_child_device_list().await
     }
 
     /// Returns *child device component list* as [`serde_json::Value`].
     /// This information is useful in debugging or when investigating new functionality to add.
     pub async fn get_child_device_component_list_json(&self) -> Result<serde_json::Value, Error> {
-        self.client.get_child_device_component_list().await
-    }
-
-    /// Internal method that's called by functions of the child devices.
-    pub(crate) async fn control_child<R>(
-        &self,
-        device_id: String,
-        request_data: TapoRequest,
-    ) -> Result<Option<R>, Error>
-    where
-        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
-    {
-        self.client.control_child(device_id, request_data).await
+        self.client
+            .read()
+            .await
+            .get_child_device_component_list()
+            .await
     }
 }
 
@@ -126,7 +120,7 @@ impl PowerStripHandler {
                 .clone(),
         };
 
-        Ok(PlugPowerStripHandler::new(self, device_id))
+        Ok(PlugPowerStripHandler::new(self.client.clone(), device_id))
     }
 }
 

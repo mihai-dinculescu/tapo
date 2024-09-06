@@ -1,20 +1,21 @@
-use crate::api::HubHandler;
+use std::sync::Arc;
+
+use tokio::sync::RwLock;
+
+use crate::api::ApiClient;
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{EmptyParams, TapoParams, TapoRequest, TrvSetDeviceInfoParams};
 use crate::responses::{DecodableResultExt, KE100Result, TemperatureUnitKE100};
 
 /// Handler for the [KE100](https://www.tp-link.com/en/search/?q=KE100) devices.
-pub struct KE100Handler<'h> {
-    hub_handler: &'h HubHandler,
+pub struct KE100Handler {
+    client: Arc<RwLock<ApiClient>>,
     device_id: String,
 }
 
-impl<'h> KE100Handler<'h> {
-    pub(crate) fn new(hub_handler: &'h HubHandler, device_id: String) -> Self {
-        Self {
-            hub_handler,
-            device_id,
-        }
+impl KE100Handler {
+    pub(crate) fn new(client: Arc<RwLock<ApiClient>>, device_id: String) -> Self {
+        Self { client, device_id }
     }
 
     /// Returns *device info* as [`KE100Result`].
@@ -22,7 +23,9 @@ impl<'h> KE100Handler<'h> {
     pub async fn get_device_info(&self) -> Result<KE100Result, Error> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
-        self.hub_handler
+        self.client
+            .read()
+            .await
             .control_child::<KE100Result>(self.device_id.clone(), request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -34,8 +37,10 @@ impl<'h> KE100Handler<'h> {
     pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
-        self.hub_handler
-            .control_child(self.device_id.clone(), request)
+        self.client
+            .read()
+            .await
+            .control_child::<serde_json::Value>(self.device_id.clone(), request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
@@ -71,7 +76,9 @@ impl<'h> KE100Handler<'h> {
         )?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        self.hub_handler
+        self.client
+            .read()
+            .await
             .control_child::<serde_json::Value>(self.device_id.clone(), request)
             .await?;
 
@@ -95,7 +102,9 @@ impl<'h> KE100Handler<'h> {
         )?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        self.hub_handler
+        self.client
+            .read()
+            .await
             .control_child::<serde_json::Value>(self.device_id.clone(), request)
             .await?;
 
@@ -119,7 +128,9 @@ impl<'h> KE100Handler<'h> {
         )?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        self.hub_handler
+        self.client
+            .read()
+            .await
             .control_child::<serde_json::Value>(self.device_id.clone(), request)
             .await?;
 
@@ -137,7 +148,9 @@ impl<'h> KE100Handler<'h> {
         )?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        self.hub_handler
+        self.client
+            .read()
+            .await
             .control_child::<serde_json::Value>(self.device_id.clone(), request)
             .await?;
 
@@ -155,7 +168,9 @@ impl<'h> KE100Handler<'h> {
         )?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        self.hub_handler
+        self.client
+            .read()
+            .await
             .control_child::<serde_json::Value>(self.device_id.clone(), request)
             .await?;
 
@@ -179,7 +194,9 @@ impl<'h> KE100Handler<'h> {
         )?;
         let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
 
-        self.hub_handler
+        self.client
+            .read()
+            .await
             .control_child::<serde_json::Value>(self.device_id.clone(), request)
             .await?;
 
