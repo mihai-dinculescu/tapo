@@ -8,14 +8,14 @@ use crate::error::Error;
 use crate::responses::{ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoHubResult};
 
 macro_rules! get_device_id {
-    ($self:expr, $identifier:expr, $value:path) => {{
+    ($self:expr, $identifier:expr, $($value:path),+) => {{
         let children = $self.get_child_device_list().await?;
 
         match $identifier {
             HubDevice::ByDeviceId(device_id) => children
                 .iter()
                 .filter_map(|d| match d {
-                    $value(child) if child.device_id == device_id => Some(child.device_id.clone()),
+                    $($value(child) if child.device_id == device_id => Some(child.device_id.clone()),)+
                     _ => None,
                 })
                 .next()
@@ -23,7 +23,7 @@ macro_rules! get_device_id {
             HubDevice::ByNickname(nickname) => children
                 .iter()
                 .filter_map(|d| match d {
-                    $value(child) if child.nickname == nickname => Some(child.device_id.clone()),
+                    $($value(child) if child.nickname == nickname => Some(child.device_id.clone()),)+
                     _ => None,
                 })
                 .next()
@@ -266,7 +266,12 @@ impl HubHandler {
     /// # }
     /// ```
     pub async fn t310(&self, identifier: HubDevice) -> Result<T31XHandler, Error> {
-        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T310);
+        let device_id = get_device_id!(
+            self,
+            identifier,
+            ChildDeviceHubResult::T310,
+            ChildDeviceHubResult::T315
+        );
         Ok(T31XHandler::new(self.client.clone(), device_id))
     }
 
@@ -295,7 +300,12 @@ impl HubHandler {
     /// # }
     /// ```
     pub async fn t315(&self, identifier: HubDevice) -> Result<T31XHandler, Error> {
-        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T315);
+        let device_id = get_device_id!(
+            self,
+            identifier,
+            ChildDeviceHubResult::T310,
+            ChildDeviceHubResult::T315
+        );
         Ok(T31XHandler::new(self.client.clone(), device_id))
     }
 }
