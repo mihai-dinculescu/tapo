@@ -43,7 +43,7 @@ impl PassthroughCipher {
                 .private_decrypt(&key_bytes, &mut buf, rsa::Padding::PKCS1)?;
 
         if decrypt_count != 32 {
-            return Err(anyhow::anyhow!("expected 32 bytes, got {decrypt_count}"));
+            return Err(anyhow::anyhow!("Expected 32 bytes, got {decrypt_count}"));
         }
 
         Ok(PassthroughCipher {

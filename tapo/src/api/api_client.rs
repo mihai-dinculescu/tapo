@@ -678,7 +678,7 @@ impl ApiClient {
 
         self.protocol.as_mut().ok_or_else(|| {
             Error::Other(anyhow::anyhow!(
-                "The protocol should have been initialized already."
+                "The protocol should have been initialized already"
             ))
         })
     }
@@ -686,7 +686,7 @@ impl ApiClient {
     fn get_protocol(&self) -> Result<&TapoProtocol, Error> {
         self.protocol.as_ref().ok_or_else(|| {
             Error::Other(anyhow::anyhow!(
-                "The protocol should have been initialized already."
+                "The protocol should have been initialized already"
             ))
         })
     }
