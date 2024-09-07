@@ -8,7 +8,6 @@ use tapo::GenericDeviceHandler;
 use tokio::sync::RwLock;
 
 use crate::call_handler_method;
-use crate::errors::ErrorWrapper;
 
 #[derive(Clone)]
 #[pyclass(name = "GenericDeviceHandler")]

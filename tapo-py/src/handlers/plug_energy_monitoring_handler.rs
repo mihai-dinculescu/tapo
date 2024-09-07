@@ -13,7 +13,6 @@ use tapo::PlugEnergyMonitoringHandler;
 use tokio::sync::RwLock;
 
 use crate::call_handler_method;
-use crate::errors::ErrorWrapper;
 
 #[derive(Clone, PartialEq)]
 #[pyclass(name = "EnergyDataInterval", eq, eq_int)]

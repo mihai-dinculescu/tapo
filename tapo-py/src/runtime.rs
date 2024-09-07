@@ -13,11 +13,11 @@ macro_rules! call_handler_constructor {
             .spawn(async move {
                 $constructor(client, $ip_address)
                     .await
-                    .map_err(ErrorWrapper)
+                    .map_err($crate::errors::ErrorWrapper)
             })
             .await
             .map_err(anyhow::Error::from)
-            .map_err(ErrorWrapper::from)??;
+            .map_err($crate::errors::ErrorWrapper::from)??;
 
         handler
     }};
@@ -32,13 +32,13 @@ macro_rules! call_handler_method {
             .spawn(async move {
                 let result = $method($handler, $($param),*)
                     .await
-                    .map_err(ErrorWrapper)?;
+                    .map_err($crate::errors::ErrorWrapper)?;
 
-                Ok::<_, ErrorWrapper>(result)
+                Ok::<_, $crate::errors::ErrorWrapper>(result)
             })
             .await
             .map_err(anyhow::Error::from)
-            .map_err(ErrorWrapper::from)??;
+            .map_err($crate::errors::ErrorWrapper::from)??;
 
         Ok::<_, PyErr>(result)
     }};
@@ -47,13 +47,13 @@ macro_rules! call_handler_method {
             .spawn(async move {
                 $method($handler, $($param),*)
                     .await
-                    .map_err(ErrorWrapper)?;
+                    .map_err($crate::errors::ErrorWrapper)?;
 
-                Ok::<_, ErrorWrapper>(())
+                Ok::<_, $crate::errors::ErrorWrapper>(())
             })
             .await
             .map_err(anyhow::Error::from)
-            .map_err(ErrorWrapper::from)??;
+            .map_err($crate::errors::ErrorWrapper::from)??;
 
         Ok(result)
     }};
