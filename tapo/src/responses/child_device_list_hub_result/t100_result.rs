@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt};
 
-/// T100 motion sensor.
+/// Device info of Tapo T100 motion sensor.
 ///
 /// Specific properties: `detected`, `report_interval`,
 /// `last_onboarding_timestamp`, `status_follow_edge`.

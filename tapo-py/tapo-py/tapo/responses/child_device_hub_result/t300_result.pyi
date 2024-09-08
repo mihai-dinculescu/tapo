@@ -2,7 +2,7 @@ from enum import Enum
 from tapo.responses.child_device_hub_result.hub_result import HubResult
 
 class T300Result(HubResult):
-    """T300 water sensor.
+    """Device info of Tapo T300 water sensor.
 
     Specific properties: `in_alarm`, `water_leak_status`, `report_interval`,
     `last_onboarding_timestamp`, `status_follow_edge`.

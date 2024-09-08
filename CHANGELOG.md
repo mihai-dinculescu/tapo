@@ -22,6 +22,10 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+### Added
+
+- Added full support for the T310 and T315 sensors though the `T31XHandler` handler.
+
 ### Changed
 
 - The comments of `start_timestamp` and `end_timestamp` fields in `EnergyDataResult` have been updated to better describe their purpose.

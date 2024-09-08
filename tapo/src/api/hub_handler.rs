@@ -300,13 +300,7 @@ impl HubHandler {
     /// # }
     /// ```
     pub async fn t315(&self, identifier: HubDevice) -> Result<T31XHandler, Error> {
-        let device_id = get_device_id!(
-            self,
-            identifier,
-            ChildDeviceHubResult::T310,
-            ChildDeviceHubResult::T315
-        );
-        Ok(T31XHandler::new(self.client.clone(), device_id))
+        self.t310(identifier).await
     }
 }
 

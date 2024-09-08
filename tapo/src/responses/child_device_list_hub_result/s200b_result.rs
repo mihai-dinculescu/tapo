@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt};
 
-/// S200B button switch.
+/// Device info of Tapo S200B button switch.
 ///
 /// Specific properties: `report_interval`, `last_onboarding_timestamp`, `status_follow_edge`.
 #[derive(Debug, Clone, Serialize, Deserialize)]

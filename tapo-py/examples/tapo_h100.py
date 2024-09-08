@@ -64,13 +64,21 @@ async def main():
                 )
             )
         elif isinstance(child, T31XResult):
+            t31x = await hub.t315(device_id=child.device_id)
+            temperature_humidity_records = await t31x.get_temperature_humidity_records()
+
             print(
-                "Found T31X child device with nickname: {}, id: {}, temperature: {:.2f} {}, humidity: {}%.".format(
+                "Found T31X child device with nickname: {}, id: {}, temperature: {:.2f} {}, humidity: {}%, earliest temperature and humidity record available: {}.".format(
                     child.nickname,
                     child.device_id,
                     child.current_temperature,
                     child.temperature_unit,
                     child.current_humidity,
+                    (
+                        temperature_humidity_records.records[0].to_dict()
+                        if temperature_humidity_records.records
+                        else None
+                    ),
                 )
             )
 

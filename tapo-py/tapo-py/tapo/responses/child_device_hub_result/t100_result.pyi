@@ -1,7 +1,7 @@
 from tapo.responses.child_device_hub_result.hub_result import HubResult
 
 class T100Result(HubResult):
-    """T100 motion sensor.
+    """Device info of Tapo T100 motion sensor.
 
     Specific properties: `detected`, `report_interval`,
     `last_onboarding_timestamp`, `status_follow_edge`.

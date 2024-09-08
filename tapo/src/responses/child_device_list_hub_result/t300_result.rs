@@ -14,7 +14,7 @@ pub enum WaterLeakStatus {
     WaterLeak,
 }
 
-/// T300 water sensor.
+/// Device info of Tapo T300 water sensor.
 ///
 /// Specific properties: `in_alarm`, `water_leak_status`, `report_interval`,
 /// `last_onboarding_timestamp`, `status_follow_edge`.

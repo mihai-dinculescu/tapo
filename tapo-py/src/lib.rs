@@ -9,7 +9,7 @@ use api_client::PyApiClient;
 use handlers::{
     PyColorLightHandler, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval,
     PyGenericDeviceHandler, PyHubHandler, PyLightHandler, PyPlugEnergyMonitoringHandler,
-    PyPlugHandler,
+    PyPlugHandler, PyT31XHandler,
 };
 use tapo::requests::Color;
 use tapo::responses::{
@@ -19,8 +19,9 @@ use tapo::responses::{
     DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
     KE100Result, OvercurrentStatus, OverheatStatus, PlugState, PowerProtectionStatus, S200BResult,
-    Status, T100Result, T110Result, T300Result, T31XResult, TemperatureUnit, TemperatureUnitKE100,
-    UsageByPeriodResult, WaterLeakStatus,
+    Status, T100Result, T110Result, T300Result, T31XResult, TemperatureHumidityRecord,
+    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, UsageByPeriodResult,
+    WaterLeakStatus,
 };
 
 #[pymodule]
@@ -29,10 +30,12 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PyApiClient>()?;
     module.add_class::<PyColorLightHandler>()?;
     module.add_class::<PyGenericDeviceHandler>()?;
-    module.add_class::<PyHubHandler>()?;
     module.add_class::<PyLightHandler>()?;
     module.add_class::<PyPlugEnergyMonitoringHandler>()?;
     module.add_class::<PyPlugHandler>()?;
+
+    module.add_class::<PyHubHandler>()?;
+    module.add_class::<PyT31XHandler>()?;
 
     let requests = PyModule::new_bound(py, "tapo.requests")?;
     let responses = PyModule::new_bound(py, "tapo.responses")?;
@@ -75,6 +78,8 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // responses: hub devices
     responses.add_class::<Status>()?;
+    responses.add_class::<TemperatureHumidityRecord>()?;
+    responses.add_class::<TemperatureHumidityRecords>()?;
     responses.add_class::<TemperatureUnit>()?;
     responses.add_class::<TemperatureUnitKE100>()?;
     responses.add_class::<WaterLeakStatus>()?;

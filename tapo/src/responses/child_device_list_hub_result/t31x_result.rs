@@ -15,7 +15,7 @@ pub enum TemperatureUnit {
     Fahrenheit,
 }
 
-/// T310/T315 temperature & humidity sensor.
+/// Device info of Tapo T310 and T315 temperature & humidity sensors.
 ///
 /// Specific properties: `current_temperature`, `temperature_unit`,
 /// `current_temperature_exception`, `current_humidity`, `current_humidity_exception`,
@@ -101,7 +101,8 @@ pub(crate) struct TemperatureHumidityRecordsRaw {
 impl TapoResponseExt for TemperatureHumidityRecordsRaw {}
 
 /// Temperature and Humidity record as an average over a 15 minute interval.
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
 pub struct TemperatureHumidityRecord {
     /// Record's DateTime in UTC.
@@ -118,14 +119,39 @@ pub struct TemperatureHumidityRecord {
     pub temperature: f32,
 }
 
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl TemperatureHumidityRecord {
+    /// Gets all the properties of this result as a dictionary.
+    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
+        let value = serde_json::to_value(self)
+            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
+
+        crate::python::serde_object_to_py_dict(py, &value)
+    }
+}
+
 /// Temperature and Humidity records for the last 24 hours at 15 minute intervals.
 #[derive(Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
 pub struct TemperatureHumidityRecords {
     /// The datetime in UTC of when this response was generated.
     pub datetime: DateTime<Utc>,
     pub records: Vec<TemperatureHumidityRecord>,
     pub temperature_unit: TemperatureUnit,
+}
+
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl TemperatureHumidityRecords {
+    /// Gets all the properties of this result as a dictionary.
+    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
+        let value = serde_json::to_value(self)
+            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
+
+        crate::python::serde_object_to_py_dict(py, &value)
+    }
 }
 
 impl TryFrom<TemperatureHumidityRecordsRaw> for TemperatureHumidityRecords {

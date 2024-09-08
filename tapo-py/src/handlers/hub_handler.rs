@@ -4,10 +4,12 @@ use std::sync::Arc;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use tapo::responses::{ChildDeviceHubResult, DeviceInfoHubResult};
-use tapo::HubHandler;
+use tapo::{Error, HubDevice, HubHandler};
 use tokio::sync::RwLock;
 
 use crate::call_handler_method;
+use crate::errors::ErrorWrapper;
+use crate::handlers::PyT31XHandler;
 
 #[derive(Clone)]
 #[pyclass(name = "HubHandler")]
@@ -109,5 +111,39 @@ impl PyHubHandler {
             HubHandler::get_child_device_component_list_json
         )?;
         Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
+    }
+
+    #[pyo3(signature = (device_id=None, nickname=None))]
+    pub async fn t310(
+        &self,
+        device_id: Option<String>,
+        nickname: Option<String>,
+    ) -> PyResult<PyT31XHandler> {
+        let handler = self.handler.clone();
+
+        let identifier = match (device_id, nickname) {
+            (Some(device_id), _) => HubDevice::ByDeviceId(device_id),
+            (None, Some(nickname)) => HubDevice::ByNickname(nickname),
+            _ => {
+                return Err(Into::<ErrorWrapper>::into(Error::Validation {
+                    field: "identifier".to_string(),
+                    message: "Either a device_id or nickname must be provided".to_string(),
+                })
+                .into());
+            }
+        };
+
+        let child_handler =
+            call_handler_method!(handler.read().await.deref(), HubHandler::t310, identifier)?;
+        Ok(PyT31XHandler::new(child_handler))
+    }
+
+    #[pyo3(signature = (device_id=None, nickname=None))]
+    pub async fn t315(
+        &self,
+        device_id: Option<String>,
+        nickname: Option<String>,
+    ) -> PyResult<PyT31XHandler> {
+        self.t310(device_id, nickname).await
     }
 }

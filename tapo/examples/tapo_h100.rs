@@ -98,7 +98,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let temperature_humidity_records = t31x.get_temperature_humidity_records().await?;
 
                 info!(
-                    "Found T31X child device with nickname: {}, id: {}, temperature: {} {:?}, humidity: {}%, 24-hour ago record: {:?}.",
+                    "Found T31X child device with nickname: {}, id: {}, temperature: {} {:?}, humidity: {}%, earliest temperature and humidity record available: {:?}.",
                     device.nickname,
                     device.device_id,
                     device.current_temperature,

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt};
 
-/// T110 contact sensor.
+/// Device info of Tapo T110 contact sensor.
 ///
 /// Specific properties: `open`, `report_interval`,
 /// `last_onboarding_timestamp`,`status_follow_edge`.

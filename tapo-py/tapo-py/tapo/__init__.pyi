@@ -7,3 +7,4 @@ from .plug_energy_monitoring_handler import *
 from .plug_handler import *
 from .requests import *
 from .responses import *
+from .t31x_handler import *
