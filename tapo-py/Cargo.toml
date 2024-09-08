@@ -22,6 +22,8 @@ pyo3 = { workspace = true, features = [
     "extension-module",
     "py-clone",
 ] }
+serde = { workspace = true }
+serde_json = { workspace = true }
 tokio = { workspace = true, default-features = false, features = [
     "rt-multi-thread",
     "sync",

@@ -9,7 +9,7 @@ use api_client::PyApiClient;
 use handlers::{
     PyColorLightHandler, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval,
     PyGenericDeviceHandler, PyHubHandler, PyLightHandler, PyPlugEnergyMonitoringHandler,
-    PyPlugHandler, PyT31XHandler,
+    PyPlugHandler, PyT110Handler, PyT31XHandler,
 };
 use tapo::requests::Color;
 use tapo::responses::{
@@ -35,6 +35,7 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PyPlugHandler>()?;
 
     module.add_class::<PyHubHandler>()?;
+    module.add_class::<PyT110Handler>()?;
     module.add_class::<PyT31XHandler>()?;
 
     let requests = PyModule::new_bound(py, "tapo.requests")?;

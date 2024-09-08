@@ -9,7 +9,7 @@ from tapo.responses import (
     T300Result,
     T31XResult,
 )
-from tapo.t31x_handler import T31XHandler
+from tapo import T110Handler, T31XHandler
 
 class HubHandler:
     """Handler for the [H100](https://www.tapo.com/en/search/?q=H100) hubs."""
@@ -72,11 +72,37 @@ class HubHandler:
             dict: Device info as a dictionary.
         """
 
+    async def t110(
+        self, device_id: Optional[str] = None, nickname: Optional[str] = None
+    ) -> T110Handler:
+        """Returns a `T110Handler` for the device matching the provided `device_id` or `nickname`.
+
+        Args:
+            device_id (Optional[str]): The Device ID of the device
+            nickname (Optional[str]): The Nickname of the device
+
+        Returns:
+            T110Handler: Handler for the [T110](https://www.tapo.com/en/search/?q=T110) devices.
+
+        Example:
+            ```python
+            # Connect to the hub
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            hub = await client.h100("192.168.1.100")
+
+            # Get a handler for the child device
+            device = await hub.t110(device_id="0000000000000000000000000000000000000000")
+
+            # Get the device info of the child device
+            device_info = await device.get_device_info()
+            print(f"Device info: {device_info.to_dict()}")
+            ```
+        """
+
     async def t310(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> T31XHandler:
-        """Returns a `T31XHandler` for the given `HubDevice`.
-
+        """Returns a `T31XHandler` for the device matching the provided `device_id` or `nickname`.
         Args:
             device_id (Optional[str]): The Device ID of the device
             nickname (Optional[str]): The Nickname of the device
@@ -103,8 +129,7 @@ class HubHandler:
     async def t315(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> T31XHandler:
-        """Returns a `T31XHandler` for the given `HubDevice`.
-
+        """Returns a `T31XHandler` for the device matching the provided `device_id` or `nickname`.
         Args:
             device_id (Optional[str]): The Device ID of the device
             nickname (Optional[str]): The Nickname of the device

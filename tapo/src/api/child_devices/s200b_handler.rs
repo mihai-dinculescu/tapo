@@ -46,7 +46,7 @@ impl S200BHandler {
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
-    /// Returns a list of trigger logs.
+    /// Returns a list of *trigger logs*.
     ///
     /// # Arguments
     ///

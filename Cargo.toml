@@ -7,4 +7,6 @@ members = ["tapo", "tapo-py"]
 anyhow = "1.0"
 chrono = { version = "0.4.34", default-features = false }
 pyo3 = { version = "0.22" }
+serde = { version = "1.0" }
+serde_json = { version = "1.0" }
 tokio = { version = "1.40", default-features = false }

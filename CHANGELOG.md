@@ -24,6 +24,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- Added full support for the T110 sensors though the `T110Handler` handler.
 - Added full support for the T310 and T315 sensors though the `T31XHandler` handler.
 
 ### Changed
