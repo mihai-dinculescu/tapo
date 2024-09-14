@@ -1,17 +1,17 @@
 from typing import List, Literal
-from tapo.responses import T110Result
+from tapo.responses import T300Result
 
-class T110Handler:
-    """Handler for the [T110](https://www.tapo.com/en/search/?q=T110) devices."""
+class T300Handler:
+    """Handler for the [T300](https://www.tapo.com/en/search/?q=T300) devices."""
 
-    async def get_device_info(self) -> T110Result:
-        """Returns *device info* as `T110Result`.
+    async def get_device_info(self) -> T300Result:
+        """Returns *device info* as `T300Result`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
         If the deserialization fails, or if a property that you care about it's not present,
-        try `T110Handler.get_device_info_json`.
+        try `T300Handler.get_device_info_json`.
 
         Returns:
-            T110Result: Device info of Tapo T110 contact sensor.
+            T300Result: Device info of Tapo T300 water sensor.
         """
 
     async def get_device_info_json(self) -> dict:
@@ -22,7 +22,7 @@ class T110Handler:
             dict: Device info as a dictionary.
         """
 
-    async def get_trigger_logs(self, page_size: int, start_id: int) -> TriggerLogsT110Result:
+    async def get_trigger_logs(self, page_size: int, start_id: int) -> TriggerLogsT300Result:
         """Returns a list of *trigger logs*.
 
         Args:
@@ -33,17 +33,17 @@ class T110Handler:
         Use a `start_id` of `0` to get the most recent X logs, where X is capped by `page_size`.
 
         Returns:
-            TriggerLogsT110Result: Trigger logs result.
+            TriggerLogsT300Result: Trigger logs result.
         """
 
-class TriggerLogsT110Result:
+class TriggerLogsT300Result:
     """Trigger logs result."""
 
     start_id: int
     """The `id` of the most recent log item that is returned."""
     sum: int
     """The total number of log items that the hub holds for this device."""
-    logs: List[T110Log]
+    logs: List[T300Log]
     """Log items in reverse chronological order (newest first)."""
 
     def to_dict(self) -> dict:
@@ -53,10 +53,10 @@ class TriggerLogsT110Result:
             dict: The result as a dictionary.
         """
 
-class T110Log:
-    """T110 Log."""
+class T300Log:
+    """T300 Log."""
 
-    event: Literal["close", "open", "keepOpen"]
+    event: Literal["waterDry", "waterLeak"]
     id: int
     timestamp: int
 

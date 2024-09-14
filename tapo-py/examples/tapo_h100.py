@@ -62,9 +62,16 @@ async def main():
                 )
             )
         elif isinstance(child, T300Result):
+            t300 = await hub.t300(device_id=child.device_id)
+            trigger_logs = await t300.get_trigger_logs(5, 0)
+
             print(
-                "Found T300 child device with nickname: {}, id: {}, in_alarm: {}, water_leak_status: {}.".format(
-                    child.nickname, child.device_id, child.in_alarm, child.water_leak_status
+                "Found T300 child device with nickname: {}, id: {}, in_alarm: {}, water_leak_status: {}, last 5 trigger logs: {}.".format(
+                    child.nickname,
+                    child.device_id,
+                    child.in_alarm,
+                    child.water_leak_status,
+                    [log.to_dict() for log in trigger_logs.logs],
                 )
             )
         elif isinstance(child, T31XResult):

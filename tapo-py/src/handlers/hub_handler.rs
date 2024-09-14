@@ -9,7 +9,7 @@ use tokio::sync::RwLock;
 
 use crate::call_handler_method;
 use crate::errors::ErrorWrapper;
-use crate::handlers::{PyT110Handler, PyT31XHandler};
+use crate::handlers::{PyT110Handler, PyT300Handler, PyT31XHandler};
 
 #[derive(Clone)]
 #[pyclass(name = "HubHandler")]
@@ -21,6 +21,21 @@ impl PyHubHandler {
     pub fn new(handler: HubHandler) -> Self {
         Self {
             handler: Arc::new(RwLock::new(handler)),
+        }
+    }
+
+    fn parse_identifier(
+        device_id: Option<String>,
+        nickname: Option<String>,
+    ) -> PyResult<HubDevice> {
+        match (device_id, nickname) {
+            (Some(device_id), _) => Ok(HubDevice::ByDeviceId(device_id)),
+            (None, Some(nickname)) => Ok(HubDevice::ByNickname(nickname)),
+            _ => Err(Into::<ErrorWrapper>::into(Error::Validation {
+                field: "identifier".to_string(),
+                message: "Either a device_id or nickname must be provided".to_string(),
+            })
+            .into()),
         }
     }
 }
@@ -120,22 +135,25 @@ impl PyHubHandler {
         nickname: Option<String>,
     ) -> PyResult<PyT110Handler> {
         let handler = self.handler.clone();
-
-        let identifier = match (device_id, nickname) {
-            (Some(device_id), _) => HubDevice::ByDeviceId(device_id),
-            (None, Some(nickname)) => HubDevice::ByNickname(nickname),
-            _ => {
-                return Err(Into::<ErrorWrapper>::into(Error::Validation {
-                    field: "identifier".to_string(),
-                    message: "Either a device_id or nickname must be provided".to_string(),
-                })
-                .into());
-            }
-        };
+        let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
 
         let child_handler =
             call_handler_method!(handler.read().await.deref(), HubHandler::t110, identifier)?;
         Ok(PyT110Handler::new(child_handler))
+    }
+
+    #[pyo3(signature = (device_id=None, nickname=None))]
+    pub async fn t300(
+        &self,
+        device_id: Option<String>,
+        nickname: Option<String>,
+    ) -> PyResult<PyT300Handler> {
+        let handler = self.handler.clone();
+        let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
+
+        let child_handler =
+            call_handler_method!(handler.read().await.deref(), HubHandler::t300, identifier)?;
+        Ok(PyT300Handler::new(child_handler))
     }
 
     #[pyo3(signature = (device_id=None, nickname=None))]
@@ -145,18 +163,7 @@ impl PyHubHandler {
         nickname: Option<String>,
     ) -> PyResult<PyT31XHandler> {
         let handler = self.handler.clone();
-
-        let identifier = match (device_id, nickname) {
-            (Some(device_id), _) => HubDevice::ByDeviceId(device_id),
-            (None, Some(nickname)) => HubDevice::ByNickname(nickname),
-            _ => {
-                return Err(Into::<ErrorWrapper>::into(Error::Validation {
-                    field: "identifier".to_string(),
-                    message: "Either a device_id or nickname must be provided".to_string(),
-                })
-                .into());
-            }
-        };
+        let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
 
         let child_handler =
             call_handler_method!(handler.read().await.deref(), HubHandler::t310, identifier)?;

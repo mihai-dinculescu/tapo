@@ -8,4 +8,5 @@ from .plug_handler import *
 from .requests import *
 from .responses import *
 from .t110_handler import *
+from .t300_handler import *
 from .t31x_handler import *

@@ -9,7 +9,8 @@ use api_client::PyApiClient;
 use handlers::{
     PyColorLightHandler, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval,
     PyGenericDeviceHandler, PyHubHandler, PyLightHandler, PyPlugEnergyMonitoringHandler,
-    PyPlugHandler, PyT110Handler, PyT31XHandler,
+    PyPlugHandler, PyT110Handler, PyT300Handler, PyT31XHandler, TriggerLogsT110Result,
+    TriggerLogsT300Result,
 };
 use tapo::requests::Color;
 use tapo::responses::{
@@ -19,9 +20,9 @@ use tapo::responses::{
     DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
     KE100Result, OvercurrentStatus, OverheatStatus, PlugState, PowerProtectionStatus, S200BResult,
-    Status, T100Result, T110Result, T300Result, T31XResult, TemperatureHumidityRecord,
-    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, UsageByPeriodResult,
-    WaterLeakStatus,
+    Status, T100Result, T110Log, T110Result, T300Log, T300Result, T31XResult,
+    TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100,
+    UsageByPeriodResult, WaterLeakStatus,
 };
 
 #[pymodule]
@@ -36,6 +37,7 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
 
     module.add_class::<PyHubHandler>()?;
     module.add_class::<PyT110Handler>()?;
+    module.add_class::<PyT300Handler>()?;
     module.add_class::<PyT31XHandler>()?;
 
     let requests = PyModule::new_bound(py, "tapo.requests")?;
@@ -79,10 +81,14 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // responses: hub devices
     responses.add_class::<Status>()?;
+    responses.add_class::<T110Log>()?;
+    responses.add_class::<T300Log>()?;
     responses.add_class::<TemperatureHumidityRecord>()?;
     responses.add_class::<TemperatureHumidityRecords>()?;
     responses.add_class::<TemperatureUnit>()?;
     responses.add_class::<TemperatureUnitKE100>()?;
+    responses.add_class::<TriggerLogsT110Result>()?;
+    responses.add_class::<TriggerLogsT300Result>()?;
     responses.add_class::<WaterLeakStatus>()?;
 
     // responses: light
