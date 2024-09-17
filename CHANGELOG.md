@@ -16,6 +16,10 @@ file. This change log follows the conventions of
 - The child device handlers for the H100 hub and the P300 power strip have been redesigned to eliminate the use of lifetimes, to facilitate FFI integrations.
 - The comments of `start_timestamp` and `end_timestamp` fields in `EnergyDataResult` have been updated to better describe their purpose.
 
+### Fixed
+
+- Fixed an issue with the `Color` presets that triggered a validation error when attempting to set the `color` to `DarkRed`.
+
 ### Removed
 
 - The deprecated `past24h`, `past7d`, `past30d` and `past1y` fields have been removed from `EnergyUsageResult`. This data is now available exclusively through `get_energy_data`'s `EnergyDataResult` response.
@@ -32,6 +36,10 @@ file. This change log follows the conventions of
 ### Changed
 
 - The comments of `start_timestamp` and `end_timestamp` fields in `EnergyDataResult` have been updated to better describe their purpose.
+
+### Fixed
+
+- Fixed an issue with the `Color` presets that triggered a validation error when attempting to set the `color` to `DarkRed`.
 
 ## [Rust v0.7.14][v0.7.14] - 2024-08-31
 

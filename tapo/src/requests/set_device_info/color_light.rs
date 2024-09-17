@@ -72,7 +72,7 @@ impl ColorLightSetDeviceInfoParams {
     pub fn hue_saturation(mut self, hue: u16, saturation: u8) -> Self {
         self.hue = Some(hue);
         self.saturation = Some(saturation);
-        self.color_temperature = Some(0);
+        self.color_temperature = None;
 
         self
     }
@@ -145,6 +145,15 @@ impl ColorLightSetDeviceInfoParams {
             }
         }
 
+        if (self.saturation.is_some() && self.hue.is_none())
+            || (self.hue.is_some() && self.saturation.is_none())
+        {
+            return Err(Error::Validation {
+                field: "hue_saturation".to_string(),
+                message: "hue and saturation must either be both set or unset".to_string(),
+            });
+        }
+
         if let Some(color_temperature) = self.color_temperature {
             if self.hue.unwrap_or_default() == 0
                 && self.saturation.unwrap_or(100) == 100
@@ -197,7 +206,7 @@ mod tests {
 
         assert_eq!(params.hue, Some(50));
         assert_eq!(params.saturation, Some(50));
-        assert_eq!(params.color_temperature, Some(0));
+        assert_eq!(params.color_temperature, None);
 
         assert!(params.send(&MockHandler).await.is_ok())
     }
