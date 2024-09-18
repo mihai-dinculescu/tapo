@@ -9,7 +9,7 @@ from tapo.responses import (
     T300Result,
     T31XResult,
 )
-from tapo import T100Handler, T110Handler, T300Handler, T31XHandler
+from tapo import S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler
 
 class HubHandler:
     """Handler for the [H100](https://www.tapo.com/en/search/?q=H100) hubs."""
@@ -70,6 +70,33 @@ class HubHandler:
 
         Returns:
             dict: Device info as a dictionary.
+        """
+
+    async def s200b(
+        self, device_id: Optional[str] = None, nickname: Optional[str] = None
+    ) -> S200BHandler:
+        """Returns a `S200BHandler` for the device matching the provided `device_id` or `nickname`.
+
+        Args:
+            device_id (Optional[str]): The Device ID of the device
+            nickname (Optional[str]): The Nickname of the device
+
+        Returns:
+            S200BHandler: Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) devices.
+
+        Example:
+            ```python
+            # Connect to the hub
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            hub = await client.h100("192.168.1.100")
+
+            # Get a handler for the child device
+            device = await hub.s200b(device_id="0000000000000000000000000000000000000000")
+
+            # Get the device info of the child device
+            device_info = await device.get_device_info()
+            print(f"Device info: {device_info.to_dict()}")
+            ```
         """
 
     async def t100(

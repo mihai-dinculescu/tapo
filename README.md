@@ -59,7 +59,7 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 | get_device_info \*               |    &#x2705;     |    &#x2705;     |    &#x2705;    |    &#x2705;    |    &#x2705;    |   &#x2705;    |
 | get_device_info_json             |    &#x2705;     |    &#x2705;     |    &#x2705;    |    &#x2705;    |    &#x2705;    |   &#x2705;    |
 | get_temperature_humidity_records |                 |                 |                |                |                |   &#x2705;    |
-| get_trigger_logs                 |                 |     &check;     |    &#x2705;    |    &#x2705;    |    &#x2705;    |               |
+| get_trigger_logs                 |                 |    &#x2705;     |    &#x2705;    |    &#x2705;    |    &#x2705;    |               |
 | set_child_protection             |     &check;     |                 |                |                |                |               |
 | set_frost_protection             |     &check;     |                 |                |                |                |               |
 | set_max_control_temperature      |     &check;     |                 |                |                |                |               |

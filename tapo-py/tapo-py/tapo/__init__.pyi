@@ -7,6 +7,7 @@ from .plug_energy_monitoring_handler import *
 from .plug_handler import *
 from .requests import *
 from .responses import *
+from .s200b_handler import *
 from .t100_handler import *
 from .t110_handler import *
 from .t300_handler import *

@@ -9,7 +9,7 @@ use tokio::sync::RwLock;
 
 use crate::call_handler_method;
 use crate::errors::ErrorWrapper;
-use crate::handlers::{PyT100Handler, PyT110Handler, PyT300Handler, PyT31XHandler};
+use crate::handlers::{PyS200BHandler, PyT100Handler, PyT110Handler, PyT300Handler, PyT31XHandler};
 
 #[derive(Clone)]
 #[pyclass(name = "HubHandler")]
@@ -126,6 +126,20 @@ impl PyHubHandler {
             HubHandler::get_child_device_component_list_json
         )?;
         Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
+    }
+
+    #[pyo3(signature = (device_id=None, nickname=None))]
+    pub async fn s200b(
+        &self,
+        device_id: Option<String>,
+        nickname: Option<String>,
+    ) -> PyResult<PyS200BHandler> {
+        let handler = self.handler.clone();
+        let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
+
+        let child_handler =
+            call_handler_method!(handler.read().await.deref(), HubHandler::s200b, identifier)?;
+        Ok(PyS200BHandler::new(child_handler))
     }
 
     #[pyo3(signature = (device_id=None, nickname=None))]

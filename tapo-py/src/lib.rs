@@ -9,8 +9,8 @@ use api_client::PyApiClient;
 use handlers::{
     PyColorLightHandler, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval,
     PyGenericDeviceHandler, PyHubHandler, PyLightHandler, PyPlugEnergyMonitoringHandler,
-    PyPlugHandler, PyT110Handler, PyT300Handler, PyT31XHandler, TriggerLogsT100Result,
-    TriggerLogsT110Result, TriggerLogsT300Result,
+    PyPlugHandler, PyT100Handler, PyT110Handler, PyT300Handler, PyT31XHandler,
+    TriggerLogsS200BResult, TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
 };
 use tapo::requests::Color;
 use tapo::responses::{
@@ -19,10 +19,10 @@ use tapo::responses::{
     DeviceInfoColorLightResult, DeviceInfoGenericResult, DeviceInfoHubResult,
     DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
-    KE100Result, OvercurrentStatus, OverheatStatus, PlugState, PowerProtectionStatus, S200BResult,
-    Status, T100Log, T100Result, T110Log, T110Result, T300Log, T300Result, T31XResult,
-    TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100,
-    UsageByPeriodResult, WaterLeakStatus,
+    KE100Result, OvercurrentStatus, OverheatStatus, PlugState, PowerProtectionStatus, S200BLog,
+    S200BResult, S200BRotationParams, Status, T100Log, T100Result, T110Log, T110Result, T300Log,
+    T300Result, T31XResult, TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit,
+    TemperatureUnitKE100, UsageByPeriodResult, WaterLeakStatus,
 };
 
 #[pymodule]
@@ -36,6 +36,7 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PyPlugHandler>()?;
 
     module.add_class::<PyHubHandler>()?;
+    module.add_class::<PyT100Handler>()?;
     module.add_class::<PyT110Handler>()?;
     module.add_class::<PyT300Handler>()?;
     module.add_class::<PyT31XHandler>()?;
@@ -80,6 +81,8 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     responses.add_class::<T31XResult>()?;
 
     // responses: hub devices
+    responses.add_class::<S200BLog>()?;
+    responses.add_class::<S200BRotationParams>()?;
     responses.add_class::<Status>()?;
     responses.add_class::<T100Log>()?;
     responses.add_class::<T110Log>()?;
@@ -88,6 +91,7 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     responses.add_class::<TemperatureHumidityRecords>()?;
     responses.add_class::<TemperatureUnit>()?;
     responses.add_class::<TemperatureUnitKE100>()?;
+    responses.add_class::<TriggerLogsS200BResult>()?;
     responses.add_class::<TriggerLogsT100Result>()?;
     responses.add_class::<TriggerLogsT110Result>()?;
     responses.add_class::<TriggerLogsT300Result>()?;
