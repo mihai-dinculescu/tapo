@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.7.15][v0.7.15] - 2024-09-18
+
 ### Added
 
 - The `LowBattery` variant has been added to the `S200BLog` enum.
@@ -25,7 +29,7 @@ file. This change log follows the conventions of
 
 - The deprecated `past24h`, `past7d`, `past30d` and `past1y` fields have been removed from `EnergyUsageResult`. This data is now available exclusively through `get_energy_data`'s `EnergyDataResult` response.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.5.0][py-v0.5.0] - 2024-09-18
 
 ### Added
 
@@ -435,6 +439,8 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.15]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.15
+[py-v0.5.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.5.0
 [v0.7.14]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.14
 [py-v0.4.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.4.0
 [v0.7.13]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.13
