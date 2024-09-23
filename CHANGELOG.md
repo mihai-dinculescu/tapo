@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Fixed
+
+- Fixed an issue that was preventing the color from being set properly to the L535 light bulbs.
+
 ## [Python Unreleased][Unreleased]
+
+### Fixed
+
+- Fixed an issue that was preventing the color from being set properly to the L535 light bulbs.
 
 ## [Rust v0.7.15][v0.7.15] - 2024-09-18
 
@@ -33,11 +41,11 @@ file. This change log follows the conventions of
 
 ### Added
 
-- Added full support for the S200B switches though the `S200BHandler` handler.
-- Added full support for the T100 sensors though the `T100Handler` handler.
-- Added full support for the T110 sensors though the `T110Handler` handler.
-- Added full support for the T300 sensors though the `T300Handler` handler.
-- Added full support for the T310 and T315 sensors though the `T31XHandler` handler.
+- Added full support for the S200B switches through the `S200BHandler` handler.
+- Added full support for the T100 sensors through the `T100Handler` handler.
+- Added full support for the T110 sensors through the `T110Handler` handler.
+- Added full support for the T300 sensors through the `T300Handler` handler.
+- Added full support for the T310 and T315 sensors through the `T31XHandler` handler.
 
 ### Changed
 

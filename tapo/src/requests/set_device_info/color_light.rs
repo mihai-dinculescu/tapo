@@ -1,3 +1,5 @@
+use std::ops::RangeInclusive;
+
 use serde::Serialize;
 
 use crate::error::Error;
@@ -72,7 +74,7 @@ impl ColorLightSetDeviceInfoParams {
     pub fn hue_saturation(mut self, hue: u16, saturation: u8) -> Self {
         self.hue = Some(hue);
         self.saturation = Some(saturation);
-        self.color_temperature = None;
+        self.color_temperature = Some(0);
 
         self
     }
@@ -154,10 +156,11 @@ impl ColorLightSetDeviceInfoParams {
             });
         }
 
+        const COLOR_TEMPERATURE_RANGE: RangeInclusive<u16> = 2500..=6500;
         if let Some(color_temperature) = self.color_temperature {
-            if self.hue.unwrap_or_default() == 0
-                && self.saturation.unwrap_or(100) == 100
-                && !(2500..=6500).contains(&color_temperature)
+            if self.hue.is_none()
+                && self.saturation.is_none()
+                && !COLOR_TEMPERATURE_RANGE.contains(&color_temperature)
             {
                 return Err(Error::Validation {
                     field: "color_temperature".to_string(),
@@ -206,7 +209,7 @@ mod tests {
 
         assert_eq!(params.hue, Some(50));
         assert_eq!(params.saturation, Some(50));
-        assert_eq!(params.color_temperature, None);
+        assert_eq!(params.color_temperature, Some(0));
 
         assert!(params.send(&MockHandler).await.is_ok())
     }
@@ -280,19 +283,33 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn color_temperature_validation() {
+    async fn color_temperature_validation_low() {
         let params: ColorLightSetDeviceInfoParams = ColorLightSetDeviceInfoParams::new();
         let result = params.color_temperature(2499).send(&MockHandler).await;
         assert!(matches!(
             result.err(),
             Some(Error::Validation { field, message }) if field == "color_temperature" && message == "must be between 2500 and 6500"
         ));
+    }
 
+    #[tokio::test]
+    async fn color_temperature_validation_high() {
         let params = ColorLightSetDeviceInfoParams::new();
         let result = params.color_temperature(6501).send(&MockHandler).await;
         assert!(matches!(
             result.err(),
             Some(Error::Validation { field, message }) if field == "color_temperature" && message == "must be between 2500 and 6500"
         ));
+    }
+
+    #[tokio::test]
+    async fn color_temperature_validation_default_hue_saturation() {
+        let params: ColorLightSetDeviceInfoParams = ColorLightSetDeviceInfoParams::new();
+        let result = params
+            .color_temperature(2500)
+            .hue_saturation(0, 100)
+            .send(&MockHandler)
+            .await;
+        assert!(result.is_ok());
     }
 }
