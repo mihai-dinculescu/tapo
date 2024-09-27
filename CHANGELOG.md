@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.7.16][v0.7.16] - 2024-09-27
+
 ### Added
 
 - Added support for the L535 light bulbs.
@@ -14,7 +18,7 @@ file. This change log follows the conventions of
 
 - Fixed an issue that was preventing the color from being set properly to the L535 light bulbs.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.5.1][py-v0.5.1] - 2024-09-27
 
 ### Added
 
@@ -455,6 +459,8 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.16]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.16
+[py-v0.5.1]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.5.1
 [v0.7.15]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.15
 [py-v0.5.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.5.0
 [v0.7.14]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.14
