@@ -5,7 +5,7 @@ from tapo.responses import HubResult, TemperatureUnit
 from tapo.responses import TemperatureUnit
 
 class T31XResult(HubResult):
-    """Device info of Tapo T310 and T315 temperature & humidity sensors.
+    """Device info of Tapo T310 and T315 temperature and humidity sensors.
 
     Specific properties: `current_temperature`, `temperature_unit`,
     `current_temperature_exception`, `current_humidity`, `current_humidity_exception`,

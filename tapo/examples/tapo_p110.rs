@@ -1,4 +1,4 @@
-/// P110 & P115 Example
+/// P110 and P115 Example
 use std::{env, thread, time::Duration};
 
 use chrono::{DateTime, Datelike, NaiveDate, Utc};

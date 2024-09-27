@@ -1,6 +1,6 @@
 """Tapo API Client.
 
-Tested with light bulbs (L510, L520, L530, L610, L630), plugs (P100, P105, P110, P115),
+Tested with light bulbs (L510, L520, L530, L535, L610, L630), plugs (P100, P105, P110, P115),
 hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
 
 Example:
@@ -32,7 +32,7 @@ from .plug_handler import PlugHandler
 class ApiClient:
     """Tapo API Client.
 
-    Tested with light bulbs (L510, L520, L530, L610, L630), plugs (P100, P105, P110, P115),
+    Tested with light bulbs (L510, L520, L530, L535, L610, L630), plugs (P100, P105, P110, P115),
     hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
 
     Example:
@@ -146,12 +146,30 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            ColorLightHandler: Handler for the [L530](https://www.tapo.com/en/search/?q=L530), [L630](https://www.tapo.com/en/search/?q=L630) and [L900](https://www.tapo.com/en/search/?q=L900) devices.
+            ColorLightHandler: Handler for the [L530](https://www.tapo.com/en/search/?q=L530), [L535](https://www.tapo.com/en/search/?q=L535) and [L630](https://www.tapo.com/en/search/?q=L630) devices.
 
         Example:
             ```python
             client = ApiClient("tapo-username@example.com", "tapo-password")
             device = await client.l530("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
+    async def l535(self, ip_address: str) -> ColorLightHandler:
+        """Specializes the given `ApiClient` into an authenticated `ColorLightHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            ColorLightHandler: Handler for the [L530](https://www.tapo.com/en/search/?q=L530), [L535](https://www.tapo.com/en/search/?q=L535) and [L630](https://www.tapo.com/en/search/?q=L630) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.l535("192.168.1.100")
 
             await device.on()
             ```
@@ -200,7 +218,7 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100) & [P105](https://www.tapo.com/en/search/?q=P105) devices.
+            PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and [P105](https://www.tapo.com/en/search/?q=P105) devices.
 
         Example:
             ```python
@@ -218,7 +236,7 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100) & [P105](https://www.tapo.com/en/search/?q=P105) devices.
+            PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and [P105](https://www.tapo.com/en/search/?q=P105) devices.
 
         Example:
             ```python
@@ -236,7 +254,7 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            PlugEnergyMonitoringHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110) & [P115](https://www.tapo.com/en/search/?q=P115) devices.
+            PlugEnergyMonitoringHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110) and [P115](https://www.tapo.com/en/search/?q=P115) devices.
 
         Example:
             ```python
@@ -254,7 +272,7 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            PlugEnergyMonitoringHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110) & [P115](https://www.tapo.com/en/search/?q=P115) devices.
+            PlugEnergyMonitoringHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110) and [P115](https://www.tapo.com/en/search/?q=P115) devices.
 
         Example:
             ```python

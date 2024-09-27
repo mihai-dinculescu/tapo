@@ -59,6 +59,12 @@ impl PyApiClient {
         Ok(PyColorLightHandler::new(handler))
     }
 
+    pub async fn l535(&self, ip_address: String) -> PyResult<PyColorLightHandler> {
+        let handler: ColorLightHandler =
+            call_handler_constructor!(self, tapo::ApiClient::l535, ip_address);
+        Ok(PyColorLightHandler::new(handler))
+    }
+
     pub async fn l610(&self, ip_address: String) -> PyResult<PyLightHandler> {
         let handler: LightHandler =
             call_handler_constructor!(self, tapo::ApiClient::l610, ip_address);

@@ -1,4 +1,4 @@
-/// P100 & P105 Example
+/// P100 and P105 Example
 use std::{env, thread, time::Duration};
 
 use log::{info, LevelFilter};

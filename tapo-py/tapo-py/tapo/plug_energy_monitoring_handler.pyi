@@ -10,7 +10,9 @@ from tapo.responses import (
 )
 
 class PlugEnergyMonitoringHandler:
-    """Handler for the [P110](https://www.tapo.com/en/search/?q=P110) & [P115](https://www.tapo.com/en/search/?q=P115) devices."""
+    """Handler for the [P110](https://www.tapo.com/en/search/?q=P110) and
+    [P115](https://www.tapo.com/en/search/?q=P115) devices.
+    """
 
     def __init__(self, handler: object):
         """Private constructor.

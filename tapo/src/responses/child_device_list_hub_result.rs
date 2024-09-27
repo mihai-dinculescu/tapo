@@ -63,9 +63,9 @@ pub enum ChildDeviceHubResult {
     T110(Box<T110Result>),
     /// T300 water sensor.
     T300(Box<T300Result>),
-    /// T310 temperature & humidity sensor.
+    /// T310 temperature and humidity sensor.
     T310(Box<T31XResult>),
-    /// T315 temperature & humidity sensor.
+    /// T315 temperature and humidity sensor.
     T315(Box<T31XResult>),
     /// Catch-all for currently unsupported devices.
     /// Please open an issue if you need support for a new device.

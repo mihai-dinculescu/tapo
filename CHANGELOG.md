@@ -6,11 +6,19 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- Added support for the L535 light bulbs.
+
 ### Fixed
 
 - Fixed an issue that was preventing the color from being set properly to the L535 light bulbs.
 
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- Added support for the L535 light bulbs.
 
 ### Fixed
 

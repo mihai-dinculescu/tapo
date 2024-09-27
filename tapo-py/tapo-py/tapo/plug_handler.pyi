@@ -1,7 +1,9 @@
 from tapo.responses import DeviceInfoPlugResult, DeviceUsageResult
 
 class PlugHandler:
-    """Handler for the [P100](https://www.tapo.com/en/search/?q=P100) & [P105](https://www.tapo.com/en/search/?q=P105) devices."""
+    """Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
+    [P105](https://www.tapo.com/en/search/?q=P105) devices.
+    """
 
     def __init__(self, handler: object):
         """Private constructor.

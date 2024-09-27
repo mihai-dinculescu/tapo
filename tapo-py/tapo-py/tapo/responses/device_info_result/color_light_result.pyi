@@ -3,7 +3,7 @@ from typing import Optional
 from tapo.responses.device_info_result.default_state import DefaultStateType
 
 class DeviceInfoColorLightResult:
-    """Device info of Tapo L530, L630 and L900. Superset of `GenericDeviceInfoResult`."""
+    """Device info of Tapo L530, L535 and L630. Superset of `GenericDeviceInfoResult`."""
 
     device_id: str
     type: str
