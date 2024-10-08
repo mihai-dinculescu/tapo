@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- Added support for the P304 power strip.
+
 ## [Python Unreleased][Unreleased]
 
 ## [Rust v0.7.16][v0.7.16] - 2024-09-27
@@ -16,7 +20,7 @@ file. This change log follows the conventions of
 
 ### Fixed
 
-- Fixed an issue that was preventing the color from being set properly to the L535 light bulbs.
+- Fixed an issue that prevented the color from being set properly for the L535 light bulbs.
 
 ## [Python v0.5.1][py-v0.5.1] - 2024-09-27
 
@@ -26,7 +30,7 @@ file. This change log follows the conventions of
 
 ### Fixed
 
-- Fixed an issue that was preventing the color from being set properly to the L535 light bulbs.
+- Fixed an issue that prevented the color from being set properly for the L535 light bulbs.
 
 ## [Rust v0.7.15][v0.7.15] - 2024-09-18
 

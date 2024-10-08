@@ -9,7 +9,8 @@ use crate::responses::{
     ChildDeviceListPowerStripResult, DeviceInfoPowerStripResult, PlugPowerStripResult,
 };
 
-/// Handler for the [P300](https://www.tapo.com/en/search/?q=P300) devices.
+/// Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
+/// [P304](https://www.tp-link.com/uk/search/?q=P304) devices.
 pub struct PowerStripHandler {
     client: Arc<RwLock<ApiClient>>,
 }
