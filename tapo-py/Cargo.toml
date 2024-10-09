@@ -11,7 +11,7 @@ doc = false
 
 [features]
 default = []
-openssl-vendored = ["tapo/openssl-vendored"]
+#openssl-vendored = ["tapo/openssl-vendored"]
 
 [dependencies]
 anyhow = { workspace = true }
