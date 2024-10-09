@@ -1,7 +1,11 @@
+use aes::Aes128;
+use cbc::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit};
+use sha2::Digest;
 use std::sync::atomic::{AtomicI32, Ordering};
 
-use openssl::sha::{Sha1, Sha256};
-use openssl::symm::{decrypt, encrypt, Cipher};
+// Create AES-128 CBC type
+type Aes128CbcEnc = cbc::Encryptor<Aes128>;
+type Aes128CbcDec = cbc::Decryptor<Aes128>;
 
 #[derive(Debug)]
 pub(super) struct KlapCipher {
@@ -31,39 +35,52 @@ impl KlapCipher {
 
     pub fn encrypt(&self, data: String) -> anyhow::Result<(Vec<u8>, i32)> {
         let seq = self.seq.fetch_add(1, Ordering::Relaxed) + 1;
+        let iv_seq = self.iv_seq(seq);
 
-        let cipher_bytes = encrypt(
-            Cipher::aes_128_cbc(),
-            &self.key,
-            Some(&self.iv_seq(seq)),
-            data.as_bytes(),
-        )?;
+        // Create CBC encryptor with the key and IV
+        let cipher = Aes128CbcEnc::new_from_slices(&self.key, &iv_seq)
+            .map_err(|e| anyhow::anyhow!("Encryption error: {:?}", e))?;
 
-        let signature = Self::sha256(
-            &[
-                self.sig.as_slice(),
-                &seq.to_be_bytes(),
-                cipher_bytes.as_slice(),
-            ]
-            .concat(),
-        );
+        let mut buffer = data.into_bytes();
+        let data_len = buffer.len(); // Get the original length before padding
 
-        let result = [&signature, cipher_bytes.as_slice()].concat();
+        // Add padding if necessary
+        let pad_len = 16 - (buffer.len() % 16);
+        buffer.extend(vec![pad_len as u8; pad_len]);
 
+        // Encrypt the buffer, passing the original data length
+        let encrypted = cipher
+            .encrypt_padded_mut::<aes::cipher::block_padding::Pkcs7>(&mut buffer, data_len)
+            .map_err(|e| anyhow::anyhow!("Encryption error: {:?}", e))?;
+
+        let signature =
+            Self::sha256(&[self.sig.as_slice(), &seq.to_be_bytes(), encrypted].concat());
+
+        let result = [&signature, encrypted].concat();
         Ok((result, seq))
     }
 
     pub fn decrypt(&self, seq: i32, cipher_bytes: Vec<u8>) -> anyhow::Result<String> {
-        let decrypted_bytes = decrypt(
-            Cipher::aes_128_cbc(),
-            &self.key,
-            Some(&self.iv_seq(seq)),
-            &cipher_bytes[32..],
-        )?;
-        let decrypted = std::str::from_utf8(&decrypted_bytes)?.to_string();
+        let iv_seq = self.iv_seq(seq);
 
-        Ok(decrypted)
+        // Create CBC decryptor with the key and IV
+        let cipher = Aes128CbcDec::new_from_slices(&self.key, &iv_seq)
+            .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?;
+
+        let mut buffer = cipher_bytes[32..].to_vec(); // Skip the first 32 bytes (signature)
+
+        let decrypted = cipher
+            .decrypt_padded_mut::<aes::cipher::block_padding::Pkcs7>(&mut buffer)
+            .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?;
+
+        let decrypted_str = std::str::from_utf8(decrypted)
+            .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?
+            .to_string();
+
+        Ok(decrypted_str)
     }
+
+    // Derivation methods like iv_derive, key_derive, sig_derive, sha256, etc. would remain unchanged
 }
 
 impl KlapCipher {
@@ -99,14 +116,14 @@ impl KlapCipher {
 
 impl KlapCipher {
     pub fn sha256(value: &[u8]) -> [u8; 32] {
-        let mut hasher = Sha256::new();
+        let mut hasher = sha2::Sha256::new();
         hasher.update(value);
-        hasher.finish()
+        hasher.finalize().into()
     }
 
     pub fn sha1(value: &[u8]) -> [u8; 20] {
-        let mut hasher = Sha1::new();
+        let mut hasher = sha1::Sha1::new();
         hasher.update(value);
-        hasher.finish()
+        hasher.finalize().into()
     }
 }
