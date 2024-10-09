@@ -1,36 +1,33 @@
 use base64::{engine::general_purpose, Engine as _};
 use log::debug;
-//use openssl::symm::{decrypt, encrypt, Cipher};
-//use openssl::{pkey, rsa, sha::Sha1};
-
 use sha1::Digest;
+
+use aes::Aes128;
+use cbc::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit};
+use rsa::{pkcs1::EncodeRsaPublicKey, RsaPrivateKey, pkcs1v15::Pkcs1v15Encrypt};
+use rand::rngs::OsRng;
+use std::str;
+
+type Aes128CbcEnc = cbc::Encryptor<Aes128>;
+type Aes128CbcDec = cbc::Decryptor<Aes128>;
 
 #[derive(Debug, Clone)]
 pub(crate) struct PassthroughKeyPair {
-    //FIXME
-    //rsa: rsa::Rsa<pkey::Private>,
+    rsa: RsaPrivateKey,
 }
 
 impl PassthroughKeyPair {
     pub fn new() -> anyhow::Result<Self> {
-        Ok(Self{})
-        /*
         debug!("Generating RSA key pair...");
-        let rsa = rsa::Rsa::generate(1024)?;
+        let mut rng = OsRng;
+        let rsa = RsaPrivateKey::new(&mut rng, 1024)?;
 
         Ok(Self { rsa })
-        */
     }
 
     pub fn get_public_key(&self) -> anyhow::Result<String> {
-        let public_key = "".to_string();
-        //FIXME
-        /*
-        let public_key_pem = self.rsa.public_key_to_pem()?;
-        let public_key = std::str::from_utf8(&public_key_pem)?.to_string();
-        */
-
-        Ok(public_key)
+        let public_key_pem = self.rsa.to_public_key().to_pkcs1_pem(rsa::pkcs8::LineEnding::CR)?;
+        Ok(public_key_pem)
     }
 }
 
@@ -42,56 +39,62 @@ pub(crate) struct PassthroughCipher {
 
 impl PassthroughCipher {
     pub fn new(key: &str, key_pair: &PassthroughKeyPair) -> anyhow::Result<Self> {
-        let buf = Vec::<u8>::new();
-        //FIXME
-        /*
         debug!("Will decode handshake key {:?}...", &key[..5]);
 
         let key_bytes = general_purpose::STANDARD.decode(key)?;
-        let mut buf = vec![0; key_pair.rsa.size() as usize];
 
-        let decrypt_count =
-            key_pair
-                .rsa
-                .private_decrypt(&key_bytes, &mut buf, rsa::Padding::PKCS1)?;
+        let padding = Pkcs1v15Encrypt;
+        let decrypt = key_pair
+            .rsa
+            .decrypt(padding, &key_bytes)?;
 
-        if decrypt_count != 32 {
-            return Err(anyhow::anyhow!("Expected 32 bytes, got {decrypt_count}"));
+        if decrypt.len() != 32 {
+            return Err(anyhow::anyhow!("Expected 32 bytes, got {}", decrypt.len()));
         }
-        */
+
         Ok(PassthroughCipher {
-            key: buf[0..16].to_vec(),
-            iv: buf[16..32].to_vec(),
+            key: decrypt[0..16].to_vec(),
+            iv: decrypt[16..32].to_vec(),
         })
     }
 
     pub fn encrypt(&self, data: &str) -> anyhow::Result<String> {
-        let cipher_base64 = "".to_string();
-        /*
-        let cipher_bytes = encrypt(
-            Cipher::aes_128_cbc(),
-            &self.key,
-            Some(&self.iv),
-            data.as_bytes(),
-        )?;
-        let cipher_base64 = general_purpose::STANDARD.encode(cipher_bytes);
-        */
+        let mut buffer = data.as_bytes().to_vec();
+        let data_len = buffer.len();
+
+        // Add padding if necessary
+        let pad_len = 16 - (data_len % 16);
+        buffer.extend(vec![pad_len as u8; pad_len]);
+
+        // Create AES CBC encryptor
+        let cipher = Aes128CbcEnc::new_from_slices(&self.key, &self.iv)
+            .map_err(|e| anyhow::anyhow!("Encryption error: {:?}", e))?;
+
+        let encrypted = cipher
+            .encrypt_padded_mut::<aes::cipher::block_padding::Pkcs7>(&mut buffer, data_len)
+            .map_err(|e| anyhow::anyhow!("Encryption error: {:?}", e))?;
+
+        let cipher_base64 = general_purpose::STANDARD.encode(encrypted);
         Ok(cipher_base64)
     }
 
     pub fn decrypt(&self, cipher_base64: &str) -> anyhow::Result<String> {
-        let decrypted = "".to_string();
-        /*
         let cipher_bytes = general_purpose::STANDARD.decode(cipher_base64)?;
-        let decrypted_bytes = decrypt(
-            Cipher::aes_128_cbc(),
-            &self.key,
-            Some(&self.iv),
-            &cipher_bytes,
-        )?;
-        let decrypted = std::str::from_utf8(&decrypted_bytes)?.to_string();
-        */
-        Ok(decrypted)
+
+        // Create AES CBC decryptor
+        let cipher = Aes128CbcDec::new_from_slices(&self.key, &self.iv)
+            .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?;
+
+        let mut buffer = cipher_bytes.to_vec();
+        let decrypted = cipher
+            .decrypt_padded_mut::<aes::cipher::block_padding::Pkcs7>(&mut buffer)
+            .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?;
+
+        let decrypted_str = str::from_utf8(decrypted)
+            .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?
+            .to_string();
+
+        Ok(decrypted_str)
     }
 }
 
