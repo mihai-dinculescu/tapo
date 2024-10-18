@@ -1,6 +1,8 @@
+use aes::cipher::{block_padding, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
+use aes::Aes128;
 use base64::{engine::general_purpose, Engine as _};
+use cbc::{Decryptor, Encryptor};
 use log::debug;
-use openssl::symm::{decrypt, encrypt, Cipher};
 use rsa::pkcs8::{EncodePublicKey, LineEnding};
 use rsa::rand_core::CryptoRngCore;
 use rsa::{Pkcs1v15Encrypt, RsaPrivateKey};
@@ -54,25 +56,23 @@ impl PassthroughCipher {
     }
 
     pub fn encrypt(&self, data: &str) -> anyhow::Result<String> {
-        let cipher_bytes = encrypt(
-            Cipher::aes_128_cbc(),
-            &self.key,
-            Some(&self.iv),
-            data.as_bytes(),
-        )?;
+        let encryptor = Encryptor::<Aes128>::new_from_slices(&self.key, &self.iv)?;
+
+        let cipher_bytes =
+            encryptor.encrypt_padded_vec_mut::<block_padding::Pkcs7>(data.as_bytes());
         let cipher_base64 = general_purpose::STANDARD.encode(cipher_bytes);
 
         Ok(cipher_base64)
     }
 
     pub fn decrypt(&self, cipher_base64: &str) -> anyhow::Result<String> {
+        let decryptor = Decryptor::<Aes128>::new_from_slices(&self.key, &self.iv)?;
+
         let cipher_bytes = general_purpose::STANDARD.decode(cipher_base64)?;
-        let decrypted_bytes = decrypt(
-            Cipher::aes_128_cbc(),
-            &self.key,
-            Some(&self.iv),
-            &cipher_bytes,
-        )?;
+        let decrypted_bytes = decryptor
+            .decrypt_padded_vec_mut::<block_padding::Pkcs7>(&cipher_bytes)
+            .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?;
+
         let decrypted = std::str::from_utf8(&decrypted_bytes)?.to_string();
 
         Ok(decrypted)

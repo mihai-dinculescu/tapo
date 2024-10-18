@@ -34,8 +34,10 @@ tokio = { workspace = true, default-features = false, features = ["sync"] }
 uuid = { version = "1.10", features = ["serde", "v4"] }
 
 # security
+aes = "0.8"
 base16ct = { version = "0.2", features = ["alloc"] }
 base64 = "0.22"
+cbc = { version = "0.1", features = ["alloc"] }
 openssl = "0.10"
 openssl-src = "=300.2.3"
 rand = "0.8"
