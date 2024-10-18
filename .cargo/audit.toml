@@ -1,0 +1,4 @@
+[advisories]
+ignore = [
+    "RUSTSEC-2023-0071", # Marvin Attack is low risk to this library use cases
+]
