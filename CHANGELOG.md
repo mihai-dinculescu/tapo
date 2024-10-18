@@ -10,7 +10,15 @@ file. This change log follows the conventions of
 
 - Added support for the P304 power strip.
 
+### Changed
+
+- The `openssl` dependency has been replaced with native Rust alternatives to expand cross-compilation options, such as for Android, and to decrease build times.
+
 ## [Python Unreleased][Unreleased]
+
+### Changed
+
+- The `openssl` dependency has been replaced with native Rust alternatives to expand cross-compilation options, such as for Android, and to decrease build times.
 
 ## [Rust v0.7.16][v0.7.16] - 2024-09-27
 
