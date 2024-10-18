@@ -1,6 +1,5 @@
 use std::sync::atomic::{AtomicI32, Ordering};
 
-use openssl::sha::{Sha1, Sha256};
 use openssl::symm::{decrypt, encrypt, Cipher};
 
 #[derive(Debug)]
@@ -98,15 +97,17 @@ impl KlapCipher {
 }
 
 impl KlapCipher {
-    pub fn sha256(value: &[u8]) -> [u8; 32] {
-        let mut hasher = Sha256::new();
-        hasher.update(value);
-        hasher.finish()
-    }
-
     pub fn sha1(value: &[u8]) -> [u8; 20] {
+        use sha1::{Digest, Sha1};
         let mut hasher = Sha1::new();
         hasher.update(value);
-        hasher.finish()
+        hasher.finalize().into()
+    }
+
+    pub fn sha256(value: &[u8]) -> [u8; 32] {
+        use sha2::{Digest, Sha256};
+        let mut hasher = Sha256::new();
+        hasher.update(value);
+        hasher.finalize().into()
     }
 }

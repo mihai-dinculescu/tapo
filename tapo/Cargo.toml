@@ -18,8 +18,6 @@ openssl-vendored = ["openssl/vendored"]
 [dependencies]
 anyhow = { workspace = true }
 async-trait = "0.1"
-base16ct = { version = "0.2", features = ["alloc"] }
-base64 = "0.22"
 chrono = { workspace = true, default-features = false, features = [
     "clock",
     "serde",
@@ -27,17 +25,25 @@ chrono = { workspace = true, default-features = false, features = [
 itertools = "0.13"
 lazy_static = "1.5"
 log = "0.4"
-openssl = "0.10"
-openssl-src = "=300.2.3"
-rand = "0.8"
 reqwest = { version = "0.12", features = ["cookies", "json"] }
 serde = { workspace = true, features = ["derive", "serde_derive"] }
 serde_json = { workspace = true }
-serde_with = "3.9"
+serde_with = "3.11"
 thiserror = "1.0"
 tokio = { workspace = true, default-features = false, features = ["sync"] }
 uuid = { version = "1.10", features = ["serde", "v4"] }
 
+# security
+base16ct = { version = "0.2", features = ["alloc"] }
+base64 = "0.22"
+openssl = "0.10"
+openssl-src = "=300.2.3"
+rand = "0.8"
+rsa = "0.9"
+sha1 = "0.10"
+sha2 = "0.10"
+
+# FFI
 pyo3 = { workspace = true, features = ["serde", "chrono"], optional = true }
 
 [dev-dependencies]
