@@ -11,15 +11,15 @@ pub struct EnergyUsageResult {
     /// Local time of the device.
     #[serde(deserialize_with = "der_tapo_datetime_format")]
     pub local_time: NaiveDateTime,
-    /// Current power in milliwatts (mW).
+    /// Current power in Milliwatts (mW).
     pub current_power: u64,
     /// Today runtime in minutes.
     pub today_runtime: u64,
-    /// Today energy usage in watts (W).
+    /// Today energy usage in Watt Hours (Wh).
     pub today_energy: u64,
     /// Current month runtime in minutes.
     pub month_runtime: u64,
-    /// Current month energy usage in watts (W).
+    /// Current month energy usage in Watt Hours (Wh).
     pub month_energy: u64,
 }
 impl TapoResponseExt for EnergyUsageResult {}

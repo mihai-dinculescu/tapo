@@ -16,6 +16,10 @@ file. This change log follows the conventions of
 - `PlugPowerStripHandler` has been renamed to `PowerStripPlugHandler` to be consistent with the rest of the library.
 - `PlugPowerStripResult` has been renamed to `PowerStripPlugResult` to be consistent with the rest of the library.
 
+### Fixed
+
+- Updated all comments referencing Watts to confirm the correct units are specified.
+
 ## [Python Unreleased][Unreleased]
 
 ### Added
@@ -25,6 +29,10 @@ file. This change log follows the conventions of
 ### Changed
 
 - The `openssl` dependency has been replaced with native Rust alternatives to expand cross-compilation options, such as for Android, and to decrease build times (thanks to @rbock44).
+
+### Fixed
+
+- Updated all comments referencing Watts to confirm the correct units are specified.
 
 ## [Rust v0.7.16][v0.7.16] - 2024-09-27
 

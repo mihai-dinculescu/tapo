@@ -6,9 +6,9 @@ class DeviceUsageEnergyMonitoringResult:
     time_usage: UsageByPeriodResult
     """Time usage in minutes."""
     power_usage: UsageByPeriodResult
-    """Power usage in watt-hour (Wh)."""
+    """Power usage in Watt Hours (Wh)."""
     saved_power: UsageByPeriodResult
-    """Saved power in watt-hour (Wh)."""
+    """Saved power in Watt Hours (Wh)."""
 
     def to_dict(self) -> dict:
         """Gets all the properties of this result as a dictionary.
