@@ -8,7 +8,7 @@ class EnergyDataResult:
     """Local time of the device."""
 
     data: List[int]
-    """Energy data for the given `interval` in watts (W)."""
+    """Energy data for the given `interval` in Watt Hours (Wh)."""
 
     start_timestamp: int
     """Start timestamp of the interval in milliseconds. This value is provided

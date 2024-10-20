@@ -8,9 +8,9 @@ use super::{TapoResponseExt, UsageByPeriodResult};
 pub struct DeviceUsageEnergyMonitoringResult {
     /// Time usage in minutes.
     pub time_usage: UsageByPeriodResult,
-    /// Power usage in watt-hour (Wh).
+    /// Power usage in Watt Hours (Wh).
     pub power_usage: UsageByPeriodResult,
-    /// Saved power in watt-hour (Wh).
+    /// Saved power in Watt Hours (Wh).
     pub saved_power: UsageByPeriodResult,
 }
 impl TapoResponseExt for DeviceUsageEnergyMonitoringResult {}

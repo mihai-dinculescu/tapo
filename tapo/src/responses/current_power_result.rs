@@ -6,7 +6,7 @@ use crate::responses::TapoResponseExt;
 #[derive(Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 pub struct CurrentPowerResult {
-    /// Current power in watts (W).
+    /// Current power in Watts (W).
     pub current_power: u64,
 }
 impl TapoResponseExt for CurrentPowerResult {}

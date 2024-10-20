@@ -11,7 +11,7 @@ pub struct EnergyDataResult {
     /// Local time of the device.
     #[serde(deserialize_with = "der_tapo_datetime_format")]
     pub local_time: NaiveDateTime,
-    /// Energy data for the given `interval` in watts (W).
+    /// Energy data for the given `interval` in Watt Hours (Wh).
     pub data: Vec<u64>,
     /// Start timestamp of the interval in milliseconds. This value is provided
     /// in the `get_energy_data` request and is passed through. Note that
