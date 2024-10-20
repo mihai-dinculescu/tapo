@@ -30,7 +30,7 @@ pub struct DeviceInfoPlugEnergyMonitoringResult {
     pub specs: String,
     pub lang: String,
     pub device_on: bool,
-    /// The time in seconds this device has been ON since the last state change (ON/OFF).
+    /// The time in seconds this device has been ON since the last state change (On/Off).
     pub on_time: u64,
     pub nickname: String,
     pub avatar: String,

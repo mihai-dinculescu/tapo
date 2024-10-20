@@ -6,3 +6,4 @@ from .light_result import *
 from .plug_energy_monitoring_result import *
 from .plug_result import *
 from .power_status import *
+from .power_strip_result import *

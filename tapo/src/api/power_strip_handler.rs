@@ -3,10 +3,10 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::api::ApiClient;
-use crate::api::PlugPowerStripHandler;
+use crate::api::PowerStripPlugHandler;
 use crate::error::Error;
 use crate::responses::{
-    ChildDeviceListPowerStripResult, DeviceInfoPowerStripResult, PlugPowerStripResult,
+    ChildDeviceListPowerStripResult, DeviceInfoPowerStripResult, PowerStripPlugResult,
 };
 
 /// Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
@@ -42,16 +42,16 @@ impl PowerStripHandler {
         self.client.read().await.get_device_info().await
     }
 
-    /// Returns *child device list* as [`PlugPowerStripResult`].
+    /// Returns *child device list* as [`Vec<PowerStripPlugResult>`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API
     /// or to support all the possible devices connected to the hub.
-    pub async fn get_child_device_list(&self) -> Result<Vec<PlugPowerStripResult>, Error> {
+    pub async fn get_child_device_list(&self) -> Result<Vec<PowerStripPlugResult>, Error> {
         self.client
             .read()
             .await
             .get_child_device_list::<ChildDeviceListPowerStripResult>()
             .await
-            .map(|r| r.sub_plugs)
+            .map(|r| r.plugs)
     }
 
     /// Returns *child device list* as [`serde_json::Value`].
@@ -73,7 +73,7 @@ impl PowerStripHandler {
 
 /// Child device handler builders.
 impl PowerStripHandler {
-    /// Returns a [`PlugPowerStripHandler`] for the given [`Plug`].
+    /// Returns a [`PowerStripPlugHandler`] for the given [`Plug`].
     ///
     /// # Arguments
     ///
@@ -97,7 +97,7 @@ impl PowerStripHandler {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn plug(&self, identifier: Plug) -> Result<PlugPowerStripHandler, Error> {
+    pub async fn plug(&self, identifier: Plug) -> Result<PowerStripPlugHandler, Error> {
         let children = self.get_child_device_list().await?;
 
         let device_id = match identifier {
@@ -121,7 +121,7 @@ impl PowerStripHandler {
                 .clone(),
         };
 
-        Ok(PlugPowerStripHandler::new(self.client.clone(), device_id))
+        Ok(PowerStripPlugHandler::new(self.client.clone(), device_id))
     }
 }
 

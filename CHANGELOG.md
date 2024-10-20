@@ -12,13 +12,19 @@ file. This change log follows the conventions of
 
 ### Changed
 
-- The `openssl` dependency has been replaced with native Rust alternatives to expand cross-compilation options, such as for Android, and to decrease build times.
+- The `openssl` dependency has been replaced with native Rust alternatives to expand cross-compilation options, such as for Android, and to decrease build times (thanks to @rbock44).
+- `PlugPowerStripHandler` has been renamed to `PowerStripPlugHandler` to be consistent with the rest of the library.
+- `PlugPowerStripResult` has been renamed to `PowerStripPlugResult` to be consistent with the rest of the library.
 
 ## [Python Unreleased][Unreleased]
 
+### Added
+
+- Added support for the P300 and P304 power strips.
+
 ### Changed
 
-- The `openssl` dependency has been replaced with native Rust alternatives to expand cross-compilation options, such as for Android, and to decrease build times.
+- The `openssl` dependency has been replaced with native Rust alternatives to expand cross-compilation options, such as for Android, and to decrease build times (thanks to @rbock44).
 
 ## [Rust v0.7.16][v0.7.16] - 2024-09-27
 

@@ -47,6 +47,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         plug.off().await?;
 
         info!("Waiting 2 seconds...");
+        thread::sleep(Duration::from_secs(2));
     }
 
     Ok(())

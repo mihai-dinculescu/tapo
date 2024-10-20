@@ -1,7 +1,7 @@
 from typing import Optional
 
-class DeviceInfoGenericResult:
-    """Device info of a Generic Tapo device."""
+class DeviceInfoPowerStripResult:
+    """Device info of Tapo P300 and P304. Superset of `GenericDeviceInfoResult`."""
 
     device_id: str
     type: str
@@ -18,9 +18,6 @@ class DeviceInfoGenericResult:
     rssi: int
     specs: str
     lang: str
-    device_on: Optional[bool]
-    on_time: Optional[int]
-    """The time in seconds this device has been ON since the last state change (On/Off)."""
     nickname: str
     avatar: str
     has_set_location_info: bool

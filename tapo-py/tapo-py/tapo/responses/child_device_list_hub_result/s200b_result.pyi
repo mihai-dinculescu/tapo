@@ -1,4 +1,4 @@
-from tapo.responses.child_device_hub_result.hub_result import HubResult
+from tapo.responses.child_device_list_hub_result.hub_result import HubResult
 
 class S200BResult(HubResult):
     """Device info of Tapo S200B button switch.

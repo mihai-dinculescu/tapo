@@ -1,4 +1,4 @@
-from tapo.responses.child_device_hub_result.status import Status
+from tapo.responses.child_device_list_hub_result.status import Status
 
 class HubResult:
     """Hub result. This is an abstract base class for all hub results."""
