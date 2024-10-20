@@ -431,6 +431,34 @@ impl ApiClient {
         Ok(PlugEnergyMonitoringHandler::new(self))
     }
 
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugEnergyMonitoringHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .p115("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn p115(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<PlugEnergyMonitoringHandler, Error> {
+        self.login(ip_address).await?;
+
+        Ok(PlugEnergyMonitoringHandler::new(self))
+    }
+
     /// Specializes the given [`ApiClient`] into an authenticated [`PowerStripHandler`].
     ///
     /// # Arguments
@@ -481,34 +509,6 @@ impl ApiClient {
         self.login(ip_address).await?;
 
         Ok(PowerStripHandler::new(self))
-    }
-
-    /// Specializes the given [`ApiClient`] into an authenticated [`PlugEnergyMonitoringHandler`].
-    ///
-    /// # Arguments
-    ///
-    /// * `ip_address` - the IP address of the device
-    ///
-    /// # Example
-    ///
-    /// ```rust,no_run
-    /// # use tapo::ApiClient;
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
-    ///     .p115("192.168.1.100")
-    ///     .await?;
-    /// device.on().await?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn p115(
-        mut self,
-        ip_address: impl Into<String>,
-    ) -> Result<PlugEnergyMonitoringHandler, Error> {
-        self.login(ip_address).await?;
-
-        Ok(PlugEnergyMonitoringHandler::new(self))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`HubHandler`].

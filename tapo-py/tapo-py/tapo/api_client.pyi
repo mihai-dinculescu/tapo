@@ -1,7 +1,7 @@
 """Tapo API Client.
 
-Tested with light bulbs (L510, L520, L530, L535, L610, L630), plugs (P100, P105, P110, P115),
-hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
+Tested with light bulbs (L510, L520, L530, L535, L610, L630), plugs (P100, P105, P110, P115), 
+power strips (P300, P304), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
 
 Example:
     ```python
@@ -28,12 +28,13 @@ from .hub_handler import HubHandler
 from .light_handler import LightHandler
 from .plug_energy_monitoring_handler import PlugEnergyMonitoringHandler
 from .plug_handler import PlugHandler
+from .power_strip_handler import PowerStripHandler
 
 class ApiClient:
     """Tapo API Client.
 
     Tested with light bulbs (L510, L520, L530, L535, L610, L630), plugs (P100, P105, P110, P115),
-    hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
+    power strips (P300, P304), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
 
     Example:
         ```python
@@ -280,6 +281,44 @@ class ApiClient:
             device = await client.p115("192.168.1.100")
 
             await device.on()
+            ```
+        """
+
+    async def p300(self, ip_address: str) -> PowerStripHandler:
+        """Specializes the given `ApiClient` into an authenticated `PowerStripHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            PowerStripHandler: Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and [P304](https://www.tp-link.com/uk/search/?q=P304) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            power_strip = await client.p300("192.168.1.100")
+
+            child_device_list = await power_strip.get_child_device_list()
+            print(f"Child device list: {child_device_list.to_dict()}")
+            ```
+        """
+
+    async def p304(self, ip_address: str) -> PowerStripHandler:
+        """Specializes the given `ApiClient` into an authenticated `PowerStripHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            PowerStripHandler: Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and [P304](https://www.tp-link.com/uk/search/?q=P304) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            power_strip = await client.p300("192.168.1.100")
+
+            child_device_list = await power_strip.get_child_device_list()
+            print(f"Child device list: {child_device_list.to_dict()}")
             ```
         """
 

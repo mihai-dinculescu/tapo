@@ -77,37 +77,37 @@ impl PyHubHandler {
 
             for child in children {
                 match child {
-                    ChildDeviceHubResult::KE100(x) => {
-                        let _ = results.append(x.into_py(py));
+                    ChildDeviceHubResult::KE100(device) => {
+                        results.append(device.into_py(py))?;
                     }
-                    ChildDeviceHubResult::S200B(x) => {
-                        let _ = results.append(x.into_py(py));
+                    ChildDeviceHubResult::S200B(device) => {
+                        results.append(device.into_py(py))?;
                     }
-                    ChildDeviceHubResult::T100(x) => {
-                        let _ = results.append(x.into_py(py));
+                    ChildDeviceHubResult::T100(device) => {
+                        results.append(device.into_py(py))?;
                     }
-                    ChildDeviceHubResult::T110(x) => {
-                        let _ = results.append(x.into_py(py));
+                    ChildDeviceHubResult::T110(device) => {
+                        results.append(device.into_py(py))?;
                     }
-                    ChildDeviceHubResult::T300(x) => {
-                        let _ = results.append(x.into_py(py));
+                    ChildDeviceHubResult::T300(device) => {
+                        results.append(device.into_py(py))?;
                     }
-                    ChildDeviceHubResult::T310(x) => {
-                        let _ = results.append(x.into_py(py));
+                    ChildDeviceHubResult::T310(device) => {
+                        results.append(device.into_py(py))?;
                     }
-                    ChildDeviceHubResult::T315(x) => {
-                        let _ = results.append(x.into_py(py));
+                    ChildDeviceHubResult::T315(device) => {
+                        results.append(device.into_py(py))?;
                     }
                     _ => {
-                        let _ = results.append(py.None());
+                        results.append(py.None())?;
                     }
                 }
             }
 
-            results.into()
+            Ok(results.into())
         });
 
-        Ok(results)
+        results
     }
 
     pub async fn get_child_device_list_json(&self) -> PyResult<Py<PyDict>> {

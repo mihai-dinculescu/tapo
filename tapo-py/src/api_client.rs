@@ -2,14 +2,14 @@ use pyo3::prelude::*;
 use std::time::Duration;
 use tapo::{
     ApiClient, ColorLightHandler, GenericDeviceHandler, HubHandler, LightHandler,
-    PlugEnergyMonitoringHandler, PlugHandler,
+    PlugEnergyMonitoringHandler, PlugHandler, PowerStripHandler,
 };
 
 use crate::call_handler_constructor;
 use crate::errors::ErrorWrapper;
 use crate::handlers::{
     PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
-    PyPlugEnergyMonitoringHandler, PyPlugHandler,
+    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler,
 };
 
 #[pyclass(name = "ApiClient")]
@@ -99,6 +99,18 @@ impl PyApiClient {
         let handler: PlugEnergyMonitoringHandler =
             call_handler_constructor!(self, tapo::ApiClient::p115, ip_address);
         Ok(PyPlugEnergyMonitoringHandler::new(handler))
+    }
+
+    pub async fn p300(&self, ip_address: String) -> PyResult<PyPowerStripHandler> {
+        let handler: PowerStripHandler =
+            call_handler_constructor!(self, tapo::ApiClient::p300, ip_address);
+        Ok(PyPowerStripHandler::new(handler))
+    }
+
+    pub async fn p304(&self, ip_address: String) -> PyResult<PyPowerStripHandler> {
+        let handler: PowerStripHandler =
+            call_handler_constructor!(self, tapo::ApiClient::p304, ip_address);
+        Ok(PyPowerStripHandler::new(handler))
     }
 
     pub async fn h100(&self, ip_address: String) -> PyResult<PyHubHandler> {

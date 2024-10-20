@@ -5,6 +5,8 @@ from .hub_handler import *
 from .light_handler import *
 from .plug_energy_monitoring_handler import *
 from .plug_handler import *
+from .power_strip_handler import *
+from .power_strip_plug_handler import *
 from .requests import *
 from .responses import *
 from .s200b_handler import *

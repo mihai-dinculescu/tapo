@@ -27,7 +27,7 @@ pub struct DeviceInfoColorLightResult {
     pub specs: String,
     pub lang: String,
     pub device_on: bool,
-    /// The time in seconds this device has been ON since the last state change (ON/OFF).
+    /// The time in seconds this device has been ON since the last state change (On/Off).
     /// On v2 hardware this is always None.
     pub on_time: Option<u64>,
     pub nickname: String,

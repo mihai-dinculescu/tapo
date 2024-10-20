@@ -20,7 +20,7 @@ class DeviceInfoPlugResult:
     lang: str
     device_on: bool
     on_time: int
-    """The time in seconds this device has been ON since the last state change (ON/OFF)."""
+    """The time in seconds this device has been ON since the last state change (On/Off)."""
     nickname: str
     avatar: str
     has_set_location_info: bool

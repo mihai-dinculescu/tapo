@@ -1,6 +1,6 @@
 from enum import Enum
 
-from tapo.responses.child_device_hub_result.hub_result import HubResult
+from tapo.responses.child_device_list_hub_result.hub_result import HubResult
 
 class KE100Result(HubResult):
     """Device info of Tapo KE100 thermostatic radiator valve (TRV).
