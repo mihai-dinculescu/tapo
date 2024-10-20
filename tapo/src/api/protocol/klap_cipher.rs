@@ -1,7 +1,8 @@
 use std::sync::atomic::{AtomicI32, Ordering};
 
-use openssl::sha::{Sha1, Sha256};
-use openssl::symm::{decrypt, encrypt, Cipher};
+use aes::cipher::{block_padding, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
+use aes::Aes128;
+use cbc::{Decryptor, Encryptor};
 
 #[derive(Debug)]
 pub(super) struct KlapCipher {
@@ -30,14 +31,12 @@ impl KlapCipher {
     }
 
     pub fn encrypt(&self, data: String) -> anyhow::Result<(Vec<u8>, i32)> {
-        let seq = self.seq.fetch_add(1, Ordering::Relaxed) + 1;
+        self.seq.fetch_add(1, Ordering::Relaxed);
+        let seq = self.seq.load(Ordering::Relaxed);
+        let encryptor = Encryptor::<Aes128>::new_from_slices(&self.key, &self.iv_seq(seq))?;
 
-        let cipher_bytes = encrypt(
-            Cipher::aes_128_cbc(),
-            &self.key,
-            Some(&self.iv_seq(seq)),
-            data.as_bytes(),
-        )?;
+        let cipher_bytes =
+            encryptor.encrypt_padded_vec_mut::<block_padding::Pkcs7>(data.as_bytes());
 
         let signature = Self::sha256(
             &[
@@ -54,12 +53,11 @@ impl KlapCipher {
     }
 
     pub fn decrypt(&self, seq: i32, cipher_bytes: Vec<u8>) -> anyhow::Result<String> {
-        let decrypted_bytes = decrypt(
-            Cipher::aes_128_cbc(),
-            &self.key,
-            Some(&self.iv_seq(seq)),
-            &cipher_bytes[32..],
-        )?;
+        let decryptor = Decryptor::<Aes128>::new_from_slices(&self.key, &self.iv_seq(seq))?;
+
+        let decrypted_bytes = decryptor
+            .decrypt_padded_vec_mut::<block_padding::Pkcs7>(&cipher_bytes[32..])
+            .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?;
         let decrypted = std::str::from_utf8(&decrypted_bytes)?.to_string();
 
         Ok(decrypted)
@@ -98,15 +96,17 @@ impl KlapCipher {
 }
 
 impl KlapCipher {
-    pub fn sha256(value: &[u8]) -> [u8; 32] {
-        let mut hasher = Sha256::new();
-        hasher.update(value);
-        hasher.finish()
-    }
-
     pub fn sha1(value: &[u8]) -> [u8; 20] {
+        use sha1::{Digest, Sha1};
         let mut hasher = Sha1::new();
         hasher.update(value);
-        hasher.finish()
+        hasher.finalize().into()
+    }
+
+    pub fn sha256(value: &[u8]) -> [u8; 32] {
+        use sha2::{Digest, Sha256};
+        let mut hasher = Sha256::new();
+        hasher.update(value);
+        hasher.finalize().into()
     }
 }

@@ -3,6 +3,8 @@ use std::fmt;
 use async_trait::async_trait;
 use base64::{engine::general_purpose, Engine as _};
 use log::debug;
+use rand::rngs::StdRng;
+use rand::SeedableRng;
 use reqwest::header::COOKIE;
 use reqwest::Client;
 use serde::de::DeserializeOwned;
@@ -132,7 +134,7 @@ impl PassthroughProtocol {
     pub fn new(client: Client) -> Result<Self, Error> {
         Ok(Self {
             client,
-            key_pair: PassthroughKeyPair::new()?,
+            key_pair: PassthroughKeyPair::new(StdRng::from_entropy())?,
             session: None,
         })
     }

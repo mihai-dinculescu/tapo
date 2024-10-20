@@ -142,29 +142,6 @@ See all examples in [/tapo-py/examples][examples-py].
 
 Contributions are welcome and encouraged! See [/CONTRIBUTING.md][contributing].
 
-## Troubleshooting
-
-### 1. Installing openssl on Windows
-
-With chocolatey
-
-```powershell
-choco install openssl
-[System.Environment]::SetEnvironmentVariable('OPENSSL_DIR', $Env:Programfiles + "\OpenSSL-Win64", "User")
-```
-
-or with vcpkg
-
-```powershell
-git clone git@github.com:microsoft/vcpkg.git
-cd vcpkg
-./bootstrap-vcpkg.bat
-./vcpkg.exe install openssl-windows:x64-windows
-./vcpkg.exe install openssl:x64-windows-static
-./vcpkg.exe integrate install
-[System.Environment]::SetEnvironmentVariable('OPENSSL_DIR', (Get-Location).Path + "\installed\x64-windows-static", "User")
-```
-
 ## Credits
 
 Inspired by [petretiandrea/plugp100][inspired_by].
