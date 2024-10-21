@@ -3,6 +3,7 @@ mod errors;
 mod handlers;
 mod runtime;
 
+use log::LevelFilter;
 use pyo3::prelude::*;
 
 use api_client::PyApiClient;
@@ -13,6 +14,7 @@ use handlers::{
     PyT300Handler, PyT31XHandler, TriggerLogsS200BResult, TriggerLogsT100Result,
     TriggerLogsT110Result, TriggerLogsT300Result,
 };
+use pyo3_log::{Caching, Logger};
 use tapo::requests::Color;
 use tapo::responses::{
     AutoOffStatus, ColorLightState, CurrentPowerResult, DefaultBrightnessState,
@@ -30,6 +32,11 @@ use tapo::responses::{
 #[pymodule]
 #[pyo3(name = "tapo")]
 fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
+    Logger::new(py, Caching::LoggersAndLevels)?
+        .filter(LevelFilter::Trace)
+        .install()
+        .expect("Failed to install the logger");
+
     let requests = PyModule::new_bound(py, "tapo.requests")?;
     let responses = PyModule::new_bound(py, "tapo.responses")?;
 

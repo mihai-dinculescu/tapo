@@ -25,6 +25,7 @@ file. This change log follows the conventions of
 ### Added
 
 - Added support for the P300 and P304 power strips.
+- Python logs can now capture entries from the underlying Rust library.
 
 ### Changed
 

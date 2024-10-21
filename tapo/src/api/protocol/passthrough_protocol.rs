@@ -2,7 +2,7 @@ use std::fmt;
 
 use async_trait::async_trait;
 use base64::{engine::general_purpose, Engine as _};
-use log::debug;
+use log::{debug, trace};
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 use reqwest::header::COOKIE;
@@ -112,7 +112,7 @@ impl TapoProtocolExt for PassthroughProtocol {
 
         let inner_response_decrypted = session.cipher.decrypt(&inner_response_encrypted)?;
 
-        debug!("Device inner response decrypted: {inner_response_decrypted}");
+        trace!("Device inner response (raw): {inner_response_decrypted}");
 
         let inner_response: TapoResponse<R> = serde_json::from_str(&inner_response_decrypted)?;
 

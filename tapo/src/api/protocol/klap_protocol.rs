@@ -1,7 +1,7 @@
 use std::fmt;
 
 use async_trait::async_trait;
-use log::{debug, warn};
+use log::{debug, trace, warn};
 use rand::rngs::StdRng;
 use rand::{RngCore, SeedableRng};
 use reqwest::header::COOKIE;
@@ -84,13 +84,13 @@ impl TapoProtocolExt for KlapProtocol {
         let response_body = response.bytes().await.map_err(anyhow::Error::from)?;
 
         let response_decrypted = cipher.decrypt(seq, response_body.to_vec())?;
-        debug!("Device responded with: {response_decrypted:?}");
+        trace!("Device responded with (raw): {response_decrypted}");
 
-        let inner_response: TapoResponse<R> = serde_json::from_str(&response_decrypted)?;
-        debug!("Device inner response: {inner_response:?}");
+        let response: TapoResponse<R> = serde_json::from_str(&response_decrypted)?;
+        debug!("Device responded with: {response:?}");
 
-        validate_response(&inner_response)?;
-        let result = inner_response.result;
+        validate_response(&response)?;
+        let result = response.result;
 
         Ok(result)
     }
