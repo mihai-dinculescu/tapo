@@ -2,7 +2,7 @@ use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
 use crate::responses::TapoResponseExt;
-use crate::tapo_date_format::der_tapo_datetime_format;
+use crate::utils::der_tapo_datetime_format;
 
 /// Contains local time, current power and the energy usage and runtime for today and for the current month.
 #[derive(Debug, Serialize, Deserialize)]

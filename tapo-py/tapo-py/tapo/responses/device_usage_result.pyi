@@ -1,11 +1,13 @@
+from typing import Optional
+
 class UsageByPeriodResult:
     """Usage by period result for today, the past 7 days, and the past 30 days."""
 
-    today: int
+    today: Optional[int]
     """Today."""
-    past7: int
+    past7: Optional[int]
     """Past 7 days."""
-    past30: int
+    past30: Optional[int]
     """Past 30 days."""
 
 class DeviceUsageResult:

@@ -15,3 +15,11 @@ where
 
     Ok(value)
 }
+
+pub fn ok_or_default<'de, T, D>(deserializer: D) -> Result<T, D::Error>
+where
+    T: Deserialize<'de> + Default,
+    D: Deserializer<'de>,
+{
+    Ok(Deserialize::deserialize(deserializer).unwrap_or_default())
+}

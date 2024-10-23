@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::responses::TapoResponseExt;
+use crate::utils::ok_or_default;
 
 /// Contains the time usage.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -28,9 +29,12 @@ impl DeviceUsageResult {
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 pub struct UsageByPeriodResult {
     /// Today.
-    pub today: u64,
+    #[serde(deserialize_with = "ok_or_default")]
+    pub today: Option<u64>,
     /// Past 7 days.
-    pub past7: u64,
+    #[serde(deserialize_with = "ok_or_default")]
+    pub past7: Option<u64>,
     /// Past 30 days.
-    pub past30: u64,
+    #[serde(deserialize_with = "ok_or_default")]
+    pub past30: Option<u64>,
 }

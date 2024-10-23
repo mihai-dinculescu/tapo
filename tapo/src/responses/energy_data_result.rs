@@ -2,7 +2,7 @@ use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
 use crate::responses::TapoResponseExt;
-use crate::tapo_date_format::der_tapo_datetime_format;
+use crate::utils::der_tapo_datetime_format;
 
 /// Energy data for the requested [`crate::requests::EnergyDataInterval`].
 #[derive(Debug, Serialize, Deserialize)]

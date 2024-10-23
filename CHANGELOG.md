@@ -15,6 +15,7 @@ file. This change log follows the conventions of
 - The `openssl` dependency has been replaced with native Rust alternatives to expand cross-compilation options, such as for Android, and to decrease build times (thanks to @rbock44).
 - `PlugPowerStripHandler` has been renamed to `PowerStripPlugHandler` to be consistent with the rest of the library.
 - `PlugPowerStripResult` has been renamed to `PowerStripPlugResult` to be consistent with the rest of the library.
+- The `UsageByPeriodResult` fields `today`, `past7`, and `past30` have been updated to `Option<u64>` to handle cases where the API returns negative values, which will be represented as `None`.
 
 ### Fixed
 
@@ -30,6 +31,7 @@ file. This change log follows the conventions of
 ### Changed
 
 - The `openssl` dependency has been replaced with native Rust alternatives to expand cross-compilation options, such as for Android, and to decrease build times (thanks to @rbock44).
+- The `UsageByPeriodResult` fields `today`, `past7`, and `past30` have been updated to `Optional[int]` to handle cases where the API returns negative values, which will be represented as `null`.
 
 ### Fixed
 
