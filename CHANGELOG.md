@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.7.17][v0.7.17] - 2024-10-23
+
 ### Added
 
 - Added support for the P304 power strip.
@@ -21,7 +25,7 @@ file. This change log follows the conventions of
 
 - Updated all comments referencing Watts to confirm the correct units are specified.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.6.0][py-v0.6.0] - 2024-10-23
 
 ### Added
 
@@ -488,6 +492,8 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.7.17]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.17
+[py-v0.6.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.6.0
 [v0.7.16]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.16
 [py-v0.5.1]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.5.1
 [v0.7.15]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.15
