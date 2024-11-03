@@ -13,6 +13,7 @@ mod secure_passthrough;
 mod set_device_info;
 mod tapo_request;
 
+pub use crate::responses::TemperatureUnitKE100;
 pub use color::*;
 pub use energy_data_interval::*;
 pub use lighting_effect::*;

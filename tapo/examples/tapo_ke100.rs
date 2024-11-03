@@ -2,7 +2,7 @@
 use std::env;
 
 use log::{info, LevelFilter};
-use tapo::responses::TemperatureUnitKE100;
+use tapo::requests::TemperatureUnitKE100;
 use tapo::{ApiClient, HubDevice};
 
 #[tokio::main]
@@ -19,9 +19,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tapo_username = env::var("TAPO_USERNAME")?;
     let tapo_password = env::var("TAPO_PASSWORD")?;
     let ip_address = env::var("IP_ADDRESS")?;
-    // ID of the KE100 device.
-    // Can be obtained from executing `get_child_device_component_list()` on the hub device.
-    let device_id = env::var("DEVICE_ID")?;
+    // Name of the KE100 device.
+    // Can be obtained from the Tapo App or by executing `get_child_device_component_list()` on the hub device.
+    let device_name = env::var("DEVICE_NAME")?;
     let target_temperature: u8 = env::var("TARGET_TEMPERATURE")?.parse()?;
 
     let hub = ApiClient::new(tapo_username, tapo_password)
@@ -29,7 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     // Get a handler for the child device
-    let device = hub.ke100(HubDevice::ByDeviceId(device_id)).await?;
+    let device = hub.ke100(HubDevice::ByNickname(device_name)).await?;
 
     // Get the device info of the child device
     let device_info = device.get_device_info().await?;

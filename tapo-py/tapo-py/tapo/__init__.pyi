@@ -9,6 +9,7 @@ from .power_strip_handler import *
 from .power_strip_plug_handler import *
 from .requests import *
 from .responses import *
+from .ke100_handler import *
 from .s200b_handler import *
 from .t100_handler import *
 from .t110_handler import *

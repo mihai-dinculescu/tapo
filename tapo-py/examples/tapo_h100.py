@@ -54,7 +54,7 @@ async def main():
                     child.nickname,
                     child.device_id,
                     child.detected,
-                     [log.to_dict() for log in trigger_logs.logs],
+                    [log.to_dict() for log in trigger_logs.logs],
                 )
             )
         elif isinstance(child, T110Result):

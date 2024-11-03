@@ -8,6 +8,10 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+### Added
+
+- Added full support for the KE100 thermostatic radiator valve (TRV) through the `KE100Handler`.
+
 ## [Rust v0.7.17][v0.7.17] - 2024-10-23
 
 ### Added

@@ -63,12 +63,12 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 | get_device_info_json             |    &#x2705;     |    &#x2705;     |    &#x2705;    |    &#x2705;    |    &#x2705;    |   &#x2705;    |
 | get_temperature_humidity_records |                 |                 |                |                |                |   &#x2705;    |
 | get_trigger_logs                 |                 |    &#x2705;     |    &#x2705;    |    &#x2705;    |    &#x2705;    |               |
-| set_child_protection             |     &check;     |                 |                |                |                |               |
-| set_frost_protection             |     &check;     |                 |                |                |                |               |
-| set_max_control_temperature      |     &check;     |                 |                |                |                |               |
-| set_min_control_temperature      |     &check;     |                 |                |                |                |               |
-| set_target_temperature           |     &check;     |                 |                |                |                |               |
-| set_temperature_offset           |     &check;     |                 |                |                |                |               |
+| set_child_protection             |    &#x2705;     |                 |                |                |                |               |
+| set_frost_protection             |    &#x2705;     |                 |                |                |                |               |
+| set_max_control_temperature      |    &#x2705;     |                 |                |                |                |               |
+| set_min_control_temperature      |    &#x2705;     |                 |                |                |                |               |
+| set_target_temperature           |    &#x2705;     |                 |                |                |                |               |
+| set_temperature_offset           |    &#x2705;     |                 |                |                |                |               |
 
 \* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child device handler.
 

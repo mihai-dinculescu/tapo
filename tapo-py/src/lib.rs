@@ -9,10 +9,10 @@ use pyo3::prelude::*;
 use api_client::PyApiClient;
 use handlers::{
     PyColorLightHandler, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval,
-    PyGenericDeviceHandler, PyHubHandler, PyLightHandler, PyPlugEnergyMonitoringHandler,
-    PyPlugHandler, PyPowerStripHandler, PyPowerStripPlugHandler, PyT100Handler, PyT110Handler,
-    PyT300Handler, PyT31XHandler, TriggerLogsS200BResult, TriggerLogsT100Result,
-    TriggerLogsT110Result, TriggerLogsT300Result,
+    PyGenericDeviceHandler, PyHubHandler, PyKE100Handler, PyLightHandler,
+    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler, PyPowerStripPlugHandler,
+    PyT100Handler, PyT110Handler, PyT300Handler, PyT31XHandler, TriggerLogsS200BResult,
+    TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
 };
 use pyo3_log::{Caching, Logger};
 use tapo::requests::Color;
@@ -58,9 +58,10 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
 }
 
 fn register_requests(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
-    module.add_class::<PyEnergyDataInterval>()?;
     module.add_class::<Color>()?;
     module.add_class::<PyColorLightSetDeviceInfoParams>()?;
+    module.add_class::<PyEnergyDataInterval>()?;
+    module.add_class::<TemperatureUnitKE100>()?;
 
     Ok(())
 }
@@ -74,6 +75,7 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyPlugHandler>()?;
 
     module.add_class::<PyHubHandler>()?;
+    module.add_class::<PyKE100Handler>()?;
     module.add_class::<PyT100Handler>()?;
     module.add_class::<PyT110Handler>()?;
     module.add_class::<PyT300Handler>()?;
