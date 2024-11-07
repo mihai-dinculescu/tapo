@@ -8,9 +8,11 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+## [Python v0.7.0][py-v0.7.0] - 2024-11-07
+
 ### Added
 
-- Added full support for the KE100 thermostatic radiator valve (TRV) through the `KE100Handler`.
+- Added support for the KE100 thermostatic radiator valve (TRV).
 
 ## [Rust v0.7.17][v0.7.17] - 2024-10-23
 
@@ -496,6 +498,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[py-v0.7.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.7.0
 [v0.7.17]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.17
 [py-v0.6.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.6.0
 [v0.7.16]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.16
