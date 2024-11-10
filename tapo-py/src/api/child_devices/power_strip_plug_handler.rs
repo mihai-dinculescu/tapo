@@ -9,13 +9,13 @@ use crate::call_handler_method;
 #[derive(Clone)]
 #[pyclass(name = "PowerStripPlugHandler")]
 pub struct PyPowerStripPlugHandler {
-    handler: Arc<PowerStripPlugHandler>,
+    inner: Arc<PowerStripPlugHandler>,
 }
 
 impl PyPowerStripPlugHandler {
     pub fn new(handler: PowerStripPlugHandler) -> Self {
         Self {
-            handler: Arc::new(handler),
+            inner: Arc::new(handler),
         }
     }
 }
@@ -23,24 +23,24 @@ impl PyPowerStripPlugHandler {
 #[pymethods]
 impl PyPowerStripPlugHandler {
     pub async fn get_device_info(&self) -> PyResult<PowerStripPlugResult> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(handler.deref(), PowerStripPlugHandler::get_device_info)
     }
 
     pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let result =
             call_handler_method!(handler.deref(), PowerStripPlugHandler::get_device_info_json)?;
         Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
     pub async fn on(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(handler.deref(), PowerStripPlugHandler::on)
     }
 
     pub async fn off(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(handler.deref(), PowerStripPlugHandler::off)
     }
 }

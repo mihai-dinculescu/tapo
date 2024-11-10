@@ -94,10 +94,14 @@ impl ColorLightSetDeviceInfoParams {
     }
 
     /// Performs a request to apply the changes to the device.
-    pub async fn send(self, client: &impl HandlerExt) -> Result<(), Error> {
+    ///
+    /// # Arguments
+    ///
+    /// * `handler` - `ColorLightHandler`, `RgbLightStripHandler`, or `RgbicLightStripHandler` instance
+    pub async fn send(self, handler: &impl HandlerExt) -> Result<(), Error> {
         self.validate()?;
         let json = serde_json::to_value(&self)?;
-        client.get_client().set_device_info(json).await
+        handler.get_client().set_device_info(json).await
     }
 }
 

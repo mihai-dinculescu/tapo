@@ -13,25 +13,18 @@ use tapo::PlugEnergyMonitoringHandler;
 use tokio::sync::RwLock;
 
 use crate::call_handler_method;
-
-#[derive(Clone, PartialEq)]
-#[pyclass(name = "EnergyDataInterval", eq, eq_int)]
-pub enum PyEnergyDataInterval {
-    Hourly,
-    Daily,
-    Monthly,
-}
+use crate::requests::PyEnergyDataInterval;
 
 #[derive(Clone)]
 #[pyclass(name = "PlugEnergyMonitoringHandler")]
 pub struct PyPlugEnergyMonitoringHandler {
-    handler: Arc<RwLock<PlugEnergyMonitoringHandler>>,
+    inner: Arc<RwLock<PlugEnergyMonitoringHandler>>,
 }
 
 impl PyPlugEnergyMonitoringHandler {
     pub fn new(handler: PlugEnergyMonitoringHandler) -> Self {
         Self {
-            handler: Arc::new(RwLock::new(handler)),
+            inner: Arc::new(RwLock::new(handler)),
         }
     }
 }
@@ -39,7 +32,7 @@ impl PyPlugEnergyMonitoringHandler {
 #[pymethods]
 impl PyPlugEnergyMonitoringHandler {
     pub async fn refresh_session(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.write().await.deref_mut(),
             PlugEnergyMonitoringHandler::refresh_session,
@@ -48,7 +41,7 @@ impl PyPlugEnergyMonitoringHandler {
     }
 
     pub async fn on(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::on
@@ -56,7 +49,7 @@ impl PyPlugEnergyMonitoringHandler {
     }
 
     pub async fn off(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::off
@@ -64,7 +57,7 @@ impl PyPlugEnergyMonitoringHandler {
     }
 
     pub async fn device_reset(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::device_reset,
@@ -72,7 +65,7 @@ impl PyPlugEnergyMonitoringHandler {
     }
 
     pub async fn get_device_info(&self) -> PyResult<DeviceInfoPlugEnergyMonitoringResult> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::get_device_info,
@@ -80,7 +73,7 @@ impl PyPlugEnergyMonitoringHandler {
     }
 
     pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let result = call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::get_device_info_json,
@@ -89,7 +82,7 @@ impl PyPlugEnergyMonitoringHandler {
     }
 
     pub async fn get_device_usage(&self) -> PyResult<DeviceUsageEnergyMonitoringResult> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::get_device_usage,
@@ -97,7 +90,7 @@ impl PyPlugEnergyMonitoringHandler {
     }
 
     pub async fn get_current_power(&self) -> PyResult<CurrentPowerResult> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::get_current_power,
@@ -105,7 +98,7 @@ impl PyPlugEnergyMonitoringHandler {
     }
 
     pub async fn get_energy_usage(&self) -> PyResult<EnergyUsageResult> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::get_energy_usage,
@@ -128,7 +121,7 @@ impl PyPlugEnergyMonitoringHandler {
             PyEnergyDataInterval::Monthly => EnergyDataInterval::Monthly { start_date },
         };
 
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let result = call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::get_energy_data,

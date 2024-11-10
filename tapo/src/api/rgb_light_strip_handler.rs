@@ -87,7 +87,6 @@ impl RgbLightStripHandler {
     }
 
     /// Sets the *brightness* and turns *on* the device.
-    /// Pre-existing *lighting effect* will be removed.
     ///
     /// # Arguments
     ///
@@ -100,7 +99,6 @@ impl RgbLightStripHandler {
     }
 
     /// Sets the *color* and turns *on* the device.
-    /// Pre-existing *lighting effect* will be removed.
     ///
     /// # Arguments
     ///
@@ -113,7 +111,6 @@ impl RgbLightStripHandler {
     }
 
     /// Sets the *hue*, *saturation* and turns *on* the device.
-    /// Pre-existing *lighting effect* will be removed.
     ///
     /// # Arguments
     ///
@@ -127,7 +124,6 @@ impl RgbLightStripHandler {
     }
 
     /// Sets the *color temperature* and turns *on* the device.
-    /// Pre-existing *lighting effect* will be removed.
     ///
     /// # Arguments
     ///

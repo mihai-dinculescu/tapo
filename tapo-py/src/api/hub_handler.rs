@@ -7,22 +7,22 @@ use tapo::responses::{ChildDeviceHubResult, DeviceInfoHubResult};
 use tapo::{Error, HubDevice, HubHandler};
 use tokio::sync::RwLock;
 
-use crate::call_handler_method;
-use crate::errors::ErrorWrapper;
-use crate::handlers::{
+use crate::api::{
     PyKE100Handler, PyS200BHandler, PyT100Handler, PyT110Handler, PyT300Handler, PyT31XHandler,
 };
+use crate::call_handler_method;
+use crate::errors::ErrorWrapper;
 
 #[derive(Clone)]
 #[pyclass(name = "HubHandler")]
 pub struct PyHubHandler {
-    handler: Arc<RwLock<HubHandler>>,
+    inner: Arc<RwLock<HubHandler>>,
 }
 
 impl PyHubHandler {
     pub fn new(handler: HubHandler) -> Self {
         Self {
-            handler: Arc::new(RwLock::new(handler)),
+            inner: Arc::new(RwLock::new(handler)),
         }
     }
 
@@ -45,7 +45,7 @@ impl PyHubHandler {
 #[pymethods]
 impl PyHubHandler {
     pub async fn refresh_session(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.write().await.deref_mut(),
             HubHandler::refresh_session,
@@ -54,12 +54,12 @@ impl PyHubHandler {
     }
 
     pub async fn get_device_info(&self) -> PyResult<DeviceInfoHubResult> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(handler.read().await.deref(), HubHandler::get_device_info)
     }
 
     pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let result = call_handler_method!(
             handler.read().await.deref(),
             HubHandler::get_device_info_json
@@ -68,7 +68,7 @@ impl PyHubHandler {
     }
 
     pub async fn get_child_device_list(&self) -> PyResult<Py<PyList>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let children = call_handler_method!(
             handler.read().await.deref(),
             HubHandler::get_child_device_list
@@ -113,7 +113,7 @@ impl PyHubHandler {
     }
 
     pub async fn get_child_device_list_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let result = call_handler_method!(
             handler.read().await.deref(),
             HubHandler::get_child_device_list_json
@@ -122,7 +122,7 @@ impl PyHubHandler {
     }
 
     pub async fn get_child_device_component_list_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let result = call_handler_method!(
             handler.read().await.deref(),
             HubHandler::get_child_device_component_list_json
@@ -136,7 +136,7 @@ impl PyHubHandler {
         device_id: Option<String>,
         nickname: Option<String>,
     ) -> PyResult<PyKE100Handler> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
 
         let child_handler =
@@ -150,7 +150,7 @@ impl PyHubHandler {
         device_id: Option<String>,
         nickname: Option<String>,
     ) -> PyResult<PyS200BHandler> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
 
         let child_handler =
@@ -164,7 +164,7 @@ impl PyHubHandler {
         device_id: Option<String>,
         nickname: Option<String>,
     ) -> PyResult<PyT100Handler> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
 
         let child_handler =
@@ -178,7 +178,7 @@ impl PyHubHandler {
         device_id: Option<String>,
         nickname: Option<String>,
     ) -> PyResult<PyT110Handler> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
 
         let child_handler =
@@ -192,7 +192,7 @@ impl PyHubHandler {
         device_id: Option<String>,
         nickname: Option<String>,
     ) -> PyResult<PyT300Handler> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
 
         let child_handler =
@@ -206,7 +206,7 @@ impl PyHubHandler {
         device_id: Option<String>,
         nickname: Option<String>,
     ) -> PyResult<PyT31XHandler> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
 
         let child_handler =

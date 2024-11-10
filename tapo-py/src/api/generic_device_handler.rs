@@ -12,13 +12,13 @@ use crate::call_handler_method;
 #[derive(Clone)]
 #[pyclass(name = "GenericDeviceHandler")]
 pub struct PyGenericDeviceHandler {
-    handler: Arc<RwLock<GenericDeviceHandler>>,
+    inner: Arc<RwLock<GenericDeviceHandler>>,
 }
 
 impl PyGenericDeviceHandler {
     pub fn new(handler: GenericDeviceHandler) -> Self {
         Self {
-            handler: Arc::new(RwLock::new(handler)),
+            inner: Arc::new(RwLock::new(handler)),
         }
     }
 }
@@ -26,7 +26,7 @@ impl PyGenericDeviceHandler {
 #[pymethods]
 impl PyGenericDeviceHandler {
     pub async fn refresh_session(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.write().await.deref_mut(),
             GenericDeviceHandler::refresh_session,
@@ -35,17 +35,17 @@ impl PyGenericDeviceHandler {
     }
 
     pub async fn on(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(handler.read().await.deref(), GenericDeviceHandler::on)
     }
 
     pub async fn off(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(handler.read().await.deref(), GenericDeviceHandler::off)
     }
 
     pub async fn get_device_info(&self) -> PyResult<DeviceInfoGenericResult> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             GenericDeviceHandler::get_device_info
@@ -53,7 +53,7 @@ impl PyGenericDeviceHandler {
     }
 
     pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let result = call_handler_method!(
             handler.read().await.deref(),
             GenericDeviceHandler::get_device_info_json,

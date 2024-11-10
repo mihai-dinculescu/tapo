@@ -1,11 +1,8 @@
 from tapo.requests import Color, ColorLightSetDeviceInfoParams
-from tapo.responses import DeviceInfoColorLightResult, DeviceUsageResult
+from tapo.responses import DeviceInfoRgbLightStripResult, DeviceUsageResult
 
-class ColorLightHandler:
-    """Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
-    [L535](https://www.tapo.com/en/search/?q=L535) and
-    [L630](https://www.tapo.com/en/search/?q=L630) devices.
-    """
+class RgbLightStripHandler:
+    """Handler for the [L900](https://www.tapo.com/en/search/?q=L900) devices."""
 
     def __init__(self, handler: object):
         """Private constructor.
@@ -33,14 +30,14 @@ class ColorLightHandler:
         and requires reconfiguration.
         """
 
-    async def get_device_info(self) -> DeviceInfoColorLightResult:
-        """Returns *device info* as `DeviceInfoColorLightResult`.
+    async def get_device_info(self) -> DeviceInfoRgbLightStripResult:
+        """Returns *device info* as `DeviceInfoRgbLightStripResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
         If the deserialization fails, or if a property that you care about it's not present,
-        try `ColorLightHandler.get_device_info_json`.
+        try `RgbLightStripHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoColorLightResult: Device info of Tapo L530, L535 and L630.
+            DeviceInfoRgbLightStripResult: Device info of Tapo L900.
             Superset of `GenericDeviceInfoResult`.
         """
 
@@ -66,7 +63,7 @@ class ColorLightHandler:
 
         Returns:
             ColorLightSetDeviceInfoParams: Builder that is used by the
-            `ColorLightHandler.set` API to set multiple properties in a single request.
+            `RgbLightStripHandler.set` API to set multiple properties in a single request.
         """
 
     async def set_brightness(self, brightness: int) -> None:

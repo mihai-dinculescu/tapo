@@ -1,32 +1,37 @@
-mod api_client;
+mod api;
 mod errors;
-mod handlers;
+mod requests;
+mod responses;
 mod runtime;
 
 use log::LevelFilter;
 use pyo3::prelude::*;
-
-use api_client::PyApiClient;
-use handlers::{
-    PyColorLightHandler, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval,
-    PyGenericDeviceHandler, PyHubHandler, PyKE100Handler, PyLightHandler,
-    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler, PyPowerStripPlugHandler,
-    PyT100Handler, PyT110Handler, PyT300Handler, PyT31XHandler, TriggerLogsS200BResult,
-    TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
-};
 use pyo3_log::{Caching, Logger};
+
 use tapo::requests::Color;
 use tapo::responses::{
     AutoOffStatus, ColorLightState, CurrentPowerResult, DefaultBrightnessState,
     DefaultColorLightState, DefaultLightState, DefaultPlugState, DefaultPowerType,
-    DefaultStateType, DeviceInfoColorLightResult, DeviceInfoGenericResult, DeviceInfoHubResult,
-    DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
-    DeviceInfoPowerStripResult, DeviceUsageEnergyMonitoringResult, DeviceUsageResult,
+    DefaultRgbLightStripState, DefaultStateType, DeviceInfoColorLightResult,
+    DeviceInfoGenericResult, DeviceInfoHubResult, DeviceInfoLightResult,
+    DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult, DeviceInfoPowerStripResult,
+    DeviceInfoRgbLightStripResult, DeviceUsageEnergyMonitoringResult, DeviceUsageResult,
     EnergyDataResult, EnergyUsageResult, KE100Result, OvercurrentStatus, OverheatStatus, PlugState,
-    PowerProtectionStatus, PowerStripPlugResult, S200BLog, S200BResult, S200BRotationParams,
-    Status, T100Log, T100Result, T110Log, T110Result, T300Log, T300Result, T31XResult,
-    TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100,
-    UsageByPeriodResult, WaterLeakStatus,
+    PowerProtectionStatus, PowerStripPlugResult, RgbLightStripState, S200BLog, S200BResult,
+    S200BRotationParams, Status, T100Log, T100Result, T110Log, T110Result, T300Log, T300Result,
+    T31XResult, TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit,
+    TemperatureUnitKE100, UsageByPeriodResult, WaterLeakStatus,
+};
+
+use api::{
+    PyApiClient, PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyKE100Handler,
+    PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler,
+    PyPowerStripPlugHandler, PyRgbLightStripHandler, PyT100Handler, PyT110Handler, PyT300Handler,
+    PyT31XHandler,
+};
+use requests::{PyColorLightSetDeviceInfoParams, PyEnergyDataInterval};
+use responses::{
+    TriggerLogsS200BResult, TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
 };
 
 #[pymodule]
@@ -73,6 +78,7 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyLightHandler>()?;
     module.add_class::<PyPlugEnergyMonitoringHandler>()?;
     module.add_class::<PyPlugHandler>()?;
+    module.add_class::<PyRgbLightStripHandler>()?;
 
     module.add_class::<PyHubHandler>()?;
     module.add_class::<PyKE100Handler>()?;
@@ -101,17 +107,22 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PowerProtectionStatus>()?;
     module.add_class::<UsageByPeriodResult>()?;
 
-    // device info: color light
-    module.add_class::<DeviceInfoColorLightResult>()?;
-    module.add_class::<DefaultColorLightState>()?;
-    module.add_class::<ColorLightState>()?;
-
     // device info: generic
     module.add_class::<DeviceInfoGenericResult>()?;
 
     // device info: light
     module.add_class::<DeviceInfoLightResult>()?;
     module.add_class::<DefaultLightState>()?;
+
+    // device info: color light
+    module.add_class::<DeviceInfoColorLightResult>()?;
+    module.add_class::<DefaultColorLightState>()?;
+    module.add_class::<ColorLightState>()?;
+
+    // device info: rgb light strip
+    module.add_class::<DeviceInfoRgbLightStripResult>()?;
+    module.add_class::<DefaultRgbLightStripState>()?;
+    module.add_class::<RgbLightStripState>()?;
 
     // device info: plugs
     module.add_class::<DefaultPlugState>()?;

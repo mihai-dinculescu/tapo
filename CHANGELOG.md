@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- Added an example for the L900 light strips.
+
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- Added support for the L900 light strips.
 
 ## [Python v0.7.0][py-v0.7.0] - 2024-11-07
 

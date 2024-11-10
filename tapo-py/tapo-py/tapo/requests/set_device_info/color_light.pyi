@@ -1,4 +1,8 @@
+from typing import Union
+
+from tapo.color_light_handler import ColorLightHandler
 from tapo.requests import Color
+from tapo.rgb_light_strip_handler import RgbLightStripHandler
 
 class ColorLightSetDeviceInfoParams:
     """Builder that is used by the `ColorLightHandler.set` API to set
@@ -53,5 +57,9 @@ class ColorLightSetDeviceInfoParams:
             color_temperature (int): between 2500 and 6500
         """
 
-    async def send(self) -> None:
-        """Performs a request to apply the changes to the device."""
+    async def send(self, handler: Union[ColorLightHandler, RgbLightStripHandler]) -> None:
+        """Performs a request to apply the changes to the device.
+
+        Args:
+            handler (`ColorLightHandler` | `RgbLightStripHandler`)
+        """

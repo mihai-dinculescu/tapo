@@ -7,20 +7,20 @@ use tapo::responses::DeviceInfoPowerStripResult;
 use tapo::{Error, Plug, PowerStripHandler};
 use tokio::sync::RwLock;
 
+use crate::api::PyPowerStripPlugHandler;
 use crate::call_handler_method;
 use crate::errors::ErrorWrapper;
-use crate::handlers::PyPowerStripPlugHandler;
 
 #[derive(Clone)]
 #[pyclass(name = "PowerStripHandler")]
 pub struct PyPowerStripHandler {
-    handler: Arc<RwLock<PowerStripHandler>>,
+    inner: Arc<RwLock<PowerStripHandler>>,
 }
 
 impl PyPowerStripHandler {
     pub fn new(handler: PowerStripHandler) -> Self {
         Self {
-            handler: Arc::new(RwLock::new(handler)),
+            inner: Arc::new(RwLock::new(handler)),
         }
     }
 
@@ -45,7 +45,7 @@ impl PyPowerStripHandler {
 #[pymethods]
 impl PyPowerStripHandler {
     pub async fn refresh_session(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.write().await.deref_mut(),
             PowerStripHandler::refresh_session,
@@ -54,7 +54,7 @@ impl PyPowerStripHandler {
     }
 
     pub async fn get_device_info(&self) -> PyResult<DeviceInfoPowerStripResult> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             PowerStripHandler::get_device_info
@@ -62,7 +62,7 @@ impl PyPowerStripHandler {
     }
 
     pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let result = call_handler_method!(
             handler.read().await.deref(),
             PowerStripHandler::get_device_info_json
@@ -71,7 +71,7 @@ impl PyPowerStripHandler {
     }
 
     pub async fn get_child_device_list(&self) -> PyResult<Py<PyList>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let children = call_handler_method!(
             handler.read().await.deref(),
             PowerStripHandler::get_child_device_list
@@ -91,7 +91,7 @@ impl PyPowerStripHandler {
     }
 
     pub async fn get_child_device_list_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let result = call_handler_method!(
             handler.read().await.deref(),
             PowerStripHandler::get_child_device_list_json
@@ -100,7 +100,7 @@ impl PyPowerStripHandler {
     }
 
     pub async fn get_child_device_component_list_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let result = call_handler_method!(
             handler.read().await.deref(),
             PowerStripHandler::get_child_device_component_list_json
@@ -115,7 +115,7 @@ impl PyPowerStripHandler {
         nickname: Option<String>,
         position: Option<u8>,
     ) -> PyResult<PyPowerStripPlugHandler> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let identifier = PyPowerStripHandler::parse_identifier(device_id, nickname, position)?;
 
         let child_handler = call_handler_method!(

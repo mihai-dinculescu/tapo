@@ -12,13 +12,13 @@ use crate::call_handler_method;
 #[derive(Clone)]
 #[pyclass(name = "LightHandler")]
 pub struct PyLightHandler {
-    handler: Arc<RwLock<LightHandler>>,
+    inner: Arc<RwLock<LightHandler>>,
 }
 
 impl PyLightHandler {
     pub fn new(handler: LightHandler) -> Self {
         Self {
-            handler: Arc::new(RwLock::new(handler)),
+            inner: Arc::new(RwLock::new(handler)),
         }
     }
 }
@@ -26,7 +26,7 @@ impl PyLightHandler {
 #[pymethods]
 impl PyLightHandler {
     pub async fn refresh_session(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.write().await.deref_mut(),
             LightHandler::refresh_session,
@@ -35,27 +35,27 @@ impl PyLightHandler {
     }
 
     pub async fn on(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(handler.read().await.deref(), LightHandler::on)
     }
 
     pub async fn off(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(handler.read().await.deref(), LightHandler::off)
     }
 
     pub async fn device_reset(&self) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(handler.read().await.deref(), LightHandler::device_reset)
     }
 
     pub async fn get_device_info(&self) -> PyResult<DeviceInfoLightResult> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(handler.read().await.deref(), LightHandler::get_device_info)
     }
 
     pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         let result = call_handler_method!(
             handler.read().await.deref(),
             LightHandler::get_device_info_json
@@ -64,12 +64,12 @@ impl PyLightHandler {
     }
 
     pub async fn get_device_usage(&self) -> PyResult<DeviceUsageEnergyMonitoringResult> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(handler.read().await.deref(), LightHandler::get_device_usage)
     }
 
     pub async fn set_brightness(&self, brightness: u8) -> PyResult<()> {
-        let handler = self.handler.clone();
+        let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             LightHandler::set_brightness,

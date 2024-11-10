@@ -1,6 +1,6 @@
 """Tapo API Client.
 
-Tested with light bulbs (L510, L520, L530, L535, L610, L630), plugs (P100, P105, P110, P115), 
+Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900), plugs (P100, P105, P110, P115), 
 power strips (P300, P304), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
 
 Example:
@@ -29,11 +29,12 @@ from .light_handler import LightHandler
 from .plug_energy_monitoring_handler import PlugEnergyMonitoringHandler
 from .plug_handler import PlugHandler
 from .power_strip_handler import PowerStripHandler
+from .rgb_light_strip_handler import RgbLightStripHandler
 
 class ApiClient:
     """Tapo API Client.
 
-    Tested with light bulbs (L510, L520, L530, L535, L610, L630), plugs (P100, P105, P110, P115),
+    Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900), plugs (P100, P105, P110, P115),
     power strips (P300, P304), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
 
     Example:
@@ -207,6 +208,24 @@ class ApiClient:
             ```python
             client = ApiClient("tapo-username@example.com", "tapo-password")
             device = await client.l630("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
+    async def l900(self, ip_address: str) -> RgbLightStripHandler:
+        """Specializes the given `ApiClient` into an authenticated `RgbLightStripHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            RgbLightStripHandler: Handler for the [L900](https://www.tapo.com/en/search/?q=L900) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.l900("192.168.1.100")
 
             await device.on()
             ```
