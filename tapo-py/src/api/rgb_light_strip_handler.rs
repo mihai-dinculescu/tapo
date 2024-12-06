@@ -5,9 +5,10 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use tapo::requests::Color;
 use tapo::responses::{DeviceInfoRgbLightStripResult, DeviceUsageEnergyMonitoringResult};
-use tapo::RgbLightStripHandler;
+use tapo::{HandlerExt, RgbLightStripHandler};
 use tokio::sync::RwLock;
 
+use crate::api::PyHandlerExt;
 use crate::call_handler_method;
 use crate::requests::PyColorLightSetDeviceInfoParams;
 
@@ -23,9 +24,11 @@ impl PyRgbLightStripHandler {
             inner: Arc::new(RwLock::new(handler)),
         }
     }
+}
 
-    pub fn get_inner_handler(&self) -> Arc<RwLock<RgbLightStripHandler>> {
-        self.inner.clone()
+impl PyHandlerExt for PyRgbLightStripHandler {
+    fn get_inner_handler(&self) -> Arc<RwLock<(impl HandlerExt + 'static)>> {
+        Arc::clone(&self.inner)
     }
 }
 

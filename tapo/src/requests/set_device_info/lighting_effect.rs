@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, BoolFromInt};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
 #[allow(missing_docs)]
 pub enum LightingEffectType {
     Sequence,
@@ -13,6 +14,7 @@ pub enum LightingEffectType {
 
 #[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
 pub struct LightingEffect {
     // Mandatory
@@ -40,7 +42,8 @@ pub struct LightingEffect {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expansion_strategy: Option<u8>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub fadeoff: Option<u16>,
+    #[serde(rename = "fadeoff")]
+    pub fade_off: Option<u16>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hue_range: Option<[u16; 2]>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -70,10 +73,21 @@ pub struct LightingEffect {
     pub transition_sequence: Option<Vec<u16>>,
 }
 
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl LightingEffect {
+    /// Gets all the properties of this result as a dictionary.
+    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
+        let value = serde_json::to_value(self)
+            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
+
+        crate::python::serde_object_to_py_dict(py, &value)
+    }
+}
+
 #[allow(missing_docs)]
 impl LightingEffect {
     pub fn new(
-        id: impl Into<String>,
         name: impl Into<String>,
         r#type: LightingEffectType,
         is_custom: bool,
@@ -87,7 +101,7 @@ impl LightingEffect {
             is_custom,
             display_colors,
             enabled,
-            id: id.into(),
+            id: uuid::Uuid::new_v4().simple().to_string(),
             name: name.into(),
             r#type,
             // Optional
@@ -96,7 +110,7 @@ impl LightingEffect {
             direction: None,
             duration: None,
             expansion_strategy: None,
-            fadeoff: None,
+            fade_off: None,
             hue_range: None,
             init_states: None,
             random_seed: None,
@@ -111,25 +125,6 @@ impl LightingEffect {
             transition_sequence: None,
             transition: None,
         }
-    }
-
-    pub fn new_with_random_id(
-        name: impl Into<String>,
-        r#type: LightingEffectType,
-        custom: bool,
-        enable: bool,
-        brightness: u8,
-        display_colors: Vec<[u16; 3]>,
-    ) -> Self {
-        Self::new(
-            uuid::Uuid::new_v4().simple().to_string(),
-            name,
-            r#type,
-            custom,
-            enable,
-            brightness,
-            display_colors,
-        )
     }
 
     pub fn with_brightness(mut self, brightness: u8) -> Self {
@@ -177,11 +172,6 @@ impl LightingEffect {
         self
     }
 
-    pub fn with_init_states(mut self, init_states: Vec<[u16; 3]>) -> Self {
-        self.init_states = Some(init_states);
-        self
-    }
-
     pub fn with_direction(mut self, direction: u8) -> Self {
         self.direction = Some(direction);
         self
@@ -197,13 +187,18 @@ impl LightingEffect {
         self
     }
 
-    pub fn with_fadeoff(mut self, fadeoff: u16) -> Self {
-        self.fadeoff = Some(fadeoff);
+    pub fn with_fade_off(mut self, fade_off: u16) -> Self {
+        self.fade_off = Some(fade_off);
         self
     }
 
     pub fn with_hue_range(mut self, hue_range: [u16; 2]) -> Self {
         self.hue_range = Some(hue_range);
+        self
+    }
+
+    pub fn with_init_states(mut self, init_states: Vec<[u16; 3]>) -> Self {
+        self.init_states = Some(init_states);
         self
     }
 
@@ -263,7 +258,8 @@ impl LightingEffect {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
 #[non_exhaustive]
 #[allow(missing_docs)]
 pub enum LightingEffectPreset {
@@ -313,7 +309,6 @@ impl From<LightingEffectPreset> for LightingEffect {
 impl LightingEffectPreset {
     fn aurora(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_1MClvV18i15Jq3bvJVf0eP",
             "Aurora",
             LightingEffectType::Sequence,
             false,
@@ -326,6 +321,7 @@ impl LightingEffectPreset {
                 [280, 100, 100],
             ],
         )
+        .with_id("TapoStrip_1MClvV18i15Jq3bvJVf0eP")
         .with_direction(4)
         .with_duration(0)
         .with_expansion_strategy(1)
@@ -343,7 +339,6 @@ impl LightingEffectPreset {
 
     fn bubbling_cauldron(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_6DlumDwO2NdfHppy50vJtu",
             "Bubbling Cauldron",
             LightingEffectType::Random,
             false,
@@ -351,12 +346,13 @@ impl LightingEffectPreset {
             100,
             vec![[100, 100, 100], [270, 100, 100]],
         )
+        .with_id("TapoStrip_6DlumDwO2NdfHppy50vJtu")
         .with_backgrounds(vec![[270, 40, 50]])
         .with_brightness_range([50, 100])
         .with_init_states(vec![[270, 100, 100]])
         .with_duration(0)
         .with_expansion_strategy(1)
-        .with_fadeoff(1000)
+        .with_fade_off(1000)
         .with_hue_range([100, 270])
         .with_random_seed(24)
         .with_saturation_range([80, 100])
@@ -366,7 +362,6 @@ impl LightingEffectPreset {
 
     fn candy_cane(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_6Dy0Nc45vlhFPEzG021Pe9",
             "Candy Cane",
             LightingEffectType::Sequence,
             false,
@@ -374,6 +369,7 @@ impl LightingEffectPreset {
             100,
             vec![[0, 0, 100], [360, 81, 100]],
         )
+        .with_id("TapoStrip_6Dy0Nc45vlhFPEzG021Pe9")
         .with_direction(1)
         .with_duration(700)
         .with_expansion_strategy(1)
@@ -403,7 +399,6 @@ impl LightingEffectPreset {
 
     fn christmas(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_5zkiG6avJ1IbhjiZbRlWvh",
             "Christmas",
             LightingEffectType::Random,
             false,
@@ -411,6 +406,7 @@ impl LightingEffectPreset {
             100,
             vec![[136, 98, 100], [350, 97, 100]],
         )
+        .with_id("TapoStrip_5zkiG6avJ1IbhjiZbRlWvh")
         .with_backgrounds(vec![
             [136, 98, 75],
             [136, 0, 0],
@@ -421,7 +417,7 @@ impl LightingEffectPreset {
         .with_init_states(vec![[136, 0, 100]])
         .with_duration(5000)
         .with_expansion_strategy(1)
-        .with_fadeoff(2000)
+        .with_fade_off(2000)
         .with_hue_range([136, 146])
         .with_random_seed(100)
         .with_saturation_range([90, 100])
@@ -431,7 +427,6 @@ impl LightingEffectPreset {
 
     fn flicker(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_4HVKmMc6vEzjm36jXaGwMs",
             "Flicker",
             LightingEffectType::Random,
             false,
@@ -439,6 +434,7 @@ impl LightingEffectPreset {
             100,
             vec![[30, 81, 100], [40, 100, 100]],
         )
+        .with_id("TapoStrip_4HVKmMc6vEzjm36jXaGwMs")
         .with_brightness_range([50, 100])
         .with_init_states(vec![[30, 81, 80]])
         .with_duration(0)
@@ -452,7 +448,6 @@ impl LightingEffectPreset {
 
     fn grandmas_christmas_lights(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_3Gk6CmXOXbjCiwz9iD543C",
             "Grandma's Christmas Lights",
             LightingEffectType::Sequence,
             false,
@@ -465,6 +460,7 @@ impl LightingEffectPreset {
                 [0, 100, 100],
             ],
         )
+        .with_id("TapoStrip_3Gk6CmXOXbjCiwz9iD543C")
         .with_direction(1)
         .with_duration(5000)
         .with_expansion_strategy(1)
@@ -493,7 +489,6 @@ impl LightingEffectPreset {
 
     fn hanukkah(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_2YTk4wramLKv5XZ9KFDVYm",
             "Hanukkah",
             LightingEffectType::Random,
             false,
@@ -501,6 +496,7 @@ impl LightingEffectPreset {
             100,
             vec![[200, 100, 100]],
         )
+        .with_id("TapoStrip_2YTk4wramLKv5XZ9KFDVYm")
         .with_brightness_range([50, 100])
         .with_init_states(vec![[35, 81, 80]])
         .with_duration(1500)
@@ -514,7 +510,6 @@ impl LightingEffectPreset {
 
     fn haunted_mansion(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_4rJ6JwC7I9st3tQ8j4lwlI",
             "Haunted Mansion",
             LightingEffectType::Random,
             false,
@@ -522,12 +517,13 @@ impl LightingEffectPreset {
             100,
             vec![[45, 10, 100]],
         )
+        .with_id("TapoStrip_4rJ6JwC7I9st3tQ8j4lwlI")
         .with_backgrounds(vec![[45, 10, 100]])
         .with_brightness_range([0, 80])
         .with_init_states(vec![[45, 10, 100]])
         .with_duration(0)
         .with_expansion_strategy(2)
-        .with_fadeoff(200)
+        .with_fade_off(200)
         .with_hue_range([45, 45])
         .with_random_seed(1)
         .with_saturation_range([10, 10])
@@ -538,7 +534,6 @@ impl LightingEffectPreset {
 
     fn icicle(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_7UcYLeJbiaxVIXCxr21tpx",
             "Icicle",
             LightingEffectType::Sequence,
             false,
@@ -546,6 +541,7 @@ impl LightingEffectPreset {
             100,
             vec![[190, 100, 100]],
         )
+        .with_id("TapoStrip_7UcYLeJbiaxVIXCxr21tpx")
         .with_direction(4)
         .with_duration(0)
         .with_expansion_strategy(1)
@@ -564,7 +560,6 @@ impl LightingEffectPreset {
 
     fn lightning(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_7OGzfSfnOdhoO2ri4gOHWn",
             "Lightning",
             LightingEffectType::Random,
             false,
@@ -572,6 +567,7 @@ impl LightingEffectPreset {
             100,
             vec![[210, 10, 100], [200, 50, 100], [200, 100, 100]],
         )
+        .with_id("TapoStrip_7OGzfSfnOdhoO2ri4gOHWn")
         .with_backgrounds(vec![
             [200, 100, 100],
             [200, 50, 10],
@@ -582,7 +578,7 @@ impl LightingEffectPreset {
         .with_init_states(vec![[240, 30, 100]])
         .with_duration(0)
         .with_expansion_strategy(1)
-        .with_fadeoff(150)
+        .with_fade_off(150)
         .with_hue_range([240, 240])
         .with_random_seed(600)
         .with_saturation_range([10, 11])
@@ -592,7 +588,6 @@ impl LightingEffectPreset {
 
     fn ocean(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_0fOleCdwSgR0nfjkReeYfw",
             "Ocean",
             LightingEffectType::Sequence,
             false,
@@ -600,6 +595,7 @@ impl LightingEffectPreset {
             100,
             vec![[198, 84, 100]],
         )
+        .with_id("TapoStrip_0fOleCdwSgR0nfjkReeYfw")
         .with_direction(3)
         .with_duration(0)
         .with_expansion_strategy(1)
@@ -612,7 +608,6 @@ impl LightingEffectPreset {
 
     fn rainbow(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_7CC5y4lsL8pETYvmz7UOpQ",
             "Rainbow",
             LightingEffectType::Sequence,
             false,
@@ -625,6 +620,7 @@ impl LightingEffectPreset {
                 [300, 100, 100],
             ],
         )
+        .with_id("TapoStrip_7CC5y4lsL8pETYvmz7UOpQ")
         .with_direction(1)
         .with_duration(0)
         .with_expansion_strategy(1)
@@ -642,7 +638,6 @@ impl LightingEffectPreset {
 
     fn raindrop(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_1t2nWlTBkV8KXBZ0TWvBjs",
             "Raindrop",
             LightingEffectType::Random,
             false,
@@ -650,12 +645,13 @@ impl LightingEffectPreset {
             100,
             vec![[200, 10, 100], [200, 20, 100]],
         )
+        .with_id("TapoStrip_1t2nWlTBkV8KXBZ0TWvBjs")
         .with_backgrounds(vec![[200, 40, 0]])
         .with_brightness_range([10, 30])
         .with_init_states(vec![[200, 40, 100]])
         .with_duration(0)
         .with_expansion_strategy(1)
-        .with_fadeoff(1000)
+        .with_fade_off(1000)
         .with_hue_range([200, 200])
         .with_random_seed(24)
         .with_saturation_range([10, 20])
@@ -665,7 +661,6 @@ impl LightingEffectPreset {
 
     fn spring(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_1nL6GqZ5soOxj71YDJOlZL",
             "Spring",
             LightingEffectType::Random,
             false,
@@ -673,12 +668,13 @@ impl LightingEffectPreset {
             100,
             vec![[0, 30, 100], [130, 100, 100]],
         )
+        .with_id("TapoStrip_1nL6GqZ5soOxj71YDJOlZL")
         .with_backgrounds(vec![[130, 100, 40]])
         .with_brightness_range([90, 100])
         .with_init_states(vec![[80, 30, 100]])
         .with_duration(600)
         .with_expansion_strategy(1)
-        .with_fadeoff(1000)
+        .with_fade_off(1000)
         .with_hue_range([0, 90])
         .with_random_seed(20)
         .with_saturation_range([30, 100])
@@ -689,7 +685,6 @@ impl LightingEffectPreset {
 
     fn sunrise(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_1OVSyXIsDxrt4j7OxyRvqi",
             "Sunrise",
             LightingEffectType::Pulse,
             false,
@@ -697,6 +692,7 @@ impl LightingEffectPreset {
             100,
             vec![[30, 0, 100], [30, 95, 100], [0, 100, 100]],
         )
+        .with_id("TapoStrip_1OVSyXIsDxrt4j7OxyRvqi")
         .with_direction(1)
         .with_duration(600)
         .with_expansion_strategy(2)
@@ -727,7 +723,6 @@ impl LightingEffectPreset {
 
     fn sunset(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_5NiN0Y8GAUD78p4neKk9EL",
             "Sunset",
             LightingEffectType::Pulse,
             false,
@@ -735,6 +730,7 @@ impl LightingEffectPreset {
             100,
             vec![[0, 100, 100], [30, 95, 100], [30, 0, 100]],
         )
+        .with_id("TapoStrip_5NiN0Y8GAUD78p4neKk9EL")
         .with_direction(1)
         .with_duration(600)
         .with_expansion_strategy(2)
@@ -765,7 +761,6 @@ impl LightingEffectPreset {
 
     fn valentines(self) -> LightingEffect {
         LightingEffect::new(
-            "TapoStrip_2q1Vio9sSjHmaC7JS9d30l",
             "Valentines",
             LightingEffectType::Random,
             false,
@@ -773,12 +768,13 @@ impl LightingEffectPreset {
             100,
             vec![[340, 20, 100], [20, 50, 100], [0, 100, 100], [340, 40, 100]],
         )
+        .with_id("TapoStrip_2q1Vio9sSjHmaC7JS9d30l")
         .with_backgrounds(vec![[340, 20, 50], [20, 50, 50], [0, 100, 50]])
         .with_brightness_range([90, 100])
         .with_init_states(vec![[340, 30, 100]])
         .with_duration(600)
         .with_expansion_strategy(1)
-        .with_fadeoff(3000)
+        .with_fade_off(3000)
         .with_hue_range([340, 340])
         .with_random_seed(100)
         .with_saturation_range([30, 40])

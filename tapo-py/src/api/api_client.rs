@@ -3,11 +3,13 @@ use std::time::Duration;
 use tapo::{
     ApiClient, ColorLightHandler, GenericDeviceHandler, HubHandler, LightHandler,
     PlugEnergyMonitoringHandler, PlugHandler, PowerStripHandler, RgbLightStripHandler,
+    RgbicLightStripHandler,
 };
 
 use crate::api::{
     PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
     PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler, PyRgbLightStripHandler,
+    PyRgbicLightStripHandler,
 };
 use crate::call_handler_constructor;
 use crate::errors::ErrorWrapper;
@@ -81,6 +83,18 @@ impl PyApiClient {
         let handler: RgbLightStripHandler =
             call_handler_constructor!(self, tapo::ApiClient::l900, ip_address);
         Ok(PyRgbLightStripHandler::new(handler))
+    }
+
+    pub async fn l920(&self, ip_address: String) -> PyResult<PyRgbicLightStripHandler> {
+        let handler: RgbicLightStripHandler =
+            call_handler_constructor!(self, tapo::ApiClient::l920, ip_address);
+        Ok(PyRgbicLightStripHandler::new(handler))
+    }
+
+    pub async fn l930(&self, ip_address: String) -> PyResult<PyRgbicLightStripHandler> {
+        let handler: RgbicLightStripHandler =
+            call_handler_constructor!(self, tapo::ApiClient::l930, ip_address);
+        Ok(PyRgbicLightStripHandler::new(handler))
     }
 
     pub async fn p100(&self, ip_address: String) -> PyResult<PyPlugHandler> {

@@ -8,16 +8,17 @@ use log::LevelFilter;
 use pyo3::prelude::*;
 use pyo3_log::{Caching, Logger};
 
-use tapo::requests::Color;
+use tapo::requests::{Color, LightingEffectPreset, LightingEffectType};
 use tapo::responses::{
     AutoOffStatus, ColorLightState, CurrentPowerResult, DefaultBrightnessState,
     DefaultColorLightState, DefaultLightState, DefaultPlugState, DefaultPowerType,
-    DefaultRgbLightStripState, DefaultStateType, DeviceInfoColorLightResult,
-    DeviceInfoGenericResult, DeviceInfoHubResult, DeviceInfoLightResult,
-    DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult, DeviceInfoPowerStripResult,
-    DeviceInfoRgbLightStripResult, DeviceUsageEnergyMonitoringResult, DeviceUsageResult,
-    EnergyDataResult, EnergyUsageResult, KE100Result, OvercurrentStatus, OverheatStatus, PlugState,
-    PowerProtectionStatus, PowerStripPlugResult, RgbLightStripState, S200BLog, S200BResult,
+    DefaultRgbLightStripState, DefaultRgbicLightStripState, DefaultStateType,
+    DeviceInfoColorLightResult, DeviceInfoGenericResult, DeviceInfoHubResult,
+    DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
+    DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
+    DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
+    KE100Result, OvercurrentStatus, OverheatStatus, PlugState, PowerProtectionStatus,
+    PowerStripPlugResult, RgbLightStripState, RgbicLightStripState, S200BLog, S200BResult,
     S200BRotationParams, Status, T100Log, T100Result, T110Log, T110Result, T300Log, T300Result,
     T31XResult, TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit,
     TemperatureUnitKE100, UsageByPeriodResult, WaterLeakStatus,
@@ -26,10 +27,10 @@ use tapo::responses::{
 use api::{
     PyApiClient, PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyKE100Handler,
     PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler,
-    PyPowerStripPlugHandler, PyRgbLightStripHandler, PyT100Handler, PyT110Handler, PyT300Handler,
-    PyT31XHandler,
+    PyPowerStripPlugHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler, PyT100Handler,
+    PyT110Handler, PyT300Handler, PyT31XHandler,
 };
-use requests::{PyColorLightSetDeviceInfoParams, PyEnergyDataInterval};
+use requests::{PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyLightingEffect};
 use responses::{
     TriggerLogsS200BResult, TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
 };
@@ -64,6 +65,9 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
 
 fn register_requests(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<Color>()?;
+    module.add_class::<PyLightingEffect>()?;
+    module.add_class::<LightingEffectPreset>()?;
+    module.add_class::<LightingEffectType>()?;
     module.add_class::<PyColorLightSetDeviceInfoParams>()?;
     module.add_class::<PyEnergyDataInterval>()?;
     module.add_class::<TemperatureUnitKE100>()?;
@@ -79,6 +83,7 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyPlugEnergyMonitoringHandler>()?;
     module.add_class::<PyPlugHandler>()?;
     module.add_class::<PyRgbLightStripHandler>()?;
+    module.add_class::<PyRgbicLightStripHandler>()?;
 
     module.add_class::<PyHubHandler>()?;
     module.add_class::<PyKE100Handler>()?;
@@ -123,6 +128,13 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DeviceInfoRgbLightStripResult>()?;
     module.add_class::<DefaultRgbLightStripState>()?;
     module.add_class::<RgbLightStripState>()?;
+
+    // device info: rgbic light strip
+    module.add_class::<DeviceInfoRgbicLightStripResult>()?;
+    module.add_class::<DefaultRgbicLightStripState>()?;
+    module.add_class::<RgbicLightStripState>()?;
+    module.add_class::<PyLightingEffect>()?;
+    module.add_class::<LightingEffectType>()?;
 
     // device info: plugs
     module.add_class::<DefaultPlugState>()?;

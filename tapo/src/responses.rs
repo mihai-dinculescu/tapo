@@ -16,6 +16,8 @@ mod tapo_result;
 mod token_result;
 mod trigger_logs_result;
 
+pub use crate::requests::{LightingEffect, LightingEffectType};
+
 pub use child_device_list_hub_result::*;
 pub use child_device_list_power_strip_result::*;
 pub use current_power_result::*;

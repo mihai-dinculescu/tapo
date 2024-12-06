@@ -8,3 +8,5 @@ from .plug_result import *
 from .power_status import *
 from .power_strip_result import *
 from .rgb_light_strip_result import *
+from .rgbic_light_strip_result import *
+from tapo.requests import LightingEffect as LightingEffect

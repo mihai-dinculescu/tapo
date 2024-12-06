@@ -3,7 +3,7 @@ use std::ops::RangeInclusive;
 use serde::Serialize;
 
 use crate::error::Error;
-use crate::requests::color::{Color, COLOR_MAP};
+use crate::requests::{Color, COLOR_MAP};
 use crate::HandlerExt;
 
 /// Builder that is used by the [`crate::ColorLightHandler::set`] API to set multiple properties in a single request.

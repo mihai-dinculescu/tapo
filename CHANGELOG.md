@@ -10,11 +10,17 @@ file. This change log follows the conventions of
 
 - Added an example for the L900 light strips.
 
+### Changed
+
+- `LightingEffect`'s `fadeoff` field has been renamed to `fade_off`, and its `with_fadeoff` method has been renamed to `with_fade_off`.
+- `LightingEffect`'s `new_with_random_id` function has been removed. The `new` function now creates a `LightingEffect` instance with a random ID by default.
+
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
 - Added support for the L900 light strips.
+- Added support for the L920 and L930 light strips.
 
 ## [Python v0.7.0][py-v0.7.0] - 2024-11-07
 

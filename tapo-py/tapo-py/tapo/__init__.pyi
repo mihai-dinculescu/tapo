@@ -2,6 +2,7 @@ from .api_client import *
 from .color_light_handler import *
 from .generic_device_handler import *
 from .hub_handler import *
+from .ke100_handler import *
 from .light_handler import *
 from .plug_energy_monitoring_handler import *
 from .plug_handler import *
@@ -9,7 +10,8 @@ from .power_strip_handler import *
 from .power_strip_plug_handler import *
 from .requests import *
 from .responses import *
-from .ke100_handler import *
+from .rgb_light_strip_handler import *
+from .rgbic_light_strip_handler import *
 from .s200b_handler import *
 from .t100_handler import *
 from .t110_handler import *
