@@ -75,30 +75,30 @@ impl PyHubHandler {
         )?;
 
         let results = Python::with_gil(|py| {
-            let results = PyList::empty_bound(py);
+            let results = PyList::empty(py);
 
             for child in children {
                 match child {
                     ChildDeviceHubResult::KE100(device) => {
-                        results.append(device.into_py(py))?;
+                        results.append(device.into_pyobject(py)?)?;
                     }
                     ChildDeviceHubResult::S200B(device) => {
-                        results.append(device.into_py(py))?;
+                        results.append(device.into_pyobject(py)?)?;
                     }
                     ChildDeviceHubResult::T100(device) => {
-                        results.append(device.into_py(py))?;
+                        results.append(device.into_pyobject(py)?)?;
                     }
                     ChildDeviceHubResult::T110(device) => {
-                        results.append(device.into_py(py))?;
+                        results.append(device.into_pyobject(py)?)?;
                     }
                     ChildDeviceHubResult::T300(device) => {
-                        results.append(device.into_py(py))?;
+                        results.append(device.into_pyobject(py)?)?;
                     }
                     ChildDeviceHubResult::T310(device) => {
-                        results.append(device.into_py(py))?;
+                        results.append(device.into_pyobject(py)?)?;
                     }
                     ChildDeviceHubResult::T315(device) => {
-                        results.append(device.into_py(py))?;
+                        results.append(device.into_pyobject(py)?)?;
                     }
                     _ => {
                         results.append(py.None())?;

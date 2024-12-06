@@ -43,8 +43,8 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
         .install()
         .expect("Failed to install the logger");
 
-    let requests = PyModule::new_bound(py, "tapo.requests")?;
-    let responses = PyModule::new_bound(py, "tapo.responses")?;
+    let requests = PyModule::new(py, "tapo.requests")?;
+    let responses = PyModule::new(py, "tapo.responses")?;
 
     register_handlers(module)?;
     register_requests(&requests)?;
@@ -55,7 +55,7 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_submodule(&requests)?;
     module.add_submodule(&responses)?;
 
-    let sys = py.import_bound("sys")?;
+    let sys = py.import("sys")?;
     let modules = sys.getattr("modules")?;
     modules.set_item("tapo.requests", requests)?;
     modules.set_item("tapo.responses", responses)?;

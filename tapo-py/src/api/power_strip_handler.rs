@@ -78,10 +78,10 @@ impl PyPowerStripHandler {
         )?;
 
         let results = Python::with_gil(|py| {
-            let results = PyList::empty_bound(py);
+            let results = PyList::empty(py);
 
             for child in children {
-                results.append(child.into_py(py))?;
+                results.append(child.into_pyobject(py)?)?;
             }
 
             Ok(results.into())
