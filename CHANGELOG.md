@@ -6,6 +6,12 @@ file. This change log follows the conventions of
 
 ## [Unreleased][Unreleased]
 
+### Rust
+
+### Python
+
+## [v0.8.0][v0.8.0] - 2024-12-07
+
 This marks the first unified release of the Rust and Python libraries. Moving forward, both libraries will be released simultaneously and will share the same version number.
 
 ### Rust
@@ -517,6 +523,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.8.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.0
 [py-v0.7.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.7.0
 [v0.7.17]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.17
 [py-v0.6.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.6.0
