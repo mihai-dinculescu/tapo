@@ -4,23 +4,28 @@ All notable changes to this project will be documented in this
 file. This change log follows the conventions of
 [keepachangelog.com][keepachangelog].
 
-## [Rust Unreleased][Unreleased]
+## [Unreleased][Unreleased]
 
-### Added
+This marks the first unified release of the Rust and Python libraries. Moving forward, both libraries will be released simultaneously and will share the same version number.
+
+### Rust
+
+#### Added
 
 - Added an example for the L900 light strips.
 
-### Changed
+#### Changed
 
 - `LightingEffect`'s `fadeoff` field has been renamed to `fade_off`, and its `with_fadeoff` method has been renamed to `with_fade_off`.
 - `LightingEffect`'s `new_with_random_id` function has been removed. The `new` function now creates a `LightingEffect` instance with a random ID by default.
 
-## [Python Unreleased][Unreleased]
+### Python
 
-### Added
+#### Added
 
 - Added support for the L900 light strips.
 - Added support for the L920 and L930 light strips.
+- Added support for Python 3.13.
 
 ## [Python v0.7.0][py-v0.7.0] - 2024-11-07
 

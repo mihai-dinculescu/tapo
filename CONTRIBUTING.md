@@ -3,11 +3,12 @@
 Contributions are welcome and encouraged! See [/issues][issues] for ideas, or suggest your own!
 If you're thinking to create a PR with large feature/change, please first discuss it in an issue.
 
-## Releases
+[issues]: https://github.com/mihai-dinculescu/tapo/issues
 
-### Rust
+## Releasing new versions
 
 - Update version in `tapo/Cargo.toml`
+- Update version in `tapo-py/pyproject.toml` (two places)
 - Update CHANGELOG.md
 - Commit
 - Add tag
@@ -22,33 +23,6 @@ If you're thinking to create a PR with large feature/change, please first discus
   git push --follow-tags
   ```
 
-- Release\
-  Create a [new release][releases]. \
-  The `publish.yml` GitHub Action will pick it up and do the actual release to [crates.io][crates_io].
+- Create the [release][releases].
 
-### Python
-
-Until it reaches feature parity with the Rust library, the Python library will be released separately and have a independent version.
-
-- Update version in `tapo-py/pyproject.toml`
-- Update CHANGELOG.md
-- Commit
-- Add tag
-
-  ```bash
-  git tag -a py-vX.X.X -m "py-vX.X.X"
-  ```
-
-- Push
-
-  ```bash
-  git push --follow-tags
-  ```
-
-- Release\
-  Create a [new release][releases].
-
-
-[issues]: https://github.com/mihai-dinculescu/tapo/issues
 [releases]: https://github.com/mihai-dinculescu/tapo/releases
-[crates_io]: https://crates.io
