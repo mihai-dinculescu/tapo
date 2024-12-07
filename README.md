@@ -80,7 +80,7 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 > Cargo.toml
 ```toml
 [dependencies]
-tapo = "0.7"
+tapo = "0.8"
 ```
 
 > main.rs
