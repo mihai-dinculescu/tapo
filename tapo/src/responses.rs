@@ -10,6 +10,7 @@ mod device_usage_energy_monitoring_result;
 mod device_usage_result;
 mod energy_data_result;
 mod energy_usage_result;
+mod get_support_alarm_type_list_result;
 mod handshake_result;
 mod tapo_response;
 mod tapo_result;
@@ -26,6 +27,7 @@ pub use device_usage_energy_monitoring_result::*;
 pub use device_usage_result::*;
 pub use energy_data_result::*;
 pub use energy_usage_result::*;
+pub use get_support_alarm_type_list_result::*;
 pub use trigger_logs_result::*;
 
 pub(crate) use control_child_result::*;

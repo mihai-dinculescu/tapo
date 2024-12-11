@@ -49,6 +49,10 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 | set_hue_saturation                   |                              |                        |          &#x2705;           |      &#x2705;       |        &#x2705;         |                         |                         |                         |                     |
 | set_lighting_effect                  |                              |                        |                             |                     |        &#x2705;         |                         |                         |                         |                     |
 | set() API \*                         |                              |                        |          &#x2705;           |      &#x2705;       |        &#x2705;         |                         |                         |                         |                     |
+| get_supported_alarm_type_list        |                              |                        |          &#x2705;           |      &#x2705;       |        &#x2705;         |                         |                         |                         |       &check;       |
+| play_alarm                           |                              |                        |          &#x2705;           |      &#x2705;       |        &#x2705;         |                         |                         |                         |       &check;       |
+| stop_alarm                           |                              |                        |          &#x2705;           |      &#x2705;       |        &#x2705;         |                         |                         |                         |       &check;       |
+
 
 \* The `set()` API allows multiple properties to be set in a single request.
 
