@@ -1,10 +1,10 @@
 use std::sync::Arc;
-
 use tokio::sync::RwLock;
 
 use crate::api::ApiClient;
 use crate::api::{KE100Handler, S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler};
 use crate::error::Error;
+use crate::requests::PlayAlarmParams;
 use crate::responses::{ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoHubResult};
 
 macro_rules! get_device_id {
@@ -45,6 +45,10 @@ impl HubHandler {
         }
     }
 
+    pub(crate) fn get_client(&self) -> &RwLock<ApiClient> {
+        &self.client
+    }
+
     /// Refreshes the authentication session.
     pub async fn refresh_session(&mut self) -> Result<&mut Self, Error> {
         self.client.write().await.refresh_session().await?;
@@ -56,6 +60,26 @@ impl HubHandler {
     /// If the deserialization fails, or if a property that you care about it's not present, try [`HubHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<DeviceInfoHubResult, Error> {
         self.client.read().await.get_device_info().await
+    }
+
+    /// Returns a list of alarm types (ringtones) supported by the hub.
+    pub async fn get_supported_alarm_type_list(&self) -> Result<Vec<String>, Error> {
+        self.client
+            .read()
+            .await
+            .get_supported_alarm_type_list()
+            .await
+            .map(|response| response.alarm_type_list)
+    }
+
+    /// Use this to build a request to play the hub alarm
+    pub fn play_alarm(&self) -> PlayAlarmParams {
+        PlayAlarmParams::default()
+    }
+
+    /// Stop playing the hub alarm if currently playing
+    pub async fn stop_alarm(&self) -> Result<(), Error> {
+        self.client.read().await.stop_alarm().await
     }
 
     /// Returns *device info* as [`serde_json::Value`].
