@@ -134,5 +134,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Stopping the alarm");
     hub.stop_alarm().await?;
 
+    let device_info = hub.get_device_info().await?;
+    info!("Is device ringing?: {:?}", device_info.in_alarm);
+
     Ok(())
 }
