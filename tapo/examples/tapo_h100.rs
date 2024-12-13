@@ -3,7 +3,7 @@
 use log::{info, LevelFilter};
 use std::env;
 use std::time::Duration;
-use tapo::requests::{AlarmRingtone, AlarmVolume};
+use tapo::requests::{AlarmDuration, AlarmRingtone, AlarmVolume};
 use tapo::responses::ChildDeviceHubResult;
 use tapo::{ApiClient, HubDevice};
 
@@ -120,10 +120,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let ringtone = AlarmRingtone::Alarm1;
     let volume = AlarmVolume::Low;
-    let duration_secs = 1;
+    let duration = AlarmDuration::Seconds(1);
 
-    info!("Triggering the alarm ringtone {ringtone:?} for {duration_secs} seconds at a {volume:?} volume");
-    hub.play_alarm(Some(ringtone), Some(volume), Some(duration_secs))
+    info!("Triggering the alarm ringtone {ringtone:?} for {duration:?} at a {volume:?} volume");
+    hub.play_alarm(Some(ringtone), Some(volume), duration)
         .await?;
 
     let device_info = hub.get_device_info().await?;

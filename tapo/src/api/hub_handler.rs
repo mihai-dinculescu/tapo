@@ -4,7 +4,7 @@ use tokio::sync::RwLock;
 use crate::api::ApiClient;
 use crate::api::{KE100Handler, S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler};
 use crate::error::Error;
-use crate::requests::{AlarmRingtone, AlarmVolume, PlayAlarmParams};
+use crate::requests::{AlarmDuration, AlarmRingtone, AlarmVolume, PlayAlarmParams};
 use crate::responses::{ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoHubResult};
 
 macro_rules! get_device_id {
@@ -75,12 +75,12 @@ impl HubHandler {
         &self,
         ringtone: Option<AlarmRingtone>,
         volume: Option<AlarmVolume>,
-        duration_secs: Option<u32>,
+        duration: AlarmDuration,
     ) -> Result<(), Error> {
         self.client
             .read()
             .await
-            .play_alarm(PlayAlarmParams::new(ringtone, volume, duration_secs))
+            .play_alarm(PlayAlarmParams::new(ringtone, volume, duration))
             .await
     }
 

@@ -81,6 +81,24 @@ pub enum AlarmRingtone {
     PhoneRing,
 }
 
+/// Controls how long the alarm plays for.
+#[derive(Debug)]
+pub enum AlarmDuration {
+    /// Play the alarm continuously until stopped
+    Continuous,
+    /// Play the alarm once.
+    /// This is useful for previewing the audio.
+    ///
+    /// # Limitations
+    /// The `in_alarm` field of [`crate::DeviceInfoHubResult`] will not remain `true` for the
+    /// duration of the audio track. Each audio track has a different runtime.
+    ///
+    /// Has no observable affect if the [`AlarmVolume::Mute`].
+    Once,
+    /// Play the alarm a number of seconds
+    Seconds(u32),
+}
+
 /// Parameters for playing the alarm on a H100 hub.
 #[derive(Debug, Default, Serialize)]
 pub(crate) struct PlayAlarmParams {
@@ -95,12 +113,17 @@ impl PlayAlarmParams {
     pub(crate) fn new(
         ringtone: Option<AlarmRingtone>,
         volume: Option<AlarmVolume>,
-        duration: Option<u32>,
+        duration: AlarmDuration,
     ) -> Self {
+        let alarm_duration = match duration {
+            AlarmDuration::Continuous => None,
+            AlarmDuration::Once => Some(0),
+            AlarmDuration::Seconds(secs) => Some(secs),
+        };
         Self {
             alarm_type: ringtone,
             alarm_volume: volume,
-            alarm_duration: duration,
+            alarm_duration,
         }
     }
 }
