@@ -4,7 +4,7 @@ use tokio::sync::RwLock;
 use crate::api::ApiClient;
 use crate::api::{KE100Handler, S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler};
 use crate::error::Error;
-use crate::requests::PlayAlarmParams;
+use crate::requests::{AlarmRingtone, AlarmVolume, PlayAlarmParams};
 use crate::responses::{ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoHubResult};
 
 macro_rules! get_device_id {
@@ -45,10 +45,6 @@ impl HubHandler {
         }
     }
 
-    pub(crate) fn get_client(&self) -> &RwLock<ApiClient> {
-        &self.client
-    }
-
     /// Refreshes the authentication session.
     pub async fn refresh_session(&mut self) -> Result<&mut Self, Error> {
         self.client.write().await.refresh_session().await?;
@@ -72,9 +68,20 @@ impl HubHandler {
             .map(|response| response.alarm_type_list)
     }
 
-    /// Use this to build a request to play the hub alarm
-    pub fn play_alarm(&self) -> PlayAlarmParams {
-        PlayAlarmParams::default()
+    /// Start playing the hub alarm.
+    /// By default, this uses the configured alarm settings on the hub.
+    /// You can override each of the settings by passing `Some` as a parameter.
+    pub async fn play_alarm(
+        &self,
+        ringtone: Option<AlarmRingtone>,
+        volume: Option<AlarmVolume>,
+        duration_secs: Option<u32>,
+    ) -> Result<(), Error> {
+        self.client
+            .read()
+            .await
+            .play_alarm(PlayAlarmParams::new(ringtone, volume, duration_secs))
+            .await
     }
 
     /// Stop playing the hub alarm if currently playing

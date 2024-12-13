@@ -1,11 +1,9 @@
 //! H100 Example
 
 use log::{info, LevelFilter};
-use rand::prelude::SliceRandom;
-use rand::thread_rng;
 use std::env;
 use std::time::Duration;
-use tapo::requests::AlarmVolume;
+use tapo::requests::{AlarmRingtone, AlarmVolume};
 use tapo::responses::ChildDeviceHubResult;
 use tapo::{ApiClient, HubDevice};
 
@@ -120,20 +118,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let supported_ringtones = hub.get_supported_alarm_type_list().await?;
     info!("Supported ringtones: {:?}", supported_ringtones);
 
-    if let Some(selected_ringtone) = supported_ringtones.choose(&mut thread_rng()) {
-        info!("Triggering the alarm ringtone {selected_ringtone:?} for 1s at a low volume");
-        hub.play_alarm()
-            .with_alarm_type(selected_ringtone)
-            .with_alarm_volume(AlarmVolume::Low)
-            .with_alarm_duration(1)
-            .send(&hub)
-            .await?;
+    let ringtone = AlarmRingtone::Alarm1;
+    let volume = AlarmVolume::Low;
+    let duration_secs = 1;
 
-        tokio::time::sleep(Duration::from_secs(1)).await;
+    info!("Triggering the alarm ringtone {ringtone:?} for {duration_secs} seconds at a {volume:?} volume");
+    hub.play_alarm(Some(ringtone), Some(volume), Some(duration_secs))
+        .await?;
 
-        info!("Stopping the alarm");
-        hub.stop_alarm().await?;
-    }
+    let device_info = hub.get_device_info().await?;
+    info!("Is device ringing?: {:?}", device_info.in_alarm);
+
+    tokio::time::sleep(Duration::from_secs(1)).await;
+
+    info!("Stopping the alarm");
+    hub.stop_alarm().await?;
 
     Ok(())
 }
