@@ -80,7 +80,7 @@ impl HubHandler {
         self.client
             .read()
             .await
-            .play_alarm(PlayAlarmParams::new(ringtone, volume, duration))
+            .play_alarm(PlayAlarmParams::new(ringtone, volume, duration)?)
             .await
     }
 
