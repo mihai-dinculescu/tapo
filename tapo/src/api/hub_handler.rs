@@ -58,8 +58,9 @@ impl HubHandler {
         self.client.read().await.get_device_info().await
     }
 
-    /// Returns a list of alarm types (ringtones) supported by the hub.
-    pub async fn get_supported_alarm_type_list(&self) -> Result<Vec<String>, Error> {
+    /// Returns a list of ringtones (alarm types) supported by the hub.
+    /// Used for debugging only.
+    pub async fn get_supported_ringtone_list(&self) -> Result<Vec<String>, Error> {
         self.client
             .read()
             .await
@@ -70,7 +71,7 @@ impl HubHandler {
 
     /// Start playing the hub alarm.
     /// By default, this uses the configured alarm settings on the hub.
-    /// You can override each of the settings by passing `Some` as a parameter.
+    /// Each of the settings can be overridden by passing `Some` as a parameter.
     pub async fn play_alarm(
         &self,
         ringtone: Option<AlarmRingtone>,

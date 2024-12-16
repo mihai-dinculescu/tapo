@@ -115,9 +115,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let supported_ringtones = hub.get_supported_alarm_type_list().await?;
-    info!("Supported ringtones: {:?}", supported_ringtones);
-
     let ringtone = AlarmRingtone::Alarm1;
     let volume = AlarmVolume::Low;
     let duration = AlarmDuration::Seconds(1);

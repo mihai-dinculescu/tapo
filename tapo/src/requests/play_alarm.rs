@@ -8,9 +8,9 @@ use serde::{Serialize, Serializer};
 #[serde(rename_all = "lowercase")]
 pub enum AlarmVolume {
     /// Mute the audio output from the alarm.
-    /// This causes the alarm in the app to go off but nothing audible from the hub.
-    /// You can check if the alarm is going off from the `in_alarm` field of
-    /// [`crate::DeviceInfoHubResult`].
+    /// This causes the alarm to be shown as triggered in the Tapo App
+    /// without an audible sound, and makes the `in_alarm` property
+    /// in [`crate::DeviceInfoHubResult`] return as `true`.
     Mute,
     /// Lowest volume.
     Low,
@@ -144,15 +144,13 @@ impl PlayAlarmParams {
     }
 
     fn validate(&self) -> Result<(), Error> {
-        if let AlarmDuration::Seconds(seconds) = self.alarm_duration {
-            if seconds == 0 {
-                return Err(Error::Validation {
-                    field: "alarm_duration".to_string(),
-                    message: "seconds must be greater than zero".to_string(),
-                });
-            }
+        match self.alarm_duration {
+            AlarmDuration::Seconds(0) => Err(Error::Validation {
+                field: "alarm_duration".to_string(),
+                message: "seconds must be greater than zero".to_string(),
+            }),
+            _ => Ok(()),
         }
-        Ok(())
     }
 }
 

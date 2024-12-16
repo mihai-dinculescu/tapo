@@ -18,7 +18,7 @@ use crate::requests::{
 };
 use crate::responses::{
     validate_response, ControlChildResult, CurrentPowerResult, DecodableResultExt,
-    EnergyDataResult, EnergyUsageResult, GetSupportAlarmTypeListResult, TapoMultipleResponse,
+    EnergyDataResult, EnergyUsageResult, SupportedAlarmTypeListResult, TapoMultipleResponse,
     TapoResponseExt, TapoResult,
 };
 
@@ -565,11 +565,11 @@ impl ApiClient {
 
     pub(crate) async fn get_supported_alarm_type_list(
         &self,
-    ) -> Result<GetSupportAlarmTypeListResult, Error> {
+    ) -> Result<SupportedAlarmTypeListResult, Error> {
         let request = TapoRequest::GetSupportedAlarmTypeList(TapoParams::new(EmptyParams));
 
         self.get_protocol()?
-            .execute_request::<GetSupportAlarmTypeListResult>(request, true)
+            .execute_request::<SupportedAlarmTypeListResult>(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
