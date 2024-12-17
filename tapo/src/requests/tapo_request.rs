@@ -4,7 +4,7 @@ use serde::Serialize;
 
 use crate::requests::{
     ControlChildParams, GetEnergyDataParams, GetTriggerLogsParams, HandshakeParams, LightingEffect,
-    LoginDeviceParams, MultipleRequestParams, SecurePassthroughParams,
+    LoginDeviceParams, MultipleRequestParams, PlayAlarmParams, SecurePassthroughParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -34,6 +34,10 @@ pub(crate) enum TapoRequest {
     GetTriggerLogs(Box<TapoParams<GetTriggerLogsParams>>),
     #[serde(rename = "get_temp_humidity_records")]
     GetTemperatureHumidityRecords(Box<TapoParams<EmptyParams>>),
+    PlayAlarm(TapoParams<PlayAlarmParams>),
+    StopAlarm(TapoParams<EmptyParams>),
+    #[serde(rename = "get_support_alarm_type_list")]
+    GetSupportedAlarmTypeList(TapoParams<EmptyParams>),
 }
 
 #[derive(Debug, Serialize)]

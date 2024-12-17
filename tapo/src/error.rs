@@ -8,6 +8,8 @@ pub enum TapoResponseError {
     InvalidResponse,
     /// Malformed request.
     MalformedRequest,
+    /// Parameters were invalid
+    InvalidParameters,
     /// Invalid public key.
     InvalidPublicKey,
     /// The credentials provided were invalid.

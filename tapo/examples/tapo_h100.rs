@@ -1,7 +1,9 @@
-/// H100 Example
-use std::env;
+//! H100 Example
 
 use log::{info, LevelFilter};
+use std::env;
+use std::time::Duration;
+use tapo::requests::{AlarmDuration, AlarmRingtone, AlarmVolume};
 use tapo::responses::ChildDeviceHubResult;
 use tapo::{ApiClient, HubDevice};
 
@@ -112,6 +114,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     }
+
+    let ringtone = AlarmRingtone::Alarm1;
+    let volume = AlarmVolume::Low;
+    let duration = AlarmDuration::Seconds(1);
+
+    info!("Triggering the alarm ringtone {ringtone:?} for {duration:?} at a {volume:?} volume");
+    hub.play_alarm(Some(ringtone), Some(volume), duration)
+        .await?;
+
+    let device_info = hub.get_device_info().await?;
+    info!("Is device ringing?: {:?}", device_info.in_alarm);
+
+    tokio::time::sleep(Duration::from_secs(1)).await;
+
+    info!("Stopping the alarm");
+    hub.stop_alarm().await?;
+
+    let device_info = hub.get_device_info().await?;
+    info!("Is device ringing?: {:?}", device_info.in_alarm);
 
     Ok(())
 }

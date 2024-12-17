@@ -1,10 +1,10 @@
 use std::sync::Arc;
-
 use tokio::sync::RwLock;
 
 use crate::api::ApiClient;
 use crate::api::{KE100Handler, S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler};
 use crate::error::Error;
+use crate::requests::{AlarmDuration, AlarmRingtone, AlarmVolume, PlayAlarmParams};
 use crate::responses::{ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoHubResult};
 
 macro_rules! get_device_id {
@@ -56,6 +56,38 @@ impl HubHandler {
     /// If the deserialization fails, or if a property that you care about it's not present, try [`HubHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<DeviceInfoHubResult, Error> {
         self.client.read().await.get_device_info().await
+    }
+
+    /// Returns a list of ringtones (alarm types) supported by the hub.
+    /// Used for debugging only.
+    pub async fn get_supported_ringtone_list(&self) -> Result<Vec<String>, Error> {
+        self.client
+            .read()
+            .await
+            .get_supported_alarm_type_list()
+            .await
+            .map(|response| response.alarm_type_list)
+    }
+
+    /// Start playing the hub alarm.
+    /// By default, this uses the configured alarm settings on the hub.
+    /// Each of the settings can be overridden by passing `Some` as a parameter.
+    pub async fn play_alarm(
+        &self,
+        ringtone: Option<AlarmRingtone>,
+        volume: Option<AlarmVolume>,
+        duration: AlarmDuration,
+    ) -> Result<(), Error> {
+        self.client
+            .read()
+            .await
+            .play_alarm(PlayAlarmParams::new(ringtone, volume, duration)?)
+            .await
+    }
+
+    /// Stop playing the hub alarm if currently playing
+    pub async fn stop_alarm(&self) -> Result<(), Error> {
+        self.client.read().await.stop_alarm().await
     }
 
     /// Returns *device info* as [`serde_json::Value`].

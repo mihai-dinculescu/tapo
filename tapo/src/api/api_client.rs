@@ -14,11 +14,12 @@ use crate::api::{
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     ControlChildParams, EmptyParams, EnergyDataInterval, GetEnergyDataParams, LightingEffect,
-    MultipleRequestParams, TapoParams, TapoRequest,
+    MultipleRequestParams, PlayAlarmParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
     validate_response, ControlChildResult, CurrentPowerResult, DecodableResultExt,
-    EnergyDataResult, EnergyUsageResult, TapoMultipleResponse, TapoResponseExt, TapoResult,
+    EnergyDataResult, EnergyUsageResult, SupportedAlarmTypeListResult, TapoMultipleResponse,
+    TapoResponseExt, TapoResult,
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
@@ -560,6 +561,37 @@ impl ApiClient {
         self.get_protocol_mut()?
             .refresh_session(tapo_username, tapo_password)
             .await
+    }
+
+    pub(crate) async fn get_supported_alarm_type_list(
+        &self,
+    ) -> Result<SupportedAlarmTypeListResult, Error> {
+        let request = TapoRequest::GetSupportedAlarmTypeList(TapoParams::new(EmptyParams));
+
+        self.get_protocol()?
+            .execute_request::<SupportedAlarmTypeListResult>(request, true)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn play_alarm(&self, params: PlayAlarmParams) -> Result<(), Error> {
+        let request = TapoRequest::PlayAlarm(TapoParams::new(params));
+
+        self.get_protocol()?
+            .execute_request::<serde_json::Value>(request, true)
+            .await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn stop_alarm(&self) -> Result<(), Error> {
+        let request = TapoRequest::StopAlarm(TapoParams::new(EmptyParams));
+
+        self.get_protocol()?
+            .execute_request::<serde_json::Value>(request, true)
+            .await?;
+
+        Ok(())
     }
 
     pub(crate) async fn device_reset(&self) -> Result<(), Error> {
