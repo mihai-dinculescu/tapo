@@ -112,11 +112,12 @@ impl PyHubHandler {
         results
     }
 
-    pub async fn get_child_device_list_json(&self) -> PyResult<Py<PyDict>> {
+    pub async fn get_child_device_list_json(&self, start_index: u64) -> PyResult<Py<PyDict>> {
         let handler = self.inner.clone();
         let result = call_handler_method!(
             handler.read().await.deref(),
-            HubHandler::get_child_device_list_json
+            HubHandler::get_child_device_list_json,
+            start_index
         )?;
         Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }

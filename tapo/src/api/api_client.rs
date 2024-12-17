@@ -13,8 +13,9 @@ use crate::api::{
 };
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
-    ControlChildParams, EmptyParams, EnergyDataInterval, GetEnergyDataParams, LightingEffect,
-    MultipleRequestParams, PlayAlarmParams, TapoParams, TapoRequest,
+    ControlChildParams, EmptyParams, EnergyDataInterval, GetChildDeviceListParams,
+    GetEnergyDataParams, LightingEffect, MultipleRequestParams, PlayAlarmParams, TapoParams,
+    TapoRequest,
 };
 use crate::responses::{
     validate_response, ControlChildResult, CurrentPowerResult, DecodableResultExt,
@@ -685,12 +686,14 @@ impl ApiClient {
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
-    pub(crate) async fn get_child_device_list<R>(&self) -> Result<R, Error>
+    pub(crate) async fn get_child_device_list<R>(&self, start_index: u64) -> Result<R, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
     {
-        debug!("Get Child device list...");
-        let request = TapoRequest::GetChildDeviceList(TapoParams::new(EmptyParams));
+        debug!("Get Child device list starting with index {start_index}...");
+        let request = TapoRequest::GetChildDeviceList(TapoParams::new(
+            GetChildDeviceListParams::new(start_index),
+        ));
 
         self.get_protocol()?
             .execute_request::<R>(request, true)

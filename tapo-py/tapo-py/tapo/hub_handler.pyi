@@ -56,9 +56,13 @@ class HubHandler:
             dict: Device info as a dictionary.
         """
 
-    async def get_child_device_list_json(self) -> dict:
+    async def get_child_device_list_json(self, start_index: int) -> dict:
         """Returns *child device list* as json.
         It contains all the properties returned from the Tapo API.
+
+        Args:
+            start_index (int): the index to start fetching the child device list.
+            It should be `0` for the first page, `10` for the second, and so on.
 
         Returns:
             dict: Device info as a dictionary.

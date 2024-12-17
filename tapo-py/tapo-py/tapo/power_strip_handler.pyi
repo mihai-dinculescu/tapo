@@ -38,8 +38,7 @@ class PowerStripHandler:
         self,
     ) -> List[PowerStripPlugResult]:
         """Returns *child device list* as `List[PowerStripPlugResult]`.
-        It is not guaranteed to contain all the properties returned from the Tapo API
-        or to support all the possible devices connected to the hub.
+        It is not guaranteed to contain all the properties returned from the Tapo API.
         If the deserialization fails, or if a property that you care about it's not present,
         try `PowerStripHandler.get_child_device_list_json`.
 

@@ -12,7 +12,17 @@ file. This change log follows the conventions of
 
 - Added functionality for controlling the alarm on the H100 hub via the `play_alarm` and `stop_alarm` methods in the `H100Handler`. Additionally, `get_supported_ringtone_list` is available to retrieve the list of supported ringtones for debugging purposes. (thanks to @kay)
 
+#### Changed
+
+- The internal implementation of `H100Handler`'s `get_child_device_list` has been updated to fetch all pages, not just the first one.
+- `H100Handler`'s `get_child_device_list_json` now includes a `start_index` parameter to fetch child devices starting from a specific index.
+
 ### Python
+
+#### Changed
+
+- The internal implementation of `H100Handler`'s `get_child_device_list` has been updated to fetch all pages, not just the first one.
+- `H100Handler`'s `get_child_device_list_json` now includes a `start_index` parameter to fetch child devices starting from a specific index.
 
 ## [v0.8.0][v0.8.0] - 2024-12-07
 

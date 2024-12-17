@@ -43,13 +43,14 @@ impl PowerStripHandler {
     }
 
     /// Returns *child device list* as [`Vec<PowerStripPlugResult>`].
-    /// It is not guaranteed to contain all the properties returned from the Tapo API
-    /// or to support all the possible devices connected to the hub.
+    /// It is not guaranteed to contain all the properties returned from the Tapo API.
+    /// If the deserialization fails, or if a property that you care about it's not present,
+    /// try [`PowerStripHandler::get_child_device_list_json`].
     pub async fn get_child_device_list(&self) -> Result<Vec<PowerStripPlugResult>, Error> {
         self.client
             .read()
             .await
-            .get_child_device_list::<ChildDeviceListPowerStripResult>()
+            .get_child_device_list::<ChildDeviceListPowerStripResult>(0)
             .await
             .map(|r| r.plugs)
     }
@@ -57,7 +58,7 @@ impl PowerStripHandler {
     /// Returns *child device list* as [`serde_json::Value`].
     /// It contains all the properties returned from the Tapo API.
     pub async fn get_child_device_list_json(&self) -> Result<serde_json::Value, Error> {
-        self.client.read().await.get_child_device_list().await
+        self.client.read().await.get_child_device_list(0).await
     }
 
     /// Returns *child device component list* as [`serde_json::Value`].
