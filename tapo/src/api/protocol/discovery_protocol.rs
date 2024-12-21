@@ -1,4 +1,4 @@
-use log::debug;
+use log::{debug, warn};
 use reqwest::Client;
 
 use crate::api::protocol::klap_protocol::KlapProtocol;
@@ -37,10 +37,10 @@ impl DiscoveryProtocol {
         match self.test_passthrough(url).await {
             Err(Error::Tapo(TapoResponseError::Unknown(code))) => Ok(code != 1003),
             Err(err) => {
-                debug!("Error during passthrough test: {err:?}");
-                 Err(err)
-            },
-            Ok(_) => Ok(true)
+                warn!("Passthrough protocol test error: {err:?}");
+                Err(err)
+            }
+            Ok(_) => Ok(true),
         }
     }
 

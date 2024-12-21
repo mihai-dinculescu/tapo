@@ -17,12 +17,20 @@ file. This change log follows the conventions of
 - The internal implementation of `H100Handler`'s `get_child_device_list` has been updated to fetch all pages, not just the first one.
 - `H100Handler`'s `get_child_device_list_json` now includes a `start_index` parameter to fetch child devices starting from a specific index.
 
+#### Fixed
+
+- Resolved an issue that caused the passthrough protocol test to incorrectly indicate support when it was not actually supported. (thanks to @WhySoBad)
+
 ### Python
 
 #### Changed
 
 - The internal implementation of `H100Handler`'s `get_child_device_list` has been updated to fetch all pages, not just the first one.
 - `H100Handler`'s `get_child_device_list_json` now includes a `start_index` parameter to fetch child devices starting from a specific index.
+
+#### Fixed
+
+- Resolved an issue that caused the passthrough protocol test to incorrectly indicate support when it was not actually supported. (thanks to @WhySoBad)
 
 ## [v0.8.0][v0.8.0] - 2024-12-07
 
