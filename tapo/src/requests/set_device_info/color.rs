@@ -51,52 +51,64 @@ pub enum Color {
     ForestGreen,
 }
 
-type ColorConfig = (Option<u16>, Option<u8>, Option<u16>);
+#[cfg_attr(feature = "python", pyo3::pymethods)]
+impl Color {
+    /// Get the [`crate::requests::ColorConfig`] of the color.
+    pub fn get_color_config(&self) -> ColorConfig {
+        COLOR_MAP
+            .get(self)
+            .cloned()
+            .unwrap_or_else(|| panic!("Failed to find the color definition of {self:?}"))
+    }
+}
+
+/// Triple-tuple containing the `hue`, `saturation`, and `color_temperature` of a color.
+pub type ColorConfig = (u16, u8, u16);
 
 lazy_static! {
-    pub(crate) static ref COLOR_MAP: HashMap<Color, ColorConfig> = {
-        let mut map = HashMap::new();
-        map.insert(Color::CoolWhite, (Some(0), Some(100), Some(4000)));
-        map.insert(Color::Daylight, (Some(0), Some(100), Some(5000)));
-        map.insert(Color::Ivory, (Some(0), Some(100), Some(6000)));
-        map.insert(Color::WarmWhite, (Some(0), Some(100), Some(3000)));
-        map.insert(Color::Incandescent, (Some(0), Some(100), Some(2700)));
-        map.insert(Color::Candlelight, (Some(0), Some(100), Some(2500)));
-        map.insert(Color::Snow, (Some(0), Some(100), Some(6500)));
-        map.insert(Color::GhostWhite, (Some(0), Some(100), Some(6500)));
-        map.insert(Color::AliceBlue, (Some(208), Some(5), Some(0)));
-        map.insert(Color::LightGoldenrod, (Some(54), Some(28), Some(0)));
-        map.insert(Color::LemonChiffon, (Some(54), Some(19), Some(0)));
-        map.insert(Color::AntiqueWhite, (Some(0), Some(100), Some(5500)));
-        map.insert(Color::Gold, (Some(50), Some(100), Some(0)));
-        map.insert(Color::Peru, (Some(29), Some(69), Some(0)));
-        map.insert(Color::Chocolate, (Some(30), Some(100), Some(0)));
-        map.insert(Color::SandyBrown, (Some(27), Some(60), Some(0)));
-        map.insert(Color::Coral, (Some(16), Some(68), Some(0)));
-        map.insert(Color::Pumpkin, (Some(24), Some(90), Some(0)));
-        map.insert(Color::Tomato, (Some(9), Some(72), Some(0)));
-        map.insert(Color::Vermilion, (Some(4), Some(77), Some(0)));
-        map.insert(Color::OrangeRed, (Some(16), Some(100), Some(0)));
-        map.insert(Color::Pink, (Some(349), Some(24), Some(0)));
-        map.insert(Color::Crimson, (Some(348), Some(90), Some(0)));
-        map.insert(Color::DarkRed, (Some(0), Some(100), Some(0)));
-        map.insert(Color::HotPink, (Some(330), Some(58), Some(0)));
-        map.insert(Color::Smitten, (Some(329), Some(67), Some(0)));
-        map.insert(Color::MediumPurple, (Some(259), Some(48), Some(0)));
-        map.insert(Color::BlueViolet, (Some(271), Some(80), Some(0)));
-        map.insert(Color::Indigo, (Some(274), Some(100), Some(0)));
-        map.insert(Color::LightSkyBlue, (Some(202), Some(46), Some(0)));
-        map.insert(Color::CornflowerBlue, (Some(218), Some(57), Some(0)));
-        map.insert(Color::Ultramarine, (Some(254), Some(100), Some(0)));
-        map.insert(Color::DeepSkyBlue, (Some(195), Some(100), Some(0)));
-        map.insert(Color::Azure, (Some(210), Some(100), Some(0)));
-        map.insert(Color::NavyBlue, (Some(240), Some(100), Some(0)));
-        map.insert(Color::LightTurquoise, (Some(180), Some(26), Some(0)));
-        map.insert(Color::Aquamarine, (Some(159), Some(50), Some(0)));
-        map.insert(Color::Turquoise, (Some(174), Some(71), Some(0)));
-        map.insert(Color::LightGreen, (Some(120), Some(39), Some(0)));
-        map.insert(Color::Lime, (Some(75), Some(100), Some(0)));
-        map.insert(Color::ForestGreen, (Some(120), Some(75), Some(0)));
+    static ref COLOR_MAP: HashMap<Color, ColorConfig> = {
+        let mut map = HashMap::<Color, ColorConfig>::new();
+        map.insert(Color::CoolWhite, (0, 100, 4000));
+        map.insert(Color::Daylight, (0, 100, 5000));
+        map.insert(Color::Ivory, (0, 100, 6000));
+        map.insert(Color::WarmWhite, (0, 100, 3000));
+        map.insert(Color::Incandescent, (0, 100, 2700));
+        map.insert(Color::Candlelight, (0, 100, 2500));
+        map.insert(Color::Snow, (0, 100, 6500));
+        map.insert(Color::GhostWhite, (0, 100, 6500));
+        map.insert(Color::AliceBlue, (208, 5, 0));
+        map.insert(Color::LightGoldenrod, (54, 28, 0));
+        map.insert(Color::LemonChiffon, (54, 19, 0));
+        map.insert(Color::AntiqueWhite, (0, 100, 5500));
+        map.insert(Color::Gold, (50, 100, 0));
+        map.insert(Color::Peru, (29, 69, 0));
+        map.insert(Color::Chocolate, (30, 100, 0));
+        map.insert(Color::SandyBrown, (27, 60, 0));
+        map.insert(Color::Coral, (16, 68, 0));
+        map.insert(Color::Pumpkin, (24, 90, 0));
+        map.insert(Color::Tomato, (9, 72, 0));
+        map.insert(Color::Vermilion, (4, 77, 0));
+        map.insert(Color::OrangeRed, (16, 100, 0));
+        map.insert(Color::Pink, (349, 24, 0));
+        map.insert(Color::Crimson, (348, 90, 0));
+        map.insert(Color::DarkRed, (0, 100, 0));
+        map.insert(Color::HotPink, (330, 58, 0));
+        map.insert(Color::Smitten, (329, 67, 0));
+        map.insert(Color::MediumPurple, (259, 48, 0));
+        map.insert(Color::BlueViolet, (271, 80, 0));
+        map.insert(Color::Indigo, (274, 100, 0));
+        map.insert(Color::LightSkyBlue, (202, 46, 0));
+        map.insert(Color::CornflowerBlue, (218, 57, 0));
+        map.insert(Color::Ultramarine, (254, 100, 0));
+        map.insert(Color::DeepSkyBlue, (195, 100, 0));
+        map.insert(Color::Azure, (210, 100, 0));
+        map.insert(Color::NavyBlue, (240, 100, 0));
+        map.insert(Color::LightTurquoise, (180, 26, 0));
+        map.insert(Color::Aquamarine, (159, 50, 0));
+        map.insert(Color::Turquoise, (174, 71, 0));
+        map.insert(Color::LightGreen, (120, 39, 0));
+        map.insert(Color::Lime, (75, 100, 0));
+        map.insert(Color::ForestGreen, (120, 75, 0));
         map
     };
 }

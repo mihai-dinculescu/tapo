@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Tuple
 
 class Color(str, Enum):
     """List of preset colors as defined in the Google Home app."""
@@ -44,3 +45,6 @@ class Color(str, Enum):
     LightGreen = "LightGreen"
     Lime = "Lime"
     ForestGreen = "ForestGreen"
+
+    def get_color_config(self) -> Tuple[int, int, int]:
+        """Get the `hue`, `saturation`, and `color_temperature` of the color."""

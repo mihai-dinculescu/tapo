@@ -3,7 +3,7 @@ use std::ops::RangeInclusive;
 use serde::Serialize;
 
 use crate::error::Error;
-use crate::requests::{Color, COLOR_MAP};
+use crate::requests::Color;
 use crate::HandlerExt;
 
 /// Builder that is used by the [`crate::ColorLightHandler::set`] API to set multiple properties in a single request.
@@ -53,13 +53,11 @@ impl ColorLightSetDeviceInfoParams {
     ///
     /// * `color` - one of [crate::requests::Color]
     pub fn color(mut self, color: Color) -> Self {
-        let (hue, saturation, color_temperature) = *COLOR_MAP
-            .get(&color)
-            .unwrap_or_else(|| panic!("Failed to find the color definition for {color:?}"));
+        let (hue, saturation, color_temperature) = color.get_color_config();
 
-        self.hue = hue;
-        self.saturation = saturation;
-        self.color_temperature = color_temperature;
+        self.hue = Some(hue);
+        self.saturation = Some(saturation);
+        self.color_temperature = Some(color_temperature);
 
         self
     }
