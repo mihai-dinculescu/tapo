@@ -65,7 +65,7 @@ impl KlapCipher {
 }
 
 impl KlapCipher {
-    fn key_derive(local_hash: &Vec<u8>) -> Vec<u8> {
+    fn key_derive(local_hash: &[u8]) -> Vec<u8> {
         let local_hash = &["lsk".as_bytes(), local_hash].concat();
         let hash = Self::sha256(local_hash);
         let key = &hash[..16];
