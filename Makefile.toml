@@ -1,3 +1,6 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
 [config]
 skip_core_tasks = true
 
@@ -9,6 +12,11 @@ args = ["fmt", "--verbose", "--", "--check"]
 command = "cargo"
 args = ["check", "--verbose"]
 
+[tasks.check-doc]
+env = { "RUSTDOCFLAGS" = "-D warnings" }
+command = "cargo"
+args = ["doc", "--no-deps"]
+
 [tasks.clippy]
 command = "cargo"
 args = ["clippy", "--all-targets", "--all-features", "--verbose", "--", "-D", "warnings"]
@@ -18,9 +26,4 @@ command = "cargo"
 args = ["test", "--verbose"]
 
 [tasks.ci-flow]
-dependencies = [
-    "format",
-    "check",
-    "clippy",
-    "test"
-]
+dependencies = ["format", "check", "check-doc", "clippy", "test"]
