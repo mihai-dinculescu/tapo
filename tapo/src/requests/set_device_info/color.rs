@@ -51,14 +51,18 @@ pub enum Color {
     ForestGreen,
 }
 
+#[cfg_attr(feature = "python", pyo3::pymethods)]
 impl Color {
-    /// Get the [`crate::requests::ColorConfig`] for the color
-    pub fn get_color_config(&self) -> Option<ColorConfig> {
-        COLOR_MAP.get(self).cloned()
+    /// Get the [`crate::requests::ColorConfig`] of the color.
+    pub fn get_color_config(&self) -> ColorConfig {
+        COLOR_MAP
+            .get(self)
+            .cloned()
+            .unwrap_or_else(|| panic!("Failed to find the color definition of {self:?}"))
     }
 }
 
-/// Triple-Tuple of hue, saturation and color temperature of a predefined color
+/// Triple-tuple containing the `hue`, `saturation`, and `color_temperature` of a color.
 pub type ColorConfig = (u16, u8, u16);
 
 lazy_static! {

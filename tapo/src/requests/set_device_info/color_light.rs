@@ -53,9 +53,7 @@ impl ColorLightSetDeviceInfoParams {
     ///
     /// * `color` - one of [crate::requests::Color]
     pub fn color(mut self, color: Color) -> Self {
-        let (hue, saturation, color_temperature) = color
-            .get_color_config()
-            .expect(format!("Failed to find the color definition for {color:?}").as_str());
+        let (hue, saturation, color_temperature) = color.get_color_config();
 
         self.hue = Some(hue);
         self.saturation = Some(saturation);
