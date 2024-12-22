@@ -10,7 +10,7 @@ pub enum AlarmVolume {
     /// Mute the audio output from the alarm.
     /// This causes the alarm to be shown as triggered in the Tapo App
     /// without an audible sound, and makes the `in_alarm` property
-    /// in [`crate::DeviceInfoHubResult`] return as `true`.
+    /// in [`crate::responses::DeviceInfoHubResult`] return as `true`.
     Mute,
     /// Lowest volume.
     Low,
@@ -94,7 +94,7 @@ pub enum AlarmDuration {
     /// This is useful for previewing the audio.
     ///
     /// # Limitations
-    /// The `in_alarm` field of [`crate::DeviceInfoHubResult`] will not remain `true` for the
+    /// The `in_alarm` field of [`crate::responses::DeviceInfoHubResult`] will not remain `true` for the
     /// duration of the audio track. Each audio track has a different runtime.
     ///
     /// Has no observable affect if the [`AlarmVolume::Mute`].

@@ -62,7 +62,7 @@ pub struct ApiClient {
 impl ApiClient {
     /// Returns a new instance of [`ApiClient`].
     /// It is cheaper to [`ApiClient::clone`] an existing instance than to create a new one when multiple devices need to be controller.
-    /// This is because [`ApiClient::clone`] reuses the underlying [`isahc::HttpClient`] and [`openssl::rsa::Rsa`] key.
+    /// This is because [`ApiClient::clone`] reuses the underlying [`reqwest::Client`].
     ///
     /// # Arguments
     ///
