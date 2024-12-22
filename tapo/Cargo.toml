@@ -17,17 +17,11 @@ python = ["dep:pyo3"]
 [dependencies]
 anyhow = { workspace = true }
 async-trait = "0.1"
-chrono = { workspace = true, default-features = false, features = [
-    "clock",
-    "serde",
-] }
+chrono = { workspace = true, default-features = false, features = ["clock", "serde"] }
 itertools = "0.13"
 lazy_static = "1.5"
 log = "0.4"
-reqwest = { version = "0.12", default-features = false, features = [
-    "cookies",
-    "json",
-] }
+reqwest = { version = "0.12", default-features = false, features = ["cookies", "json"] }
 serde = { workspace = true, features = ["derive", "serde_derive"] }
 serde_json = { workspace = true }
 serde_with = "3.11"
@@ -50,7 +44,4 @@ pyo3 = { workspace = true, features = ["serde", "chrono"], optional = true }
 
 [dev-dependencies]
 pretty_env_logger = "0.5"
-tokio = { workspace = true, default-features = false, features = [
-    "rt-multi-thread",
-    "macros",
-] }
+tokio = { workspace = true, default-features = false, features = ["rt-multi-thread", "macros"] }
