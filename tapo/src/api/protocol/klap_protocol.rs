@@ -162,11 +162,20 @@ impl KlapProtocol {
         }
 
         self.cookie = TapoProtocol::get_cookie(response.cookies())?;
+        trace!("Cookie: {}", self.cookie);
 
         let response_body = response.bytes().await.map_err(anyhow::Error::from)?;
+        trace!("Response body: {:?}", response_body.to_vec());
 
         let (remote_seed, server_hash) = response_body.split_at(16);
+        trace!("Remote seed: {remote_seed:?}");
+        trace!("Server hash: {server_hash:?}");
         let local_hash = KlapCipher::sha256(&[local_seed, remote_seed, auth_hash].concat());
+        trace!("local_seed, remote_seed, auth_hash: {local_hash:?}");
+        let local_hash2 = KlapCipher::sha256(&[remote_seed, local_seed, auth_hash].concat());
+        trace!("remote_seed, local_seed, auth_hash: {local_hash2:?}");
+        let local_hash3 = KlapCipher::sha256(&[remote_seed, auth_hash].concat());
+        trace!("remote_seed, auth_hash: {local_hash3:?}");
 
         if local_hash != server_hash {
             warn!("Local hash does not match server hash");
