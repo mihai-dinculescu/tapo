@@ -14,7 +14,7 @@ pub(crate) struct LightSetDeviceInfoParams<'a> {
     brightness: Option<u8>,
 }
 
-impl<'a> LightSetDeviceInfoParams<'a> {
+impl LightSetDeviceInfoParams<'_> {
     /// Turns *on* the device. [`LightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
     pub fn on(mut self) -> Self {
         self.device_on = Some(true);
