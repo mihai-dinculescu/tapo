@@ -59,7 +59,7 @@ impl<'a> LightSetDeviceInfoParams<'a> {
         if self.device_on.is_none() && self.brightness.is_none() {
             return Err(Error::Validation {
                 field: "DeviceInfoParams".to_string(),
-                message: "requires at least one property".to_string(),
+                message: "Requires at least one property".to_string(),
             });
         }
 
@@ -67,7 +67,7 @@ impl<'a> LightSetDeviceInfoParams<'a> {
             if !(1..=100).contains(&brightness) {
                 return Err(Error::Validation {
                     field: "brightness".to_string(),
-                    message: "must be between 1 and 100".to_string(),
+                    message: "Must be between 1 and 100".to_string(),
                 });
             }
         }
@@ -98,7 +98,7 @@ mod tests {
         let result = params.send().await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "DeviceInfoParams" && message == "requires at least one property"
+            Some(Error::Validation { field, message }) if field == "DeviceInfoParams" && message == "Requires at least one property"
         ));
     }
 
@@ -108,14 +108,14 @@ mod tests {
         let result = params.brightness(0).send().await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "brightness" && message == "must be between 1 and 100"
+            Some(Error::Validation { field, message }) if field == "brightness" && message == "Must be between 1 and 100"
         ));
 
         let params = LightSetDeviceInfoParams::new(&MockApiClient);
         let result = params.brightness(101).send().await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "brightness" && message == "must be between 1 and 100"
+            Some(Error::Validation { field, message }) if field == "brightness" && message == "Must be between 1 and 100"
         ));
     }
 }

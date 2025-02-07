@@ -118,7 +118,7 @@ impl ColorLightSetDeviceInfoParams {
         {
             return Err(Error::Validation {
                 field: "DeviceInfoParams".to_string(),
-                message: "requires at least one property".to_string(),
+                message: "Requires at least one property".to_string(),
             });
         }
 
@@ -126,7 +126,7 @@ impl ColorLightSetDeviceInfoParams {
             if !(1..=100).contains(&brightness) {
                 return Err(Error::Validation {
                     field: "brightness".to_string(),
-                    message: "must be between 1 and 100".to_string(),
+                    message: "Must be between 1 and 100".to_string(),
                 });
             }
         }
@@ -135,7 +135,7 @@ impl ColorLightSetDeviceInfoParams {
             if !(0..=360).contains(&hue) {
                 return Err(Error::Validation {
                     field: "hue".to_string(),
-                    message: "must be between 0 and 360".to_string(),
+                    message: "Must be between 0 and 360".to_string(),
                 });
             }
         }
@@ -144,7 +144,7 @@ impl ColorLightSetDeviceInfoParams {
             if !(1..=100).contains(&saturation) {
                 return Err(Error::Validation {
                     field: "saturation".to_string(),
-                    message: "must be between 1 and 100".to_string(),
+                    message: "Must be between 1 and 100".to_string(),
                 });
             }
         }
@@ -166,7 +166,7 @@ impl ColorLightSetDeviceInfoParams {
             {
                 return Err(Error::Validation {
                     field: "color_temperature".to_string(),
-                    message: "must be between 2500 and 6500".to_string(),
+                    message: "Must be between 2500 and 6500".to_string(),
                 });
             }
         }
@@ -236,7 +236,7 @@ mod tests {
         let result = params.send(&MockHandler).await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "DeviceInfoParams" && message == "requires at least one property"
+            Some(Error::Validation { field, message }) if field == "DeviceInfoParams" && message == "Requires at least one property"
         ));
     }
 
@@ -246,14 +246,14 @@ mod tests {
         let result = params.brightness(0).send(&MockHandler).await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "brightness" && message == "must be between 1 and 100"
+            Some(Error::Validation { field, message }) if field == "brightness" && message == "Must be between 1 and 100"
         ));
 
         let params = ColorLightSetDeviceInfoParams::new();
         let result = params.brightness(101).send(&MockHandler).await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "brightness" && message == "must be between 1 and 100"
+            Some(Error::Validation { field, message }) if field == "brightness" && message == "Must be between 1 and 100"
         ));
     }
 
@@ -263,7 +263,7 @@ mod tests {
         let result = params.hue_saturation(361, 50).send(&MockHandler).await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "hue" && message == "must be between 0 and 360"
+            Some(Error::Validation { field, message }) if field == "hue" && message == "Must be between 0 and 360"
         ));
     }
 
@@ -273,14 +273,14 @@ mod tests {
         let result = params.hue_saturation(1, 0).send(&MockHandler).await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "saturation" && message == "must be between 1 and 100"
+            Some(Error::Validation { field, message }) if field == "saturation" && message == "Must be between 1 and 100"
         ));
 
         let params = ColorLightSetDeviceInfoParams::new();
         let result = params.hue_saturation(1, 101).send(&MockHandler).await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "saturation" && message == "must be between 1 and 100"
+            Some(Error::Validation { field, message }) if field == "saturation" && message == "Must be between 1 and 100"
         ));
     }
 
@@ -290,7 +290,7 @@ mod tests {
         let result = params.color_temperature(2499).send(&MockHandler).await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "color_temperature" && message == "must be between 2500 and 6500"
+            Some(Error::Validation { field, message }) if field == "color_temperature" && message == "Must be between 2500 and 6500"
         ));
     }
 
@@ -300,7 +300,7 @@ mod tests {
         let result = params.color_temperature(6501).send(&MockHandler).await;
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "color_temperature" && message == "must be between 2500 and 6500"
+            Some(Error::Validation { field, message }) if field == "color_temperature" && message == "Must be between 2500 and 6500"
         ));
     }
 

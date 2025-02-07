@@ -81,7 +81,7 @@ impl TrvSetDeviceInfoParams {
             if !(-10..=10).contains(&temperature_offset) {
                 return Err(Error::Validation {
                     field: "temperature_offset".to_string(),
-                    message: "must be between -10 and 10".to_string(),
+                    message: "Must be between -10 and 10".to_string(),
                 });
             }
         }

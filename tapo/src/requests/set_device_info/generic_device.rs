@@ -20,7 +20,7 @@ impl GenericSetDeviceInfoParams {
         if self.device_on.is_none() {
             return Err(Error::Validation {
                 field: "DeviceInfoParams".to_string(),
-                message: "requires at least one property".to_string(),
+                message: "Requires at least one property".to_string(),
             });
         }
 
