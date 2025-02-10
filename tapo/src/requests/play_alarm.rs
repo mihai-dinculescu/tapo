@@ -3,14 +3,9 @@ use serde::{Serialize, Serializer};
 
 /// The volume of the alarm.
 /// For the H100, this is a fixed list of volume levels.
-#[derive(Debug, Default, Serialize)]
-#[cfg_attr(test, derive(Clone, Copy))]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(
-    feature = "python",
-    derive(Clone, PartialEq),
-    pyo3::prelude::pyclass(get_all, eq, eq_int)
-)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
 pub enum AlarmVolume {
     /// Use the default volume for the hub.
     #[default]
@@ -35,13 +30,8 @@ impl AlarmVolume {
 }
 
 /// The ringtone of a H100 alarm.
-#[derive(Debug, Default, Serialize)]
-#[cfg_attr(test, derive(Clone, Copy))]
-#[cfg_attr(
-    feature = "python",
-    derive(Clone, PartialEq),
-    pyo3::prelude::pyclass(get_all, eq, eq_int)
-)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
 pub enum AlarmRingtone {
     /// Use the default ringtone for the hub.
     #[default]
@@ -112,7 +102,7 @@ impl AlarmRingtone {
 }
 
 /// Controls how long the alarm plays for.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum AlarmDuration {
     /// Play the alarm continuously until stopped.
     Continuous,

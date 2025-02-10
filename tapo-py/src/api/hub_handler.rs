@@ -174,7 +174,7 @@ impl PyHubHandler {
             HubHandler::play_alarm,
             ringtone,
             volume,
-            duration.into()
+            duration
         )
     }
 
