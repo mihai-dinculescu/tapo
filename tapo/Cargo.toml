@@ -34,7 +34,7 @@ aes = "0.8"
 base16ct = { version = "0.2", features = ["alloc"] }
 base64 = "0.22"
 cbc = { version = "0.1", features = ["alloc"] }
-rand = "0.8"
+rand = "0.9"
 rsa = "0.9"
 sha1 = "0.10"
 sha2 = "0.10"
