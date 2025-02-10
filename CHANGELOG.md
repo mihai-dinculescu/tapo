@@ -8,6 +8,12 @@ file. This change log follows the conventions of
 
 ### Rust
 
+### Python
+
+## [v0.8.1][v0.8.1] - 2025-02-10
+
+### Rust
+
 #### Added
 
 - Added functionality for controlling the alarm on the H100 hub via the `play_alarm` and `stop_alarm` methods in the `H100Handler`. Additionally, `get_supported_ringtone_list` is available to retrieve the list of supported ringtones for debugging purposes. (thanks to @kay)
@@ -551,6 +557,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.8.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.1
 [v0.8.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.0
 [py-v0.7.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.7.0
 [v0.7.17]: https://github.com/mihai-dinculescu/tapo/tree/v0.7.17

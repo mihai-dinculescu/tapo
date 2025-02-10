@@ -1,21 +1,17 @@
 [tool.poetry]
 name = "tapo"
-version = "0.8.0"
+version = "0.8.1"
 description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P115), power strips (P300, P304), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315)."
 authors = ["Mihai Dinculescu <mihai.dinculescu@outlook.com>"]
 
 [project]
 name = "tapo"
-version = "0.8.0"
+version = "0.8.1"
 description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P115), power strips (P300, P304), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315)."
 readme = "README.md"
 license = { file = "LICENSE" }
-authors = [
-    { name = "Mihai Dinculescu", email = "mihai.dinculescu@outlook.com" },
-]
-maintainers = [
-    { name = "Mihai Dinculescu", email = "mihai.dinculescu@outlook.com" },
-]
+authors = [{ name = "Mihai Dinculescu", email = "mihai.dinculescu@outlook.com" }]
+maintainers = [{ name = "Mihai Dinculescu", email = "mihai.dinculescu@outlook.com" }]
 keywords = ["Tapo", "TP-Link", "Smart Home", "Home Automation", "IoT"]
 classifiers = [
     "Development Status :: 4 - Beta",
