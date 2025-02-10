@@ -6,7 +6,15 @@ use serde::{Serialize, Serializer};
 #[derive(Debug, Default, Serialize)]
 #[cfg_attr(test, derive(Clone, Copy))]
 #[serde(rename_all = "lowercase")]
+#[cfg_attr(
+    feature = "python",
+    derive(Clone, PartialEq),
+    pyo3::prelude::pyclass(get_all, eq, eq_int)
+)]
 pub enum AlarmVolume {
+    /// Use the default volume for the hub.
+    #[default]
+    Default,
     /// Mute the audio output from the alarm.
     /// This causes the alarm to be shown as triggered in the Tapo App
     /// without an audible sound, and makes the `in_alarm` property
@@ -15,16 +23,29 @@ pub enum AlarmVolume {
     /// Lowest volume.
     Low,
     /// Normal volume. This is the default.
-    #[default]
     Normal,
     /// Highest volume.
     High,
 }
 
+impl AlarmVolume {
+    fn is_default(&self) -> bool {
+        matches!(self, Self::Default)
+    }
+}
+
 /// The ringtone of a H100 alarm.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Default, Serialize)]
 #[cfg_attr(test, derive(Clone, Copy))]
+#[cfg_attr(
+    feature = "python",
+    derive(Clone, PartialEq),
+    pyo3::prelude::pyclass(get_all, eq, eq_int)
+)]
 pub enum AlarmRingtone {
+    /// Use the default ringtone for the hub.
+    #[default]
+    Default,
     /// Alarm 1
     #[serde(rename = "Alarm 1")]
     Alarm1,
@@ -84,11 +105,16 @@ pub enum AlarmRingtone {
     PhoneRing,
 }
 
+impl AlarmRingtone {
+    fn is_default(&self) -> bool {
+        matches!(self, Self::Default)
+    }
+}
+
 /// Controls how long the alarm plays for.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub enum AlarmDuration {
-    /// Play the alarm continuously until stopped
-    #[default]
+    /// Play the alarm continuously until stopped.
     Continuous,
     /// Play the alarm once.
     /// This is useful for previewing the audio.
@@ -97,9 +123,9 @@ pub enum AlarmDuration {
     /// The `in_alarm` field of [`crate::responses::DeviceInfoHubResult`] will not remain `true` for the
     /// duration of the audio track. Each audio track has a different runtime.
     ///
-    /// Has no observable affect if the [`AlarmVolume::Mute`].
+    /// Has no observable affect when used in conjunction with [`AlarmVolume::Mute`].
     Once,
-    /// Play the alarm a number of seconds
+    /// Play the alarm a number of seconds.
     Seconds(u32),
 }
 impl AlarmDuration {
@@ -119,19 +145,19 @@ impl Serialize for AlarmDuration {
 }
 
 /// Parameters for playing the alarm on a H100 hub.
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Serialize)]
 pub(crate) struct PlayAlarmParams {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    alarm_type: Option<AlarmRingtone>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    alarm_volume: Option<AlarmVolume>,
+    #[serde(skip_serializing_if = "AlarmRingtone::is_default")]
+    alarm_type: AlarmRingtone,
+    #[serde(skip_serializing_if = "AlarmVolume::is_default")]
+    alarm_volume: AlarmVolume,
     #[serde(skip_serializing_if = "AlarmDuration::is_continuous")]
     alarm_duration: AlarmDuration,
 }
 impl PlayAlarmParams {
     pub(crate) fn new(
-        ringtone: Option<AlarmRingtone>,
-        volume: Option<AlarmVolume>,
+        ringtone: AlarmRingtone,
+        volume: AlarmVolume,
         duration: AlarmDuration,
     ) -> Result<Self, Error> {
         let params = Self {
@@ -146,8 +172,8 @@ impl PlayAlarmParams {
     fn validate(&self) -> Result<(), Error> {
         match self.alarm_duration {
             AlarmDuration::Seconds(0) => Err(Error::Validation {
-                field: "alarm_duration".to_string(),
-                message: "seconds must be greater than zero".to_string(),
+                field: "duration".to_string(),
+                message: "The seconds value must be greater than zero".to_string(),
             }),
             _ => Ok(()),
         }
@@ -160,8 +186,8 @@ mod tests {
 
     #[test]
     fn test_valid_inputs() {
-        for valid_ringtone in [None, Some(AlarmRingtone::Alarm1)] {
-            for valid_volume in [None, Some(AlarmVolume::Normal)] {
+        for valid_ringtone in [AlarmRingtone::Default, AlarmRingtone::Alarm1] {
+            for valid_volume in [AlarmVolume::Default, AlarmVolume::Normal] {
                 for valid_duration in [
                     AlarmDuration::Continuous,
                     AlarmDuration::Once,
@@ -176,16 +202,20 @@ mod tests {
 
     #[test]
     fn test_invalid_inputs() {
-        let result = PlayAlarmParams::new(None, None, AlarmDuration::Seconds(0));
+        let result = PlayAlarmParams::new(
+            AlarmRingtone::Default,
+            AlarmVolume::Default,
+            AlarmDuration::Seconds(0),
+        );
         assert!(matches!(
             result.err(),
-            Some(Error::Validation { field, message }) if field == "alarm_duration" && message == "seconds must be greater than zero"
+            Some(Error::Validation { field, message }) if field == "duration" && message == "The seconds value must be greater than zero"
         ));
     }
 
     fn params_to_json(
-        ringtone: Option<AlarmRingtone>,
-        volume: Option<AlarmVolume>,
+        ringtone: AlarmRingtone,
+        volume: AlarmVolume,
         duration: AlarmDuration,
     ) -> String {
         let params = PlayAlarmParams::new(ringtone, volume, duration).unwrap();
@@ -196,7 +226,11 @@ mod tests {
     fn test_serialize_params_where_ringtone_is_some() {
         assert_eq!(
             r#"{"alarm_type":"Alarm 1"}"#,
-            params_to_json(Some(AlarmRingtone::Alarm1), None, AlarmDuration::Continuous)
+            params_to_json(
+                AlarmRingtone::Alarm1,
+                AlarmVolume::Default,
+                AlarmDuration::Continuous
+            )
         );
     }
 
@@ -204,19 +238,35 @@ mod tests {
     fn test_serialize_params_where_volume_is_some() {
         assert_eq!(
             r#"{"alarm_volume":"mute"}"#,
-            params_to_json(None, Some(AlarmVolume::Mute), AlarmDuration::Continuous)
+            params_to_json(
+                AlarmRingtone::Default,
+                AlarmVolume::Mute,
+                AlarmDuration::Continuous
+            )
         );
         assert_eq!(
             r#"{"alarm_volume":"low"}"#,
-            params_to_json(None, Some(AlarmVolume::Low), AlarmDuration::Continuous)
+            params_to_json(
+                AlarmRingtone::Default,
+                AlarmVolume::Low,
+                AlarmDuration::Continuous
+            )
         );
         assert_eq!(
             r#"{"alarm_volume":"normal"}"#,
-            params_to_json(None, Some(AlarmVolume::Normal), AlarmDuration::Continuous)
+            params_to_json(
+                AlarmRingtone::Default,
+                AlarmVolume::Normal,
+                AlarmDuration::Continuous
+            )
         );
         assert_eq!(
             r#"{"alarm_volume":"high"}"#,
-            params_to_json(None, Some(AlarmVolume::High), AlarmDuration::Continuous)
+            params_to_json(
+                AlarmRingtone::Default,
+                AlarmVolume::High,
+                AlarmDuration::Continuous
+            )
         );
     }
 
@@ -224,7 +274,11 @@ mod tests {
     fn test_serialize_params_where_duration_is_continuous() {
         assert_eq!(
             r#"{}"#,
-            params_to_json(None, None, AlarmDuration::Continuous)
+            params_to_json(
+                AlarmRingtone::Default,
+                AlarmVolume::Default,
+                AlarmDuration::Continuous
+            )
         );
     }
 
@@ -232,7 +286,11 @@ mod tests {
     fn test_serialize_params_where_duration_is_once() {
         assert_eq!(
             r#"{"alarm_duration":0}"#,
-            params_to_json(None, None, AlarmDuration::Once)
+            params_to_json(
+                AlarmRingtone::Default,
+                AlarmVolume::Default,
+                AlarmDuration::Once
+            )
         );
     }
 
@@ -240,7 +298,11 @@ mod tests {
     fn test_serialize_params_where_duration_is_1second() {
         assert_eq!(
             r#"{"alarm_duration":1}"#,
-            params_to_json(None, None, AlarmDuration::Seconds(1))
+            params_to_json(
+                AlarmRingtone::Default,
+                AlarmVolume::Default,
+                AlarmDuration::Seconds(1)
+            )
         );
     }
 
@@ -249,8 +311,8 @@ mod tests {
         assert_eq!(
             r#"{"alarm_type":"Doorbell Ring 1","alarm_volume":"normal","alarm_duration":1}"#,
             params_to_json(
-                Some(AlarmRingtone::DoorbellRing1),
-                Some(AlarmVolume::Normal),
+                AlarmRingtone::DoorbellRing1,
+                AlarmVolume::Normal,
                 AlarmDuration::Seconds(1)
             )
         );

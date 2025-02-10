@@ -26,6 +26,7 @@ file. This change log follows the conventions of
 
 #### Added
 
+- Added functionality for controlling the alarm on the H100 hub via the `play_alarm` and `stop_alarm` methods in the `H100Handler`. Additionally, `get_supported_ringtone_list` is available to retrieve the list of supported ringtones for debugging purposes.
 - Added the ability to retrieve the color configuration (`hue`, `saturation`, `color_temperature`) for the `Color` enum values through the `get_color_config` method. (thanks to @WhySoBad)
 
 #### Changed

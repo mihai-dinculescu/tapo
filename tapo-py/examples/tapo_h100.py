@@ -4,6 +4,7 @@ import asyncio
 import os
 
 from tapo import ApiClient
+from tapo.requests import AlarmRingtone, AlarmVolume, AlarmDuration
 from tapo.responses import KE100Result, S200BResult, T100Result, T110Result, T300Result, T31XResult
 
 
@@ -100,6 +101,19 @@ async def main():
                     ),
                 )
             )
+
+    print(f"Triggering the alarm ringtone 'Alarm 1' at a 'Low' volume for '3 Seconds'...")
+    await hub.play_alarm(AlarmRingtone.Alarm1, AlarmVolume.Low, AlarmDuration.Seconds, seconds=3)
+
+    device_info = await hub.get_device_info()
+    print(f"Is device ringing?: {device_info.in_alarm}")
+
+    print("Stopping the alarm after 1 Second...")
+    await asyncio.sleep(1)
+    await hub.stop_alarm()
+
+    device_info = await hub.get_device_info()
+    print(f"Is device ringing?: {device_info.in_alarm}")
 
 
 if __name__ == "__main__":

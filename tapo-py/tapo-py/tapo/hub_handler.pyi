@@ -1,5 +1,7 @@
 from typing import List, Optional, Union
 
+from tapo import KE100Handler, S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler
+from tapo.requests.play_alarm import AlarmDuration, AlarmRingtone, AlarmVolume
 from tapo.responses import (
     DeviceInfoHubResult,
     KE100Result,
@@ -9,7 +11,6 @@ from tapo.responses import (
     T300Result,
     T31XResult,
 )
-from tapo import KE100Handler, S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler
 
 class HubHandler:
     """Handler for the [H100](https://www.tapo.com/en/search/?q=H100) hubs."""
@@ -75,6 +76,33 @@ class HubHandler:
         Returns:
             dict: Device info as a dictionary.
         """
+
+    async def get_supported_ringtone_list() -> List[str]:
+        """Returns a list of ringtones (alarm types) supported by the hub.
+        Used for debugging only.
+
+        Returns:
+            List[str]: List of the ringtones supported by the hub.
+        """
+
+    async def play_alarm(
+        self,
+        ringtone: AlarmRingtone,
+        volume: AlarmVolume,
+        duration: AlarmDuration,
+        seconds: Optional[int] = None,
+    ) -> None:
+        """Start playing the hub alarm.
+
+        Args:
+            ringtone (AlarmRingtone): The ringtone of a H100 alarm.
+            volume (AlarmVolume): The volume of the alarm.
+            duration (AlarmDuration): Controls how long the alarm plays for.
+            seconds (Optional[int]): Play the alarm a number of seconds. Required if `duration` is `AlarmDuration.Seconds`.
+        """
+
+    async def stop_alarm(self) -> None:
+        """Stop playing the hub alarm, if it's currently playing."""
 
     async def ke100(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None

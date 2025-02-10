@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
+use tapo::requests::{AlarmDuration, AlarmRingtone, AlarmVolume};
 use tapo::responses::{ChildDeviceHubResult, DeviceInfoHubResult};
 use tapo::{Error, HubDevice, HubHandler};
 use tokio::sync::RwLock;
@@ -12,6 +13,7 @@ use crate::api::{
 };
 use crate::call_handler_method;
 use crate::errors::ErrorWrapper;
+use crate::requests::PyAlarmDuration;
 
 #[derive(Clone)]
 #[pyclass(name = "HubHandler")]
@@ -129,6 +131,57 @@ impl PyHubHandler {
             HubHandler::get_child_device_component_list_json
         )?;
         Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
+    }
+
+    pub async fn get_supported_ringtone_list(&self) -> PyResult<Vec<String>> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            HubHandler::get_supported_ringtone_list
+        )
+    }
+
+    #[pyo3(signature = (ringtone, volume, duration, seconds=None))]
+    pub async fn play_alarm(
+        &self,
+        ringtone: AlarmRingtone,
+        volume: AlarmVolume,
+        duration: PyAlarmDuration,
+        seconds: Option<u32>,
+    ) -> PyResult<()> {
+        let handler = self.inner.clone();
+
+        let duration = match duration {
+            PyAlarmDuration::Continuous => AlarmDuration::Continuous,
+            PyAlarmDuration::Once => AlarmDuration::Once,
+            PyAlarmDuration::Seconds => {
+                if let Some(seconds) = seconds {
+                    AlarmDuration::Seconds(seconds)
+                } else {
+                    return Err(Into::<ErrorWrapper>::into(Error::Validation {
+                        field: "seconds".to_string(),
+                        message:
+                            "A value must be provided for seconds when duration = AlarmDuration.Seconds"
+                                .to_string(),
+                    })
+                    .into());
+                }
+            }
+        };
+
+        call_handler_method!(
+            handler.read().await.deref(),
+            HubHandler::play_alarm,
+            ringtone,
+            volume,
+            duration.into()
+        )
+    }
+
+    pub async fn stop_alarm(&self) -> PyResult<()> {
+        let handler = self.inner.clone();
+
+        call_handler_method!(handler.read().await.deref(), HubHandler::stop_alarm)
     }
 
     #[pyo3(signature = (device_id=None, nickname=None))]
