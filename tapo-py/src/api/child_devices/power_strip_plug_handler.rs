@@ -1,8 +1,8 @@
 use std::{ops::Deref, sync::Arc};
 
 use pyo3::{prelude::*, types::PyDict};
-use tapo::responses::PowerStripPlugResult;
 use tapo::PowerStripPlugHandler;
+use tapo::responses::PowerStripPlugResult;
 
 use crate::call_handler_method;
 

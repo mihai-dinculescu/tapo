@@ -4,18 +4,18 @@ use async_trait::async_trait;
 use log::{debug, trace, warn};
 use rand::rngs::StdRng;
 use rand::{RngCore, SeedableRng};
-use reqwest::header::COOKIE;
 use reqwest::Client;
+use reqwest::header::COOKIE;
 use serde::de::DeserializeOwned;
 
 use crate::api::protocol::TapoProtocol;
 use crate::requests::TapoRequest;
-use crate::responses::{validate_response, TapoResponse, TapoResponseExt};
+use crate::responses::{TapoResponse, TapoResponseExt, validate_response};
 use crate::{Error, TapoResponseError};
 
+use super::TapoProtocolExt;
 use super::discovery_protocol::DiscoveryProtocol;
 use super::klap_cipher::KlapCipher;
-use super::TapoProtocolExt;
 
 #[derive(Debug)]
 pub(crate) struct KlapProtocol {

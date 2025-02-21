@@ -3,8 +3,8 @@ use std::sync::Arc;
 
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
-use tapo::responses::{DeviceInfoLightResult, DeviceUsageEnergyMonitoringResult};
 use tapo::LightHandler;
+use tapo::responses::{DeviceInfoLightResult, DeviceUsageEnergyMonitoringResult};
 use tokio::sync::RwLock;
 
 use crate::call_handler_method;

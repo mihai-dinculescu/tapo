@@ -1,7 +1,7 @@
 /// P100 and P105 Example
 use std::{env, thread, time::Duration};
 
-use log::{info, LevelFilter};
+use log::{LevelFilter, info};
 use tapo::ApiClient;
 
 #[tokio::main]

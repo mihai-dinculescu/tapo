@@ -1,8 +1,8 @@
 use std::{ops::Deref, sync::Arc};
 
 use pyo3::{prelude::*, types::PyDict};
-use tapo::responses::T110Result;
 use tapo::T110Handler;
+use tapo::responses::T110Result;
 
 use crate::call_handler_method;
 use crate::responses::TriggerLogsT110Result;

@@ -1,8 +1,8 @@
 use std::{ops::Deref, sync::Arc};
 
 use pyo3::{prelude::*, types::PyDict};
-use tapo::responses::{T31XResult, TemperatureHumidityRecords};
 use tapo::T31XHandler;
+use tapo::responses::{T31XResult, TemperatureHumidityRecords};
 
 use crate::call_handler_method;
 
