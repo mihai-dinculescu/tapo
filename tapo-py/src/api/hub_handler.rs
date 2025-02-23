@@ -9,7 +9,7 @@ use tapo::{Error, HubDevice, HubHandler};
 use tokio::sync::RwLock;
 
 use crate::api::{
-    PyKE100Handler, PyS200BHandler, PyT100Handler, PyT110Handler, PyT300Handler, PyT31XHandler,
+    PyKE100Handler, PyS200BHandler, PyT31XHandler, PyT100Handler, PyT110Handler, PyT300Handler,
 };
 use crate::call_handler_method;
 use crate::errors::ErrorWrapper;

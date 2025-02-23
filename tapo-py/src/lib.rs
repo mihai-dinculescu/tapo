@@ -19,16 +19,16 @@ use tapo::responses::{
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
     KE100Result, OvercurrentStatus, OverheatStatus, PlugState, PowerProtectionStatus,
     PowerStripPlugResult, RgbLightStripState, RgbicLightStripState, S200BLog, S200BResult,
-    S200BRotationParams, Status, T100Log, T100Result, T110Log, T110Result, T300Log, T300Result,
-    T31XResult, TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit,
+    S200BRotationParams, Status, T31XResult, T100Log, T100Result, T110Log, T110Result, T300Log,
+    T300Result, TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit,
     TemperatureUnitKE100, UsageByPeriodResult, WaterLeakStatus,
 };
 
 use api::{
     PyApiClient, PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyKE100Handler,
     PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler,
-    PyPowerStripPlugHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler, PyT100Handler,
-    PyT110Handler, PyT300Handler, PyT31XHandler,
+    PyPowerStripPlugHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler, PyT31XHandler,
+    PyT100Handler, PyT110Handler, PyT300Handler,
 };
 use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyLightingEffect,

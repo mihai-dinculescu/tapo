@@ -1,5 +1,5 @@
-use pyo3::exceptions::PyException;
 use pyo3::PyErr;
+use pyo3::exceptions::PyException;
 use tapo::Error;
 
 pub struct ErrorWrapper(pub Error);

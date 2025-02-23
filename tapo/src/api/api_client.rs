@@ -18,9 +18,9 @@ use crate::requests::{
     TapoRequest,
 };
 use crate::responses::{
-    validate_response, ControlChildResult, CurrentPowerResult, DecodableResultExt,
-    EnergyDataResult, EnergyUsageResult, SupportedAlarmTypeListResult, TapoMultipleResponse,
-    TapoResponseExt, TapoResult,
+    ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
+    EnergyUsageResult, SupportedAlarmTypeListResult, TapoMultipleResponse, TapoResponseExt,
+    TapoResult, validate_response,
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";

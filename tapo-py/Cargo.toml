@@ -1,7 +1,7 @@
 [package]
 name = "tapo-py"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 publish = false
 
 [lib]
@@ -14,7 +14,7 @@ default = []
 
 [dependencies]
 anyhow = { workspace = true }
-chrono = { workspace = true, default-features = false }
+chrono = { workspace = true }
 log = { version = "0.4", default-features = false }
 pyo3 = { workspace = true, features = [
     "chrono",
@@ -25,6 +25,6 @@ pyo3 = { workspace = true, features = [
 pyo3-log = { version = "0.12" }
 serde = { workspace = true }
 serde_json = { workspace = true }
-tokio = { workspace = true, default-features = false, features = ["rt-multi-thread", "sync"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "sync"] }
 
 tapo = { path = "../tapo", features = ["python"] }

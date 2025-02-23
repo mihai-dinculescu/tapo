@@ -1,13 +1,13 @@
 use std::fmt;
 
 use async_trait::async_trait;
-use reqwest::cookie::Cookie;
 use reqwest::Client;
+use reqwest::cookie::Cookie;
 use serde::de::DeserializeOwned;
 
-use crate::responses::TapoResponseExt;
 use crate::Error;
-use crate::{requests::TapoRequest, TapoResponseError};
+use crate::responses::TapoResponseExt;
+use crate::{TapoResponseError, requests::TapoRequest};
 
 use super::{
     discovery_protocol::DiscoveryProtocol, klap_protocol::KlapProtocol,
@@ -22,7 +22,7 @@ pub(crate) struct TapoProtocol {
 #[async_trait]
 pub(crate) trait TapoProtocolExt {
     async fn login(&mut self, url: String, username: String, password: String)
-        -> Result<(), Error>;
+    -> Result<(), Error>;
     async fn refresh_session(&mut self, username: String, password: String) -> Result<(), Error>;
     async fn execute_request<R>(
         &self,

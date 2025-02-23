@@ -1,7 +1,7 @@
 /// Toggle Generic Device Example
 use std::env;
 
-use log::{info, warn, LevelFilter};
+use log::{LevelFilter, info, warn};
 use tapo::ApiClient;
 
 #[tokio::main]

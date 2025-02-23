@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, TapoResponseExt};
+use crate::responses::{DecodableResultExt, TapoResponseExt, decode_value};
 
 /// Device info of a Generic Tapo device.
 #[derive(Debug, Clone, Serialize, Deserialize)]

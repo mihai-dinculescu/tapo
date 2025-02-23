@@ -2,9 +2,9 @@ use std::ops::RangeInclusive;
 
 use serde::Serialize;
 
+use crate::HandlerExt;
 use crate::error::Error;
 use crate::requests::Color;
-use crate::HandlerExt;
 
 /// Builder that is used by the [`crate::ColorLightHandler::set`] API to set multiple properties in a single request.
 #[derive(Debug, Clone, Default, Serialize)]

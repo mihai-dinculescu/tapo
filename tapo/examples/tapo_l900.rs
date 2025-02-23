@@ -1,8 +1,8 @@
 /// L900 Example
 use std::{env, thread, time::Duration};
 
-use log::{info, LevelFilter};
-use tapo::{requests::Color, ApiClient};
+use log::{LevelFilter, info};
+use tapo::{ApiClient, requests::Color};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

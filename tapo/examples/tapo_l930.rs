@@ -1,10 +1,10 @@
 /// L920 and L930 Example
 use std::{env, thread, time::Duration};
 
-use log::{info, LevelFilter};
+use log::{LevelFilter, info};
 use tapo::{
-    requests::{Color, LightingEffect, LightingEffectPreset, LightingEffectType},
     ApiClient,
+    requests::{Color, LightingEffect, LightingEffectPreset, LightingEffectType},
 };
 
 #[tokio::main]

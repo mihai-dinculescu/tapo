@@ -3,10 +3,10 @@ use reqwest::Client;
 
 use crate::api::protocol::klap_protocol::KlapProtocol;
 use crate::requests::{EmptyParams, TapoParams, TapoRequest};
-use crate::responses::{validate_response, TapoResponse};
+use crate::responses::{TapoResponse, validate_response};
 use crate::{Error, TapoResponseError};
 
-use super::{passthrough_protocol::PassthroughProtocol, TapoProtocolType};
+use super::{TapoProtocolType, passthrough_protocol::PassthroughProtocol};
 
 #[derive(Debug, Clone)]
 pub(crate) struct DiscoveryProtocol {

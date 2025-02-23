@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::responses::{
-    decode_value, DecodableResultExt, DefaultBrightnessState, DefaultPowerType, TapoResponseExt,
+    DecodableResultExt, DefaultBrightnessState, DefaultPowerType, TapoResponseExt, decode_value,
 };
 
 /// Device info of Tapo L510, L520 and L610. Superset of [`crate::responses::DeviceInfoGenericResult`].

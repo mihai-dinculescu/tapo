@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicI32, Ordering};
 
-use aes::cipher::{block_padding, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
 use aes::Aes128;
+use aes::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, block_padding};
 use cbc::{Decryptor, Encryptor};
 
 #[derive(Debug)]

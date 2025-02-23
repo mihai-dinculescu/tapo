@@ -7,10 +7,10 @@ mod t31x_result;
 
 pub use ke100_result::*;
 pub use s200b_result::*;
+pub use t31x_result::*;
 pub use t100_result::*;
 pub use t110_result::*;
 pub use t300_result::*;
-pub use t31x_result::*;
 
 use serde::{Deserialize, Serialize};
 

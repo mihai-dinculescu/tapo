@@ -3,8 +3,8 @@ use std::sync::Arc;
 
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
-use tapo::responses::DeviceInfoGenericResult;
 use tapo::GenericDeviceHandler;
+use tapo::responses::DeviceInfoGenericResult;
 use tokio::sync::RwLock;
 
 use crate::call_handler_method;
