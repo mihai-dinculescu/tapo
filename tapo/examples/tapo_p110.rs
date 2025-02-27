@@ -2,8 +2,8 @@
 use std::{env, thread, time::Duration};
 
 use chrono::{DateTime, Datelike, NaiveDate, Utc};
-use log::{info, LevelFilter};
-use tapo::{requests::EnergyDataInterval, ApiClient};
+use log::{LevelFilter, info};
+use tapo::{ApiClient, requests::EnergyDataInterval};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::responses::device_info_result::OverheatStatus;
-use crate::responses::{decode_value, DecodableResultExt, TapoResponseExt};
+use crate::responses::{DecodableResultExt, TapoResponseExt, decode_value};
 
 /// Power Strip child device list result.
 #[derive(Debug, Clone, Serialize, Deserialize)]

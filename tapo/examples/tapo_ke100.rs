@@ -1,7 +1,7 @@
 /// KE100 TRV Example
 use std::env;
 
-use log::{info, LevelFilter};
+use log::{LevelFilter, info};
 use tapo::requests::TemperatureUnitKE100;
 use tapo::{ApiClient, HubDevice};
 

@@ -1,6 +1,6 @@
 //! H100 Example
 
-use log::{info, LevelFilter};
+use log::{LevelFilter, info};
 use std::env;
 use std::time::Duration;
 use tapo::requests::{AlarmDuration, AlarmRingtone, AlarmVolume};

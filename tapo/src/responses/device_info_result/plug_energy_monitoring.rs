@@ -4,7 +4,7 @@ use crate::error::Error;
 use crate::responses::device_info_result::{
     OvercurrentStatus, OverheatStatus, PowerProtectionStatus,
 };
-use crate::responses::{decode_value, DecodableResultExt, DefaultStateType, TapoResponseExt};
+use crate::responses::{DecodableResultExt, DefaultStateType, TapoResponseExt, decode_value};
 
 /// Device info of Tapo P110 and P115. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]

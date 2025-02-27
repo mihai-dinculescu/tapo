@@ -1,8 +1,8 @@
 use std::{ops::Deref, sync::Arc};
 
 use pyo3::{prelude::*, types::PyDict};
-use tapo::responses::{KE100Result, TemperatureUnitKE100};
 use tapo::KE100Handler;
+use tapo::responses::{KE100Result, TemperatureUnitKE100};
 
 use crate::call_handler_method;
 

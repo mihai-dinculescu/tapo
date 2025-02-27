@@ -1,6 +1,6 @@
-use aes::cipher::{block_padding, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
 use aes::Aes128;
-use base64::{engine::general_purpose, Engine as _};
+use aes::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, block_padding};
+use base64::{Engine as _, engine::general_purpose};
 use cbc::{Decryptor, Encryptor};
 use log::debug;
 use rsa::pkcs8::{EncodePublicKey, LineEnding};
@@ -91,7 +91,7 @@ impl PassthroughCipher {
 
 #[cfg(test)]
 mod tests {
-    use rand::{rngs::StdRng, Rng, SeedableRng};
+    use rand::{Rng, SeedableRng, rngs::StdRng};
 
     use super::*;
 
@@ -113,7 +113,7 @@ waihnXBCkPwQndikfwIDAQAB
 -----END PUBLIC KEY-----\n"
         );
 
-        let key_bytes = vec![rng.gen(); 32];
+        let key_bytes = vec![rng.r#gen(); 32];
         let key_encrypted_bytes =
             key_pair
                 .rsa

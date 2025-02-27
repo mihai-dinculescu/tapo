@@ -1,7 +1,7 @@
 use std::{ops::Deref, sync::Arc};
 
 use pyo3::{prelude::*, types::PyDict};
-use tapo::{responses::T100Result, T100Handler};
+use tapo::{T100Handler, responses::T100Result};
 
 use crate::call_handler_method;
 use crate::responses::TriggerLogsT100Result;

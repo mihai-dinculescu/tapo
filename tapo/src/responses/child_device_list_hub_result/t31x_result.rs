@@ -3,7 +3,7 @@ use itertools::izip;
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{decode_value, DecodableResultExt, Status, TapoResponseExt};
+use crate::responses::{DecodableResultExt, Status, TapoResponseExt, decode_value};
 
 /// Temperature unit.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
