@@ -1,19 +1,14 @@
 /// L900 Example
 use std::{env, thread, time::Duration};
 
-use log::{LevelFilter, info};
+use log::info;
 use tapo::{ApiClient, requests::Color};
+
+mod common;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let log_level = env::var("RUST_LOG")
-        .unwrap_or_else(|_| "info".to_string())
-        .parse()
-        .unwrap_or(LevelFilter::Info);
-
-    pretty_env_logger::formatted_timed_builder()
-        .filter(Some("tapo"), log_level)
-        .init();
+    common::setup_logger();
 
     let tapo_username = env::var("TAPO_USERNAME")?;
     let tapo_password = env::var("TAPO_PASSWORD")?;
