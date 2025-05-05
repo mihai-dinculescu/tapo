@@ -2,10 +2,9 @@ use std::fmt;
 
 use async_trait::async_trait;
 use log::{debug, trace, warn};
-use rand::rngs::StdRng;
-use rand::{RngCore, SeedableRng};
 use reqwest::Client;
 use reqwest::header::COOKIE;
+use rsa::rand_core::{OsRng, RngCore as _};
 use serde::de::DeserializeOwned;
 
 use crate::api::protocol::TapoProtocol;
@@ -21,7 +20,7 @@ use super::klap_cipher::KlapCipher;
 pub(crate) struct KlapProtocol {
     client: Client,
     cookie: String,
-    rng: StdRng,
+    rng: OsRng,
     url: Option<String>,
     cipher: Option<KlapCipher>,
 }
@@ -105,7 +104,7 @@ impl KlapProtocol {
         Self {
             client,
             cookie: String::new(),
-            rng: StdRng::from_entropy(),
+            rng: OsRng,
             url: None,
             cipher: None,
         }

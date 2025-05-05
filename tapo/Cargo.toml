@@ -34,8 +34,7 @@ aes = "0.8"
 base16ct = { version = "0.2", features = ["alloc"] }
 base64 = "0.22"
 cbc = { version = "0.1", features = ["alloc"] }
-rand = "0.8"
-rsa = "0.9"
+rsa = { version = "0.9", features = ["getrandom"] }
 sha1 = "0.10"
 sha2 = "0.10"
 
@@ -44,4 +43,5 @@ pyo3 = { workspace = true, features = ["serde", "chrono"], optional = true }
 
 [dev-dependencies]
 pretty_env_logger = "0.5"
+rand = "0.8"
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
