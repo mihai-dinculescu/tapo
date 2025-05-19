@@ -8,6 +8,12 @@ file. This change log follows the conventions of
 
 ### Rust
 
+### Python
+
+## [v0.8.2][v0.8.2] - 2025-05-19
+
+### Rust
+
 ## Added
 
 - The `charging_status` field has been added to `DeviceInfoPlugEnergyMonitoringResult`.
@@ -573,6 +579,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.8.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.2
 [v0.8.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.1
 [v0.8.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.0
 [py-v0.7.0]: https://github.com/mihai-dinculescu/tapo/tree/py-v0.7.0
