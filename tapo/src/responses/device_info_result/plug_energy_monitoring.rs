@@ -1,15 +1,14 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::device_info_result::{
-    OvercurrentStatus, OverheatStatus, PowerProtectionStatus,
-};
 use crate::responses::{DecodableResultExt, DefaultStateType, TapoResponseExt, decode_value};
+
+use super::{ChargingStatus, OvercurrentStatus, OverheatStatus, PowerProtectionStatus};
 
 /// Device info of Tapo P110 and P115. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
-#[allow(missing_docs)]
+#[allow(missing_docs, deprecated)]
 pub struct DeviceInfoPlugEnergyMonitoringResult {
     //
     // Inherited from DeviceInfoGenericResult
@@ -45,8 +44,9 @@ pub struct DeviceInfoPlugEnergyMonitoringResult {
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
     pub default_states: DefaultPlugState,
     pub overcurrent_status: OvercurrentStatus,
-    pub overheat_status: OverheatStatus,
+    pub overheat_status: Option<OverheatStatus>,
     pub power_protection_status: PowerProtectionStatus,
+    pub charging_status: ChargingStatus,
 }
 
 #[cfg(feature = "python")]

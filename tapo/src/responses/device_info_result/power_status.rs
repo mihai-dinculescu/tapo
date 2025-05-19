@@ -4,6 +4,15 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "snake_case")]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
 #[allow(missing_docs)]
+pub enum ChargingStatus {
+    Finished,
+    Normal,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
+#[allow(missing_docs)]
 pub enum OvercurrentStatus {
     Lifted,
     Normal,

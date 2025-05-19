@@ -8,7 +8,23 @@ file. This change log follows the conventions of
 
 ### Rust
 
+## Added
+
+- The `charging_status` field has been added to `DeviceInfoPlugEnergyMonitoringResult`.
+
+## Changed
+
+- The `overheat_status` field in `DeviceInfoPlugEnergyMonitoringResult` is now optional to support devices that omit this field after the latest firmware update (1.3.4 Build 250403 Rel.150504).
+
 ### Python
+
+## Added
+
+- The `charging_status` field has been added to `DeviceInfoPlugEnergyMonitoringResult`.
+
+## Changed
+
+- The `overheat_status` field in `DeviceInfoPlugEnergyMonitoringResult` is now optional to support devices that omit this field after the latest firmware update (1.3.4 Build 250403 Rel.150504).
 
 ## [v0.8.1][v0.8.1] - 2025-02-10
 

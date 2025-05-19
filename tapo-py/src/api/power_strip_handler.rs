@@ -77,7 +77,7 @@ impl PyPowerStripHandler {
             PowerStripHandler::get_child_device_list
         )?;
 
-        let results = Python::with_gil(|py| {
+        Python::with_gil(|py| {
             let results = PyList::empty(py);
 
             for child in children {
@@ -85,9 +85,7 @@ impl PyPowerStripHandler {
             }
 
             Ok(results.into())
-        });
-
-        results
+        })
     }
 
     pub async fn get_child_device_list_json(&self) -> PyResult<Py<PyDict>> {

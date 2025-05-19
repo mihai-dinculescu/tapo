@@ -35,6 +35,7 @@ pub(crate) trait TapoProtocolExt {
 }
 
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 pub(crate) enum TapoProtocolType {
     Discovery(DiscoveryProtocol),
     Passthrough(PassthroughProtocol),

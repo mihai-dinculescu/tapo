@@ -76,7 +76,7 @@ impl PyHubHandler {
             HubHandler::get_child_device_list
         )?;
 
-        let results = Python::with_gil(|py| {
+        Python::with_gil(|py| {
             let results = PyList::empty(py);
 
             for child in children {
@@ -109,9 +109,7 @@ impl PyHubHandler {
             }
 
             Ok(results.into())
-        });
-
-        results
+        })
     }
 
     pub async fn get_child_device_list_json(&self, start_index: u64) -> PyResult<Py<PyDict>> {
