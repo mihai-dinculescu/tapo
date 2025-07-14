@@ -177,7 +177,7 @@ impl PassthroughProtocol {
         let username = general_purpose::STANDARD.encode(username_digest);
         let password = general_purpose::STANDARD.encode(password);
 
-        debug!("Will login with username '{}'...", username);
+        debug!("Will login with username '{username}'...");
 
         let params = TapoParams::new(LoginDeviceParams::new(&username, &password))
             .set_request_time_mils()?;

@@ -15,7 +15,7 @@ default = []
 [dependencies]
 anyhow = { workspace = true }
 chrono = { workspace = true }
-log = { version = "0.4", default-features = false }
+log = { workspace = true }
 pyo3 = { workspace = true, features = [
     "chrono",
     "experimental-async",
