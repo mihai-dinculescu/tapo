@@ -134,7 +134,6 @@ waihnXBCkPwQndikfwIDAQAB
                 157
             ]
         );
-        println!("{:?}", key_encrypted_bytes);
 
         let key = general_purpose::STANDARD.encode(key_encrypted_bytes);
 
