@@ -24,7 +24,7 @@ log = "0.4"
 reqwest = { version = "0.12", default-features = false, features = ["cookies", "json"] }
 serde = { workspace = true, features = ["derive", "serde_derive"] }
 serde_json = { workspace = true }
-serde_with = "3.12"
+serde_with = "3.14"
 thiserror = "2.0"
 tokio = { workspace = true, features = ["sync"] }
 uuid = { version = "1.16", features = ["serde", "v4"] }
