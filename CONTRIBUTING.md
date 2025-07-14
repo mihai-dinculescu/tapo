@@ -23,6 +23,6 @@ If you're thinking to create a PR with large feature/change, please first discus
   git push --follow-tags
   ```
 
-- Create the [release][releases].
+- Create the [release][release].
 
 [releases]: https://github.com/mihai-dinculescu/tapo/releases
