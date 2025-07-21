@@ -10,7 +10,7 @@ use crate::responses::{
 };
 
 /// Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
-/// [P304](https://www.tp-link.com/uk/search/?q=P304) devices.
+/// [P304M](https://www.tp-link.com/uk/search/?q=P304M) devices.
 pub struct PowerStripHandler {
     client: Arc<RwLock<ApiClient>>,
 }

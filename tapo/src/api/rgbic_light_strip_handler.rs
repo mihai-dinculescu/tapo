@@ -4,7 +4,8 @@ use crate::responses::{DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitor
 
 use super::{ApiClient, ApiClientExt, HandlerExt};
 
-/// Handler for the [L920](https://www.tapo.com/en/search/?q=L920) and [L930](https://www.tapo.com/en/search/?q=L930) devices.
+/// Handler for the [L920](https://www.tapo.com/en/search/?q=L920) and
+/// [L930](https://www.tapo.com/en/search/?q=L930) devices.
 pub struct RgbicLightStripHandler {
     client: ApiClient,
 }

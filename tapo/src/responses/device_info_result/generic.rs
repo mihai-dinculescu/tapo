@@ -4,6 +4,8 @@ use crate::error::Error;
 use crate::responses::{DecodableResultExt, TapoResponseExt, decode_value};
 
 /// Device info of a Generic Tapo device.
+/// Please open an [issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues) if you'd like to discuss
+/// the possibility of adding support for a specific type of device that is currently unsupported.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]

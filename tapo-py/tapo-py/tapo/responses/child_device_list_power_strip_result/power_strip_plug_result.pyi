@@ -4,7 +4,7 @@ from typing import Optional
 from tapo.responses.device_info_result.power_status import OverheatStatus
 
 class PowerStripPlugResult:
-    """P300 and P304 power strip child plugs."""
+    """P300 and P304M power strip child plugs."""
 
     auto_off_remain_time: int
     auto_off_status: AutoOffStatus

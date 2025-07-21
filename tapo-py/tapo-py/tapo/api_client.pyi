@@ -1,7 +1,7 @@
 """Tapo API Client.
 
 Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115),
-power strips (P300, P304), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
+power strips (P300, P304M), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
 
 Example:
     ```python
@@ -36,7 +36,7 @@ class ApiClient:
     """Tapo API Client.
 
     Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115),
-    power strips (P300, P304), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
+    power strips (P300, P304M), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315).
 
     Example:
         ```python
@@ -360,7 +360,7 @@ class ApiClient:
 
         Returns:
             PowerStripHandler: Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
-            [P304](https://www.tp-link.com/uk/search/?q=P304) devices.
+            [P304M](https://www.tp-link.com/uk/search/?q=P304M) devices.
 
         Example:
             ```python
@@ -380,7 +380,7 @@ class ApiClient:
 
         Returns:
             PowerStripHandler: Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
-            [P304](https://www.tp-link.com/uk/search/?q=P304) devices.
+            [P304M](https://www.tp-link.com/uk/search/?q=P304M) devices.
 
         Example:
             ```python

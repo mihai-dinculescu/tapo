@@ -1,4 +1,4 @@
-"""P300 and P304 Example"""
+"""P300 and P304M Example"""
 
 import asyncio
 import os
