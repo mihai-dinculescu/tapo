@@ -8,7 +8,15 @@ file. This change log follows the conventions of
 
 ### Rust
 
+### Removed
+
+- Removed `nickname` from `DeviceInfoPowerStripResult` because it is not present in the response.
+
 ### Python
+
+### Removed
+
+- Removed `nickname` from `DeviceInfoPowerStripResult` because it is not present in the response.
 
 ## [v0.8.2][v0.8.2] - 2025-05-19
 

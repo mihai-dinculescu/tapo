@@ -26,7 +26,6 @@ pub struct DeviceInfoPowerStripResult {
     pub rssi: i16,
     pub specs: String,
     pub lang: String,
-    pub nickname: String,
     pub avatar: String,
     pub has_set_location_info: bool,
     pub region: Option<String>,
@@ -52,7 +51,6 @@ impl TapoResponseExt for DeviceInfoPowerStripResult {}
 impl DecodableResultExt for DeviceInfoPowerStripResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.ssid = decode_value(&self.ssid)?;
-        self.nickname = decode_value(&self.nickname)?;
 
         Ok(self)
     }

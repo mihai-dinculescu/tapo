@@ -18,7 +18,6 @@ class DeviceInfoPowerStripResult:
     rssi: int
     specs: str
     lang: str
-    nickname: str
     avatar: str
     has_set_location_info: bool
     region: Optional[str]
