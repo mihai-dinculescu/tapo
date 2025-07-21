@@ -10,7 +10,8 @@ from tapo.responses import (
 )
 
 class PlugEnergyMonitoringHandler:
-    """Handler for the [P110](https://www.tapo.com/en/search/?q=P110) and
+    """Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
+    [P110M](https://www.tapo.com/en/search/?q=P110M) and
     [P115](https://www.tapo.com/en/search/?q=P115) devices.
     """
 
@@ -47,7 +48,7 @@ class PlugEnergyMonitoringHandler:
         try `PlugEnergyMonitoringHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoPlugEnergyMonitoringResult: Device info of P110 and P115.
+            DeviceInfoPlugEnergyMonitoringResult: Device info of P110, P110M and P115.
             Superset of `GenericDeviceInfoResult`.
         """
 

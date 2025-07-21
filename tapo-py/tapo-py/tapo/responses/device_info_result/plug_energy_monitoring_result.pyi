@@ -9,7 +9,7 @@ from tapo.responses.device_info_result.power_status import (
 )
 
 class DeviceInfoPlugEnergyMonitoringResult:
-    """Device info of Tapo P110 and P115. Superset of `GenericDeviceInfoResult`."""
+    """Device info of Tapo P110, P110M and P115. Superset of `GenericDeviceInfoResult`."""
 
     device_id: str
     type: str

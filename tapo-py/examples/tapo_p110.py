@@ -1,4 +1,4 @@
-"""P110 and P115 Example"""
+"""P110, P110M and P115 Example"""
 
 import asyncio
 import os

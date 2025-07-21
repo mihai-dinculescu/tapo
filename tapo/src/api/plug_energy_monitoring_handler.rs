@@ -6,7 +6,8 @@ use crate::responses::{
     EnergyDataResult, EnergyUsageResult,
 };
 
-/// Handler for the [P110](https://www.tapo.com/en/search/?q=P110) and
+/// Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
+/// [P110M](https://www.tapo.com/en/search/?q=P110M) and
 /// [P115](https://www.tapo.com/en/search/?q=P115) devices.
 pub struct PlugEnergyMonitoringHandler {
     client: ApiClient,

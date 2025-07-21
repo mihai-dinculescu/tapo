@@ -5,7 +5,7 @@ use crate::responses::{DecodableResultExt, DefaultStateType, TapoResponseExt, de
 
 use super::{ChargingStatus, OvercurrentStatus, OverheatStatus, PowerProtectionStatus};
 
-/// Device info of Tapo P110 and P115. Superset of [`crate::responses::DeviceInfoGenericResult`].
+/// Device info of Tapo P110, P110M and P115. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs, deprecated)]
