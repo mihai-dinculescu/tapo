@@ -13,7 +13,7 @@ from tapo.responses import (
 )
 
 class HubHandler:
-    """Handler for the [H100](https://www.tapo.com/en/search/?q=H100) hubs."""
+    """Handler for the [H100](https://www.tapo.com/en/search/?q=H100) devices."""
 
     def __init__(self, handler: object):
         """Private constructor.
