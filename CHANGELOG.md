@@ -6,6 +6,11 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- Introduced support for discovering all Tapo devices on the local network via the `discover_devices` method in `ApiClient`. This enables querying devices even when their IP addresses are dynamic or unknown. However, the process is slower, as it involves scanning the entire network and awaiting responses from each device to the discovery request.
+
+
 ## [Python Unreleased][Unreleased]
 
 ## [Rust v0.8.4][v0.8.4] - 2025-08-11
