@@ -5,6 +5,7 @@ use crate::responses::{DeviceInfoPlugResult, DeviceUsageResult};
 
 /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
 /// [P105](https://www.tapo.com/en/search/?q=P105) devices.
+#[derive(Debug)]
 pub struct PlugHandler {
     client: ApiClient,
 }

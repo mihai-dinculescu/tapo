@@ -4,7 +4,7 @@ version = "0.8.4"
 edition = "2024"
 license = "MIT"
 authors = ["Mihai Dinculescu <mihai.dinculescu@outlook.com>"]
-description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115), power strips (P300, P304), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315)."
+description = "Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115), power strips (P300, P304M, P316M), hubs (H100), switches (S200B) and sensors (KE100, T100, T110, T300, T310, T315)."
 keywords = ["IOT", "tapo", "smart-home", "smart-bulb", "smart-plug"]
 categories = ["hardware-support", "embedded", "development-tools"]
 readme = "README.md"
@@ -18,6 +18,7 @@ python = ["dep:pyo3"]
 anyhow = { workspace = true }
 async-trait = "0.1"
 chrono = { workspace = true, features = ["clock", "serde"] }
+crc32fast = "1.5"
 itertools = "0.14"
 lazy_static = "1.5"
 log = { workspace = true }
@@ -27,6 +28,7 @@ serde_json = { workspace = true }
 serde_with = "3.14"
 thiserror = "2.0"
 tokio = { workspace = true, features = ["sync"] }
+tokio-stream = "0.1"
 uuid = { version = "1.18", features = ["serde", "v4"] }
 
 # security

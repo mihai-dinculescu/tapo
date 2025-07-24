@@ -3,6 +3,9 @@ from tapo.responses import DeviceInfoGenericResult
 class GenericDeviceHandler:
     """Handler for generic devices. It provides the functionality common to
     all Tapo [devices](https://www.tapo.com/en/).
+
+    If you'd like to propose support for a device that isn't currently supported,
+    please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues) to start the conversation.
     """
 
     def __init__(self, handler: object):
