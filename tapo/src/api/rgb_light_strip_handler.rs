@@ -5,6 +5,7 @@ use crate::responses::{DeviceInfoRgbLightStripResult, DeviceUsageEnergyMonitorin
 use super::{ApiClient, ApiClientExt, HandlerExt};
 
 /// Handler for the [L900](https://www.tapo.com/en/search/?q=L900) devices.
+#[derive(Debug)]
 pub struct RgbLightStripHandler {
     client: ApiClient,
 }

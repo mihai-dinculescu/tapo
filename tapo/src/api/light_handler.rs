@@ -6,6 +6,7 @@ use crate::responses::{DeviceInfoLightResult, DeviceUsageEnergyMonitoringResult}
 /// Handler for the [L510](https://www.tapo.com/en/search/?q=L510),
 /// [L520](https://www.tapo.com/en/search/?q=L520) and
 /// [L610](https://www.tapo.com/en/search/?q=L610) devices.
+#[derive(Debug)]
 pub struct LightHandler {
     client: ApiClient,
 }
