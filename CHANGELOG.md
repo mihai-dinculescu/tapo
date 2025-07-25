@@ -8,6 +8,12 @@ file. This change log follows the conventions of
 
 ### Rust
 
+### Python
+
+## [v0.8.3][v0.8.3] - 2025-07-25
+
+### Rust
+
 ### Added
 
 - Added support for the P316M power strips.
@@ -607,6 +613,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.8.3]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.3
 [v0.8.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.2
 [v0.8.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.1
 [v0.8.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.0
