@@ -1,8 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::device_info_result::OverheatStatus;
-use crate::responses::{DecodableResultExt, TapoResponseExt, decode_value};
+use crate::responses::{
+    ChargingStatus, DecodableResultExt, OvercurrentStatus, OverheatStatus, PowerProtectionStatus,
+    TapoResponseExt, decode_value,
+};
 
 /// Power Strip child device list result.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -26,7 +28,7 @@ impl DecodableResultExt for ChildDeviceListPowerStripResult {
 
 impl TapoResponseExt for ChildDeviceListPowerStripResult {}
 
-/// P300 and P304M power strip child plugs.
+/// P300, P304M and P316M power strip child plugs.
 ///
 /// Specific properties: `auto_off_remain_time`, `auto_off_status`,
 /// `bind_count`, `overheat_status`, `position`, `slot_number`.
@@ -39,6 +41,7 @@ pub struct PowerStripPlugResult {
     pub avatar: String,
     pub bind_count: u8,
     pub category: String,
+    pub charging_status: ChargingStatus,
     pub device_id: String,
     pub device_on: bool,
     pub fw_id: String,
@@ -55,8 +58,10 @@ pub struct PowerStripPlugResult {
     /// The time in seconds this device has been ON since the last state change (On/Off).
     pub on_time: u64,
     pub original_device_id: String,
-    pub overheat_status: OverheatStatus,
+    pub overcurrent_status: OvercurrentStatus,
+    pub overheat_status: Option<OverheatStatus>,
     pub position: u8,
+    pub power_protection_status: PowerProtectionStatus,
     pub region: Option<String>,
     pub slot_number: u8,
     pub status_follow_edge: bool,

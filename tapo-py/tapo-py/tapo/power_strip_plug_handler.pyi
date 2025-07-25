@@ -1,8 +1,9 @@
 from tapo.responses import PowerStripPlugResult
 
 class PowerStripPlugHandler:
-    """Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
-    [P304M](https://www.tp-link.com/uk/search/?q=P304M) child plugs.
+    """PowerStripHandler: Handler for the [P300](https://www.tapo.com/en/search/?q=P300),
+    [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+    [P316M](https://www.tp-link.com/us/search/?q=P316M) child plugs.
     """
 
     def __init__(self, handler: object):
@@ -23,7 +24,7 @@ class PowerStripPlugHandler:
         try `PlugHandler.get_device_info_json`.
 
         Returns:
-            PowerStripPlugResult: P300 and P304M power strip child plugs.
+            PowerStripPlugResult: P300, P304M and P316M power strip child plugs.
         """
 
     async def get_device_info_json(self) -> dict:

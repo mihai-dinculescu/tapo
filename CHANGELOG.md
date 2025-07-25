@@ -8,11 +8,29 @@ file. This change log follows the conventions of
 
 ### Rust
 
+### Added
+
+- Added support for the P316M power strips.
+- The `charging_status`, `overcurrent_status`, and `power_protection_status` fields have been added to `PowerStripPlugResult`.
+
+### Changed
+
+- The `overheat_status` field in `PowerStripPlugResult` is now optional to support devices that omit this field.
+
 ### Removed
 
 - Removed `nickname` from `DeviceInfoPowerStripResult` because it is not present in the response.
 
 ### Python
+
+### Added
+
+- Added support for the P316M power strips.
+- The `charging_status`, `overcurrent_status`, and `power_protection_status` fields have been added to `PowerStripPlugResult`.
+
+### Changed
+
+- The `overheat_status` field in `PowerStripPlugResult` is now optional to support devices that omit this field.
 
 ### Removed
 

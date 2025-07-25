@@ -1,16 +1,22 @@
 from enum import Enum
 from typing import Optional
 
-from tapo.responses.device_info_result.power_status import OverheatStatus
+from tapo.responses.device_info_result.power_status import (
+    ChargingStatus,
+    OvercurrentStatus,
+    OverheatStatus,
+    PowerProtectionStatus,
+)
 
 class PowerStripPlugResult:
-    """P300 and P304M power strip child plugs."""
+    """P300, P304M and P316M power strip child plugs."""
 
     auto_off_remain_time: int
     auto_off_status: AutoOffStatus
     avatar: str
     bind_count: int
     category: str
+    charging_status: ChargingStatus
     device_id: str
     device_on: bool
     fw_id: str
@@ -27,8 +33,10 @@ class PowerStripPlugResult:
     on_time: int
     """The time in seconds this device has been ON since the last state change (On/Off)."""
     original_device_id: str
-    overheat_status: OverheatStatus
+    overcurrent_status: OvercurrentStatus
+    overheat_status: Optional[OverheatStatus]
     position: int
+    power_protection_status: PowerProtectionStatus
     region: Optional[str]
     slot_number: int
     status_follow_edge: bool

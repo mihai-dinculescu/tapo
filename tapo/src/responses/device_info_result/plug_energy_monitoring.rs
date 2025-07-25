@@ -41,12 +41,12 @@ pub struct DeviceInfoPlugEnergyMonitoringResult {
     //
     // Unique to this device
     //
+    pub charging_status: ChargingStatus,
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
     pub default_states: DefaultPlugState,
     pub overcurrent_status: OvercurrentStatus,
     pub overheat_status: Option<OverheatStatus>,
     pub power_protection_status: PowerProtectionStatus,
-    pub charging_status: ChargingStatus,
 }
 
 #[cfg(feature = "python")]

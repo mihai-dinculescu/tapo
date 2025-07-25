@@ -4,8 +4,9 @@ from tapo import PowerStripPlugHandler
 from tapo.responses import DeviceInfoPowerStripResult, PowerStripPlugResult
 
 class PowerStripHandler:
-    """Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
-    [P304M](https://www.tp-link.com/uk/search/?q=P304M) devices.
+    """Handler for the [P300](https://www.tapo.com/en/search/?q=P300),
+    [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+    [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
     """
 
     def __init__(self, handler: object):
@@ -23,7 +24,7 @@ class PowerStripHandler:
         try `HubHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoPowerStripResult: Device info of Tapo P300 and P304M. Superset of `DeviceInfoGenericResult`.
+            DeviceInfoPowerStripResult: Device info of Tapo P300, P304M and P316M. Superset of `DeviceInfoGenericResult`.
         """
 
     async def get_device_info_json(self) -> dict:
@@ -76,8 +77,9 @@ class PowerStripHandler:
             position (Optional[str]): The Position of the device
 
         Returns:
-            PowerStripPlugHandler: Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
-            [P304M](https://www.tp-link.com/uk/search/?q=P304M) child plugs.
+            PowerStripPlugHandler: Handler for the [P300](https://www.tapo.com/en/search/?q=P300),
+            [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+            [P316M](https://www.tp-link.com/us/search/?q=P316M) child plugs.
 
         Example:
             ```python

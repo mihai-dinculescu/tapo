@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{DecodableResultExt, TapoResponseExt, decode_value};
 
-/// Device info of Tapo P300 and P304M. Superset of [`crate::responses::DeviceInfoGenericResult`].
+/// Device info of Tapo P300, P304M and P316M. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]

@@ -7,8 +7,9 @@ use crate::error::{Error, TapoResponseError};
 use crate::requests::{EmptyParams, GenericSetDeviceInfoParams, TapoParams, TapoRequest};
 use crate::responses::{DecodableResultExt, PowerStripPlugResult};
 
-/// Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
-/// [P304M](https://www.tp-link.com/uk/search/?q=P304M) child plugs.
+/// Handler for the [P300](https://www.tapo.com/en/search/?q=P300),
+/// [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+/// [P316M](https://www.tp-link.com/us/search/?q=P316M) child plugs.
 pub struct PowerStripPlugHandler {
     client: Arc<RwLock<ApiClient>>,
     device_id: String,

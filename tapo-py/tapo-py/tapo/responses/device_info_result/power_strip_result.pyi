@@ -1,7 +1,7 @@
 from typing import Optional
 
 class DeviceInfoPowerStripResult:
-    """Device info of Tapo P300 and P304M. Superset of `GenericDeviceInfoResult`."""
+    """Device info of Tapo P300, P304M and P316M. Superset of `GenericDeviceInfoResult`."""
 
     device_id: str
     type: str

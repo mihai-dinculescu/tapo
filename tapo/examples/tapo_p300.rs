@@ -1,4 +1,4 @@
-/// P300 and P304M Example
+/// P300, P304M, and P316M Example
 use std::{env, thread, time::Duration};
 
 use log::info;

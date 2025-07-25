@@ -133,6 +133,12 @@ impl PyApiClient {
         Ok(PyPowerStripHandler::new(handler))
     }
 
+    pub async fn p316(&self, ip_address: String) -> PyResult<PyPowerStripHandler> {
+        let handler: PowerStripHandler =
+            call_handler_constructor!(self, tapo::ApiClient::p316, ip_address);
+        Ok(PyPowerStripHandler::new(handler))
+    }
+
     pub async fn h100(&self, ip_address: String) -> PyResult<PyHubHandler> {
         let handler: HubHandler =
             call_handler_constructor!(self, tapo::ApiClient::h100, ip_address);
