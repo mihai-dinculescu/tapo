@@ -34,7 +34,9 @@ pub(crate) fn validate_response<T: TapoResponseExt>(
         -1003 => Err(Error::Tapo(TapoResponseError::MalformedRequest)),
         -1008 => Err(Error::Tapo(TapoResponseError::InvalidParameters)),
         -1010 => Err(Error::Tapo(TapoResponseError::InvalidPublicKey)),
-        -1501 => Err(Error::Tapo(TapoResponseError::InvalidCredentials)),
+        -1501 => Err(Error::Tapo(TapoResponseError::InvalidCredentials(
+            "Invalid Credentials. Please verify that your email and password are correct—both are case-sensitive.".to_string(),
+        ))),
         9999 => Err(Error::Tapo(TapoResponseError::SessionTimeout)),
         code => Err(Error::Tapo(TapoResponseError::Unknown(code))),
     }

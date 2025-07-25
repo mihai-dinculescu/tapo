@@ -15,6 +15,7 @@ file. This change log follows the conventions of
 
 ### Changed
 
+- Enhanced the `InvalidCredentials` error with clearer guidance on common causes and how to address them.
 - The `overheat_status` field in `PowerStripPlugResult` is now optional to support devices that omit this field.
 
 ### Removed
@@ -30,6 +31,7 @@ file. This change log follows the conventions of
 
 ### Changed
 
+- Enhanced the `InvalidCredentials` error with clearer guidance on common causes and how to address them.
 - The `overheat_status` field in `PowerStripPlugResult` is now optional to support devices that omit this field.
 
 ### Removed

@@ -169,7 +169,10 @@ impl KlapProtocol {
 
         if local_hash != server_hash {
             warn!("Local hash does not match server hash");
-            return Err(Error::Tapo(TapoResponseError::InvalidCredentials));
+            return Err(Error::Tapo(TapoResponseError::InvalidCredentials(
+                "Invalid Credentials. The device response did not match the challenge issued by the library. Please verify that your email and password are correct—both are case-sensitive. Before adding a new device, disconnect any existing TP-Link/Tapo devices on the network. The TP-Link Simple Setup (TSS) protocol, which shares credentials from previously configured devices, may interfere with authentication. If the problem continues, perform a factory reset on the new device and add it again with no other TP-Link devices active during setup."
+                .to_string(),
+            )));
         }
 
         debug!("Handshake1 OK");
