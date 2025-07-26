@@ -4,15 +4,11 @@ All notable changes to this project will be documented in this
 file. This change log follows the conventions of
 [keepachangelog.com][keepachangelog].
 
-## [Unreleased][Unreleased]
+## [Rust Unreleased][Unreleased]
 
-### Rust
+## [Python Unreleased][Unreleased]
 
-### Python
-
-## [v0.8.3][v0.8.3] - 2025-07-25
-
-### Rust
+## [Rust v0.8.3][v0.8.3] - 2025-07-25
 
 ### Added
 
@@ -28,7 +24,7 @@ file. This change log follows the conventions of
 
 - Removed `nickname` from `DeviceInfoPowerStripResult` because it is not present in the response.
 
-### Python
+## [Python v0.8.3][v0.8.3] - 2025-07-25
 
 ### Added
 
@@ -44,80 +40,74 @@ file. This change log follows the conventions of
 
 - Removed `nickname` from `DeviceInfoPowerStripResult` because it is not present in the response.
 
-## [v0.8.2][v0.8.2] - 2025-05-19
+## [Rust v0.8.2][v0.8.2] - 2025-05-19
 
-### Rust
-
-## Added
+### Added
 
 - The `charging_status` field has been added to `DeviceInfoPlugEnergyMonitoringResult`.
 
-## Changed
+### Changed
 
 - The `overheat_status` field in `DeviceInfoPlugEnergyMonitoringResult` is now optional to support devices that omit this field after the latest firmware update (1.3.4 Build 250403 Rel.150504).
 
-### Python
+## [Python v0.8.2][v0.8.2] - 2025-05-19
 
-## Added
+### Added
 
 - The `charging_status` field has been added to `DeviceInfoPlugEnergyMonitoringResult`.
 
-## Changed
+### Changed
 
 - The `overheat_status` field in `DeviceInfoPlugEnergyMonitoringResult` is now optional to support devices that omit this field after the latest firmware update (1.3.4 Build 250403 Rel.150504).
 
-## [v0.8.1][v0.8.1] - 2025-02-10
+## [Rust v0.8.1][v0.8.1] - 2025-02-10
 
-### Rust
-
-#### Added
+### Added
 
 - Added functionality for controlling the alarm on the H100 hub via the `play_alarm` and `stop_alarm` methods in the `H100Handler`. Additionally, `get_supported_ringtone_list` is available to retrieve the list of supported ringtones for debugging purposes. (thanks to @kay)
 - Added the ability to retrieve the color configuration (`hue`, `saturation`, `color_temperature`) for the `Color` enum values through the `get_color_config` method. (thanks to @WhySoBad)
 
-#### Changed
+### Changed
 
 - The internal implementation of `H100Handler`'s `get_child_device_list` has been updated to fetch all pages, not just the first one.
 - `H100Handler`'s `get_child_device_list_json` now includes a `start_index` parameter to fetch child devices starting from a specific index.
 
-#### Fixed
+### Fixed
 
 - Resolved an issue that caused the passthrough protocol test to incorrectly indicate support when it was not actually supported. (thanks to @WhySoBad)
 
-### Python
+## [Python v0.8.1][v0.8.1] - 2025-02-10
 
-#### Added
+### Added
 
 - Added functionality for controlling the alarm on the H100 hub via the `play_alarm` and `stop_alarm` methods in the `H100Handler`. Additionally, `get_supported_ringtone_list` is available to retrieve the list of supported ringtones for debugging purposes.
 - Added the ability to retrieve the color configuration (`hue`, `saturation`, `color_temperature`) for the `Color` enum values through the `get_color_config` method. (thanks to @WhySoBad)
 
-#### Changed
+### Changed
 
 - The internal implementation of `H100Handler`'s `get_child_device_list` has been updated to fetch all pages, not just the first one.
 - `H100Handler`'s `get_child_device_list_json` now includes a `start_index` parameter to fetch child devices starting from a specific index.
 
-#### Fixed
+### Fixed
 
 - Resolved an issue that caused the passthrough protocol test to incorrectly indicate support when it was not actually supported. (thanks to @WhySoBad)
 
-## [v0.8.0][v0.8.0] - 2024-12-07
+## [Rust v0.8.0][v0.8.0] - 2024-12-07
 
 This marks the first unified release of the Rust and Python libraries. Moving forward, both libraries will be released simultaneously and will share the same version number.
 
-### Rust
-
-#### Added
+### Added
 
 - Added an example for the L900 light strips.
 
-#### Changed
+### Changed
 
 - `LightingEffect`'s `fadeoff` field has been renamed to `fade_off`, and its `with_fadeoff` method has been renamed to `with_fade_off`.
 - `LightingEffect`'s `new_with_random_id` function has been removed. The `new` function now creates a `LightingEffect` instance with a random ID by default.
 
-### Python
+## [Python v0.8.0][v0.8.0] - 2024-12-07
 
-#### Added
+### Added
 
 - Added support for the L900 light strips.
 - Added support for the L920 and L930 light strips.
