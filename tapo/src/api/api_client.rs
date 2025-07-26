@@ -6,11 +6,6 @@ use log::debug;
 use reqwest::Client;
 use serde::de::DeserializeOwned;
 
-use crate::api::protocol::{TapoProtocol, TapoProtocolExt};
-use crate::api::{
-    ColorLightHandler, GenericDeviceHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler,
-    PlugHandler, PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
-};
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     ControlChildParams, EmptyParams, EnergyDataInterval, GetChildDeviceListParams,
@@ -21,6 +16,13 @@ use crate::responses::{
     ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
     EnergyUsageResult, SupportedAlarmTypeListResult, TapoMultipleResponse, TapoResponseExt,
     TapoResult, validate_response,
+};
+
+use super::discovery::DeviceDiscovery;
+use super::protocol::{TapoProtocol, TapoProtocolExt};
+use super::{
+    ColorLightHandler, GenericDeviceHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler,
+    PlugHandler, PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
@@ -88,6 +90,29 @@ impl ApiClient {
     pub fn with_timeout(mut self, timeout: Duration) -> ApiClient {
         self.timeout = Some(timeout);
         self
+    }
+
+    /// Discovers one or more devices located at a specified unicast or broadcast IP address.
+    ///
+    /// # Arguments
+    /// * `target` - The IP address at which the discovery will take place.
+    ///   This address can be either a unicast (e.g. `192.168.1.10`) or a
+    ///   broadcast address (e.g. `192.168.1.255`, `255.255.255.255`, etc.).
+    /// * `timeout_s` - The maximum time to wait for a response from the device(s) in seconds.
+    ///   Must be between `1` and `60`.
+    pub async fn discover_devices(
+        self,
+        target: impl Into<String>,
+        timeout_s: u64,
+    ) -> Result<DeviceDiscovery, Error> {
+        if !(1..=60).contains(&timeout_s) {
+            return Err(Error::Validation {
+                field: "timeout_s".to_string(),
+                message: "Must be between 1 and 60 seconds".to_string(),
+            });
+        }
+
+        Ok(DeviceDiscovery::new(self, target, Duration::from_secs(timeout_s)).await?)
     }
 }
 

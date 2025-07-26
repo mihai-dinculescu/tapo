@@ -6,6 +6,7 @@ use super::{ApiClient, ApiClientExt, HandlerExt};
 
 /// Handler for the [L920](https://www.tapo.com/en/search/?q=L920) and
 /// [L930](https://www.tapo.com/en/search/?q=L930) devices.
+#[derive(Debug)]
 pub struct RgbicLightStripHandler {
     client: ApiClient,
 }

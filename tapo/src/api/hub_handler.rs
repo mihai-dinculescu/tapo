@@ -32,7 +32,8 @@ macro_rules! get_device_id {
     }};
 }
 
-/// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) hubs.
+/// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) devices.
+#[derive(Debug)]
 pub struct HubHandler {
     client: Arc<RwLock<ApiClient>>,
 }

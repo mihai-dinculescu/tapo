@@ -3,7 +3,16 @@ use crate::error::Error;
 use crate::requests::GenericSetDeviceInfoParams;
 use crate::responses::DeviceInfoGenericResult;
 
+use super::{
+    ColorLightHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler, PlugHandler,
+    PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
+};
+
 /// Handler for generic devices. It provides the functionality common to all Tapo [devices](https://www.tapo.com/en/).
+///
+/// If you'd like to propose support for a device that isn't currently supported,
+/// please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues) to start the conversation.
+#[derive(Debug)]
 pub struct GenericDeviceHandler {
     client: ApiClient,
 }
@@ -42,5 +51,53 @@ impl GenericDeviceHandler {
     /// It contains all the properties returned from the Tapo API.
     pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
         self.client.get_device_info().await
+    }
+}
+
+impl From<GenericDeviceHandler> for LightHandler {
+    fn from(value: GenericDeviceHandler) -> Self {
+        LightHandler::new(value.client)
+    }
+}
+
+impl From<GenericDeviceHandler> for ColorLightHandler {
+    fn from(value: GenericDeviceHandler) -> Self {
+        ColorLightHandler::new(value.client)
+    }
+}
+
+impl From<GenericDeviceHandler> for RgbLightStripHandler {
+    fn from(value: GenericDeviceHandler) -> Self {
+        RgbLightStripHandler::new(value.client)
+    }
+}
+
+impl From<GenericDeviceHandler> for RgbicLightStripHandler {
+    fn from(value: GenericDeviceHandler) -> Self {
+        RgbicLightStripHandler::new(value.client)
+    }
+}
+
+impl From<GenericDeviceHandler> for PlugHandler {
+    fn from(value: GenericDeviceHandler) -> Self {
+        PlugHandler::new(value.client)
+    }
+}
+
+impl From<GenericDeviceHandler> for PlugEnergyMonitoringHandler {
+    fn from(value: GenericDeviceHandler) -> Self {
+        PlugEnergyMonitoringHandler::new(value.client)
+    }
+}
+
+impl From<GenericDeviceHandler> for PowerStripHandler {
+    fn from(value: GenericDeviceHandler) -> Self {
+        PowerStripHandler::new(value.client)
+    }
+}
+
+impl From<GenericDeviceHandler> for HubHandler {
+    fn from(value: GenericDeviceHandler) -> Self {
+        HubHandler::new(value.client)
     }
 }
