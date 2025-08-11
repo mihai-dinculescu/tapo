@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.8.4][v0.8.4] - 2025-08-11
+
 ### Added
 
 - The `default_states` property has been added to the `DeviceInfoPlugResult` struct to provide a more comprehensive overview of the plug's state.
@@ -14,7 +18,7 @@ file. This change log follows the conventions of
 
 - The `default_states` property value of the `DeviceInfoPlugEnergyMonitoringResult` struct has been changed from a struct to an enum to better reflect the actual response from the device.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.8.4][v0.8.4] - 2025-08-11
 
 ### Added
 
@@ -619,6 +623,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.8.4]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.4
 [v0.8.3]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.3
 [v0.8.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.2
 [v0.8.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.1
