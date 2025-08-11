@@ -63,13 +63,13 @@ impl<'a> LightSetDeviceInfoParams<'a> {
             });
         }
 
-        if let Some(brightness) = self.brightness {
-            if !(1..=100).contains(&brightness) {
-                return Err(Error::Validation {
-                    field: "brightness".to_string(),
-                    message: "Must be between 1 and 100".to_string(),
-                });
-            }
+        if let Some(brightness) = self.brightness
+            && !(1..=100).contains(&brightness)
+        {
+            return Err(Error::Validation {
+                field: "brightness".to_string(),
+                message: "Must be between 1 and 100".to_string(),
+            });
         }
 
         Ok(())

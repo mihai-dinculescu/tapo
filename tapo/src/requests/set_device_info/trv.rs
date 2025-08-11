@@ -77,13 +77,13 @@ impl TrvSetDeviceInfoParams {
     }
 
     pub fn validate(self) -> Result<Self, Error> {
-        if let Some(temperature_offset) = self.temperature_offset {
-            if !(-10..=10).contains(&temperature_offset) {
-                return Err(Error::Validation {
-                    field: "temperature_offset".to_string(),
-                    message: "Must be between -10 and 10".to_string(),
-                });
-            }
+        if let Some(temperature_offset) = self.temperature_offset
+            && !(-10..=10).contains(&temperature_offset)
+        {
+            return Err(Error::Validation {
+                field: "temperature_offset".to_string(),
+                message: "Must be between -10 and 10".to_string(),
+            });
         }
         Ok(self)
     }

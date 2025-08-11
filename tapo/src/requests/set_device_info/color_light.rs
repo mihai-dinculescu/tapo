@@ -122,31 +122,31 @@ impl ColorLightSetDeviceInfoParams {
             });
         }
 
-        if let Some(brightness) = self.brightness {
-            if !(1..=100).contains(&brightness) {
-                return Err(Error::Validation {
-                    field: "brightness".to_string(),
-                    message: "Must be between 1 and 100".to_string(),
-                });
-            }
+        if let Some(brightness) = self.brightness
+            && !(1..=100).contains(&brightness)
+        {
+            return Err(Error::Validation {
+                field: "brightness".to_string(),
+                message: "Must be between 1 and 100".to_string(),
+            });
         }
 
-        if let Some(hue) = self.hue {
-            if !(0..=360).contains(&hue) {
-                return Err(Error::Validation {
-                    field: "hue".to_string(),
-                    message: "Must be between 0 and 360".to_string(),
-                });
-            }
+        if let Some(hue) = self.hue
+            && !(0..=360).contains(&hue)
+        {
+            return Err(Error::Validation {
+                field: "hue".to_string(),
+                message: "Must be between 0 and 360".to_string(),
+            });
         }
 
-        if let Some(saturation) = self.saturation {
-            if !(1..=100).contains(&saturation) {
-                return Err(Error::Validation {
-                    field: "saturation".to_string(),
-                    message: "Must be between 1 and 100".to_string(),
-                });
-            }
+        if let Some(saturation) = self.saturation
+            && !(1..=100).contains(&saturation)
+        {
+            return Err(Error::Validation {
+                field: "saturation".to_string(),
+                message: "Must be between 1 and 100".to_string(),
+            });
         }
 
         if (self.saturation.is_some() && self.hue.is_none())
@@ -159,16 +159,15 @@ impl ColorLightSetDeviceInfoParams {
         }
 
         const COLOR_TEMPERATURE_RANGE: RangeInclusive<u16> = 2500..=6500;
-        if let Some(color_temperature) = self.color_temperature {
-            if self.hue.is_none()
-                && self.saturation.is_none()
-                && !COLOR_TEMPERATURE_RANGE.contains(&color_temperature)
-            {
-                return Err(Error::Validation {
-                    field: "color_temperature".to_string(),
-                    message: "Must be between 2500 and 6500".to_string(),
-                });
-            }
+        if let Some(color_temperature) = self.color_temperature
+            && self.hue.is_none()
+            && self.saturation.is_none()
+            && !COLOR_TEMPERATURE_RANGE.contains(&color_temperature)
+        {
+            return Err(Error::Validation {
+                field: "color_temperature".to_string(),
+                message: "Must be between 2500 and 6500".to_string(),
+            });
         }
 
         Ok(())
