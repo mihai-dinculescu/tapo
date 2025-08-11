@@ -1,6 +1,7 @@
 mod api_client;
 mod child_devices;
 mod color_light_handler;
+mod discovery;
 mod generic_device_handler;
 mod handler_ext;
 mod hub_handler;
@@ -15,6 +16,7 @@ mod rgbic_light_strip_handler;
 pub use api_client::*;
 pub use child_devices::*;
 pub use color_light_handler::*;
+pub use discovery::*;
 pub use generic_device_handler::*;
 pub use handler_ext::*;
 pub use hub_handler::*;

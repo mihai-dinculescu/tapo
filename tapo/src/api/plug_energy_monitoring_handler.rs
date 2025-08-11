@@ -9,6 +9,7 @@ use crate::responses::{
 /// Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
 /// [P110M](https://www.tapo.com/en/search/?q=P110M) and
 /// [P115](https://www.tapo.com/en/search/?q=P115) devices.
+#[derive(Debug)]
 pub struct PlugEnergyMonitoringHandler {
     client: ApiClient,
 }
