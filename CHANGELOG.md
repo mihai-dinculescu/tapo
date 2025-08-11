@@ -6,11 +6,19 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- The `default_states` property has been added to the `DeviceInfoPlugResult` struct to provide a more comprehensive overview of the plug's state.
+
 ### Fixed
 
 - The `default_states` property value of the `DeviceInfoPlugEnergyMonitoringResult` struct has been changed from a struct to an enum to better reflect the actual response from the device.
 
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- The `default_states` property has been added to the `DeviceInfoPlugResult` class to provide a more comprehensive overview of the plug's state.
 
 ### Fixed
 

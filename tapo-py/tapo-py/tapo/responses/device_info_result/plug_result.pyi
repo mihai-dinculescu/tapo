@@ -1,4 +1,6 @@
-from typing import Optional
+from typing import Optional, Union
+
+from tapo.responses.device_info_result.default_plug_state import Custom, LastStates
 
 class DeviceInfoPlugResult:
     """Device info of Tapo P100 and P105. Superset of `GenericDeviceInfoResult`."""
@@ -28,6 +30,9 @@ class DeviceInfoPlugResult:
     latitude: Optional[float]
     longitude: Optional[float]
     time_diff: Optional[int]
+
+    # Unique to this device
+    default_states: Union[LastStates, Custom]
 
     def to_dict(self) -> dict:
         """Gets all the properties of this result as a dictionary.

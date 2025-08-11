@@ -36,6 +36,10 @@ pub struct DeviceInfoPlugResult {
     pub latitude: Option<i64>,
     pub longitude: Option<i64>,
     pub time_diff: Option<i64>,
+    //
+    // Unique to this device
+    //
+    pub default_states: super::DefaultPlugState,
 }
 
 #[cfg(feature = "python")]
