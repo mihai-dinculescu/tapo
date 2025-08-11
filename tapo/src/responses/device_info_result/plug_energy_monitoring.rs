@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{DecodableResultExt, DefaultStateType, TapoResponseExt, decode_value};
+use crate::responses::{DecodableResultExt, TapoResponseExt, decode_value};
 
-use super::{ChargingStatus, OvercurrentStatus, OverheatStatus, PowerProtectionStatus};
+use super::{
+    ChargingStatus, DefaultPlugState, OvercurrentStatus, OverheatStatus, PowerProtectionStatus,
+};
 
 /// Device info of Tapo P110, P110M and P115. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -70,21 +72,4 @@ impl DecodableResultExt for DeviceInfoPlugEnergyMonitoringResult {
 
         Ok(self)
     }
-}
-
-/// Plug Default State.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
-#[allow(missing_docs)]
-pub struct DefaultPlugState {
-    pub r#type: DefaultStateType,
-    pub state: PlugState,
-}
-
-/// Plug State.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
-#[allow(missing_docs)]
-pub struct PlugState {
-    pub on: Option<bool>,
 }

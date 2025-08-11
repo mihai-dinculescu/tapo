@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Fixed
+
+- The `default_states` property value of the `DeviceInfoPlugEnergyMonitoringResult` struct has been changed from a struct to an enum to better reflect the actual response from the device.
+
 ## [Python Unreleased][Unreleased]
+
+### Fixed
+
+- The `default_states` property value of the `DeviceInfoPlugEnergyMonitoringResult` class has been changed from a class to an enum to better reflect the actual response from the device.
 
 ## [Rust v0.8.3][v0.8.3] - 2025-07-25
 

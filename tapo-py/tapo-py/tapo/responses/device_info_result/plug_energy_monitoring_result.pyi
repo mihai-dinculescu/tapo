@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, Union
 
-from tapo.responses.device_info_result.default_state import DefaultStateType
+from tapo.responses.device_info_result.default_plug_state import Custom, LastStates
 from tapo.responses.device_info_result.power_status import (
     ChargingStatus,
     OvercurrentStatus,
@@ -39,7 +39,7 @@ class DeviceInfoPlugEnergyMonitoringResult:
 
     # Unique to this device
     charging_status: ChargingStatus
-    default_states: DefaultPlugState
+    default_states: Union[LastStates, Custom]
     """The default state of a device to be used when internet connectivity is lost after a power cut."""
     overcurrent_status: OvercurrentStatus
     overheat_status: Optional[OverheatStatus]
@@ -51,14 +51,3 @@ class DeviceInfoPlugEnergyMonitoringResult:
         Returns:
             dict: The result as a dictionary.
         """
-
-class DefaultPlugState:
-    """Default Plug State."""
-
-    type: DefaultStateType
-    state: PlugState
-
-class PlugState:
-    """Plug State."""
-
-    on: Optional[bool]

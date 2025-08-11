@@ -3,7 +3,8 @@ use std::{env, thread, time::Duration};
 
 use chrono::{DateTime, Datelike, NaiveDate, Utc};
 use log::info;
-use tapo::{ApiClient, requests::EnergyDataInterval};
+use tapo::ApiClient;
+use tapo::requests::EnergyDataInterval;
 
 mod common;
 
