@@ -27,7 +27,7 @@ serde_json = { workspace = true }
 serde_with = "3.14"
 thiserror = "2.0"
 tokio = { workspace = true, features = ["sync"] }
-uuid = { version = "1.17", features = ["serde", "v4"] }
+uuid = { version = "1.18", features = ["serde", "v4"] }
 
 # security
 aes = "0.8"
