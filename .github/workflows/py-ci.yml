@@ -171,7 +171,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v5
       - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: "wheels-*/*"
       - name: Publish to PyPI
