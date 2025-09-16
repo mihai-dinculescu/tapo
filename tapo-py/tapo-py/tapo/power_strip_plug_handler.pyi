@@ -10,13 +10,10 @@ class PowerStripPlugHandler:
         """Private constructor.
         It should not be called from outside the tapo library.
         """
-
     async def on(self) -> None:
         """Turns *on* the device."""
-
     async def off(self) -> None:
         """Turns *off* the device."""
-
     async def get_device_info(self) -> PowerStripPlugResult:
         """Returns *device info* as `PowerStripPlugResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
@@ -26,7 +23,6 @@ class PowerStripPlugHandler:
         Returns:
             PowerStripPlugResult: P300, P304M and P316M power strip child plugs.
         """
-
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.
         It contains all the properties returned from the Tapo API.

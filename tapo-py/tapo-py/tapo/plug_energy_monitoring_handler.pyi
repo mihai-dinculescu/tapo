@@ -19,16 +19,12 @@ class PlugEnergyMonitoringHandler:
         """Private constructor.
         It should not be called from outside the tapo library.
         """
-
     async def refresh_session(self) -> None:
         """Refreshes the authentication session."""
-
     async def on(self) -> None:
         """Turns *on* the device."""
-
     async def off(self) -> None:
         """Turns *off* the device."""
-
     async def device_reset(self) -> None:
         """*Hardware resets* the device.
 
@@ -40,7 +36,6 @@ class PlugEnergyMonitoringHandler:
         This feature is especially useful when the device is difficult to access
         and requires reconfiguration.
         """
-
     async def get_device_info(self) -> DeviceInfoPlugEnergyMonitoringResult:
         """Returns *device info* as `DeviceInfoPlugEnergyMonitoringResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
@@ -51,7 +46,6 @@ class PlugEnergyMonitoringHandler:
             DeviceInfoPlugEnergyMonitoringResult: Device info of P110, P110M and P115.
             Superset of `GenericDeviceInfoResult`.
         """
-
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.
         It contains all the properties returned from the Tapo API.
@@ -59,7 +53,6 @@ class PlugEnergyMonitoringHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:
         """Returns *device usage* as `DeviceUsageResult`.
 
@@ -67,14 +60,12 @@ class PlugEnergyMonitoringHandler:
             DeviceUsageEnergyMonitoringResult:
             Contains the time usage, the power consumption, and the energy savings of the device.
         """
-
     async def get_current_power(self) -> CurrentPowerResult:
         """Returns *current power* as `CurrentPowerResult`.
 
         Returns:
             CurrentPowerResult: Contains the current power reading of the device.
         """
-
     async def get_energy_usage(self) -> EnergyUsageResult:
         """Returns *energy usage* as `EnergyUsageResult`.
 
@@ -82,7 +73,6 @@ class PlugEnergyMonitoringHandler:
             EnergyUsageResult:
             Contains local time, current power and the energy usage and runtime for today and for the current month.
         """
-
     async def get_energy_data(
         self,
         interval: EnergyDataInterval,

@@ -9,16 +9,12 @@ class LightHandler:
         """Private constructor.
         It should not be called from outside the tapo library.
         """
-
     async def refresh_session(self) -> None:
         """Refreshes the authentication session."""
-
     async def on(self) -> None:
         """Turns *on* the device."""
-
     async def off(self) -> None:
         """Turns *off* the device."""
-
     async def device_reset(self) -> None:
         """*Hardware resets* the device.
 
@@ -30,7 +26,6 @@ class LightHandler:
         This feature is especially useful when the device is difficult to access
         and requires reconfiguration.
         """
-
     async def get_device_info(self) -> DeviceInfoLightResult:
         """Returns *device info* as `DeviceInfoLightResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
@@ -41,7 +36,6 @@ class LightHandler:
             DeviceInfoLightResult: Device info of Tapo L510, L520 and L610.
             Superset of `GenericDeviceInfoResult`.
         """
-
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.
         It contains all the properties returned from the Tapo API.
@@ -49,14 +43,12 @@ class LightHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_device_usage(self) -> DeviceUsageResult:
         """Returns *device usage* as `DeviceUsageResult`.
 
         Returns:
             DeviceUsageResult: Contains the time usage.
         """
-
     async def set_brightness(self, brightness: int) -> None:
         """Sets the *brightness* and turns *on* the device.
 

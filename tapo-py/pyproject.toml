@@ -40,6 +40,7 @@ python = "^3.8"
 
 [tool.poetry.dev-dependencies]
 maturin = ">=1.0,<2.0"
+black = ">=23.0,<24.0"
 
 [build-system]
 requires = ["maturin>=1.0,<2.0"]

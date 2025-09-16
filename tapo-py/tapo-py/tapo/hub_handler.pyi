@@ -1,7 +1,7 @@
 from typing import List, Optional, Union
 
 from tapo import KE100Handler, S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler
-from tapo.requests.play_alarm import AlarmDuration, AlarmRingtone, AlarmVolume
+from tapo.requests import AlarmDuration, AlarmRingtone, AlarmVolume
 from tapo.responses import (
     DeviceInfoHubResult,
     KE100Result,
@@ -19,10 +19,8 @@ class HubHandler:
         """Private constructor.
         It should not be called from outside the tapo library.
         """
-
     async def refresh_session(self) -> None:
         """Refreshes the authentication session."""
-
     async def get_device_info(self) -> DeviceInfoHubResult:
         """Returns *device info* as `DeviceInfoHubResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
@@ -33,7 +31,6 @@ class HubHandler:
             DeviceInfoHubResult: Device info of Tapo H100.
             Superset of `GenericDeviceInfoResult`.
         """
-
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.
         It contains all the properties returned from the Tapo API.
@@ -41,7 +38,6 @@ class HubHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_child_device_list(
         self,
     ) -> List[
@@ -56,7 +52,6 @@ class HubHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_child_device_list_json(self, start_index: int) -> dict:
         """Returns *child device list* as json.
         It contains all the properties returned from the Tapo API.
@@ -68,7 +63,6 @@ class HubHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_child_device_component_list_json(self) -> dict:
         """Returns *child device component list* as json.
         It contains all the properties returned from the Tapo API.
@@ -76,7 +70,6 @@ class HubHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_supported_ringtone_list() -> List[str]:
         """Returns a list of ringtones (alarm types) supported by the hub.
         Used for debugging only.
@@ -84,7 +77,6 @@ class HubHandler:
         Returns:
             List[str]: List of the ringtones supported by the hub.
         """
-
     async def play_alarm(
         self,
         ringtone: AlarmRingtone,
@@ -100,10 +92,8 @@ class HubHandler:
             duration (AlarmDuration): Controls how long the alarm plays for.
             seconds (Optional[int]): Play the alarm a number of seconds. Required if `duration` is `AlarmDuration.Seconds`.
         """
-
     async def stop_alarm(self) -> None:
         """Stop playing the hub alarm, if it's currently playing."""
-
     async def ke100(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> KE100Handler:
@@ -130,7 +120,6 @@ class HubHandler:
             print(f"Device info: {device_info.to_dict()}")
             ```
         """
-
     async def s200b(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> S200BHandler:
@@ -157,7 +146,6 @@ class HubHandler:
             print(f"Device info: {device_info.to_dict()}")
             ```
         """
-
     async def t100(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> T100Handler:
@@ -184,7 +172,6 @@ class HubHandler:
             print(f"Device info: {device_info.to_dict()}")
             ```
         """
-
     async def t110(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> T110Handler:
@@ -211,7 +198,6 @@ class HubHandler:
             print(f"Device info: {device_info.to_dict()}")
             ```
         """
-
     async def t300(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> T300Handler:
@@ -238,7 +224,6 @@ class HubHandler:
             print(f"Device info: {device_info.to_dict()}")
             ```
         """
-
     async def t310(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> T31XHandler:
@@ -265,7 +250,6 @@ class HubHandler:
             print(f"Device info: {device_info.to_dict()}")
             ```
         """
-
     async def t315(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> T31XHandler:

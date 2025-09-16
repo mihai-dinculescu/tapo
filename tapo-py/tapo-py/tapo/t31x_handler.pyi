@@ -13,7 +13,6 @@ class T31XHandler:
         Returns:
             T31XResult: Device info of Tapo T310 and T315 temperature and humidity sensors.
         """
-
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.
         It contains all the properties returned from the Tapo API.
@@ -21,7 +20,6 @@ class T31XHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_temperature_humidity_records(self) -> TemperatureHumidityRecords:
         """Returns *temperature and humidity records* from the last 24 hours
         at 15 minute intervals as `TemperatureHumidityRecords`.
