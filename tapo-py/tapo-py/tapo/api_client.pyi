@@ -23,6 +23,7 @@ See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/e
 """
 
 from .color_light_handler import ColorLightHandler
+from .device_discovery import DeviceDiscovery
 from .generic_device_handler import GenericDeviceHandler
 from .hub_handler import HubHandler
 from .light_handler import LightHandler
@@ -85,6 +86,36 @@ class ApiClient:
             ```
 
         See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
+        """
+    async def discover_devices(self, target: str, timeout_s: int = 10) -> DeviceDiscovery:
+        """Discovers one or more devices located at a specified unicast or broadcast IP address.
+
+        Args:
+            target (str): The IP address at which the discovery will take place.
+                This address can be either a unicast (e.g. `192.168.1.10`) or a
+                broadcast address (e.g. `192.168.1.255`, `255.255.255.255`, etc.).
+            timeout_s (int): The maximum time to wait for a response from the device(s) in seconds.
+                Must be between `1` and `60`.
+
+        Returns:
+            AsyncIterator[MaybeDiscoveryResult]: An asynchronous iterator that yields `MaybeDiscoveryResult` objects.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+
+            async for device in client.discover_devices("192.168.1.255"):
+                try:
+                    device = discovery_result.get()
+                    match device:
+                        case DiscoveryResult.PlugEnergyMonitoring(device_info):
+                            print(
+                                f"Found '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."
+                            )
+                        # ...
+                except Exception as e:
+                    print(f"Error discovering device: {e}")
+            ```
         """
     async def generic_device(self, ip_address: str) -> GenericDeviceHandler:
         """Specializes the given `ApiClient` into an authenticated `GenericDeviceHandler`.

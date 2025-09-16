@@ -1,5 +1,7 @@
 from .api_client import *
 from .color_light_handler import *
+from .device_discovery import *
+from .discovery_result import *
 from .generic_device_handler import *
 from .hub_handler import *
 from .ke100_handler import *
