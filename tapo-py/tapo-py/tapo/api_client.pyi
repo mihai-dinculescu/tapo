@@ -86,7 +86,6 @@ class ApiClient:
 
         See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
         """
-
     async def generic_device(self, ip_address: str) -> GenericDeviceHandler:
         """Specializes the given `ApiClient` into an authenticated `GenericDeviceHandler`.
 
@@ -105,7 +104,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def l510(self, ip_address: str) -> LightHandler:
         """Specializes the given `ApiClient` into an authenticated `LightHandler`.
 
@@ -124,7 +122,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def l520(self, ip_address: str) -> LightHandler:
         """Specializes the given `ApiClient` into an authenticated `LightHandler`.
 
@@ -143,7 +140,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def l530(self, ip_address: str) -> ColorLightHandler:
         """Specializes the given `ApiClient` into an authenticated `ColorLightHandler`.
 
@@ -162,7 +158,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def l535(self, ip_address: str) -> ColorLightHandler:
         """Specializes the given `ApiClient` into an authenticated `ColorLightHandler`.
 
@@ -181,7 +176,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def l610(self, ip_address: str) -> LightHandler:
         """Specializes the given `ApiClient` into an authenticated `LightHandler`.
 
@@ -200,7 +194,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def l630(self, ip_address: str) -> ColorLightHandler:
         """Specializes the given `ApiClient` into an authenticated `ColorLightHandler`.
 
@@ -219,7 +212,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def l900(self, ip_address: str) -> RgbLightStripHandler:
         """Specializes the given `ApiClient` into an authenticated `RgbLightStripHandler`.
 
@@ -237,7 +229,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def l920(self, ip_address: str) -> RgbicLightStripHandler:
         """Specializes the given `ApiClient` into an authenticated `RgbicLightStripHandler`.
 
@@ -256,7 +247,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def l930(self, ip_address: str) -> RgbicLightStripHandler:
         """Specializes the given `ApiClient` into an authenticated `RgbicLightStripHandler`.
 
@@ -275,7 +265,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def p100(self, ip_address: str) -> PlugHandler:
         """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
 
@@ -294,7 +283,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def p105(self, ip_address: str) -> PlugHandler:
         """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
 
@@ -313,7 +301,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def p110(self, ip_address: str) -> PlugEnergyMonitoringHandler:
         """Specializes the given `ApiClient` into an authenticated `PlugEnergyMonitoringHandler`.
 
@@ -333,7 +320,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def p115(self, ip_address: str) -> PlugEnergyMonitoringHandler:
         """Specializes the given `ApiClient` into an authenticated `PlugEnergyMonitoringHandler`.
 
@@ -353,7 +339,6 @@ class ApiClient:
             await device.on()
             ```
         """
-
     async def p300(self, ip_address: str) -> PowerStripHandler:
         """Specializes the given `ApiClient` into an authenticated `PowerStripHandler`.
 
@@ -374,7 +359,6 @@ class ApiClient:
             print(f"Child device list: {child_device_list.to_dict()}")
             ```
         """
-
     async def p304(self, ip_address: str) -> PowerStripHandler:
         """Specializes the given `ApiClient` into an authenticated `PowerStripHandler`.
 
@@ -395,7 +379,6 @@ class ApiClient:
             print(f"Child device list: {child_device_list.to_dict()}")
             ```
         """
-
     async def p316(self, ip_address: str) -> PowerStripHandler:
         """Specializes the given `ApiClient` into an authenticated `PowerStripHandler`.
 
@@ -416,7 +399,6 @@ class ApiClient:
             print(f"Child device list: {child_device_list.to_dict()}")
             ```
         """
-
     async def h100(self, ip_address: str) -> HubHandler:
         """Specializes the given `ApiClient` into an authenticated `HubHandler`.
 

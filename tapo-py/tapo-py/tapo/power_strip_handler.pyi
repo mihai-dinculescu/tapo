@@ -13,10 +13,8 @@ class PowerStripHandler:
         """Private constructor.
         It should not be called from outside the tapo library.
         """
-
     async def refresh_session(self) -> None:
         """Refreshes the authentication session."""
-
     async def get_device_info(self) -> DeviceInfoPowerStripResult:
         """Returns *device info* as `DeviceInfoPowerStripResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
@@ -26,7 +24,6 @@ class PowerStripHandler:
         Returns:
             DeviceInfoPowerStripResult: Device info of Tapo P300, P304M and P316M. Superset of `DeviceInfoGenericResult`.
         """
-
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.
         It contains all the properties returned from the Tapo API.
@@ -34,7 +31,6 @@ class PowerStripHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_child_device_list(
         self,
     ) -> List[PowerStripPlugResult]:
@@ -46,7 +42,6 @@ class PowerStripHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_child_device_list_json(self) -> dict:
         """Returns *child device list* as json.
         It contains all the properties returned from the Tapo API.
@@ -54,7 +49,6 @@ class PowerStripHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_child_device_component_list_json(self) -> dict:
         """Returns *child device component list* as json.
         It contains all the properties returned from the Tapo API.
@@ -62,7 +56,6 @@ class PowerStripHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def plug(
         self,
         device_id: Optional[str] = None,

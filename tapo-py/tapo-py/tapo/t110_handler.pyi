@@ -13,7 +13,6 @@ class T110Handler:
         Returns:
             T110Result: Device info of Tapo T110 contact sensor.
         """
-
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.
         It contains all the properties returned from the Tapo API.
@@ -21,7 +20,6 @@ class T110Handler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_trigger_logs(self, page_size: int, start_id: int) -> TriggerLogsT110Result:
         """Returns a list of *trigger logs*.
 

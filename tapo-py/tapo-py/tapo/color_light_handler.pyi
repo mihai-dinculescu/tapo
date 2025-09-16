@@ -11,16 +11,12 @@ class ColorLightHandler:
         """Private constructor.
         It should not be called from outside the tapo library.
         """
-
     async def refresh_session(self) -> None:
         """Refreshes the authentication session."""
-
     async def on(self) -> None:
         """Turns *on* the device."""
-
     async def off(self) -> None:
         """Turns *off* the device."""
-
     async def device_reset(self) -> None:
         """*Hardware resets* the device.
 
@@ -32,7 +28,6 @@ class ColorLightHandler:
         This feature is especially useful when the device is difficult to access
         and requires reconfiguration.
         """
-
     async def get_device_info(self) -> DeviceInfoColorLightResult:
         """Returns *device info* as `DeviceInfoColorLightResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
@@ -43,7 +38,6 @@ class ColorLightHandler:
             DeviceInfoColorLightResult: Device info of Tapo L530, L535 and L630.
             Superset of `GenericDeviceInfoResult`.
         """
-
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.
         It contains all the properties returned from the Tapo API.
@@ -51,14 +45,12 @@ class ColorLightHandler:
         Returns:
             dict: Device info as a dictionary.
         """
-
     async def get_device_usage(self) -> DeviceUsageResult:
         """Returns *device usage* as `DeviceUsageResult`.
 
         Returns:
             DeviceUsageResult: Contains the time usage.
         """
-
     def set(self) -> ColorLightSetDeviceInfoParams:
         """Returns a `ColorLightSetDeviceInfoParams` builder that allows
         multiple properties to be set in a single request.
@@ -68,21 +60,18 @@ class ColorLightHandler:
             ColorLightSetDeviceInfoParams: Builder that is used by the
             `ColorLightHandler.set` API to set multiple properties in a single request.
         """
-
     async def set_brightness(self, brightness: int) -> None:
         """Sets the *brightness* and turns *on* the device.
 
         Args:
             brightness (int): between 1 and 100
         """
-
     async def set_color(self, color: Color) -> None:
         """Sets the *color* and turns *on* the device.
 
         Args:
             color (Color): one of `tapo.Color` as defined in the Google Home app.
         """
-
     async def set_hue_saturation(self, hue: int, saturation: int) -> None:
         """Sets the *hue*, *saturation* and turns *on* the device.
 
@@ -90,7 +79,6 @@ class ColorLightHandler:
             hue (int): between 0 and 360
             saturation (int): between 1 and 100
         """
-
     async def set_color_temperature(self, color_temperature: int) -> None:
         """Sets the *color temperature* and turns *on* the device.
 
