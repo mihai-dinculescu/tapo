@@ -25,10 +25,11 @@ use tapo::responses::{
 };
 
 use api::{
-    PyApiClient, PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyKE100Handler,
-    PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler,
-    PyPowerStripPlugHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler, PyT31XHandler,
-    PyT100Handler, PyT110Handler, PyT300Handler,
+    PyApiClient, PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryIter, PyDiscoveryResult,
+    PyGenericDeviceHandler, PyHubHandler, PyKE100Handler, PyLightHandler, PyMaybeDiscoveryResult,
+    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler, PyPowerStripPlugHandler,
+    PyRgbLightStripHandler, PyRgbicLightStripHandler, PyT31XHandler, PyT100Handler, PyT110Handler,
+    PyT300Handler,
 };
 use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyLightingEffect,
@@ -101,6 +102,11 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
 
     module.add_class::<PyPowerStripHandler>()?;
     module.add_class::<PyPowerStripPlugHandler>()?;
+
+    module.add_class::<PyDeviceDiscovery>()?;
+    module.add_class::<PyDeviceDiscoveryIter>()?;
+    module.add_class::<PyDiscoveryResult>()?;
+    module.add_class::<PyMaybeDiscoveryResult>()?;
 
     Ok(())
 }

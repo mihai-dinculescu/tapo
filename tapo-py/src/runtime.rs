@@ -7,11 +7,11 @@ pub fn tokio() -> &'static tokio::runtime::Runtime {
 
 #[macro_export]
 macro_rules! call_handler_constructor {
-    ($self:ident, $constructor:path, $ip_address:expr) => {{
+    ($self:ident, $constructor:path, $($params:expr),*) => {{
         let client = $self.client.clone();
         let handler = $crate::runtime::tokio()
             .spawn(async move {
-                $constructor(client, $ip_address)
+                $constructor(client, $($params),*)
                     .await
                     .map_err($crate::errors::ErrorWrapper)
             })

@@ -1,18 +1,20 @@
-use pyo3::prelude::*;
 use std::time::Duration;
+
+use pyo3::prelude::*;
 use tapo::{
-    ApiClient, ColorLightHandler, GenericDeviceHandler, HubHandler, LightHandler,
+    ApiClient, ColorLightHandler, DeviceDiscovery, GenericDeviceHandler, HubHandler, LightHandler,
     PlugEnergyMonitoringHandler, PlugHandler, PowerStripHandler, RgbLightStripHandler,
     RgbicLightStripHandler,
 };
 
-use crate::api::{
-    PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
+use crate::call_handler_constructor;
+use crate::errors::ErrorWrapper;
+
+use super::{
+    PyColorLightHandler, PyDeviceDiscovery, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
     PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler, PyRgbLightStripHandler,
     PyRgbicLightStripHandler,
 };
-use crate::call_handler_constructor;
-use crate::errors::ErrorWrapper;
 
 #[pyclass(name = "ApiClient")]
 pub struct PyApiClient {
@@ -35,6 +37,16 @@ impl PyApiClient {
         };
 
         Ok(Self { client })
+    }
+
+    pub async fn discover_devices(
+        &self,
+        target: String,
+        timeout_s: u64,
+    ) -> Result<PyDeviceDiscovery, ErrorWrapper> {
+        let discovery: DeviceDiscovery =
+            call_handler_constructor!(self, tapo::ApiClient::discover_devices, target, timeout_s);
+        Ok(PyDeviceDiscovery::new(discovery))
     }
 
     pub async fn generic_device(&self, ip_address: String) -> PyResult<PyGenericDeviceHandler> {
