@@ -33,7 +33,7 @@ uuid = { version = "1.18", features = ["serde", "v4"] }
 
 # security
 aes = "0.8"
-base16ct = { version = "0.2", features = ["alloc"] }
+base16ct = { version = "0.3", features = ["alloc"] }
 base64 = "0.22"
 cbc = { version = "0.1", features = ["alloc"] }
 rsa = { version = "0.9", features = ["getrandom"] }
