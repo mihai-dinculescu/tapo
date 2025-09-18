@@ -28,7 +28,7 @@ impl PyRgbicLightStripHandler {
 }
 
 impl PyHandlerExt for PyRgbicLightStripHandler {
-    fn get_inner_handler(&self) -> Arc<RwLock<(impl HandlerExt + 'static)>> {
+    fn get_inner_handler(&self) -> Arc<RwLock<impl HandlerExt + 'static>> {
         Arc::clone(&self.inner)
     }
 }
