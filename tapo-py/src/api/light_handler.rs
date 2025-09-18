@@ -60,7 +60,7 @@ impl PyLightHandler {
             handler.read().await.deref(),
             LightHandler::get_device_info_json
         )?;
-        Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
+        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
     pub async fn get_device_usage(&self) -> PyResult<DeviceUsageEnergyMonitoringResult> {

@@ -66,7 +66,7 @@ impl PyHubHandler {
             handler.read().await.deref(),
             HubHandler::get_device_info_json
         )?;
-        Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
+        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
     pub async fn get_child_device_list(&self) -> PyResult<Py<PyList>> {
@@ -76,7 +76,7 @@ impl PyHubHandler {
             HubHandler::get_child_device_list
         )?;
 
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let results = PyList::empty(py);
 
             for child in children {
@@ -119,7 +119,7 @@ impl PyHubHandler {
             HubHandler::get_child_device_list_json,
             start_index
         )?;
-        Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
+        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
     pub async fn get_child_device_component_list_json(&self) -> PyResult<Py<PyDict>> {
@@ -128,7 +128,7 @@ impl PyHubHandler {
             handler.read().await.deref(),
             HubHandler::get_child_device_component_list_json
         )?;
-        Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
+        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
     pub async fn get_supported_ringtone_list(&self) -> PyResult<Vec<String>> {

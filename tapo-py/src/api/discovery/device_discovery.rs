@@ -52,8 +52,8 @@ impl PyDeviceDiscoveryIter {
     fn __next__(slf: PyRefMut<'_, Self>) -> PyResult<Option<PyMaybeDiscoveryResult>> {
         let inner = (*slf).inner.clone();
 
-        let result = Python::with_gil(|py| {
-            py.allow_threads(|| {
+        let result = Python::attach(|py| {
+            py.detach(|| {
                 crate::runtime::tokio().block_on(async {
                     let mut guard = inner.lock().await;
                     guard.next().await

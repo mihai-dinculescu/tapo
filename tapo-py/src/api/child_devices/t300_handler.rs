@@ -31,7 +31,7 @@ impl PyT300Handler {
     pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
         let handler = self.inner.clone();
         let result = call_handler_method!(handler.deref(), T300Handler::get_device_info_json)?;
-        Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
+        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
     pub async fn get_trigger_logs(

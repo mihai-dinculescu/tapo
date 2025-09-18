@@ -76,7 +76,7 @@ impl PyRgbicLightStripHandler {
             handler.read().await.deref(),
             RgbicLightStripHandler::get_device_info_json,
         )?;
-        Python::with_gil(|py| tapo::python::serde_object_to_py_dict(py, &result))
+        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
     pub async fn get_device_usage(&self) -> PyResult<DeviceUsageEnergyMonitoringResult> {
@@ -141,13 +141,13 @@ impl PyRgbicLightStripHandler {
 
 fn map_lighting_effect(lighting_effect: Py<PyAny>) -> PyResult<LightingEffect> {
     if let Some(lighting_effect) =
-        Python::with_gil(|py| lighting_effect.extract::<LightingEffectPreset>(py).ok())
+        Python::attach(|py| lighting_effect.extract::<LightingEffectPreset>(py).ok())
     {
         return Ok(lighting_effect.into());
     }
 
     if let Some(lighting_effect) =
-        Python::with_gil(|py| lighting_effect.extract::<PyLightingEffect>(py).ok())
+        Python::attach(|py| lighting_effect.extract::<PyLightingEffect>(py).ok())
     {
         return Ok(lighting_effect.into());
     }
