@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.8.5][v0.8.5] - 2025-09-18
+
 ### Added
 
 - `ApiClient`: added `discover_devices` method to discover all Tapo devices on the local network. This works even with dynamic or unknown IPs, but is slower since it scans the entire network and waits for device responses.
@@ -21,7 +25,7 @@ file. This change log follows the conventions of
 
 - `PowerStripPlugResult`: removed `charging_status`, `overcurrent_status`, and `power_protection_status` (not returned by P300/P306).
 
-## [Python Unreleased][Unreleased]
+## [Python v0.8.5][v0.8.5] - 2025-09-18
 
 ### Added
 
@@ -653,6 +657,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.8.5]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.5
 [v0.8.4]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.4
 [v0.8.3]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.3
 [v0.8.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.2
