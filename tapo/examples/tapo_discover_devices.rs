@@ -102,6 +102,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         device_info.model, device_info.ip
                     );
                 }
+                DiscoveryResult::PowerStripEnergyMonitoring {
+                    device_info,
+                    handler: _,
+                } => {
+                    info!(
+                        "Found Power Strip with Energy Monitoring of model {:?} at IP address {:?}.",
+                        device_info.model, device_info.ip
+                    );
+                }
                 DiscoveryResult::Hub {
                     device_info,
                     handler: _,

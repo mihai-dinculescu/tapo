@@ -8,14 +8,35 @@ file. This change log follows the conventions of
 
 ### Added
 
-- Introduced support for discovering all Tapo devices on the local network via the `discover_devices` method in `ApiClient`. This enables querying devices even when their IP addresses are dynamic or unknown. However, the process is slower, as it involves scanning the entire network and awaiting responses from each device to the discovery request.
+- `ApiClient`: added `discover_devices` method to discover all Tapo devices on the local network. This works even with dynamic or unknown IPs, but is slower since it scans the entire network and waits for device responses.
+- `PowerStripPlugHandler`: added support for P306 power strips.
+- Added `PowerStripEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`, and `PowerStripPlugEnergyMonitoringResult` to support energy-monitoring power strips (P304M, P316M). Non-monitoring models (P300, P306) will continue using the pre-existing `PowerStripPlugHandler`.
+- `PowerStripPlugResult`: added `default_states` field.
 
+### Changed
+
+- `DeviceInfoPowerStripResult`: changed `time_diff` from `Option<i64>` to `i64`.
+
+### Fixed
+
+- `PowerStripPlugResult`: removed `charging_status`, `overcurrent_status`, and `power_protection_status` (not returned by P300/P306).
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
-- Introduced support for discovering all Tapo devices on the local network via the `discover_devices` method in `ApiClient`. This enables querying devices even when their IP addresses are dynamic or unknown. However, the process is slower, as it involves scanning the entire network and awaiting responses from each device to the discovery request.
+- `ApiClient`: added `discover_devices` method to discover all Tapo devices on the local network. This works even with dynamic or unknown IPs, but is slower since it scans the entire network and waits for device responses.
+- `PowerStripPlugHandler`: added support for P306 power strips.
+- Added `PowerStripEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`, and `PowerStripPlugEnergyMonitoringResult` to support energy-monitoring power strips (P304M, P316M). Non-monitoring models (P300, P306) will continue using the pre-existing `PowerStripPlugHandler`.
+- `PowerStripPlugResult`: added `default_states` field.
+
+### Changed
+
+- `DeviceInfoPowerStripResult`: changed `time_diff` from `Optional[int]` to `int`.
+
+### Fixed
+
+- `PowerStripPlugResult`: removed `charging_status`, `overcurrent_status`, and `power_protection_status` (not returned by P300/P306).
 
 ## [Rust v0.8.4][v0.8.4] - 2025-08-11
 

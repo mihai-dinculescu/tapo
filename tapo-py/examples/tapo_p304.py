@@ -1,4 +1,4 @@
-"""P300 and P306 Example"""
+"""P304M and P316M Example"""
 
 import asyncio
 import os
@@ -12,7 +12,7 @@ async def main():
     ip_address = os.getenv("IP_ADDRESS")
 
     client = ApiClient(tapo_username, tapo_password)
-    power_strip = await client.p300(ip_address)
+    power_strip = await client.p304(ip_address)
 
     device_info = await power_strip.get_device_info()
     print(f"Device info: {device_info.to_dict()}")

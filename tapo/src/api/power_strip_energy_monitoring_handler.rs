@@ -4,19 +4,20 @@ use tokio::sync::RwLock;
 
 use crate::error::Error;
 use crate::responses::{
-    ChildDeviceListPowerStripResult, DeviceInfoPowerStripResult, PowerStripPlugResult,
+    ChildDeviceListPowerStripEnergyMonitoringResult, DeviceInfoPowerStripResult,
+    PowerStripPlugEnergyMonitoringResult,
 };
 
-use super::{ApiClient, Plug, PowerStripPlugHandler};
+use super::{ApiClient, Plug, PowerStripPlugEnergyMonitoringHandler};
 
-/// Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
-/// [P306](https://www.tp-link.com/us/search/?q=P306) devices.
+/// Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+/// [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
 #[derive(Debug)]
-pub struct PowerStripHandler {
+pub struct PowerStripEnergyMonitoringHandler {
     client: Arc<RwLock<ApiClient>>,
 }
 
-impl PowerStripHandler {
+impl PowerStripEnergyMonitoringHandler {
     pub(crate) fn new(client: ApiClient) -> Self {
         Self {
             client: Arc::new(RwLock::new(client)),
@@ -32,7 +33,7 @@ impl PowerStripHandler {
     /// Returns *device info* as [`DeviceInfoPowerStripResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present,
-    /// try [`PowerStripHandler::get_device_info_json`].
+    /// try [`PowerStripEnergyMonitoringHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<DeviceInfoPowerStripResult, Error> {
         self.client.read().await.get_device_info().await
     }
@@ -43,15 +44,17 @@ impl PowerStripHandler {
         self.client.read().await.get_device_info().await
     }
 
-    /// Returns *child device list* as [`Vec<PowerStripPlugResult>`].
+    /// Returns *child device list* as [`Vec<PowerStripPlugEnergyMonitoringResult>`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present,
-    /// try [`PowerStripHandler::get_child_device_list_json`].
-    pub async fn get_child_device_list(&self) -> Result<Vec<PowerStripPlugResult>, Error> {
+    /// try [`PowerStripEnergyMonitoringHandler::get_child_device_list_json`].
+    pub async fn get_child_device_list(
+        &self,
+    ) -> Result<Vec<PowerStripPlugEnergyMonitoringResult>, Error> {
         self.client
             .read()
             .await
-            .get_child_device_list::<ChildDeviceListPowerStripResult>(0)
+            .get_child_device_list::<ChildDeviceListPowerStripEnergyMonitoringResult>(0)
             .await
             .map(|r| r.plugs)
     }
@@ -74,8 +77,8 @@ impl PowerStripHandler {
 }
 
 /// Child device handler builders.
-impl PowerStripHandler {
-    /// Returns a [`PowerStripPlugHandler`] for the given [`Plug`].
+impl PowerStripEnergyMonitoringHandler {
+    /// Returns a [`PowerStripPlugEnergyMonitoringHandler`] for the given [`Plug`].
     ///
     /// # Arguments
     ///
@@ -89,7 +92,7 @@ impl PowerStripHandler {
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
     /// let power_strip = ApiClient::new("tapo-username@example.com", "tapo-password")
-    ///     .p300("192.168.1.100")
+    ///     .p304("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the child device
     /// let device_id = "0000000000000000000000000000000000000000".to_string();
@@ -99,7 +102,10 @@ impl PowerStripHandler {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn plug(&self, identifier: Plug) -> Result<PowerStripPlugHandler, Error> {
+    pub async fn plug(
+        &self,
+        identifier: Plug,
+    ) -> Result<PowerStripPlugEnergyMonitoringHandler, Error> {
         let children = self.get_child_device_list().await?;
 
         let device_id = match identifier {
@@ -123,6 +129,9 @@ impl PowerStripHandler {
                 .clone(),
         };
 
-        Ok(PowerStripPlugHandler::new(self.client.clone(), device_id))
+        Ok(PowerStripPlugEnergyMonitoringHandler::new(
+            self.client.clone(),
+            device_id,
+        ))
     }
 }

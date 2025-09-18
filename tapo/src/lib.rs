@@ -3,7 +3,7 @@
 //! Tapo API Client.
 //!
 //! Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930),
-//! plugs (P100, P105, P110, P110M, P115), power strips (P300, P304M, P316M), hubs (H100), switches (S200B) and
+//! plugs (P100, P105, P110, P110M, P115), power strips (P300, P304M, P306, P316M), hubs (H100), switches (S200B) and
 //! sensors (KE100, T100, T110, T300, T310, T315).
 //!
 //! # Example with L530

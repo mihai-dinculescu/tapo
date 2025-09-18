@@ -8,8 +8,8 @@ use tapo::{DiscoveryResult, Error};
 
 use crate::api::{
     PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
-    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler, PyRgbLightStripHandler,
-    PyRgbicLightStripHandler,
+    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
+    PyPowerStripHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler,
 };
 use crate::errors::ErrorWrapper;
 
@@ -47,6 +47,10 @@ pub enum PyDiscoveryResult {
     PowerStrip {
         device_info: DeviceInfoPowerStripResult,
         handler: PyPowerStripHandler,
+    },
+    PowerStripEnergyMonitoring {
+        device_info: DeviceInfoPowerStripResult,
+        handler: PyPowerStripEnergyMonitoringHandler,
     },
     Hub {
         device_info: DeviceInfoHubResult,
@@ -147,6 +151,13 @@ fn convert_result_to_py(result: DiscoveryResult) -> PyDiscoveryResult {
         } => PyDiscoveryResult::PowerStrip {
             device_info: *device_info,
             handler: PyPowerStripHandler::new(handler),
+        },
+        DiscoveryResult::PowerStripEnergyMonitoring {
+            device_info,
+            handler,
+        } => PyDiscoveryResult::PowerStripEnergyMonitoring {
+            device_info: *device_info,
+            handler: PyPowerStripEnergyMonitoringHandler::new(handler),
         },
         DiscoveryResult::Hub {
             device_info,

@@ -18,16 +18,18 @@ use tapo::responses::{
     DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
     KE100Result, OvercurrentStatus, OverheatStatus, PlugState, PowerProtectionStatus,
-    PowerStripPlugResult, RgbLightStripState, RgbicLightStripState, S200BLog, S200BResult,
-    S200BRotationParams, Status, T31XResult, T100Log, T100Result, T110Log, T110Result, T300Log,
-    T300Result, TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit,
-    TemperatureUnitKE100, UsageByPeriodResult, WaterLeakStatus,
+    PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, RgbLightStripState,
+    RgbicLightStripState, S200BLog, S200BResult, S200BRotationParams, Status, T31XResult, T100Log,
+    T100Result, T110Log, T110Result, T300Log, T300Result, TemperatureHumidityRecord,
+    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, UsageByPeriodResult,
+    WaterLeakStatus,
 };
 
 use api::{
     PyApiClient, PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryIter, PyDiscoveryResult,
     PyGenericDeviceHandler, PyHubHandler, PyKE100Handler, PyLightHandler, PyMaybeDiscoveryResult,
-    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler, PyPowerStripPlugHandler,
+    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
+    PyPowerStripHandler, PyPowerStripPlugEnergyMonitoringHandler, PyPowerStripPlugHandler,
     PyRgbLightStripHandler, PyRgbicLightStripHandler, PyT31XHandler, PyT100Handler, PyT110Handler,
     PyT300Handler,
 };
@@ -101,7 +103,9 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyT31XHandler>()?;
 
     module.add_class::<PyPowerStripHandler>()?;
+    module.add_class::<PyPowerStripEnergyMonitoringHandler>()?;
     module.add_class::<PyPowerStripPlugHandler>()?;
+    module.add_class::<PyPowerStripPlugEnergyMonitoringHandler>()?;
 
     module.add_class::<PyDeviceDiscovery>()?;
     module.add_class::<PyDeviceDiscoveryIter>()?;
@@ -193,6 +197,7 @@ fn register_responses_power_strip(module: &Bound<'_, PyModule>) -> Result<(), Py
     // child devices
     module.add_class::<AutoOffStatus>()?;
     module.add_class::<PowerStripPlugResult>()?;
+    module.add_class::<PowerStripPlugEnergyMonitoringResult>()?;
 
     Ok(())
 }

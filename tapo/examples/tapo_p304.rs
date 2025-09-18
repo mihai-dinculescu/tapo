@@ -1,4 +1,4 @@
-/// P300 and P306 Example
+/// P304M and P316M Example
 use std::{env, thread, time::Duration};
 
 use log::info;
@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ip_address = env::var("IP_ADDRESS")?;
 
     let power_strip = ApiClient::new(tapo_username, tapo_password)
-        .p300(ip_address)
+        .p304(ip_address)
         .await?;
 
     let device_info = power_strip.get_device_info().await?;

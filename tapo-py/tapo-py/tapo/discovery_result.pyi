@@ -8,6 +8,7 @@ from tapo import (
     LightHandler,
     PlugEnergyMonitoringHandler,
     PlugHandler,
+    PowerStripEnergyMonitoringHandler,
     PowerStripHandler,
     RgbicLightStripHandler,
     RgbLightStripHandler,
@@ -38,6 +39,7 @@ class MaybeDiscoveryResult:
         Plug,
         PlugEnergyMonitoring,
         PowerStrip,
+        PowerStripEnergyMonitoring,
         Hub,
     ]:
         """Retrieves the actual discovery result or raises an exception."""
@@ -174,15 +176,32 @@ class PlugEnergyMonitoring:
 
 @dataclass
 class PowerStrip:
-    """Tapo P300, P304M and P316M devices."""
+    """Tapo P300 and P306 devices."""
 
     device_info: DeviceInfoPowerStripResult
-    """Device info of Tapo P300, P304M and P316M."""
+    """Device info of Tapo P300 and P306."""
 
     handler: PowerStripHandler
-    """Handler for the [P300](https://www.tapo.com/en/search/?q=P300),
-    [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
-    [P316M](https://www.tp-link.com/us/search/?q=P316M) devices."""
+    """Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
+    [P306](https://www.tp-link.com/us/search/?q=P306) devices.
+    """
+
+    __match_args__ = (
+        "device_info",
+        "handler",
+    )
+
+@dataclass
+class PowerStripEnergyMonitoring:
+    """Tapo P304M and P316M devices."""
+
+    device_info: DeviceInfoPowerStripResult
+    """Device info of Tapo P304M and P316M."""
+
+    handler: PowerStripEnergyMonitoringHandler
+    """Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+    [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
+    """
 
     __match_args__ = (
         "device_info",
@@ -215,4 +234,5 @@ class DiscoveryResult:
     Plug: Type[Plug] = Plug
     PlugEnergyMonitoring: Type[PlugEnergyMonitoring] = PlugEnergyMonitoring
     PowerStrip: Type[PowerStrip] = PowerStrip
+    PowerStripEnergyMonitoring: Type[PowerStripEnergyMonitoring] = PowerStripEnergyMonitoring
     Hub: Type[Hub] = Hub

@@ -22,7 +22,8 @@ use super::discovery::DeviceDiscovery;
 use super::protocol::{TapoProtocol, TapoProtocolExt};
 use super::{
     ColorLightHandler, GenericDeviceHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler,
-    PlugHandler, PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
+    PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
+    RgbicLightStripHandler,
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
@@ -512,7 +513,7 @@ impl ApiClient {
         Ok(PowerStripHandler::new(self))
     }
 
-    /// Specializes the given [`ApiClient`] into an authenticated [`PowerStripHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`PowerStripEnergyMonitoringHandler`].
     ///
     /// # Arguments
     ///
@@ -532,13 +533,42 @@ impl ApiClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn p304(mut self, ip_address: impl Into<String>) -> Result<PowerStripHandler, Error> {
+    pub async fn p304(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<PowerStripEnergyMonitoringHandler, Error> {
+        self.login(ip_address).await?;
+
+        Ok(PowerStripEnergyMonitoringHandler::new(self))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`PowerStripHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .p306("192.168.1.100")
+    ///     .await?;
+    /// let child_device_list = device.get_child_device_list().await?;
+    /// println!("Child device list: {child_device_list:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn p306(mut self, ip_address: impl Into<String>) -> Result<PowerStripHandler, Error> {
         self.login(ip_address).await?;
 
         Ok(PowerStripHandler::new(self))
     }
 
-    /// Specializes the given [`ApiClient`] into an authenticated [`PowerStripHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`PowerStripEnergyMonitoringHandler`].
     ///
     /// # Arguments
     ///
@@ -558,10 +588,13 @@ impl ApiClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn p316(mut self, ip_address: impl Into<String>) -> Result<PowerStripHandler, Error> {
+    pub async fn p316(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<PowerStripEnergyMonitoringHandler, Error> {
         self.login(ip_address).await?;
 
-        Ok(PowerStripHandler::new(self))
+        Ok(PowerStripEnergyMonitoringHandler::new(self))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`HubHandler`].

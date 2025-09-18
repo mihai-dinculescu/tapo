@@ -1,11 +1,11 @@
 from typing import List, Optional
 
-from tapo import PowerStripPlugHandler
-from tapo.responses import DeviceInfoPowerStripResult, PowerStripPlugResult
+from tapo import PowerStripPlugEnergyMonitoringHandler
+from tapo.responses import DeviceInfoPowerStripResult, PowerStripPlugEnergyMonitoringResult
 
-class PowerStripHandler:
-    """Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
-    [P306](https://www.tp-link.com/us/search/?q=P306) devices.
+class PowerStripEnergyMonitoringHandler:
+    """Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+    [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
     """
 
     def __init__(self, handler: object):
@@ -18,7 +18,7 @@ class PowerStripHandler:
         """Returns *device info* as `DeviceInfoPowerStripResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
         If the deserialization fails, or if a property that you care about it's not present,
-        try `PowerStripHandler.get_device_info_json`.
+        try `PowerStripEnergyMonitoringHandler.get_device_info_json`.
 
         Returns:
             DeviceInfoPowerStripResult: Device info of Tapo P300, P304M, P306 and P316M. Superset of `DeviceInfoGenericResult`.
@@ -32,11 +32,11 @@ class PowerStripHandler:
         """
     async def get_child_device_list(
         self,
-    ) -> List[PowerStripPlugResult]:
-        """Returns *child device list* as `List[PowerStripPlugResult]`.
+    ) -> List[PowerStripPlugEnergyMonitoringResult]:
+        """Returns *child device list* as `List[PowerStripPlugEnergyMonitoringResult]`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
         If the deserialization fails, or if a property that you care about it's not present,
-        try `PowerStripHandler.get_child_device_list_json`.
+        try `PowerStripEnergyMonitoringHandler.get_child_device_list_json`.
 
         Returns:
             dict: Device info as a dictionary.
@@ -60,8 +60,8 @@ class PowerStripHandler:
         device_id: Optional[str] = None,
         nickname: Optional[str] = None,
         position: Optional[int] = None,
-    ) -> PowerStripPlugHandler:
-        """Returns a `PowerStripPlugHandler` for the device matching the provided `device_id`, `nickname`, or `position`.
+    ) -> PowerStripPlugEnergyMonitoringHandler:
+        """Returns a `PowerStripPlugEnergyMonitoringHandler` for the device matching the provided `device_id`, `nickname`, or `position`.
 
         Args:
             device_id (Optional[str]): The Device ID of the device
@@ -69,14 +69,14 @@ class PowerStripHandler:
             position (Optional[str]): The Position of the device
 
         Returns:
-            PowerStripPlugHandler: Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
-            [P306](https://www.tp-link.com/us/search/?q=P306) child plugs.
+            PowerStripPlugEnergyMonitoringHandler: Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+            [P316M](https://www.tp-link.com/us/search/?q=P316M) child plugs.
 
         Example:
             ```python
             # Connect to the hub
             client = ApiClient("tapo-username@example.com", "tapo-password")
-            power_strip = await client.p300("192.168.1.100")
+            power_strip = await client.p304("192.168.1.100")
 
             # Get a handler for the child device
             device = await power_strip.plug(device_id="0000000000000000000000000000000000000000")

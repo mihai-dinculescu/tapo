@@ -5,7 +5,8 @@ use crate::responses::DeviceInfoGenericResult;
 
 use super::{
     ColorLightHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler, PlugHandler,
-    PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
+    PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
+    RgbicLightStripHandler,
 };
 
 /// Handler for generic devices. It provides the functionality common to all Tapo [devices](https://www.tapo.com/en/).
@@ -93,6 +94,12 @@ impl From<GenericDeviceHandler> for PlugEnergyMonitoringHandler {
 impl From<GenericDeviceHandler> for PowerStripHandler {
     fn from(value: GenericDeviceHandler) -> Self {
         PowerStripHandler::new(value.client)
+    }
+}
+
+impl From<GenericDeviceHandler> for PowerStripEnergyMonitoringHandler {
+    fn from(value: GenericDeviceHandler) -> Self {
+        PowerStripEnergyMonitoringHandler::new(value.client)
     }
 }
 

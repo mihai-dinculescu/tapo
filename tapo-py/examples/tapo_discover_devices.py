@@ -54,6 +54,10 @@ async def main():
                     print(
                         f"Found Power Strip of model '{device_info.model}' at IP address '{device_info.ip}'."
                     )
+                case DiscoveryResult.PowerStripEnergyMonitoring(device_info, _handler):
+                    print(
+                        f"Found Power Strip with Energy Monitoring of model '{device_info.model}' at IP address '{device_info.ip}'."
+                    )
                 case DiscoveryResult.Hub(device_info, _handler):
                     print(
                         f"Found '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."

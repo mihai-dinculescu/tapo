@@ -3,8 +3,8 @@ use std::time::Duration;
 use pyo3::prelude::*;
 use tapo::{
     ApiClient, ColorLightHandler, DeviceDiscovery, GenericDeviceHandler, HubHandler, LightHandler,
-    PlugEnergyMonitoringHandler, PlugHandler, PowerStripHandler, RgbLightStripHandler,
-    RgbicLightStripHandler,
+    PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
+    RgbLightStripHandler, RgbicLightStripHandler,
 };
 
 use crate::call_handler_constructor;
@@ -12,8 +12,8 @@ use crate::errors::ErrorWrapper;
 
 use super::{
     PyColorLightHandler, PyDeviceDiscovery, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
-    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripHandler, PyRgbLightStripHandler,
-    PyRgbicLightStripHandler,
+    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
+    PyPowerStripHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler,
 };
 
 #[pyclass(name = "ApiClient")]
@@ -139,16 +139,22 @@ impl PyApiClient {
         Ok(PyPowerStripHandler::new(handler))
     }
 
-    pub async fn p304(&self, ip_address: String) -> PyResult<PyPowerStripHandler> {
-        let handler: PowerStripHandler =
+    pub async fn p304(&self, ip_address: String) -> PyResult<PyPowerStripEnergyMonitoringHandler> {
+        let handler: PowerStripEnergyMonitoringHandler =
             call_handler_constructor!(self, tapo::ApiClient::p304, ip_address);
+        Ok(PyPowerStripEnergyMonitoringHandler::new(handler))
+    }
+
+    pub async fn p306(&self, ip_address: String) -> PyResult<PyPowerStripHandler> {
+        let handler: PowerStripHandler =
+            call_handler_constructor!(self, tapo::ApiClient::p306, ip_address);
         Ok(PyPowerStripHandler::new(handler))
     }
 
-    pub async fn p316(&self, ip_address: String) -> PyResult<PyPowerStripHandler> {
-        let handler: PowerStripHandler =
+    pub async fn p316(&self, ip_address: String) -> PyResult<PyPowerStripEnergyMonitoringHandler> {
+        let handler: PowerStripEnergyMonitoringHandler =
             call_handler_constructor!(self, tapo::ApiClient::p316, ip_address);
-        Ok(PyPowerStripHandler::new(handler))
+        Ok(PyPowerStripEnergyMonitoringHandler::new(handler))
     }
 
     pub async fn h100(&self, ip_address: String) -> PyResult<PyHubHandler> {

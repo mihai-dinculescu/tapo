@@ -1,8 +1,8 @@
-from tapo.responses import PowerStripPlugResult
+from tapo.responses import PowerStripPlugEnergyMonitoringResult
 
-class PowerStripPlugHandler:
-    """Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
-    [P306](https://www.tp-link.com/us/search/?q=P306) child plugs.
+class PowerStripPlugEnergyMonitoringHandler:
+    """Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+    [P316M](https://www.tp-link.com/us/search/?q=P316M) child plugs.
     """
 
     def __init__(self, handler: object):
@@ -13,14 +13,14 @@ class PowerStripPlugHandler:
         """Turns *on* the device."""
     async def off(self) -> None:
         """Turns *off* the device."""
-    async def get_device_info(self) -> PowerStripPlugResult:
-        """Returns *device info* as `PowerStripPlugResult`.
+    async def get_device_info(self) -> PowerStripPlugEnergyMonitoringResult:
+        """Returns *device info* as `PowerStripPlugEnergyMonitoringResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
         If the deserialization fails, or if a property that you care about it's not present,
-        try `PowerStripPlugHandler.get_device_info_json`.
+        try `PowerStripPlugEnergyMonitoringHandler.get_device_info_json`.
 
         Returns:
-            PowerStripPlugResult: P300 and P306 power strip child plugs.
+            PowerStripPlugEnergyMonitoringResult: P304M and P316M power strip child plugs.
         """
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.

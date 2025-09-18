@@ -9,8 +9,8 @@ use crate::responses::{
 };
 use crate::{
     ApiClient, ColorLightHandler, Error, GenericDeviceHandler, HubHandler, LightHandler,
-    PlugEnergyMonitoringHandler, PlugHandler, PowerStripHandler, RgbLightStripHandler,
-    RgbicLightStripHandler,
+    PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
+    RgbLightStripHandler, RgbicLightStripHandler,
 };
 
 #[derive(Debug)]
@@ -85,14 +85,21 @@ pub enum DiscoveryResult {
         /// [P115](https://www.tapo.com/en/search/?q=P115) devices.
         handler: PlugEnergyMonitoringHandler,
     },
-    /// Tapo P300, P304M and P316M devices.
+    /// Tapo P300 and P306 devices.
     PowerStrip {
-        /// Device info of Tapo P300, P304M and P316M.
+        /// Device info of Tapo P300 and P306.
         device_info: Box<DeviceInfoPowerStripResult>,
-        /// Handler for the [P300](https://www.tapo.com/en/search/?q=P300),
-        /// [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
-        /// [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
+        /// Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
+        /// [P306](https://www.tp-link.com/us/search/?q=P306) devices.
         handler: PowerStripHandler,
+    },
+    /// Tapo P304M and P316M devices.
+    PowerStripEnergyMonitoring {
+        /// Device info of Tapo P304M and P316M.
+        device_info: Box<DeviceInfoPowerStripResult>,
+        /// Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+        /// [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
+        handler: PowerStripEnergyMonitoringHandler,
     },
     /// Tapo H100 devices.
     Hub {
@@ -163,8 +170,16 @@ impl DiscoveryResult {
                     handler
                 )
             }
-            "P300" | "P304M" | "P316M" => {
+            "P300" | "P306" => {
                 map_device_model!(PowerStrip, DeviceInfoPowerStripResult, device_info, handler)
+            }
+            "P304M" | "P316M" => {
+                map_device_model!(
+                    PowerStripEnergyMonitoring,
+                    DeviceInfoPowerStripResult,
+                    device_info,
+                    handler
+                )
             }
             "H100" => {
                 map_device_model!(Hub, DeviceInfoHubResult, device_info, handler)

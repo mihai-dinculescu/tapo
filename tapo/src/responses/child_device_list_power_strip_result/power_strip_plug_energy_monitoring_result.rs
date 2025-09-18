@@ -2,22 +2,23 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::responses::{
-    DecodableResultExt, DefaultPlugState, OverheatStatus, TapoResponseExt, decode_value,
+    ChargingStatus, DecodableResultExt, DefaultPlugState, OvercurrentStatus, OverheatStatus,
+    PowerProtectionStatus, TapoResponseExt, decode_value,
 };
 
 use super::AutoOffStatus;
 
 /// Power Strip child device list result.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct ChildDeviceListPowerStripResult {
+pub(crate) struct ChildDeviceListPowerStripEnergyMonitoringResult {
     /// Power Strip child devices
     #[serde(rename = "child_device_list")]
-    pub plugs: Vec<PowerStripPlugResult>,
+    pub plugs: Vec<PowerStripPlugEnergyMonitoringResult>,
 }
 
-impl DecodableResultExt for ChildDeviceListPowerStripResult {
+impl DecodableResultExt for ChildDeviceListPowerStripEnergyMonitoringResult {
     fn decode(self) -> Result<Self, Error> {
-        Ok(ChildDeviceListPowerStripResult {
+        Ok(ChildDeviceListPowerStripEnergyMonitoringResult {
             plugs: self
                 .plugs
                 .into_iter()
@@ -27,22 +28,25 @@ impl DecodableResultExt for ChildDeviceListPowerStripResult {
     }
 }
 
-impl TapoResponseExt for ChildDeviceListPowerStripResult {}
+impl TapoResponseExt for ChildDeviceListPowerStripEnergyMonitoringResult {}
 
-/// P300 and P306 power strip child plugs.
+/// P304M and P316M power strip child plugs.
 ///
 /// Specific properties: `auto_off_remain_time`, `auto_off_status`,
-/// `bind_count`, `default_states`, `overheat_status`, `position`, `slot_number`.
+/// `bind_count`, `default_states`, `charging_status`, `is_usb`,
+/// `overcurrent_status`, `overheat_status`, `position`,
+/// `power_protection_status`, `slot_number`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 #[allow(missing_docs)]
-pub struct PowerStripPlugResult {
+pub struct PowerStripPlugEnergyMonitoringResult {
     pub auto_off_remain_time: u64,
     pub auto_off_status: AutoOffStatus,
     pub avatar: String,
     pub bind_count: u8,
     pub category: String,
     pub default_states: DefaultPlugState,
+    pub charging_status: ChargingStatus,
     pub device_id: String,
     pub device_on: bool,
     pub fw_id: String,
@@ -50,6 +54,7 @@ pub struct PowerStripPlugResult {
     pub has_set_location_info: bool,
     pub hw_id: String,
     pub hw_ver: String,
+    pub is_usb: bool,
     pub latitude: Option<i64>,
     pub longitude: Option<i64>,
     pub mac: String,
@@ -59,8 +64,10 @@ pub struct PowerStripPlugResult {
     /// The time in seconds this device has been ON since the last state change (On/Off).
     pub on_time: u64,
     pub original_device_id: String,
+    pub overcurrent_status: OvercurrentStatus,
     pub overheat_status: Option<OverheatStatus>,
     pub position: u8,
+    pub power_protection_status: PowerProtectionStatus,
     pub region: Option<String>,
     pub slot_number: u8,
     pub status_follow_edge: bool,
@@ -69,7 +76,7 @@ pub struct PowerStripPlugResult {
 
 #[cfg(feature = "python")]
 #[pyo3::pymethods]
-impl PowerStripPlugResult {
+impl PowerStripPlugEnergyMonitoringResult {
     /// Gets all the properties of this result as a dictionary.
     pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
         let value = serde_json::to_value(self)
@@ -79,9 +86,9 @@ impl PowerStripPlugResult {
     }
 }
 
-impl TapoResponseExt for PowerStripPlugResult {}
+impl TapoResponseExt for PowerStripPlugEnergyMonitoringResult {}
 
-impl DecodableResultExt for PowerStripPlugResult {
+impl DecodableResultExt for PowerStripPlugEnergyMonitoringResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.nickname = decode_value(&self.nickname)?;
         Ok(self)
