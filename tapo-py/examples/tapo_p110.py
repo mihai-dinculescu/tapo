@@ -42,7 +42,12 @@ async def main():
     # Energy data - Hourly interval
     # `start_date` and `end_date` are an inclusive interval that must not be greater than 8 days.
     energy_data_hourly = await device.get_energy_data(EnergyDataInterval.Hourly, today)
-    print(f"Energy data (hourly): {energy_data_hourly.to_dict()}")
+    print(
+        "Energy data (hourly): "
+        f"Start date time '{energy_data_hourly.start_date_time}', "
+        f"Entries {len(energy_data_hourly.entries)}, "
+        f"First entry: {energy_data_hourly.entries[0].to_dict() if energy_data_hourly.entries else None}"
+    )
 
     # Energy data - Daily interval
     # `start_date` must be the first day of a quarter.
@@ -50,7 +55,12 @@ async def main():
         EnergyDataInterval.Daily,
         datetime(today.year, get_quarter_start_month(today), 1),
     )
-    print(f"Energy data (daily): {energy_data_daily.to_dict()}")
+    print(
+        "Energy data (daily): "
+        f"Start date time '{energy_data_daily.start_date_time}', "
+        f"Entries {len(energy_data_daily.entries)}, "
+        f"First entry: {energy_data_daily.entries[0].to_dict() if energy_data_daily.entries else None}"
+    )
 
     # Energy data - Monthly interval
     # `start_date` must be the first day of a year.
@@ -58,7 +68,12 @@ async def main():
         EnergyDataInterval.Monthly,
         datetime(today.year, 1, 1),
     )
-    print(f"Energy data (monthly): {energy_data_monthly.to_dict()}")
+    print(
+        "Energy data (monthly): "
+        f"Start date time '{energy_data_monthly.start_date_time}', "
+        f"Entries {len(energy_data_monthly.entries)}, "
+        f"First entry: {energy_data_monthly.entries[0].to_dict() if energy_data_monthly.entries else None}"
+    )
 
     # Power data - Every 5 minutes interval
     # `start_date_time` and `end_date_time` describe an exclusive interval.
@@ -70,7 +85,7 @@ async def main():
         today,
     )
     print(
-        f"Power data (every 5 minutes): "
+        "Power data (every 5 minutes): "
         f"Start date time '{power_data_every_5_minutes.start_date_time}', "
         f"End date time '{power_data_every_5_minutes.end_date_time}', "
         f"Entries {len(power_data_every_5_minutes.entries)}, "
@@ -87,7 +102,7 @@ async def main():
         today,
     )
     print(
-        f"Power data (hourly): "
+        "Power data (hourly): "
         f"Start date time '{power_data_hourly.start_date_time}', "
         f"End date time '{power_data_hourly.end_date_time}', "
         f"Entries {len(power_data_hourly.entries)}, "

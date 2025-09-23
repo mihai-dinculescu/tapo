@@ -51,7 +51,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             end_date: current_date,
         })
         .await?;
-    info!("Energy data (hourly): {energy_data_hourly:?}");
+    info!(
+        "Energy data (hourly): Start date time '{}', Entries {}, First entry: {:?}",
+        energy_data_hourly.start_date_time,
+        energy_data_hourly.entries.len(),
+        energy_data_hourly.entries.first()
+    );
 
     // Energy data - Daily interval
     // `start_date` must be the first day of a quarter.
@@ -65,7 +70,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .unwrap(),
         })
         .await?;
-    info!("Energy data (daily): {energy_data_daily:?}");
+    info!(
+        "Energy data (daily): Start date time '{}', Entries {}, First entry: {:?}",
+        energy_data_daily.start_date_time,
+        energy_data_daily.entries.len(),
+        energy_data_daily.entries.first()
+    );
 
     // Energy data - Monthly interval
     // `start_date` must be the first day of a year.
@@ -74,7 +84,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             start_date: NaiveDate::from_ymd_opt(current_date.year(), 1, 1).unwrap(),
         })
         .await?;
-    info!("Energy data (monthly): {energy_data_monthly:?}");
+    info!(
+        "Energy data (monthly): Start date time '{}', Entries {}, First entry: {:?}",
+        energy_data_monthly.start_date_time,
+        energy_data_monthly.entries.len(),
+        energy_data_monthly.entries.first()
+    );
 
     // Power data - Every 5 minutes interval
     // `start_date_time` and `end_date_time` describe an exclusive interval.

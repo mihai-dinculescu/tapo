@@ -14,8 +14,9 @@ use crate::requests::{
 };
 use crate::responses::{
     ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
-    EnergyUsageResult, PowerDataResult, PowerDataResultRaw, SupportedAlarmTypeListResult,
-    TapoMultipleResponse, TapoResponseExt, TapoResult, validate_response,
+    EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw,
+    SupportedAlarmTypeListResult, TapoMultipleResponse, TapoResponseExt, TapoResult,
+    validate_response,
 };
 
 use super::discovery::DeviceDiscovery;
@@ -765,9 +766,10 @@ impl ApiClient {
         let request = TapoRequest::GetEnergyData(TapoParams::new(params));
 
         self.get_protocol()?
-            .execute_request(request, true)
+            .execute_request::<EnergyDataResultRaw>(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+            .map(|result| result.try_into())?
     }
 
     pub(crate) async fn get_power_data(

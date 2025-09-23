@@ -16,13 +16,14 @@ use tapo::responses::{
     DeviceInfoColorLightResult, DeviceInfoGenericResult, DeviceInfoHubResult,
     DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
     DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
-    DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
-    KE100Result, OvercurrentStatus, OverheatStatus, PlugState, PowerDataIntervalResult,
-    PowerDataResult, PowerProtectionStatus, PowerStripPlugEnergyMonitoringResult,
-    PowerStripPlugResult, RgbLightStripState, RgbicLightStripState, S200BLog, S200BResult,
-    S200BRotationParams, Status, T31XResult, T100Log, T100Result, T110Log, T110Result, T300Log,
-    T300Result, TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit,
-    TemperatureUnitKE100, UsageByPeriodResult, WaterLeakStatus,
+    DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataIntervalResult,
+    EnergyDataResult, EnergyUsageResult, KE100Result, OvercurrentStatus, OverheatStatus, PlugState,
+    PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
+    PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, RgbLightStripState,
+    RgbicLightStripState, S200BLog, S200BResult, S200BRotationParams, Status, T31XResult, T100Log,
+    T100Result, T110Log, T110Result, T300Log, T300Result, TemperatureHumidityRecord,
+    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, UsageByPeriodResult,
+    WaterLeakStatus,
 };
 
 use api::{
@@ -124,6 +125,7 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DefaultStateType>()?;
     module.add_class::<DeviceUsageEnergyMonitoringResult>()?;
     module.add_class::<DeviceUsageResult>()?;
+    module.add_class::<EnergyDataIntervalResult>()?;
     module.add_class::<EnergyDataResult>()?;
     module.add_class::<EnergyUsageResult>()?;
     module.add_class::<OvercurrentStatus>()?;

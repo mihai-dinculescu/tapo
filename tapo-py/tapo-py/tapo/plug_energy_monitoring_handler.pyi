@@ -83,7 +83,7 @@ class PlugEnergyMonitoringHandler:
         """Returns *energy data* as `EnergyDataResult`.
 
         Returns:
-            EnergyDataResult: Energy data for the requested `EnergyDataInterval`.
+            EnergyDataResult: Energy data result for the requested `EnergyDataInterval`.
         """
     async def get_power_data(
         self,
@@ -94,5 +94,5 @@ class PlugEnergyMonitoringHandler:
         """Returns *power data* as `PowerDataResult`.
 
         Returns:
-            PowerDataResult: Power data for the requested `PowerDataInterval`.
+            PowerDataResult: Power data result for the requested `PowerDataInterval`.
         """
