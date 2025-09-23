@@ -1,10 +1,10 @@
 use anyhow::Context as _;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local, TimeZone as _, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::responses::TapoResponseExt;
 
-/// Power data for the requested [`crate::requests::PowerDataInterval`].
+/// Power data result for the requested [`crate::requests::PowerDataInterval`].
 #[derive(Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 pub struct PowerDataResult {
@@ -36,8 +36,8 @@ impl PowerDataResult {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
 pub struct PowerDataIntervalResult {
-    /// Date and time of this interval in UTC.
-    pub date_time: DateTime<Utc>,
+    /// Start date and time of this interval in UTC.
+    pub start_date_time: DateTime<Utc>,
     /// Power in Watts (W). `None` if no data is available for this interval.
     pub power: Option<u64>,
 }
@@ -54,8 +54,7 @@ impl PowerDataIntervalResult {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[derive(Debug, Deserialize)]
 pub(crate) struct PowerDataResultRaw {
     #[serde(deserialize_with = "deserialize_power_data")]
     pub data: Vec<Option<u64>>,
@@ -70,7 +69,7 @@ impl TryInto<PowerDataResult> for PowerDataResultRaw {
     type Error = crate::error::Error;
 
     fn try_into(self) -> Result<PowerDataResult, Self::Error> {
-        let mut data = Vec::with_capacity(self.data.len());
+        let mut entries = Vec::with_capacity(self.data.len());
 
         let interval_duration = match self.interval {
             5 => Ok(chrono::Duration::minutes(5)),
@@ -81,20 +80,30 @@ impl TryInto<PowerDataResult> for PowerDataResultRaw {
             )),
         }?;
 
-        let mut date_time = chrono::DateTime::from_timestamp_secs(self.start_timestamp)
-            .context("Invalid start timestamp")?;
+        let mut local_date_time = Local
+            .timestamp_opt(self.start_timestamp, 0)
+            .single()
+            .context("Failed to map start_timestamp to local time")?;
+
+        let start_date_time = local_date_time.to_utc();
+        let end_date_time = Local
+            .timestamp_opt(self.end_timestamp, 0)
+            .single()
+            .context("Failed to map end_timestamp to local time")?
+            .to_utc();
 
         for power in self.data {
-            data.push(PowerDataIntervalResult { date_time, power });
-            date_time += interval_duration;
+            entries.push(PowerDataIntervalResult {
+                start_date_time: local_date_time.to_utc(),
+                power,
+            });
+            local_date_time += interval_duration;
         }
 
         Ok(PowerDataResult {
-            start_date_time: chrono::DateTime::from_timestamp_secs(self.start_timestamp)
-                .context("Invalid start timestamp")?,
-            end_date_time: chrono::DateTime::from_timestamp_secs(self.end_timestamp)
-                .context("Invalid end timestamp")?,
-            entries: data,
+            start_date_time,
+            end_date_time,
+            entries,
             interval_length: self.interval,
         })
     }

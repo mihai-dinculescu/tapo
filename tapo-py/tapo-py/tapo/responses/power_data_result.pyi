@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 class PowerDataResult:
-    """Power data for the requested `PowerDataInterval`."""
+    """Power data result for the requested `PowerDataInterval`."""
 
     start_date_time: datetime
     """Start date and time of this result in UTC."""
@@ -26,8 +26,8 @@ class PowerDataResult:
 class PowerDataIntervalResult:
     """Power data result for a specific interval."""
 
-    date_time: datetime
-    """Date and time of this interval in UTC."""
+    start_date_time: datetime
+    """Start date and time of this interval in UTC."""
 
     power: Optional[int]
     """Power in Watts (W). `None` if no data is available for this interval."""
