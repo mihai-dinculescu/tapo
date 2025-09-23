@@ -1,19 +1,19 @@
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
-use chrono::NaiveDate;
+use chrono::{DateTime, NaiveDate, Utc};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use tapo::PlugEnergyMonitoringHandler;
-use tapo::requests::EnergyDataInterval;
+use tapo::requests::{EnergyDataInterval, PowerDataInterval};
 use tapo::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
-    EnergyDataResult, EnergyUsageResult,
+    EnergyDataResult, EnergyUsageResult, PowerDataResult,
 };
 use tokio::sync::RwLock;
 
 use crate::call_handler_method;
-use crate::requests::PyEnergyDataInterval;
+use crate::requests::{PyEnergyDataInterval, PyPowerDataInterval};
 
 #[derive(Clone)]
 #[pyclass(name = "PlugEnergyMonitoringHandler")]
@@ -125,6 +125,32 @@ impl PyPlugEnergyMonitoringHandler {
         let result = call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::get_energy_data,
+            interval
+        )?;
+        Ok(result)
+    }
+
+    pub async fn get_power_data(
+        &self,
+        interval: PyPowerDataInterval,
+        start_date_time: DateTime<Utc>,
+        end_date_time: DateTime<Utc>,
+    ) -> PyResult<PowerDataResult> {
+        let interval = match interval {
+            PyPowerDataInterval::Every5Minutes => PowerDataInterval::Every5Minutes {
+                start_date_time,
+                end_date_time,
+            },
+            PyPowerDataInterval::Hourly => PowerDataInterval::Hourly {
+                start_date_time,
+                end_date_time,
+            },
+        };
+
+        let handler = self.inner.clone();
+        let result = call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_power_data,
             interval
         )?;
         Ok(result)

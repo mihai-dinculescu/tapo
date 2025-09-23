@@ -1,12 +1,13 @@
 from datetime import datetime
 
-from tapo.requests import EnergyDataInterval
+from tapo.requests import EnergyDataInterval, PowerDataInterval
 from tapo.responses import (
     CurrentPowerResult,
     DeviceInfoPlugEnergyMonitoringResult,
     DeviceUsageEnergyMonitoringResult,
     EnergyDataResult,
     EnergyUsageResult,
+    PowerDataResult,
 )
 
 class PlugEnergyMonitoringHandler:
@@ -83,4 +84,15 @@ class PlugEnergyMonitoringHandler:
 
         Returns:
             EnergyDataResult: Energy data for the requested `EnergyDataInterval`.
+        """
+    async def get_power_data(
+        self,
+        interval: PowerDataInterval,
+        start_date_time: datetime,
+        end_date_time: datetime,
+    ) -> PowerDataResult:
+        """Returns *power data* as `PowerDataResult`.
+
+        Returns:
+            PowerDataResult: Power data for the requested `PowerDataInterval`.
         """

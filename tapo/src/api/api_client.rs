@@ -9,13 +9,13 @@ use serde::de::DeserializeOwned;
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     ControlChildParams, EmptyParams, EnergyDataInterval, GetChildDeviceListParams,
-    GetEnergyDataParams, LightingEffect, MultipleRequestParams, PlayAlarmParams, TapoParams,
-    TapoRequest,
+    GetEnergyDataParams, GetPowerDataParams, LightingEffect, MultipleRequestParams,
+    PlayAlarmParams, PowerDataInterval, TapoParams, TapoRequest,
 };
 use crate::responses::{
     ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
-    EnergyUsageResult, SupportedAlarmTypeListResult, TapoMultipleResponse, TapoResponseExt,
-    TapoResult, validate_response,
+    EnergyUsageResult, PowerDataResult, PowerDataResultRaw, SupportedAlarmTypeListResult,
+    TapoMultipleResponse, TapoResponseExt, TapoResult, validate_response,
 };
 
 use super::discovery::DeviceDiscovery;
@@ -654,7 +654,7 @@ impl ApiClient {
         let request = TapoRequest::GetSupportedAlarmTypeList(TapoParams::new(EmptyParams));
 
         self.get_protocol()?
-            .execute_request::<SupportedAlarmTypeListResult>(request, true)
+            .execute_request(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
@@ -712,7 +712,7 @@ impl ApiClient {
         let request = TapoRequest::GetDeviceUsage(TapoParams::new(EmptyParams));
 
         self.get_protocol()?
-            .execute_request::<R>(request, true)
+            .execute_request(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
@@ -741,7 +741,17 @@ impl ApiClient {
         let request = TapoRequest::GetEnergyUsage(TapoParams::new(EmptyParams));
 
         self.get_protocol()?
-            .execute_request::<EnergyUsageResult>(request, true)
+            .execute_request(request, true)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
+        debug!("Get Current power...");
+        let request = TapoRequest::GetCurrentPower(TapoParams::new(EmptyParams));
+
+        self.get_protocol()?
+            .execute_request(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
@@ -755,19 +765,24 @@ impl ApiClient {
         let request = TapoRequest::GetEnergyData(TapoParams::new(params));
 
         self.get_protocol()?
-            .execute_request::<EnergyDataResult>(request, true)
+            .execute_request(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
-    pub(crate) async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
-        debug!("Get Current power...");
-        let request = TapoRequest::GetCurrentPower(TapoParams::new(EmptyParams));
+    pub(crate) async fn get_power_data(
+        &self,
+        interval: PowerDataInterval,
+    ) -> Result<PowerDataResult, Error> {
+        debug!("Get Power data...");
+        let params = GetPowerDataParams::new(interval);
+        let request = TapoRequest::GetPowerData(TapoParams::new(params));
 
         self.get_protocol()?
-            .execute_request::<CurrentPowerResult>(request, true)
+            .execute_request::<PowerDataResultRaw>(request, true)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+            .map(|result| result.try_into())?
     }
 
     pub(crate) async fn get_child_device_list<R>(&self, start_index: u64) -> Result<R, Error>

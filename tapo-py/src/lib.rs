@@ -17,12 +17,12 @@ use tapo::responses::{
     DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
     DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataResult, EnergyUsageResult,
-    KE100Result, OvercurrentStatus, OverheatStatus, PlugState, PowerProtectionStatus,
-    PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, RgbLightStripState,
-    RgbicLightStripState, S200BLog, S200BResult, S200BRotationParams, Status, T31XResult, T100Log,
-    T100Result, T110Log, T110Result, T300Log, T300Result, TemperatureHumidityRecord,
-    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, UsageByPeriodResult,
-    WaterLeakStatus,
+    KE100Result, OvercurrentStatus, OverheatStatus, PlugState, PowerDataIntervalResult,
+    PowerDataResult, PowerProtectionStatus, PowerStripPlugEnergyMonitoringResult,
+    PowerStripPlugResult, RgbLightStripState, RgbicLightStripState, S200BLog, S200BResult,
+    S200BRotationParams, Status, T31XResult, T100Log, T100Result, T110Log, T110Result, T300Log,
+    T300Result, TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit,
+    TemperatureUnitKE100, UsageByPeriodResult, WaterLeakStatus,
 };
 
 use api::{
@@ -35,6 +35,7 @@ use api::{
 };
 use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyLightingEffect,
+    PyPowerDataInterval,
 };
 use responses::{
     TriggerLogsS200BResult, TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
@@ -75,6 +76,7 @@ fn register_requests(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<LightingEffectType>()?;
     module.add_class::<PyColorLightSetDeviceInfoParams>()?;
     module.add_class::<PyEnergyDataInterval>()?;
+    module.add_class::<PyPowerDataInterval>()?;
 
     // hub requests
     module.add_class::<AlarmRingtone>()?;
@@ -126,6 +128,8 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<EnergyUsageResult>()?;
     module.add_class::<OvercurrentStatus>()?;
     module.add_class::<OverheatStatus>()?;
+    module.add_class::<PowerDataIntervalResult>()?;
+    module.add_class::<PowerDataResult>()?;
     module.add_class::<PowerProtectionStatus>()?;
     module.add_class::<UsageByPeriodResult>()?;
 

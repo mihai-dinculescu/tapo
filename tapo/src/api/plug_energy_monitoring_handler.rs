@@ -1,9 +1,9 @@
 use crate::api::{ApiClient, ApiClientExt};
 use crate::error::Error;
-use crate::requests::{EnergyDataInterval, GenericSetDeviceInfoParams};
+use crate::requests::{EnergyDataInterval, GenericSetDeviceInfoParams, PowerDataInterval};
 use crate::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
-    EnergyDataResult, EnergyUsageResult,
+    EnergyDataResult, EnergyUsageResult, PowerDataResult,
 };
 
 /// Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
@@ -72,6 +72,11 @@ impl PlugEnergyMonitoringHandler {
         self.client.get_energy_usage().await
     }
 
+    /// Returns *current power* as [`CurrentPowerResult`].
+    pub async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
+        self.client.get_current_power().await
+    }
+
     /// Returns *energy data* as [`EnergyDataResult`].
     pub async fn get_energy_data(
         &self,
@@ -80,8 +85,11 @@ impl PlugEnergyMonitoringHandler {
         self.client.get_energy_data(interval).await
     }
 
-    /// Returns *current power* as [`CurrentPowerResult`].
-    pub async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
-        self.client.get_current_power().await
+    /// Returns *power data* as [`PowerDataResult`].
+    pub async fn get_power_data(
+        &self,
+        interval: PowerDataInterval,
+    ) -> Result<PowerDataResult, Error> {
+        self.client.get_power_data(interval).await
     }
 }

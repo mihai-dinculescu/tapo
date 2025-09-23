@@ -2,10 +2,10 @@
 
 import asyncio
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from tapo import ApiClient
-from tapo.requests import EnergyDataInterval
+from tapo.requests import EnergyDataInterval, PowerDataInterval
 
 
 async def main():
@@ -37,25 +37,66 @@ async def main():
     energy_usage = await device.get_energy_usage()
     print(f"Energy usage: {energy_usage.to_dict()}")
 
-    today = datetime.today()
+    today = datetime.now(timezone.utc)
+
+    # Energy data - Hourly interval
+    # `start_date` and `end_date` are an inclusive interval that must not be greater than 8 days.
     energy_data_hourly = await device.get_energy_data(EnergyDataInterval.Hourly, today)
     print(f"Energy data (hourly): {energy_data_hourly.to_dict()}")
 
+    # Energy data - Daily interval
+    # `start_date` must be the first day of a quarter.
     energy_data_daily = await device.get_energy_data(
         EnergyDataInterval.Daily,
         datetime(today.year, get_quarter_start_month(today), 1),
     )
     print(f"Energy data (daily): {energy_data_daily.to_dict()}")
 
+    # Energy data - Monthly interval
+    # `start_date` must be the first day of a year.
     energy_data_monthly = await device.get_energy_data(
         EnergyDataInterval.Monthly,
         datetime(today.year, 1, 1),
     )
     print(f"Energy data (monthly): {energy_data_monthly.to_dict()}")
 
+    # Power data - Every 5 minutes interval
+    # `start_date_time` and `end_date_time` describe an exclusive interval.
+    # If the result would yield more than 144 entries (i.e. 12 hours),
+    # the `end_date_time` will be adjusted to an earlier date and time.
+    power_data_every_5_minutes = await device.get_power_data(
+        PowerDataInterval.Every5Minutes,
+        today - timedelta(hours=12),
+        today,
+    )
+    print(
+        f"Power data (every 5 minutes): "
+        f"Start date time '{power_data_every_5_minutes.start_date_time}', "
+        f"End date time '{power_data_every_5_minutes.end_date_time}', "
+        f"Entries {len(power_data_every_5_minutes.entries)}, "
+        f"First entry: {power_data_every_5_minutes.entries[0].to_dict() if power_data_every_5_minutes.entries else None}"
+    )
+
+    # Power data - Hourly interval
+    # `start_date_time` and `end_date_time` describe an exclusive interval.
+    # If the result would yield more than 144 entries (i.e. 6 days),
+    # the `end_date_time` will be adjusted to an earlier date and time.
+    power_data_hourly = await device.get_power_data(
+        PowerDataInterval.Hourly,
+        today - timedelta(days=3),
+        today,
+    )
+    print(
+        f"Power data (hourly): "
+        f"Start date time '{power_data_hourly.start_date_time}', "
+        f"End date time '{power_data_hourly.end_date_time}', "
+        f"Entries {len(power_data_hourly.entries)}, "
+        f"First entry: {power_data_hourly.entries[0].to_dict() if power_data_hourly.entries else None}"
+    )
+
 
 def get_quarter_start_month(today: datetime) -> int:
-    return 3 * ((today.month - 1) // 3) + 1
+    return ((today.month - 1) // 3) * 3 + 1
 
 
 if __name__ == "__main__":

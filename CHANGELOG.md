@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `PlugEnergyMonitoringHandler`: added `get_power_data` method to retrieve historical power data (every 5 minutes & hourly) for energy-monitoring plugs (P110, P110M, P115). The `PowerDataInterval` enum allows specifying the desired interval.
+
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- `PlugEnergyMonitoringHandler`: added `get_power_data` method to retrieve historical power data (every 5 minutes & hourly) for energy-monitoring plugs (P110, P110M, P115). The `PowerDataInterval` enum allows specifying the desired interval.
 
 ## [Rust v0.8.5][v0.8.5] - 2025-09-18
 
