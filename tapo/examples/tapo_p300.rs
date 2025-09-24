@@ -23,12 +23,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Getting child devices...");
     let child_device_list = power_strip.get_child_device_list().await?;
+    info!("Found {} plugs", child_device_list.len());
 
-    for child in child_device_list {
-        info!(
-            "Found plug with nickname: {}, id: {}, state: {}.",
-            child.nickname, child.device_id, child.device_on,
-        );
+    for (index, child) in child_device_list.into_iter().enumerate() {
+        info!("=== ({}) {} ===", index + 1, child.nickname);
+        info!("Device ID: {}", child.device_id);
+        info!("State: {}", child.device_on);
 
         let plug = power_strip.plug(Plug::ByDeviceId(child.device_id)).await?;
 

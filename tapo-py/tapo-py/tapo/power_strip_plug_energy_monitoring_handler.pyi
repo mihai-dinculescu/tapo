@@ -1,4 +1,14 @@
-from tapo.responses import PowerStripPlugEnergyMonitoringResult
+from datetime import datetime
+
+from tapo.requests import EnergyDataInterval, PowerDataInterval
+from tapo.responses import (
+    CurrentPowerResult,
+    DeviceUsageEnergyMonitoringResult,
+    EnergyDataResult,
+    EnergyUsageResult,
+    PowerDataResult,
+    PowerStripPlugEnergyMonitoringResult,
+)
 
 class PowerStripPlugEnergyMonitoringHandler:
     """Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
@@ -28,4 +38,46 @@ class PowerStripPlugEnergyMonitoringHandler:
 
         Returns:
             dict: Device info as a dictionary.
+        """
+    async def get_current_power(self) -> CurrentPowerResult:
+        """Returns *current power* as `CurrentPowerResult`.
+
+        Returns:
+            CurrentPowerResult: Contains the current power reading of the device.
+        """
+    async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:
+        """Returns *device usage* as `DeviceUsageResult`.
+
+        Returns:
+            DeviceUsageEnergyMonitoringResult:
+            Contains the time usage, the power consumption, and the energy savings of the device.
+        """
+    async def get_energy_usage(self) -> EnergyUsageResult:
+        """Returns *energy usage* as `EnergyUsageResult`.
+
+        Returns:
+            EnergyUsageResult:
+            Contains local time, current power and the energy usage and runtime for today and for the current month.
+        """
+    async def get_energy_data(
+        self,
+        interval: EnergyDataInterval,
+        start_date: datetime,
+        end_date: datetime = None,
+    ) -> EnergyDataResult:
+        """Returns *energy data* as `EnergyDataResult`.
+
+        Returns:
+            EnergyDataResult: Energy data result for the requested `EnergyDataInterval`.
+        """
+    async def get_power_data(
+        self,
+        interval: PowerDataInterval,
+        start_date_time: datetime,
+        end_date_time: datetime,
+    ) -> PowerDataResult:
+        """Returns *power data* as `PowerDataResult`.
+
+        Returns:
+            PowerDataResult: Power data result for the requested `PowerDataInterval`.
         """

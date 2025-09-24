@@ -62,6 +62,11 @@ impl PlugEnergyMonitoringHandler {
         self.client.get_device_info().await
     }
 
+    /// Returns *current power* as [`CurrentPowerResult`].
+    pub async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
+        self.client.get_current_power().await
+    }
+
     /// Returns *device usage* as [`DeviceUsageEnergyMonitoringResult`].
     pub async fn get_device_usage(&self) -> Result<DeviceUsageEnergyMonitoringResult, Error> {
         self.client.get_device_usage().await
@@ -70,11 +75,6 @@ impl PlugEnergyMonitoringHandler {
     /// Returns *energy usage* as [`EnergyUsageResult`].
     pub async fn get_energy_usage(&self) -> Result<EnergyUsageResult, Error> {
         self.client.get_energy_usage().await
-    }
-
-    /// Returns *current power* as [`CurrentPowerResult`].
-    pub async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
-        self.client.get_current_power().await
     }
 
     /// Returns *energy data* as [`EnergyDataResult`].

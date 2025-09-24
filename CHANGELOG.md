@@ -9,6 +9,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `PlugEnergyMonitoringHandler`: added `get_power_data` method to retrieve historical power data (every 5 minutes & hourly) for energy-monitoring plugs (P110, P110M, P115). The `PowerDataInterval` enum allows specifying the desired interval.
+- `PowerStripPlugEnergyMonitoringHandler`: added the following energy monitoring methods: `get_current_power`, `get_device_usage`, `get_energy_usage`, `get_energy_data`, `get_power_data`.
 
 ### Changed
 
@@ -23,6 +24,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `PlugEnergyMonitoringHandler`: added `get_power_data` method to retrieve historical power data (every 5 minutes & hourly) for energy-monitoring plugs (P110, P110M, P115). The `PowerDataInterval` enum allows specifying the desired interval.
+- `PowerStripPlugEnergyMonitoringHandler`: added the following energy monitoring methods: `get_current_power`, `get_device_usage`, `get_energy_usage`, `get_energy_data`, `get_power_data`.
 
 ### Changed
 

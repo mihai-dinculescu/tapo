@@ -54,18 +54,18 @@ class PlugEnergyMonitoringHandler:
         Returns:
             dict: Device info as a dictionary.
         """
+    async def get_current_power(self) -> CurrentPowerResult:
+        """Returns *current power* as `CurrentPowerResult`.
+
+        Returns:
+            CurrentPowerResult: Contains the current power reading of the device.
+        """
     async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:
         """Returns *device usage* as `DeviceUsageResult`.
 
         Returns:
             DeviceUsageEnergyMonitoringResult:
             Contains the time usage, the power consumption, and the energy savings of the device.
-        """
-    async def get_current_power(self) -> CurrentPowerResult:
-        """Returns *current power* as `CurrentPowerResult`.
-
-        Returns:
-            CurrentPowerResult: Contains the current power reading of the device.
         """
     async def get_energy_usage(self) -> EnergyUsageResult:
         """Returns *energy usage* as `EnergyUsageResult`.

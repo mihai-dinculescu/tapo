@@ -17,16 +17,14 @@ async def main():
     device_info = await power_strip.get_device_info()
     print(f"Device info: {device_info.to_dict()}")
 
+    print("Getting child devices...")
     child_device_list = await power_strip.get_child_device_list()
+    print(f"Found {len(child_device_list)} plugs")
 
-    for child in child_device_list:
-        print(
-            "Found plug with nickname: {}, id: {}, state: {}.".format(
-                child.nickname,
-                child.device_id,
-                child.device_on,
-            )
-        )
+    for index, child in enumerate(child_device_list):
+        print(f"=== ({index + 1}) {child.nickname} ===")
+        print(f"Device ID: {child.device_id}")
+        print(f"State: {child.device_on}")
 
         plug = await power_strip.plug(device_id=child.device_id)
 

@@ -1,7 +1,7 @@
 /// P110, P110M and P115 Example
 use std::{env, thread, time::Duration};
 
-use chrono::{Datelike, NaiveDate, Utc};
+use chrono::{Datelike as _, NaiveDate, Utc};
 use log::info;
 use tapo::ApiClient;
 use tapo::requests::{EnergyDataInterval, PowerDataInterval};
@@ -32,11 +32,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let device_info = device.get_device_info().await?;
     info!("Device info: {device_info:?}");
 
-    let device_usage = device.get_device_usage().await?;
-    info!("Device usage: {device_usage:?}");
-
     let current_power = device.get_current_power().await?;
     info!("Current power: {current_power:?}");
+
+    let device_usage = device.get_device_usage().await?;
+    info!("Device usage: {device_usage:?}");
 
     let energy_usage = device.get_energy_usage().await?;
     info!("Energy usage: {energy_usage:?}");

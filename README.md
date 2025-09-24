@@ -77,6 +77,24 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 \* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child device handler.
 
+## Power Strips Child Devices Support
+
+&check; - Rust only\
+&#x2705; - Rust and Python
+
+| Feature<br/><br/>    | P300<br/>P306<br/> | P304M<br/>P316M<br/> |
+| -------------------- | :----------------- | :------------------- |
+| get_current_power    |                    | &#x2705;             |
+| get_device_info \*   | &#x2705;           | &#x2705;             |
+| get_device_info_json | &#x2705;           | &#x2705;             |
+| get_device_usage     |                    | &#x2705;             |
+| get_energy_data      |                    | &#x2705;             |
+| get_energy_usage     |                    | &#x2705;             |
+| get_power_data       |                    | &#x2705;             |
+| off                  | &#x2705;           | &#x2705;             |
+| on                   | &#x2705;           | &#x2705;             |
+
+\* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child device handler.
 
 ## Rust
 

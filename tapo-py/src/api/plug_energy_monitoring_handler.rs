@@ -81,19 +81,19 @@ impl PyPlugEnergyMonitoringHandler {
         Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
-    pub async fn get_device_usage(&self) -> PyResult<DeviceUsageEnergyMonitoringResult> {
-        let handler = self.inner.clone();
-        call_handler_method!(
-            handler.read().await.deref(),
-            PlugEnergyMonitoringHandler::get_device_usage,
-        )
-    }
-
     pub async fn get_current_power(&self) -> PyResult<CurrentPowerResult> {
         let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::get_current_power,
+        )
+    }
+
+    pub async fn get_device_usage(&self) -> PyResult<DeviceUsageEnergyMonitoringResult> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_device_usage,
         )
     }
 
