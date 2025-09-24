@@ -13,7 +13,11 @@ file. This change log follows the conventions of
 ### Changed
 
 - `PlugEnergyMonitoringHandler`: `EnergyDataResult` has been redesigned to provide better ergonomics by attaching a start date time to each interval entry.
-  
+
+### Removed
+
+- `EnergyUsageResult`: the `current_power` field has been removed from the struct because not all energy-monitoring plugs provide this data. Instead, use the `get_current_power` method to retrieve the current power.
+
 ## [Python Unreleased][Unreleased]
 
 ### Added
@@ -23,6 +27,10 @@ file. This change log follows the conventions of
 ### Changed
 
 - `PlugEnergyMonitoringHandler`: `EnergyDataResult` has been redesigned to provide better ergonomics by attaching a start date time to each interval entry.
+
+### Removed
+
+- `EnergyUsageResult`: the `current_power` field has been removed from the class because not all energy-monitoring plugs provide this data. Instead, use the `get_current_power` method to retrieve the current power.
 
 ## [Rust v0.8.5][v0.8.5] - 2025-09-18
 
@@ -328,7 +336,7 @@ This marks the first unified release of the Rust and Python libraries. Moving fo
 ### Fixed
 
 - `ColorLightSetDeviceInfoParams` `hue` field validation has been changed from `between 1 and 360` to `between 0 and 360` to match the device's expected range.
-- Fixed an issue where the `EnergyDataResult's `start_timestamp` and `end_timestamp` did not correctly adjust for timezone offsets.
+- Fixed an issue where the `EnergyDataResult`'s `start_timestamp` and `end_timestamp` did not correctly adjust for timezone offsets.
 - The `chrono` dependency has been updated to `0.4.34` to fix the minimum version requirement.
 
 ### Removed
@@ -340,7 +348,7 @@ This marks the first unified release of the Rust and Python libraries. Moving fo
 ### Fixed
 
 - `ColorLightSetDeviceInfoParams` `hue` field validation has been changed from `between 1 and 360` to `between 0 and 360` to match the device's expected range.
-- Fixed an issue where the `EnergyDataResult's `start_timestamp` and `end_timestamp` did not correctly adjust for timezone offsets.
+- Fixed an issue where the `EnergyDataResult`'s `start_timestamp` and `end_timestamp` did not correctly adjust for timezone offsets.
 - All handlers are now correctly exported and can be imported from the `tapo` module.
 
 ### Removed
@@ -583,11 +591,13 @@ let device = ApiClient::new(tapo_username, tapo_password)?
 ## [v0.6.0] - 2023-05-08
 
 ### Added
+
 - Added support for the L920 and L930 light strips. The highlight is the `tapo::ColorLightStripHandler::set_lighting_effect` function, which supports all the effects that the Tapo app contains alongside user-defined effects.
 - Added support for the L900 light strips.
 - Each supported device now has it's own handler creator.
 
 ### Changed
+
 - `set_*` functions like `tapo::requests::ColorLightSetDeviceInfoParams::set_brightness` now return `Self` instead of `Result<Self, Error>` to allow for better ergonomics. The validations will now run when `tapo::requests::ColorLightSetDeviceInfoParams::send` is called.
 - `tapo::requests::L510SetDeviceInfoParams` has been renamed to `tapo::requests::LightSetDeviceInfoParams` to better reflect its purpose when used for L510, L610, and L900 devices.
 - `tapo::requests::L530SetDeviceInfoParams` has been renamed to `tapo::requests::ColorLightSetDeviceInfoParams` to better reflect its purpose when used for L530, L630, L920 and L930 devices.
@@ -630,15 +640,18 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ## [v0.3.1] - 2023-02-19
 
 ### Added
+
 - `examples/tapo_generic_device_toggle.rs` demonstrates how `device_info` can be used to assess the current status of a generic device and toggle it.
 
 ### Changed
+
 - `on_time` is now optional for the `L510` and `L530` devices because the v2 hardware no longer returns it.
 
 ## [v0.3.0] - 2022-11-20
 
 ### Added
-- The `set` API allows multiple properties to be set in a single request for the *L510* and *L530* devices.
+
+- The `set` API allows multiple properties to be set in a single request for the _L510_ and _L530_ devices.
 
 ### Changed
 

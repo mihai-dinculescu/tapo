@@ -11,8 +11,6 @@ pub struct EnergyUsageResult {
     /// Local time of the device.
     #[serde(deserialize_with = "der_tapo_datetime_format")]
     pub local_time: NaiveDateTime,
-    /// Current power in Milliwatts (mW).
-    pub current_power: u64,
     /// Today runtime in minutes.
     pub today_runtime: u64,
     /// Today energy usage in Watt Hours (Wh).
