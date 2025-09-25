@@ -25,7 +25,7 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 
 ## Supported Devices
 
-See [/SUPPORTED_DEVICES.md](supported_devices) for the supported devices and feature matrix.
+See [/SUPPORTED_DEVICES.md][supported_devices] for the supported devices and feature matrix.
 
 ## Rust
 
