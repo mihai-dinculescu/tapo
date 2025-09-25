@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.8.6][v0.8.6] - 2025-09-25
+
 ### Added
 
 - `PlugEnergyMonitoringHandler`: added `get_power_data` method to retrieve historical power data (every 5 minutes & hourly) for energy-monitoring plugs (P110, P110M, P115). The `PowerDataInterval` enum allows specifying the desired interval.
@@ -19,7 +23,7 @@ file. This change log follows the conventions of
 
 - `EnergyUsageResult`: the `current_power` field has been removed from the struct because not all energy-monitoring plugs provide this data. Instead, use the `get_current_power` method to retrieve the current power.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.8.6][v0.8.6] - 2025-09-25
 
 ### Added
 
@@ -688,6 +692,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.8.6]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.6
 [v0.8.5]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.5
 [v0.8.4]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.4
 [v0.8.3]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.3
