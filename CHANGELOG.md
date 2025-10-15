@@ -8,6 +8,10 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+### Added
+
+- Added support for Python 3.14.
+
 ## [Rust v0.8.6][v0.8.6] - 2025-09-25
 
 ### Added
