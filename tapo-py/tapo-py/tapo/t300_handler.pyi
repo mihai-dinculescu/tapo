@@ -13,6 +13,7 @@ class T300Handler:
         Returns:
             T300Result: Device info of Tapo T300 water sensor.
         """
+
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.
         It contains all the properties returned from the Tapo API.
@@ -20,6 +21,7 @@ class T300Handler:
         Returns:
             dict: Device info as a dictionary.
         """
+
     async def get_trigger_logs(self, page_size: int, start_id: int) -> TriggerLogsT300Result:
         """Returns a list of *trigger logs*.
 

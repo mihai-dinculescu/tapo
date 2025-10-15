@@ -12,12 +12,16 @@ class GenericDeviceHandler:
         """Private constructor.
         It should not be called from outside the tapo library.
         """
+
     async def refresh_session(self) -> None:
         """Refreshes the authentication session."""
+
     async def on(self) -> None:
         """Turns *on* the device."""
+
     async def off(self) -> None:
         """Turns *off* the device."""
+
     async def get_device_info(self) -> DeviceInfoGenericResult:
         """Returns *device info* as `DeviceInfoGenericResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
@@ -27,6 +31,7 @@ class GenericDeviceHandler:
         Returns:
             DeviceInfoGenericResult: Device info of a Generic Tapo device.
         """
+
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.
         It contains all the properties returned from the Tapo API.

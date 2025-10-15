@@ -13,6 +13,7 @@ class S200BHandler:
         Returns:
             S200BResult: Device info of Tapo S200B button switch.
         """
+
     async def get_device_info_json(self) -> dict:
         """Returns *device info* as json.
         It contains all the properties returned from the Tapo API.
@@ -20,6 +21,7 @@ class S200BHandler:
         Returns:
             dict: Device info as a dictionary.
         """
+
     async def get_trigger_logs(self, page_size: int, start_id: int) -> TriggerLogsS200BResult:
         """Returns a list of *trigger logs*.
 
