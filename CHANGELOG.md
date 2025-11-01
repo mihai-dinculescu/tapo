@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.8.7][v0.8.7] - 2025-11-01
+
 ### Added
 - `HubHandler`: added the `device_reboot` and `device_reset` methods.
 - `PowerStripEnergyMonitoringHandler`: added the `device_reboot` and `device_reset` methods.
@@ -21,7 +25,7 @@ file. This change log follows the conventions of
 
 - `device_reset`: now requires the `DeviceManagementExt` trait to be in scope. The newly added `device_reboot` method also requires this trait.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.8.7][v0.8.7] - 2025-11-01
 
 ### Added
 
@@ -720,6 +724,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.8.7]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.7
 [v0.8.6]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.6
 [v0.8.5]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.5
 [v0.8.4]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.4
