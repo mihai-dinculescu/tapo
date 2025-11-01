@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use tapo::requests::Color;
 use tapo::responses::{DeviceInfoRgbLightStripResult, DeviceUsageEnergyMonitoringResult};
-use tapo::{HandlerExt, RgbLightStripHandler};
+use tapo::{DeviceManagementExt as _, HandlerExt, RgbLightStripHandler};
 use tokio::sync::RwLock;
 
 use crate::api::PyHandlerExt;
@@ -53,11 +53,20 @@ impl PyRgbLightStripHandler {
         call_handler_method!(handler.read().await.deref(), RgbLightStripHandler::off)
     }
 
+    pub async fn device_reboot(&self, delay_s: u16) -> PyResult<()> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            RgbLightStripHandler::device_reboot,
+            delay_s
+        )
+    }
+
     pub async fn device_reset(&self) -> PyResult<()> {
         let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
-            RgbLightStripHandler::device_reset
+            RgbLightStripHandler::device_reset,
         )
     }
 

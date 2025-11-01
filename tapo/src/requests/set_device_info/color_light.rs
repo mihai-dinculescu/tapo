@@ -99,7 +99,7 @@ impl ColorLightSetDeviceInfoParams {
     pub async fn send(self, handler: &impl HandlerExt) -> Result<(), Error> {
         self.validate()?;
         let json = serde_json::to_value(&self)?;
-        handler.get_client().set_device_info(json).await
+        handler.get_client().await.set_device_info(json).await
     }
 }
 
@@ -177,6 +177,7 @@ impl ColorLightSetDeviceInfoParams {
 #[cfg(test)]
 mod tests {
     use async_trait::async_trait;
+    use tokio::sync::{RwLock, RwLockReadGuard};
 
     use crate::ApiClientExt;
 
@@ -190,14 +191,27 @@ mod tests {
         async fn set_device_info(&self, _: serde_json::Value) -> Result<(), Error> {
             Ok(())
         }
+        async fn device_reboot(&self, _: u16) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn device_reset(&self) -> Result<(), Error> {
+            unimplemented!()
+        }
     }
 
     #[derive(Debug)]
     struct MockHandler;
 
+    #[async_trait]
     impl HandlerExt for MockHandler {
-        fn get_client(&self) -> &dyn ApiClientExt {
-            &MockApiClient
+        async fn get_client(&self) -> RwLockReadGuard<'_, dyn ApiClientExt> {
+            static CLIENT: once_cell::sync::Lazy<RwLock<MockApiClient>> =
+                once_cell::sync::Lazy::new(|| RwLock::new(MockApiClient));
+
+            RwLockReadGuard::map(
+                CLIENT.read().await,
+                |client: &MockApiClient| -> &dyn ApiClientExt { client },
+            )
         }
     }
 

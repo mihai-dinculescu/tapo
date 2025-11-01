@@ -6,11 +6,35 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+- `HubHandler`: added the `device_reboot` and `device_reset` methods.
+- `PowerStripEnergyMonitoringHandler`: added the `device_reboot` and `device_reset` methods.
+- `PowerStripHandler`: added the `device_reboot` and `device_reset` methods.
+- `ColorLightHandler`: added the `device_reboot` method.
+- `LightHandler`: added the `device_reboot` method.
+- `PlugEnergyMonitoringHandler`: added the `device_reboot` method.
+- `PlugHandler`: added the `device_reboot` method.
+- `RgbicLightStripHandler`: added the `device_reboot` method.
+- `RgbLightStripHandler`: added the `device_reboot` method.
+
+### Changed
+
+- `device_reset`: now requires the `DeviceManagementExt` trait to be in scope. The newly added `device_reboot` method also requires this trait.
+
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
-- Added support for Python 3.14.
+- `tapo`: added support for Python 3.14.
+- `HubHandler`: added the `device_reboot` and `device_reset` methods.
+- `PowerStripEnergyMonitoringHandler`: added the `device_reboot` and `device_reset` methods.
+- `PowerStripHandler`: added the `device_reboot` and `device_reset` methods.
+- `ColorLightHandler`: added the `device_reboot` method.
+- `LightHandler`: added the `device_reboot` method.
+- `PlugEnergyMonitoringHandler`: added the `device_reboot` method.
+- `PlugHandler`: added the `device_reboot` method.
+- `RgbicLightStripHandler`: added the `device_reboot` method.
+- `RgbLightStripHandler`: added the `device_reboot` method.
 
 ## [Rust v0.8.6][v0.8.6] - 2025-09-25
 

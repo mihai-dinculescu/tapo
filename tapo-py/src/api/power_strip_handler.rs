@@ -4,7 +4,7 @@ use std::sync::Arc;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use tapo::responses::DeviceInfoPowerStripResult;
-use tapo::{Error, Plug, PowerStripHandler};
+use tapo::{DeviceManagementExt as _, Error, Plug, PowerStripHandler};
 use tokio::sync::RwLock;
 
 use crate::api::PyPowerStripPlugHandler;
@@ -50,6 +50,23 @@ impl PyPowerStripHandler {
             handler.write().await.deref_mut(),
             PowerStripHandler::refresh_session,
             discard_result
+        )
+    }
+
+    pub async fn device_reboot(&self, delay_s: u16) -> PyResult<()> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PowerStripHandler::device_reboot,
+            delay_s
+        )
+    }
+
+    pub async fn device_reset(&self) -> PyResult<()> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PowerStripHandler::device_reset,
         )
     }
 

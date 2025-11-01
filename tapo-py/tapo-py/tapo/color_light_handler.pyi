@@ -1,7 +1,8 @@
+from tapo.device_management_ext import DeviceManagementExt
 from tapo.requests import Color, ColorLightSetDeviceInfoParams
 from tapo.responses import DeviceInfoColorLightResult, DeviceUsageResult
 
-class ColorLightHandler:
+class ColorLightHandler(DeviceManagementExt):
     """Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
     [L535](https://www.tapo.com/en/search/?q=L535) and
     [L630](https://www.tapo.com/en/search/?q=L630) devices.
@@ -20,18 +21,6 @@ class ColorLightHandler:
 
     async def off(self) -> None:
         """Turns *off* the device."""
-
-    async def device_reset(self) -> None:
-        """*Hardware resets* the device.
-
-        Warning:
-            This action will reset the device to its factory settings.
-            The connection to the Wi-Fi network and the Tapo app will be lost,
-            and the device will need to be reconfigured.
-
-        This feature is especially useful when the device is difficult to access
-        and requires reconfiguration.
-        """
 
     async def get_device_info(self) -> DeviceInfoColorLightResult:
         """Returns *device info* as `DeviceInfoColorLightResult`.

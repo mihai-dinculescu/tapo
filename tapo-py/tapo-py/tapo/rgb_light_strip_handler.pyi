@@ -1,7 +1,8 @@
+from tapo.device_management_ext import DeviceManagementExt
 from tapo.requests import Color, ColorLightSetDeviceInfoParams
 from tapo.responses import DeviceInfoRgbLightStripResult, DeviceUsageResult
 
-class RgbLightStripHandler:
+class RgbLightStripHandler(DeviceManagementExt):
     """Handler for the [L900](https://www.tapo.com/en/search/?q=L900) devices."""
 
     def __init__(self, handler: object):
@@ -17,18 +18,6 @@ class RgbLightStripHandler:
 
     async def off(self) -> None:
         """Turns *off* the device."""
-
-    async def device_reset(self) -> None:
-        """*Hardware resets* the device.
-
-        Warning:
-            This action will reset the device to its factory settings.
-            The connection to the Wi-Fi network and the Tapo app will be lost,
-            and the device will need to be reconfigured.
-
-        This feature is especially useful when the device is difficult to access
-        and requires reconfiguration.
-        """
 
     async def get_device_info(self) -> DeviceInfoRgbLightStripResult:
         """Returns *device info* as `DeviceInfoRgbLightStripResult`.

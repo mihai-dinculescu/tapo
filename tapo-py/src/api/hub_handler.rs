@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use tapo::requests::{AlarmDuration, AlarmRingtone, AlarmVolume};
 use tapo::responses::{ChildDeviceHubResult, DeviceInfoHubResult};
-use tapo::{Error, HubDevice, HubHandler};
+use tapo::{DeviceManagementExt as _, Error, HubDevice, HubHandler};
 use tokio::sync::RwLock;
 
 use crate::api::{
@@ -53,6 +53,20 @@ impl PyHubHandler {
             HubHandler::refresh_session,
             discard_result
         )
+    }
+
+    pub async fn device_reboot(&self, delay_s: u16) -> PyResult<()> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            HubHandler::device_reboot,
+            delay_s
+        )
+    }
+
+    pub async fn device_reset(&self) -> PyResult<()> {
+        let handler = self.inner.clone();
+        call_handler_method!(handler.read().await.deref(), HubHandler::device_reset)
     }
 
     pub async fn get_device_info(&self) -> PyResult<DeviceInfoHubResult> {

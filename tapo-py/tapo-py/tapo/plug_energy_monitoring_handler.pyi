@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from tapo.device_management_ext import DeviceManagementExt
 from tapo.requests import EnergyDataInterval, PowerDataInterval
 from tapo.responses import (
     CurrentPowerResult,
@@ -10,7 +11,7 @@ from tapo.responses import (
     PowerDataResult,
 )
 
-class PlugEnergyMonitoringHandler:
+class PlugEnergyMonitoringHandler(DeviceManagementExt):
     """Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
     [P110M](https://www.tapo.com/en/search/?q=P110M) and
     [P115](https://www.tapo.com/en/search/?q=P115) devices.
@@ -29,18 +30,6 @@ class PlugEnergyMonitoringHandler:
 
     async def off(self) -> None:
         """Turns *off* the device."""
-
-    async def device_reset(self) -> None:
-        """*Hardware resets* the device.
-
-        Warning:
-            This action will reset the device to its factory settings.
-            The connection to the Wi-Fi network and the Tapo app will be lost,
-            and the device will need to be reconfigured.
-
-        This feature is especially useful when the device is difficult to access
-        and requires reconfiguration.
-        """
 
     async def get_device_info(self) -> DeviceInfoPlugEnergyMonitoringResult:
         """Returns *device info* as `DeviceInfoPlugEnergyMonitoringResult`.

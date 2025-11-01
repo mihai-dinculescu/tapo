@@ -1,6 +1,7 @@
+from tapo.device_management_ext import DeviceManagementExt
 from tapo.responses import DeviceInfoPlugResult, DeviceUsageResult
 
-class PlugHandler:
+class PlugHandler(DeviceManagementExt):
     """Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
     [P105](https://www.tapo.com/en/search/?q=P105) devices.
     """
@@ -18,18 +19,6 @@ class PlugHandler:
 
     async def off(self) -> None:
         """Turns *off* the device."""
-
-    async def device_reset(self) -> None:
-        """*Hardware resets* the device.
-
-        Warning:
-            This action will reset the device to its factory settings.
-            The connection to the Wi-Fi network and the Tapo app will be lost,
-            and the device will need to be reconfigured.
-
-        This feature is especially useful when the device is difficult to access
-        and requires reconfiguration.
-        """
 
     async def get_device_info(self) -> DeviceInfoPlugResult:
         """Returns *device info* as `DeviceInfoPlugResult`.

@@ -4,12 +4,12 @@ use std::sync::Arc;
 use chrono::{DateTime, NaiveDate, Utc};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
-use tapo::PlugEnergyMonitoringHandler;
 use tapo::requests::{EnergyDataInterval, PowerDataInterval};
 use tapo::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
     EnergyDataResult, EnergyUsageResult, PowerDataResult,
 };
+use tapo::{DeviceManagementExt as _, PlugEnergyMonitoringHandler};
 use tokio::sync::RwLock;
 
 use crate::call_handler_method;
@@ -53,6 +53,15 @@ impl PyPlugEnergyMonitoringHandler {
         call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::off
+        )
+    }
+
+    pub async fn device_reboot(&self, delay_s: u16) -> PyResult<()> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::device_reboot,
+            delay_s
         )
     }
 

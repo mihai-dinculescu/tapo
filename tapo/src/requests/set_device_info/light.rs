@@ -1,4 +1,5 @@
 use serde::Serialize;
+use tokio::sync::RwLockReadGuard;
 
 use crate::api::ApiClientExt;
 use crate::error::Error;
@@ -7,7 +8,7 @@ use crate::error::Error;
 #[derive(Debug, Serialize)]
 pub(crate) struct LightSetDeviceInfoParams<'a> {
     #[serde(skip)]
-    client: &'a dyn ApiClientExt,
+    client: RwLockReadGuard<'a, dyn ApiClientExt>,
     #[serde(skip_serializing_if = "Option::is_none")]
     device_on: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -47,7 +48,7 @@ impl LightSetDeviceInfoParams<'_> {
 }
 
 impl<'a> LightSetDeviceInfoParams<'a> {
-    pub(crate) fn new(client: &'a dyn ApiClientExt) -> Self {
+    pub(crate) fn new(client: RwLockReadGuard<'a, dyn ApiClientExt>) -> Self {
         Self {
             client,
             device_on: None,
@@ -79,6 +80,9 @@ impl<'a> LightSetDeviceInfoParams<'a> {
 #[cfg(test)]
 mod tests {
     use async_trait::async_trait;
+    use tokio::sync::RwLock;
+
+    use crate::HandlerExt;
 
     use super::*;
 
@@ -90,11 +94,42 @@ mod tests {
         async fn set_device_info(&self, _: serde_json::Value) -> Result<(), Error> {
             Ok(())
         }
+        async fn device_reboot(&self, _: u16) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn device_reset(&self) -> Result<(), Error> {
+            unimplemented!()
+        }
+    }
+
+    struct MockHandler {
+        client: RwLock<MockApiClient>,
+    }
+
+    impl MockHandler {
+        fn new() -> Self {
+            Self {
+                client: RwLock::new(MockApiClient),
+            }
+        }
+    }
+
+    #[async_trait]
+    impl HandlerExt for MockHandler {
+        async fn get_client(&self) -> RwLockReadGuard<'_, dyn ApiClientExt> {
+            RwLockReadGuard::map(
+                self.client.read().await,
+                |client: &MockApiClient| -> &dyn ApiClientExt { client },
+            )
+        }
     }
 
     #[tokio::test]
     async fn no_property_validation() {
-        let params = LightSetDeviceInfoParams::new(&MockApiClient);
+        let handler = MockHandler::new();
+        let client = handler.get_client().await;
+
+        let params = LightSetDeviceInfoParams::new(client);
         let result = params.send().await;
         assert!(matches!(
             result.err(),
@@ -104,14 +139,18 @@ mod tests {
 
     #[tokio::test]
     async fn brightness_validation() {
-        let params = LightSetDeviceInfoParams::new(&MockApiClient);
+        let handler = MockHandler::new();
+        let client = handler.get_client().await;
+
+        let params = LightSetDeviceInfoParams::new(client);
         let result = params.brightness(0).send().await;
         assert!(matches!(
             result.err(),
             Some(Error::Validation { field, message }) if field == "brightness" && message == "Must be between 1 and 100"
         ));
 
-        let params = LightSetDeviceInfoParams::new(&MockApiClient);
+        let client = handler.get_client().await;
+        let params = LightSetDeviceInfoParams::new(client);
         let result = params.brightness(101).send().await;
         assert!(matches!(
             result.err(),

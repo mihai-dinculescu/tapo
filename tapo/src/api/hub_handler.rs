@@ -1,11 +1,15 @@
+use async_trait::async_trait;
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{RwLock, RwLockReadGuard};
 
-use crate::api::ApiClient;
-use crate::api::{KE100Handler, S200BHandler, T31XHandler, T100Handler, T110Handler, T300Handler};
 use crate::error::Error;
 use crate::requests::{AlarmDuration, AlarmRingtone, AlarmVolume, PlayAlarmParams};
 use crate::responses::{ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoHubResult};
+
+use super::{
+    ApiClient, ApiClientExt, DeviceManagementExt, HandlerExt, KE100Handler, S200BHandler,
+    T31XHandler, T100Handler, T110Handler, T300Handler,
+};
 
 macro_rules! get_device_id {
     ($self:expr, $identifier:expr, $($value:path),+) => {{
@@ -40,10 +44,8 @@ pub struct HubHandler {
 
 /// Hub handler methods.
 impl HubHandler {
-    pub(crate) fn new(client: ApiClient) -> Self {
-        Self {
-            client: Arc::new(RwLock::new(client)),
-        }
+    pub(crate) fn new(client: Arc<RwLock<ApiClient>>) -> Self {
+        Self { client }
     }
 
     /// Refreshes the authentication session.
@@ -359,6 +361,18 @@ impl HubHandler {
         self.t310(identifier).await
     }
 }
+
+#[async_trait]
+impl HandlerExt for HubHandler {
+    async fn get_client(&self) -> RwLockReadGuard<'_, dyn ApiClientExt> {
+        RwLockReadGuard::map(
+            self.client.read().await,
+            |client: &ApiClient| -> &dyn ApiClientExt { client },
+        )
+    }
+}
+
+impl DeviceManagementExt for HubHandler {}
 
 /// Hub Device.
 pub enum HubDevice {

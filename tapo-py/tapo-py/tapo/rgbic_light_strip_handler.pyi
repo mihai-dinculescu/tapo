@@ -1,9 +1,10 @@
 from typing import Union
 
+from tapo.device_management_ext import DeviceManagementExt
 from tapo.requests import Color, ColorLightSetDeviceInfoParams, LightingEffect, LightingEffectPreset
 from tapo.responses import DeviceInfoRgbicLightStripResult, DeviceUsageResult
 
-class RgbicLightStripHandler:
+class RgbicLightStripHandler(DeviceManagementExt):
     """Handler for the [L920](https://www.tapo.com/en/search/?q=L920) and
     [L930](https://www.tapo.com/en/search/?q=L930) devices.
     """
@@ -21,18 +22,6 @@ class RgbicLightStripHandler:
 
     async def off(self) -> None:
         """Turns *off* the device."""
-
-    async def device_reset(self) -> None:
-        """*Hardware resets* the device.
-
-        Warning:
-            This action will reset the device to its factory settings.
-            The connection to the Wi-Fi network and the Tapo app will be lost,
-            and the device will need to be reconfigured.
-
-        This feature is especially useful when the device is difficult to access
-        and requires reconfiguration.
-        """
 
     async def get_device_info(self) -> DeviceInfoRgbicLightStripResult:
         """Returns *device info* as `DeviceInfoRgbicLightStripResult`.

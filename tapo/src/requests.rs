@@ -1,6 +1,7 @@
 //! Tapo request objects.
 
 mod control_child;
+mod device_reboot;
 mod energy_data_interval;
 mod get_child_device_list;
 mod get_energy_data;
@@ -22,6 +23,7 @@ pub use power_data_interval::*;
 pub use set_device_info::*;
 
 pub(crate) use control_child::*;
+pub(crate) use device_reboot::*;
 pub(crate) use get_child_device_list::*;
 pub(crate) use get_energy_data::*;
 pub(crate) use get_power_data::*;

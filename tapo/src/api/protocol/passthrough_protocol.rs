@@ -72,7 +72,7 @@ impl TapoProtocolExt for PassthroughProtocol {
                 session
                     .token
                     .as_ref()
-                    .ok_or_else(|| anyhow::anyhow!("Token shouldn not be None"))?
+                    .ok_or_else(|| anyhow::anyhow!("Token should not be None"))?
             )
         } else {
             session.url.clone()

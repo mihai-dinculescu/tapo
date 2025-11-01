@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use tapo::requests::Color;
 use tapo::responses::{DeviceInfoColorLightResult, DeviceUsageEnergyMonitoringResult};
-use tapo::{ColorLightHandler, HandlerExt};
+use tapo::{ColorLightHandler, DeviceManagementExt as _, HandlerExt};
 use tokio::sync::RwLock;
 
 use crate::api::PyHandlerExt;
@@ -53,11 +53,20 @@ impl PyColorLightHandler {
         call_handler_method!(handler.read().await.deref(), ColorLightHandler::off)
     }
 
+    pub async fn device_reboot(&self, delay_s: u16) -> PyResult<()> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            ColorLightHandler::device_reboot,
+            delay_s
+        )
+    }
+
     pub async fn device_reset(&self) -> PyResult<()> {
         let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
-            ColorLightHandler::device_reset
+            ColorLightHandler::device_reset,
         )
     }
 

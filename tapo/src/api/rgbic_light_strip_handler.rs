@@ -1,24 +1,29 @@
+use std::sync::Arc;
+
+use async_trait::async_trait;
+use tokio::sync::{RwLock, RwLockReadGuard};
+
 use crate::error::Error;
 use crate::requests::{Color, ColorLightSetDeviceInfoParams, LightingEffect};
 use crate::responses::{DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult};
 
-use super::{ApiClient, ApiClientExt, HandlerExt};
+use super::{ApiClient, ApiClientExt, DeviceManagementExt, HandlerExt};
 
 /// Handler for the [L920](https://www.tapo.com/en/search/?q=L920) and
 /// [L930](https://www.tapo.com/en/search/?q=L930) devices.
 #[derive(Debug)]
 pub struct RgbicLightStripHandler {
-    client: ApiClient,
+    client: Arc<RwLock<ApiClient>>,
 }
 
 impl RgbicLightStripHandler {
-    pub(crate) fn new(client: ApiClient) -> Self {
+    pub(crate) fn new(client: Arc<RwLock<ApiClient>>) -> Self {
         Self { client }
     }
 
     /// Refreshes the authentication session.
     pub async fn refresh_session(&mut self) -> Result<&mut Self, Error> {
-        self.client.refresh_session().await?;
+        self.client.write().await.refresh_session().await?;
         Ok(self)
     }
 
@@ -32,34 +37,22 @@ impl RgbicLightStripHandler {
         ColorLightSetDeviceInfoParams::new().off().send(self).await
     }
 
-    /// *Hardware resets* the device.
-    ///
-    /// **Warning**: This action will reset the device to its factory settings.
-    /// The connection to the Wi-Fi network and the Tapo app will be lost,
-    /// and the device will need to be reconfigured.
-    ///
-    /// This feature is especially useful when the device is difficult to access
-    /// and requires reconfiguration.
-    pub async fn device_reset(&self) -> Result<(), Error> {
-        self.client.device_reset().await
-    }
-
     /// Returns *device info* as [`DeviceInfoRgbicLightStripResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present, try [`RgbicLightStripHandler::get_device_info_json`].
     pub async fn get_device_info(&self) -> Result<DeviceInfoRgbicLightStripResult, Error> {
-        self.client.get_device_info().await
+        self.client.read().await.get_device_info().await
     }
 
     /// Returns *device info* as [`serde_json::Value`].
     /// It contains all the properties returned from the Tapo API.
     pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
-        self.client.get_device_info().await
+        self.client.read().await.get_device_info().await
     }
 
     /// Returns *device usage* as [`DeviceUsageEnergyMonitoringResult`].
     pub async fn get_device_usage(&self) -> Result<DeviceUsageEnergyMonitoringResult, Error> {
-        self.client.get_device_usage().await
+        self.client.read().await.get_device_usage().await
     }
 
     /// Returns a [`ColorLightSetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
@@ -152,13 +145,21 @@ impl RgbicLightStripHandler {
         lighting_effect: impl Into<LightingEffect>,
     ) -> Result<(), Error> {
         self.client
+            .read()
+            .await
             .set_lighting_effect(lighting_effect.into())
             .await
     }
 }
 
+#[async_trait]
 impl HandlerExt for RgbicLightStripHandler {
-    fn get_client(&self) -> &dyn ApiClientExt {
-        &self.client
+    async fn get_client(&self) -> RwLockReadGuard<'_, dyn ApiClientExt> {
+        RwLockReadGuard::map(
+            self.client.read().await,
+            |client: &ApiClient| -> &dyn ApiClientExt { client },
+        )
     }
 }
+
+impl DeviceManagementExt for RgbicLightStripHandler {}

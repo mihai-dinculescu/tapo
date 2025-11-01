@@ -1,9 +1,10 @@
 from typing import List, Optional
 
 from tapo import PowerStripPlugEnergyMonitoringHandler
+from tapo.device_management_ext import DeviceManagementExt
 from tapo.responses import DeviceInfoPowerStripResult, PowerStripPlugEnergyMonitoringResult
 
-class PowerStripEnergyMonitoringHandler:
+class PowerStripEnergyMonitoringHandler(DeviceManagementExt):
     """Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
     [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
     """

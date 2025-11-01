@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
-use tokio::sync::RwLock;
+use async_trait::async_trait;
+use tokio::sync::{RwLock, RwLockReadGuard};
 
 use crate::error::Error;
 use crate::responses::{
@@ -8,7 +9,10 @@ use crate::responses::{
     PowerStripPlugEnergyMonitoringResult,
 };
 
-use super::{ApiClient, Plug, PowerStripPlugEnergyMonitoringHandler};
+use super::{
+    ApiClient, ApiClientExt, DeviceManagementExt, HandlerExt, Plug,
+    PowerStripPlugEnergyMonitoringHandler,
+};
 
 /// Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
 /// [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
@@ -18,10 +22,8 @@ pub struct PowerStripEnergyMonitoringHandler {
 }
 
 impl PowerStripEnergyMonitoringHandler {
-    pub(crate) fn new(client: ApiClient) -> Self {
-        Self {
-            client: Arc::new(RwLock::new(client)),
-        }
+    pub(crate) fn new(client: Arc<RwLock<ApiClient>>) -> Self {
+        Self { client }
     }
 
     /// Refreshes the authentication session.
@@ -135,3 +137,15 @@ impl PowerStripEnergyMonitoringHandler {
         ))
     }
 }
+
+#[async_trait]
+impl HandlerExt for PowerStripEnergyMonitoringHandler {
+    async fn get_client(&self) -> RwLockReadGuard<'_, dyn ApiClientExt> {
+        RwLockReadGuard::map(
+            self.client.read().await,
+            |client: &ApiClient| -> &dyn ApiClientExt { client },
+        )
+    }
+}
+
+impl DeviceManagementExt for PowerStripEnergyMonitoringHandler {}
