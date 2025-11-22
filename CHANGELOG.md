@@ -8,6 +8,10 @@ file. This change log follows the conventions of
 
 ## [Python Unreleased][Unreleased]
 
+### Removed
+
+- Dropped support for Python 3.9 and 3.10 (both no longer supported upstream). The minimum required version is now Python 3.11.
+
 ## [Rust v0.8.7][v0.8.7] - 2025-11-01
 
 ### Added
