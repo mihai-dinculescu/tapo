@@ -2,6 +2,23 @@
 #[derive(thiserror::Error, Debug)]
 #[non_exhaustive]
 pub enum TapoResponseError {
+    /// Unexpected empty result.
+    #[error("Unexpected empty result")]
+    EmptyResult,
+    /// Forbidden access.
+    #[error("Forbidden: code {code}, description {description}")]
+    Forbidden {
+        /// Error code.
+        code: String,
+        /// Error description.
+        description: String,
+    },
+    /// Parameters were invalid.
+    #[error("Invalid parameters")]
+    InvalidParameters,
+    /// Invalid public key.
+    #[error("Invalid public key")]
+    InvalidPublicKey,
     /// Invalid request.
     #[error("Invalid request")]
     InvalidRequest,
@@ -11,21 +28,17 @@ pub enum TapoResponseError {
     /// Malformed request.
     #[error("Malformed request")]
     MalformedRequest,
-    /// Parameters were invalid
-    #[error("Invalid parameters")]
-    InvalidParameters,
-    /// Invalid public key.
-    #[error("Invalid public key")]
-    InvalidPublicKey,
-    /// The credentials provided were invalid.
-    #[error("{0}")]
-    InvalidCredentials(String),
     /// Session timeout.
     #[error("Session timeout")]
     SessionTimeout,
-    /// Unexpected empty result.
-    #[error("Unexpected empty result")]
-    EmptyResult,
+    /// Unauthorized access.
+    #[error("Unauthorized: code {code}, description {description}")]
+    Unauthorized {
+        /// Error code.
+        code: String,
+        /// Error description.
+        description: String,
+    },
     /// Unknown Error. This is a catch-all for errors that don't fit into the other categories.
     /// In time, some of these might be added as their own variants.
     #[error("Unknown error: {0}")]

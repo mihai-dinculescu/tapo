@@ -6,7 +6,23 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `TapoResponseError`: added `Forbidden` variant to represent authentication failures when Third-Party Compatibility is disabled in the Tapo app.
+
+### Changed
+
+- `TapoResponseError`: renamed variant `InvalidCredentials` to `Unauthorized` and updated the variant to include `code` and `description` for improved error context.
+
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- `Tapo` Exception: added `Forbidden` variant to represent authentication failures when Third-Party Compatibility is disabled in the Tapo app.
+
+### Changed
+
+- `Tapo` Exception: renamed variant `InvalidCredentials` to `Unauthorized` and updated the variant to include `code` and `description` for improved error context.
 
 ### Removed
 
