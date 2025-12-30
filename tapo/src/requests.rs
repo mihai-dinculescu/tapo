@@ -13,6 +13,7 @@ mod multiple_request;
 mod play_alarm;
 mod power_data_interval;
 mod secure_passthrough;
+mod segment_effect_rule;
 mod set_device_info;
 mod tapo_request;
 
@@ -20,6 +21,7 @@ pub use crate::responses::TemperatureUnitKE100;
 pub use energy_data_interval::*;
 pub use play_alarm::*;
 pub use power_data_interval::*;
+pub use segment_effect_rule::*;
 pub use set_device_info::*;
 
 pub(crate) use control_child::*;
