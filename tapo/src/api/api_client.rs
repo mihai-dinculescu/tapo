@@ -12,7 +12,7 @@ use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     ControlChildParams, DeviceRebootParams, EmptyParams, EnergyDataInterval,
     GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams, LightingEffect,
-    MultipleRequestParams, PlayAlarmParams, PowerDataInterval, SegmentEffectRuleParams, TapoParams,
+    MultipleRequestParams, PlayAlarmParams, PowerDataInterval, SegmentEffect, TapoParams,
     TapoRequest,
 };
 use crate::responses::{
@@ -740,14 +740,14 @@ impl ApiClient {
         Ok(())
     }
 
-    pub(crate) async fn apply_segment_effect_rule(
+    pub(crate) async fn set_segment_effect(
         &self,
-        segment_effect_rule: SegmentEffectRuleParams,
+        segment_effect: SegmentEffect,
     ) -> Result<(), Error> {
-        debug!("Segment effect rule will change to: {segment_effect_rule:?}");
+        debug!("Segment effect will change to: {segment_effect:?}");
 
         let request = TapoRequest::ApplySegmentEffectRule(Box::new(
-            TapoParams::new(segment_effect_rule)
+            TapoParams::new(segment_effect)
                 .set_request_time_mils()?
                 .set_terminal_uuid(TERMINAL_UUID),
         ));

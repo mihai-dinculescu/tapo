@@ -4,9 +4,7 @@ use async_trait::async_trait;
 use tokio::sync::{RwLock, RwLockReadGuard};
 
 use crate::error::Error;
-use crate::requests::{
-    Color, ColorLightSetDeviceInfoParams, LightingEffect, SegmentEffectRuleParams,
-};
+use crate::requests::{Color, ColorLightSetDeviceInfoParams, LightingEffect, SegmentEffect};
 use crate::responses::{DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult};
 
 use super::{ApiClient, ApiClientExt, DeviceManagementExt, HandlerExt};
@@ -153,23 +151,22 @@ impl RgbicLightStripHandler {
             .await
     }
 
-    /// Applies a segment effect rule and turns *on* the device.
+    /// Sets a segment effect and turns *on* the device.
     ///
     /// This is used for app-defined RGBIC strip effects that are not represented by
     /// [`LightingEffect`] (for example, "circulating" or "breathe" segment effects).
     ///
     /// # Arguments
     ///
-    /// * `segment_effect_rule` - the [`SegmentEffectRuleParams`] defining the segment effect rule
-    pub async fn apply_segment_effect_rule(
+    /// * `segment_effect` - a [`crate::requests::SegmentEffectPreset`] or a custom [`SegmentEffect`]
+    pub async fn set_segment_effect(
         &self,
-        segment_effect_rule: SegmentEffectRuleParams,
+        segment_effect: impl Into<SegmentEffect>,
     ) -> Result<(), Error> {
-        self.client
-            .read()
-            .await
-            .apply_segment_effect_rule(segment_effect_rule)
-            .await
+        let segment_effect = segment_effect.into();
+        segment_effect.validate()?;
+
+        self.client.read().await.set_segment_effect(segment_effect).await
     }
 }
 
