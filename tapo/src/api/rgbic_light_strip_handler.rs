@@ -166,7 +166,11 @@ impl RgbicLightStripHandler {
         let segment_effect = segment_effect.into();
         segment_effect.validate()?;
 
-        self.client.read().await.set_segment_effect(segment_effect).await
+        self.client
+            .read()
+            .await
+            .set_segment_effect(segment_effect)
+            .await
     }
 }
 

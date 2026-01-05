@@ -299,7 +299,12 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("birthday")
             .with_id("TapoStrip_6UV91PSxvC1LRPXIibdcuJ")
             .with_brightness(50)
-            .with_display_colors(vec![[0, 87, 100, 0], [298, 58, 100, 0], [182, 94, 100, 0], [135, 80, 100, 0]])
+            .with_display_colors(vec![
+                [0, 87, 100, 0],
+                [298, 58, 100, 0],
+                [182, 94, 100, 0],
+                [135, 80, 100, 0],
+            ])
     }
     fn blue(self) -> SegmentEffect {
         SegmentEffect::preset("blue")
@@ -335,7 +340,12 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("dancing")
             .with_id("TapoStrip_5Tt1eZzXRdj4YWGgGdqK3y")
             .with_brightness(50)
-            .with_display_colors(vec![[298, 58, 100, 0], [20, 87, 100, 0], [48, 87, 100, 0], [192, 78, 100, 0]])
+            .with_display_colors(vec![
+                [298, 58, 100, 0],
+                [20, 87, 100, 0],
+                [48, 87, 100, 0],
+                [192, 78, 100, 0],
+            ])
     }
     fn dating(self) -> SegmentEffect {
         SegmentEffect::preset("dating")
@@ -347,19 +357,34 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("disco")
             .with_id("TapoStrip_5pAN2kMxzsh8HpsBpfwRXP")
             .with_brightness(50)
-            .with_display_colors(vec![[20, 87, 100, 0], [35, 8, 100, 0], [298, 58, 100, 0], [192, 78, 100, 0]])
+            .with_display_colors(vec![
+                [20, 87, 100, 0],
+                [35, 8, 100, 0],
+                [298, 58, 100, 0],
+                [192, 78, 100, 0],
+            ])
     }
     fn dreamland(self) -> SegmentEffect {
         SegmentEffect::preset("dreamland")
             .with_id("TapoStrip_4wHSAFyVTCtgxSw0wUeXGV")
             .with_brightness(50)
-            .with_display_colors(vec![[298, 58, 100, 0], [48, 87, 100, 0], [216, 49, 100, 0], [182, 94, 100, 0]])
+            .with_display_colors(vec![
+                [298, 58, 100, 0],
+                [48, 87, 100, 0],
+                [216, 49, 100, 0],
+                [182, 94, 100, 0],
+            ])
     }
     fn electro_dance(self) -> SegmentEffect {
         SegmentEffect::preset("electro_dance")
             .with_id("TapoStrip_2s22PUbeRbRROnSuJTw8uN")
             .with_brightness(50)
-            .with_display_colors(vec![[20, 87, 100, 0], [132, 67, 100, 0], [298, 58, 100, 0], [51, 58, 100, 0]])
+            .with_display_colors(vec![
+                [20, 87, 100, 0],
+                [132, 67, 100, 0],
+                [298, 58, 100, 0],
+                [51, 58, 100, 0],
+            ])
     }
     fn energetic(self) -> SegmentEffect {
         SegmentEffect::preset("energetic")
@@ -371,43 +396,78 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("excited")
             .with_id("TapoStrip_4CVvw7fPwbDgpjdyTdwSir")
             .with_brightness(50)
-            .with_display_colors(vec![[298, 58, 100, 0], [48, 87, 100, 0], [182, 94, 100, 0], [135, 80, 100, 0]])
+            .with_display_colors(vec![
+                [298, 58, 100, 0],
+                [48, 87, 100, 0],
+                [182, 94, 100, 0],
+                [135, 80, 100, 0],
+            ])
     }
     fn fall(self) -> SegmentEffect {
         SegmentEffect::preset("fall")
             .with_id("TapoStrip_4g6E1iZQyB2HGa8kIPULRk")
             .with_brightness(50)
-            .with_display_colors(vec![[44, 86, 100, 0], [20, 87, 100, 0], [20, 87, 100, 0], [307, 64, 100, 0]])
+            .with_display_colors(vec![
+                [44, 86, 100, 0],
+                [20, 87, 100, 0],
+                [20, 87, 100, 0],
+                [307, 64, 100, 0],
+            ])
     }
     fn family(self) -> SegmentEffect {
         SegmentEffect::preset("family")
             .with_id("TapoStrip_4mCB0GdvVxYQUK6rK3Ny0w")
             .with_brightness(50)
-            .with_display_colors(vec![[20, 87, 100, 0], [298, 58, 100, 0], [298, 58, 100, 0], [216, 46, 100, 0]])
+            .with_display_colors(vec![
+                [20, 87, 100, 0],
+                [298, 58, 100, 0],
+                [298, 58, 100, 0],
+                [216, 46, 100, 0],
+            ])
     }
     fn fireworks(self) -> SegmentEffect {
         SegmentEffect::preset("fireworks")
             .with_id("TapoStrip_0xZnAlXp2sYlXpPGsfOguo")
             .with_brightness(50)
-            .with_display_colors(vec![[20, 87, 100, 0], [192, 78, 100, 0], [298, 58, 100, 0], [216, 46, 100, 0]])
+            .with_display_colors(vec![
+                [20, 87, 100, 0],
+                [192, 78, 100, 0],
+                [298, 58, 100, 0],
+                [216, 46, 100, 0],
+            ])
     }
     fn flower_field(self) -> SegmentEffect {
         SegmentEffect::preset("flower_field")
             .with_id("TapoStrip_5PNM7bkM9AsT8RTjxQrpPs")
             .with_brightness(50)
-            .with_display_colors(vec![[48, 87, 100, 0], [306, 72, 100, 0], [306, 72, 100, 0], [0, 87, 100, 0]])
+            .with_display_colors(vec![
+                [48, 87, 100, 0],
+                [306, 72, 100, 0],
+                [306, 72, 100, 0],
+                [0, 87, 100, 0],
+            ])
     }
     fn forest(self) -> SegmentEffect {
         SegmentEffect::preset("forest")
             .with_id("TapoStrip_4Q8f2MgkLJOUCVYs4C3S6m")
             .with_brightness(50)
-            .with_display_colors(vec![[182, 96, 100, 0], [135, 100, 100, 0], [135, 100, 100, 0], [48, 87, 100, 0]])
+            .with_display_colors(vec![
+                [182, 96, 100, 0],
+                [135, 100, 100, 0],
+                [135, 100, 100, 0],
+                [48, 87, 100, 0],
+            ])
     }
     fn game(self) -> SegmentEffect {
         SegmentEffect::preset("game")
             .with_id("TapoStrip_4RVTMKq1uKlB3pexBaHgNE")
             .with_brightness(50)
-            .with_display_colors(vec![[135, 80, 100, 0], [48, 87, 100, 0], [48, 87, 100, 0], [199, 94, 100, 0]])
+            .with_display_colors(vec![
+                [135, 80, 100, 0],
+                [48, 87, 100, 0],
+                [48, 87, 100, 0],
+                [199, 94, 100, 0],
+            ])
     }
     fn green(self) -> SegmentEffect {
         SegmentEffect::preset("green")
@@ -425,19 +485,32 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("happy")
             .with_id("TapoStrip_73Svjln3dFbgu75rL1UrKh")
             .with_brightness(50)
-            .with_display_colors(vec![[298, 58, 100, 0], [216, 49, 100, 0], [182, 94, 100, 0]])
+            .with_display_colors(vec![
+                [298, 58, 100, 0],
+                [216, 49, 100, 0],
+                [182, 94, 100, 0],
+            ])
     }
     fn jazz(self) -> SegmentEffect {
         SegmentEffect::preset("jazz")
             .with_id("TapoStrip_47WNHiq9BbSNpE822vU6RP")
             .with_brightness(50)
-            .with_display_colors(vec![[20, 87, 100, 0], [298, 58, 100, 0], [34, 20, 100, 0], [48, 87, 100, 0]])
+            .with_display_colors(vec![
+                [20, 87, 100, 0],
+                [298, 58, 100, 0],
+                [34, 20, 100, 0],
+                [48, 87, 100, 0],
+            ])
     }
     fn lake(self) -> SegmentEffect {
         SegmentEffect::preset("lake")
             .with_id("TapoStrip_03Dhq9acJ7TeK5p55zNPlO")
             .with_brightness(50)
-            .with_display_colors(vec![[188, 100, 100, 0], [188, 100, 100, 0], [49, 61, 100, 0]])
+            .with_display_colors(vec![
+                [188, 100, 100, 0],
+                [188, 100, 100, 0],
+                [49, 61, 100, 0],
+            ])
     }
     fn light_green(self) -> SegmentEffect {
         SegmentEffect::preset("light_green")
@@ -449,7 +522,12 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("lyric")
             .with_id("TapoStrip_7L4YEbUn65YY8Lex6wHj52")
             .with_brightness(50)
-            .with_display_colors(vec![[20, 87, 100, 0], [35, 8, 100, 0], [298, 58, 100, 0], [192, 78, 100, 0]])
+            .with_display_colors(vec![
+                [20, 87, 100, 0],
+                [35, 8, 100, 0],
+                [298, 58, 100, 0],
+                [192, 78, 100, 0],
+            ])
     }
     fn moonlight(self) -> SegmentEffect {
         SegmentEffect::preset("moonlight")
@@ -461,7 +539,11 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("morning")
             .with_id("TapoStrip_7B11L46nAjBGWSOQ2O2VLv")
             .with_brightness(50)
-            .with_display_colors(vec![[182, 94, 100, 0], [182, 94, 100, 0], [182, 94, 100, 0]])
+            .with_display_colors(vec![
+                [182, 94, 100, 0],
+                [182, 94, 100, 0],
+                [182, 94, 100, 0],
+            ])
     }
     fn movie(self) -> SegmentEffect {
         SegmentEffect::preset("movie")
@@ -473,7 +555,12 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("new_year")
             .with_id("TapoStrip_0SPC7sLfhBFFpjPin9EjWi")
             .with_brightness(50)
-            .with_display_colors(vec![[0, 87, 100, 0], [298, 58, 100, 0], [182, 94, 100, 0], [135, 80, 100, 0]])
+            .with_display_colors(vec![
+                [0, 87, 100, 0],
+                [298, 58, 100, 0],
+                [182, 94, 100, 0],
+                [135, 80, 100, 0],
+            ])
     }
     fn night(self) -> SegmentEffect {
         SegmentEffect::preset("night")
@@ -539,13 +626,23 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("snow")
             .with_id("TapoStrip_6J1Wz1BcYAIZ0Hr0hrLtHz")
             .with_brightness(50)
-            .with_display_colors(vec![[0, 0, 100, 0], [0, 0, 100, 0], [0, 0, 100, 0], [0, 0, 100, 0]])
+            .with_display_colors(vec![
+                [0, 0, 100, 0],
+                [0, 0, 100, 0],
+                [0, 0, 100, 0],
+                [0, 0, 100, 0],
+            ])
     }
     fn star(self) -> SegmentEffect {
         SegmentEffect::preset("star")
             .with_id("TapoStrip_5BUE2IZxWBlvTyndwlGWxZ")
             .with_brightness(50)
-            .with_display_colors(vec![[0, 0, 100, 0], [188, 61, 100, 0], [0, 0, 100, 0], [188, 61, 100, 0]])
+            .with_display_colors(vec![
+                [0, 0, 100, 0],
+                [188, 61, 100, 0],
+                [0, 0, 100, 0],
+                [188, 61, 100, 0],
+            ])
     }
     fn study(self) -> SegmentEffect {
         SegmentEffect::preset("study")
@@ -557,7 +654,12 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("summer")
             .with_id("TapoStrip_3EpKcvOXOg7JOzI2CEGHfV")
             .with_brightness(50)
-            .with_display_colors(vec![[298, 58, 100, 0], [182, 94, 100, 0], [182, 94, 100, 0], [298, 58, 100, 0]])
+            .with_display_colors(vec![
+                [298, 58, 100, 0],
+                [182, 94, 100, 0],
+                [182, 94, 100, 0],
+                [298, 58, 100, 0],
+            ])
     }
     fn sunny(self) -> SegmentEffect {
         SegmentEffect::preset("sunny")
@@ -581,7 +683,11 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("thinking")
             .with_id("TapoStrip_0X0JpxWy3bXrg9UYIjOOHE")
             .with_brightness(50)
-            .with_display_colors(vec![[182, 94, 100, 0], [182, 94, 100, 0], [182, 94, 100, 0]])
+            .with_display_colors(vec![
+                [182, 94, 100, 0],
+                [182, 94, 100, 0],
+                [182, 94, 100, 0],
+            ])
     }
     fn universe(self) -> SegmentEffect {
         SegmentEffect::preset("universe")
@@ -611,13 +717,23 @@ impl SegmentEffectPreset {
         SegmentEffect::preset("winter")
             .with_id("TapoStrip_0PpgOmXVg0WWdF3710KxbA")
             .with_brightness(50)
-            .with_display_colors(vec![[182, 94, 100, 0], [0, 0, 100, 0], [0, 0, 100, 0], [182, 94, 100, 0]])
+            .with_display_colors(vec![
+                [182, 94, 100, 0],
+                [0, 0, 100, 0],
+                [0, 0, 100, 0],
+                [182, 94, 100, 0],
+            ])
     }
     fn work(self) -> SegmentEffect {
         SegmentEffect::preset("work")
             .with_id("TapoStrip_2Xeosp9nHkJIPL2491cbtQ")
             .with_brightness(50)
-            .with_display_colors(vec![[187, 41, 100, 0], [0, 0, 100, 0], [0, 0, 100, 0], [187, 41, 100, 0]])
+            .with_display_colors(vec![
+                [187, 41, 100, 0],
+                [0, 0, 100, 0],
+                [0, 0, 100, 0],
+                [187, 41, 100, 0],
+            ])
     }
     fn yellow(self) -> SegmentEffect {
         SegmentEffect::preset("yellow")
