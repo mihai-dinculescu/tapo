@@ -9,6 +9,11 @@ use crate::error::Error;
 pub enum SegmentEffectType {
     Circulating,
     Breathe,
+    Chasing,
+    Flicker,
+    Bloom,
+    Stacking,
+    None,
 }
 
 /// Parameters for the `apply_segment_effect_rule` request.
