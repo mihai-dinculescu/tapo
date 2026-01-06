@@ -4,6 +4,7 @@ use serde_with::{BoolFromInt, serde_as};
 use crate::error::Error;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
 #[serde(rename_all = "snake_case")]
 #[allow(missing_docs)]
 pub enum SegmentEffectType {
@@ -177,6 +178,7 @@ impl SegmentEffect {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
 #[non_exhaustive]
 #[allow(missing_docs)]
 pub enum SegmentEffectPreset {
