@@ -109,6 +109,9 @@ class RgbicLightStripHandler(DeviceManagementExt):
     ) -> None:
         """Sets a *segment effect* and turns *on* the device.
 
+        This is used for the newer app-defined RGBIC strip effects that cannot be set by
+        `LightingEffect` (for example, "circulating" or "breathe" segment effects).
+
         Args:
             segment_effect (SegmentEffect | SegmentEffectPreset)
         """

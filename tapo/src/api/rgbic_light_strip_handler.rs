@@ -139,7 +139,7 @@ impl RgbicLightStripHandler {
     ///
     /// # Arguments
     ///
-    /// * `lighting_effect` - [crate::requests::LightingEffectPreset] or [crate::requests::LightingEffect].
+    /// * `lighting_effect` - [crate::requests::LightingEffectPreset] or a custom [crate::requests::LightingEffect].
     pub async fn set_lighting_effect(
         &self,
         lighting_effect: impl Into<LightingEffect>,
@@ -151,9 +151,9 @@ impl RgbicLightStripHandler {
             .await
     }
 
-    /// Sets a segment effect and turns *on* the device.
+    /// Sets a *segment effect* and turns *on* the device.
     ///
-    /// This is used for app-defined RGBIC strip effects that are not represented by
+    /// This is used for the newer app-defined RGBIC strip effects that cannot be set by
     /// [`LightingEffect`] (for example, "circulating" or "breathe" segment effects).
     ///
     /// # Arguments
