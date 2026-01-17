@@ -149,7 +149,7 @@ impl SegmentEffect {
 
     pub(crate) fn validate(&self) -> Result<(), Error> {
         if self.is_custom {
-            let segments_missing = self.segments.as_ref().map_or(true, Vec::is_empty);
+            let segments_missing = self.segments.as_ref().is_none_or(Vec::is_empty);
             if segments_missing {
                 return Err(Error::Validation {
                     field: "segments".to_string(),
@@ -157,7 +157,7 @@ impl SegmentEffect {
                 });
             }
 
-            let states_missing = self.states.as_ref().map_or(true, Vec::is_empty);
+            let states_missing = self.states.as_ref().is_none_or(Vec::is_empty);
             if states_missing {
                 return Err(Error::Validation {
                     field: "states".to_string(),
