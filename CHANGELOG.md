@@ -15,7 +15,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `RgbicLightStripHandler`: added `set_segment_effect` method to apply lighting effects to individual segments of RGBIC light strips, enabling the newer effects available in the Tapo app that cannot be achieved through the `set_lighting_effect` method. (thanks to @Oliyy)
-~~~~
+
 ## [Rust v0.8.8][v0.8.8] - 2025-11-23
 
 ### Added
