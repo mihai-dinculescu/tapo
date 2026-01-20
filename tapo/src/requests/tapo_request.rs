@@ -5,7 +5,7 @@ use serde::Serialize;
 use super::{
     ControlChildParams, DeviceRebootParams, GetChildDeviceListParams, GetEnergyDataParams,
     GetPowerDataParams, GetTriggerLogsParams, HandshakeParams, LightingEffect, LoginDeviceParams,
-    MultipleRequestParams, PlayAlarmParams, SecurePassthroughParams,
+    MultipleRequestParams, PlayAlarmParams, SecurePassthroughParams, SegmentEffect,
 };
 
 #[derive(Debug, Serialize)]
@@ -20,6 +20,7 @@ pub(crate) enum TapoRequest {
     SecurePassthrough(TapoParams<SecurePassthroughParams>),
     SetDeviceInfo(Box<TapoParams<serde_json::Value>>),
     SetLightingEffect(Box<TapoParams<LightingEffect>>),
+    ApplySegmentEffectRule(Box<TapoParams<SegmentEffect>>),
     DeviceReset(TapoParams<EmptyParams>),
     DeviceReboot(TapoParams<DeviceRebootParams>),
     GetDeviceInfo(TapoParams<EmptyParams>),

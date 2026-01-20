@@ -1,7 +1,14 @@
 from typing import Union
 
 from tapo.device_management_ext import DeviceManagementExt
-from tapo.requests import Color, ColorLightSetDeviceInfoParams, LightingEffect, LightingEffectPreset
+from tapo.requests import (
+    Color,
+    ColorLightSetDeviceInfoParams,
+    LightingEffect,
+    LightingEffectPreset,
+    SegmentEffect,
+    SegmentEffectPreset,
+)
 from tapo.responses import DeviceInfoRgbicLightStripResult, DeviceUsageResult
 
 class RgbicLightStripHandler(DeviceManagementExt):
@@ -95,4 +102,16 @@ class RgbicLightStripHandler(DeviceManagementExt):
 
         Args:
             lighting_effect (LightingEffect | LightingEffectPreset)
+        """
+
+    async def set_segment_effect(
+        self, segment_effect: Union[SegmentEffect, SegmentEffectPreset]
+    ) -> None:
+        """Sets a *segment effect* and turns *on* the device.
+
+        This is used for the newer app-defined RGBIC strip effects that cannot be set by
+        `LightingEffect` (for example, "circulating" or "breathe" segment effects).
+
+        Args:
+            segment_effect (SegmentEffect | SegmentEffectPreset)
         """

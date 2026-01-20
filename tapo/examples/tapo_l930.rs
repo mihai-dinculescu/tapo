@@ -3,7 +3,10 @@ use std::{env, thread, time::Duration};
 
 use log::info;
 use tapo::ApiClient;
-use tapo::requests::{Color, LightingEffect, LightingEffectPreset, LightingEffectType};
+use tapo::requests::{
+    Color, LightingEffect, LightingEffectPreset, LightingEffectType, SegmentEffect,
+    SegmentEffectPreset, SegmentEffectType,
+};
 
 mod common;
 
@@ -96,6 +99,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .with_duration(50);
 
     device.set_lighting_effect(custom_effect).await?;
+
+    info!("Waiting 10 seconds...");
+    thread::sleep(Duration::from_secs(10));
+
+    info!("Setting a preset Segment effect...");
+    device
+        .set_segment_effect(SegmentEffectPreset::Birthday)
+        .await?;
+
+    info!("Waiting 10 seconds...");
+    thread::sleep(Duration::from_secs(10));
+
+    info!("Setting a custom Segment effect...");
+    let custom_effect = SegmentEffect::new(
+        "My Custom Segment Effect",
+        SegmentEffectType::Circulating,
+        true,
+        true,
+        100,
+        vec![[267, 56, 100, 0]],
+    )
+    .with_segments(vec![49])
+    .with_states(vec![[267, 56, 100, 0]]);
+
+    device.set_segment_effect(custom_effect).await?;
 
     info!("Waiting 10 seconds...");
     thread::sleep(Duration::from_secs(10));

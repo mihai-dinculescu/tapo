@@ -12,7 +12,8 @@ use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     ControlChildParams, DeviceRebootParams, EmptyParams, EnergyDataInterval,
     GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams, LightingEffect,
-    MultipleRequestParams, PlayAlarmParams, PowerDataInterval, TapoParams, TapoRequest,
+    MultipleRequestParams, PlayAlarmParams, PowerDataInterval, SegmentEffect, TapoParams,
+    TapoRequest,
 };
 use crate::responses::{
     ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
@@ -726,9 +727,27 @@ impl ApiClient {
         lighting_effect: LightingEffect,
     ) -> Result<(), Error> {
         debug!("Lighting effect will change to: {lighting_effect:?}");
-
         let request = TapoRequest::SetLightingEffect(Box::new(
             TapoParams::new(lighting_effect)
+                .set_request_time_mils()?
+                .set_terminal_uuid(TERMINAL_UUID),
+        ));
+
+        self.get_protocol()?
+            .execute_request::<TapoResult>(request, true)
+            .await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn set_segment_effect(
+        &self,
+        segment_effect: SegmentEffect,
+    ) -> Result<(), Error> {
+        debug!("Segment effect will change to: {segment_effect:?}");
+
+        let request = TapoRequest::ApplySegmentEffectRule(Box::new(
+            TapoParams::new(segment_effect)
                 .set_request_time_mils()?
                 .set_terminal_uuid(TERMINAL_UUID),
         ));

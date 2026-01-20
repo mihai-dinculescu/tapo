@@ -8,7 +8,10 @@ use log::LevelFilter;
 use pyo3::prelude::*;
 use pyo3_log::{Caching, Logger};
 
-use tapo::requests::{AlarmRingtone, AlarmVolume, Color, LightingEffectPreset, LightingEffectType};
+use tapo::requests::{
+    AlarmRingtone, AlarmVolume, Color, LightingEffectPreset, LightingEffectType,
+    SegmentEffectPreset, SegmentEffectType,
+};
 use tapo::responses::{
     AutoOffStatus, ColorLightState, CurrentPowerResult, DefaultBrightnessState,
     DefaultColorLightState, DefaultLightState, DefaultPlugState, DefaultPowerType,
@@ -36,7 +39,7 @@ use api::{
 };
 use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyLightingEffect,
-    PyPowerDataInterval,
+    PyPowerDataInterval, PySegmentEffect,
 };
 use responses::{
     TriggerLogsS200BResult, TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
@@ -75,6 +78,9 @@ fn register_requests(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyLightingEffect>()?;
     module.add_class::<LightingEffectPreset>()?;
     module.add_class::<LightingEffectType>()?;
+    module.add_class::<PySegmentEffect>()?;
+    module.add_class::<SegmentEffectPreset>()?;
+    module.add_class::<SegmentEffectType>()?;
     module.add_class::<PyColorLightSetDeviceInfoParams>()?;
     module.add_class::<PyEnergyDataInterval>()?;
     module.add_class::<PyPowerDataInterval>()?;

@@ -4,14 +4,16 @@ use std::sync::Arc;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
-use tapo::requests::{Color, LightingEffect, LightingEffectPreset};
+use tapo::requests::{
+    Color, LightingEffect, LightingEffectPreset, SegmentEffect, SegmentEffectPreset,
+};
 use tapo::responses::{DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult};
 use tapo::{DeviceManagementExt as _, HandlerExt, RgbicLightStripHandler};
 use tokio::sync::RwLock;
 
 use crate::api::PyHandlerExt;
 use crate::call_handler_method;
-use crate::requests::{PyColorLightSetDeviceInfoParams, PyLightingEffect};
+use crate::requests::{PyColorLightSetDeviceInfoParams, PyLightingEffect, PySegmentEffect};
 
 #[derive(Clone)]
 #[pyclass(name = "RgbicLightStripHandler")]
@@ -146,6 +148,16 @@ impl PyRgbicLightStripHandler {
             lighting_effect
         )
     }
+
+    pub async fn set_segment_effect(&self, segment_effect: Py<PyAny>) -> PyResult<()> {
+        let handler = self.inner.clone();
+        let segment_effect = map_segment_effect(segment_effect)?;
+        call_handler_method!(
+            handler.read().await.deref(),
+            RgbicLightStripHandler::set_segment_effect,
+            segment_effect
+        )
+    }
 }
 
 fn map_lighting_effect(lighting_effect: Py<PyAny>) -> PyResult<LightingEffect> {
@@ -163,5 +175,23 @@ fn map_lighting_effect(lighting_effect: Py<PyAny>) -> PyResult<LightingEffect> {
 
     Err(PyErr::new::<PyTypeError, _>(
         "Invalid lighting effect type. Must be one of `LightingEffect` or `LightingEffectPreset`",
+    ))
+}
+
+fn map_segment_effect(segment_effect: Py<PyAny>) -> PyResult<SegmentEffect> {
+    if let Some(segment_effect) =
+        Python::attach(|py| segment_effect.extract::<SegmentEffectPreset>(py).ok())
+    {
+        return Ok(segment_effect.into());
+    }
+
+    if let Some(segment_effect) =
+        Python::attach(|py| segment_effect.extract::<PySegmentEffect>(py).ok())
+    {
+        return Ok(segment_effect.into());
+    }
+
+    Err(PyErr::new::<PyTypeError, _>(
+        "Invalid segment effect type. Must be one of `SegmentEffect` or `SegmentEffectPreset`",
     ))
 }

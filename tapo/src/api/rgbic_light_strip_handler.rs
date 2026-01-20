@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use tokio::sync::{RwLock, RwLockReadGuard};
 
 use crate::error::Error;
-use crate::requests::{Color, ColorLightSetDeviceInfoParams, LightingEffect};
+use crate::requests::{Color, ColorLightSetDeviceInfoParams, LightingEffect, SegmentEffect};
 use crate::responses::{DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult};
 
 use super::{ApiClient, ApiClientExt, DeviceManagementExt, HandlerExt};
@@ -139,7 +139,7 @@ impl RgbicLightStripHandler {
     ///
     /// # Arguments
     ///
-    /// * `lighting_effect` - [crate::requests::LightingEffectPreset] or [crate::requests::LightingEffect].
+    /// * `lighting_effect` - [crate::requests::LightingEffectPreset] or a custom [crate::requests::LightingEffect].
     pub async fn set_lighting_effect(
         &self,
         lighting_effect: impl Into<LightingEffect>,
@@ -148,6 +148,28 @@ impl RgbicLightStripHandler {
             .read()
             .await
             .set_lighting_effect(lighting_effect.into())
+            .await
+    }
+
+    /// Sets a *segment effect* and turns *on* the device.
+    ///
+    /// This is used for the newer app-defined RGBIC strip effects that cannot be set by
+    /// [`LightingEffect`] (for example, "circulating" or "breathe" segment effects).
+    ///
+    /// # Arguments
+    ///
+    /// * `segment_effect` - a [`crate::requests::SegmentEffectPreset`] or a custom [`SegmentEffect`]
+    pub async fn set_segment_effect(
+        &self,
+        segment_effect: impl Into<SegmentEffect>,
+    ) -> Result<(), Error> {
+        let segment_effect = segment_effect.into();
+        segment_effect.validate()?;
+
+        self.client
+            .read()
+            .await
+            .set_segment_effect(segment_effect)
             .await
     }
 }
