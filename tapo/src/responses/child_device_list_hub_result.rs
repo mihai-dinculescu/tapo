@@ -57,6 +57,8 @@ pub enum ChildDeviceHubResult {
     KE100(Box<KE100Result>),
     /// S200B button switch.
     S200B(Box<S200BResult>),
+    /// S200D button switch.
+    S200D(Box<S200BResult>),
     /// T100 motion sensor.
     T100(Box<T100Result>),
     /// T110 contact sensor.
@@ -80,6 +82,9 @@ impl DecodableResultExt for ChildDeviceHubResult {
                 Ok(ChildDeviceHubResult::KE100(Box::new(device.decode()?)))
             }
             ChildDeviceHubResult::S200B(device) => {
+                Ok(ChildDeviceHubResult::S200B(Box::new(device.decode()?)))
+            }
+            ChildDeviceHubResult::S200D(device) => {
                 Ok(ChildDeviceHubResult::S200B(Box::new(device.decode()?)))
             }
             ChildDeviceHubResult::T100(device) => {
