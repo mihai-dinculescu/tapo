@@ -40,14 +40,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     device.temperature_unit,
                 );
             }
-            ChildDeviceHubResult::S200B(device) => {
-                let s200b = hub
+            ChildDeviceHubResult::S200B(device) | ChildDeviceHubResult::S200D(device) => {
+                let s200 = hub
                     .s200b(HubDevice::ByDeviceId(device.device_id.clone()))
                     .await?;
-                let trigger_logs = s200b.get_trigger_logs(5, 0).await?;
+                let trigger_logs = s200.get_trigger_logs(5, 0).await?;
 
                 info!(
-                    "Found S200B child device with nickname: {}, id: {}, last 5 trigger logs: {:?}.",
+                    "Found S200B/S200D child device with nickname: {}, id: {}, last 5 trigger logs: {:?}.",
                     device.nickname, device.device_id, trigger_logs
                 );
             }
@@ -95,7 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let temperature_humidity_records = t31x.get_temperature_humidity_records().await?;
 
                 info!(
-                    "Found T31X child device with nickname: {}, id: {}, temperature: {} {:?}, humidity: {}%, earliest temperature and humidity record available: {:?}.",
+                    "Found T310/T315 child device with nickname: {}, id: {}, temperature: {} {:?}, humidity: {}%, earliest temperature and humidity record available: {:?}.",
                     device.nickname,
                     device.device_id,
                     device.current_temperature,
