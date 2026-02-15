@@ -3,7 +3,7 @@ from .status import *
 from .temperature_unit import *
 
 from .ke100_result import *
-from .s200b_result import *
+from .s200_result import *
 from .t100_result import *
 from .t110_result import *
 from .t300_result import *

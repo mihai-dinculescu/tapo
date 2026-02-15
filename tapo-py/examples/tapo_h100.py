@@ -5,7 +5,7 @@ import os
 
 from tapo import ApiClient
 from tapo.requests import AlarmRingtone, AlarmVolume, AlarmDuration
-from tapo.responses import KE100Result, S200BResult, T100Result, T110Result, T300Result, T31XResult
+from tapo.responses import KE100Result, S200Result, T100Result, T110Result, T300Result, T31XResult
 
 
 async def main():
@@ -35,12 +35,12 @@ async def main():
                     child.temperature_unit,
                 )
             )
-        elif isinstance(child, S200BResult):
-            s200b = await hub.s200b(device_id=child.device_id)
-            trigger_logs = await s200b.get_trigger_logs(5, 0)
+        elif isinstance(child, S200Result):
+            s200 = await hub.s200b(device_id=child.device_id)
+            trigger_logs = await s200.get_trigger_logs(5, 0)
 
             print(
-                "Found S200B child device with nickname: {}, id: {}, last 5 trigger logs: {}.".format(
+                "Found S200B/S200D child device with nickname: {}, id: {}, last 5 trigger logs: {}.".format(
                     child.nickname,
                     child.device_id,
                     [log.to_dict() for log in trigger_logs.logs],
@@ -88,7 +88,7 @@ async def main():
             temperature_humidity_records = await t31x.get_temperature_humidity_records()
 
             print(
-                "Found T31X child device with nickname: {}, id: {}, temperature: {:.2f} {}, humidity: {}%, earliest temperature and humidity record available: {}.".format(
+                "Found T310/T315 child device with nickname: {}, id: {}, temperature: {:.2f} {}, humidity: {}%, earliest temperature and humidity record available: {}.".format(
                     child.nickname,
                     child.device_id,
                     child.current_temperature,
