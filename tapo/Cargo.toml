@@ -30,7 +30,7 @@ serde_with = "3.16"
 thiserror = "2.0"
 tokio = { workspace = true, features = ["sync"] }
 tokio-stream = "0.1"
-uuid = { version = "1.20", features = ["serde", "v4"] }
+uuid = { version = "1.21", features = ["serde", "v4"] }
 
 # security
 aes = "0.8"
