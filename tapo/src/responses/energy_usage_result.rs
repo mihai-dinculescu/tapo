@@ -19,6 +19,10 @@ pub struct EnergyUsageResult {
     pub month_runtime: u64,
     /// Current month energy usage in Watt Hours (Wh).
     pub month_energy: u64,
+    /// Current power in Milliwatts (mW).
+    pub current_power: Option<u64>,
+    /// Electricity charge/cost data as reported by the device.
+    pub electricity_charge: Option<Vec<u64>>,
 }
 impl TapoResponseExt for EnergyUsageResult {}
 
