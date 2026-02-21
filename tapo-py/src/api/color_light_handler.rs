@@ -13,7 +13,7 @@ use crate::call_handler_method;
 use crate::requests::PyColorLightSetDeviceInfoParams;
 
 #[derive(Clone)]
-#[pyclass(name = "ColorLightHandler")]
+#[pyclass(from_py_object, name = "ColorLightHandler")]
 pub struct PyColorLightHandler {
     inner: Arc<RwLock<ColorLightHandler>>,
 }

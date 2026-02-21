@@ -16,7 +16,7 @@ from .requests import *
 from .responses import *
 from .rgb_light_strip_handler import *
 from .rgbic_light_strip_handler import *
-from .s200b_handler import *
+from .s200_handler import *
 from .t100_handler import *
 from .t110_handler import *
 from .t300_handler import *

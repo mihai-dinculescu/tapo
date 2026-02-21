@@ -5,29 +5,30 @@ use tokio::sync::RwLock;
 use crate::api::ApiClient;
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{EmptyParams, GetTriggerLogsParams, TapoParams, TapoRequest};
-use crate::responses::{DecodableResultExt, S200BResult};
-use crate::responses::{S200BLog, TriggerLogsResult};
+use crate::responses::{DecodableResultExt, S200Result};
+use crate::responses::{S200Log, TriggerLogsResult};
 
-/// Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) devices.
-pub struct S200BHandler {
+/// Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) and
+/// [S200D](https://www.tapo.com/en/search/?q=S200D) devices.
+pub struct S200Handler {
     client: Arc<RwLock<ApiClient>>,
     device_id: String,
 }
 
-impl S200BHandler {
+impl S200Handler {
     pub(crate) fn new(client: Arc<RwLock<ApiClient>>, device_id: String) -> Self {
         Self { client, device_id }
     }
 
-    /// Returns *device info* as [`S200BResult`].
+    /// Returns *device info* as [`S200Result`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    pub async fn get_device_info(&self) -> Result<S200BResult, Error> {
+    pub async fn get_device_info(&self) -> Result<S200Result, Error> {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
         self.client
             .read()
             .await
-            .control_child::<S200BResult>(self.device_id.clone(), request)
+            .control_child::<S200Result>(self.device_id.clone(), request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
             .map(|result| result.decode())?
@@ -58,7 +59,7 @@ impl S200BHandler {
         &self,
         page_size: u64,
         start_id: u64,
-    ) -> Result<TriggerLogsResult<S200BLog>, Error> {
+    ) -> Result<TriggerLogsResult<S200Log>, Error> {
         let child_params = GetTriggerLogsParams::new(page_size, start_id);
         let child_request = TapoRequest::GetTriggerLogs(Box::new(TapoParams::new(child_params)));
 

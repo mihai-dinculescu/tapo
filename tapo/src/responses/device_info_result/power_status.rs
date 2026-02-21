@@ -2,7 +2,10 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+)]
 #[allow(missing_docs)]
 pub enum ChargingStatus {
     Finished,
@@ -11,7 +14,10 @@ pub enum ChargingStatus {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+)]
 #[allow(missing_docs)]
 pub enum OvercurrentStatus {
     Lifted,
@@ -20,7 +26,10 @@ pub enum OvercurrentStatus {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+)]
 #[allow(missing_docs)]
 pub enum OverheatStatus {
     CoolDown,
@@ -30,7 +39,10 @@ pub enum OverheatStatus {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+)]
 #[allow(missing_docs)]
 pub enum PowerProtectionStatus {
     Normal,

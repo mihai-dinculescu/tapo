@@ -10,7 +10,7 @@ use tokio::sync::RwLock;
 use crate::call_handler_method;
 
 #[derive(Clone)]
-#[pyclass(name = "GenericDeviceHandler")]
+#[pyclass(from_py_object, name = "GenericDeviceHandler")]
 pub struct PyGenericDeviceHandler {
     inner: Arc<RwLock<GenericDeviceHandler>>,
 }

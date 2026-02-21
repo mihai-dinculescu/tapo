@@ -8,15 +8,33 @@ file. This change log follows the conventions of
 
 ### Added
 
-- `EnergyUsageResult`: re-added the `current_power` field. It was removed in v0.8.6 because some energy-monitoring plugs omit it, but it is back as optional since it provides higher precision than `get_current_power`.
-- `EnergyUsageResult`: added the `electricity_charge` field to represent electricity charge/cost data reported by the device using the tariff configured in the Tapo app.
+- `RgbicLightStripHandler`: added `set_segment_effect` method to apply lighting effects to individual segments of RGBIC light strips, enabling the newer effects available in the Tapo app that cannot be achieved through the `set_lighting_effect` method. (thanks to @Oliyy)
+- `HubHandler`: added `s200d` method to create handlers for the S200D smart dimmer devices. (thanks to @mibofra)
+- `EnergyUsageResult`: re-added the `current_power` property. It was removed in v0.8.6 because some energy-monitoring plugs omit it, but it is back as optional since it provides higher precision than `get_current_power`. (thanks to @nazamhussain)
+- `EnergyUsageResult`: added the `electricity_charge` property to represent electricity charge/cost data reported by the device using the tariff configured in the Tapo app. (thanks to @nazamhussain)
+
+### Changed
+
+- `S200BHandler`: has been renamed to `S200Handler` to better reflect its purpose when used for both S200B and S200D devices.
+- `S200BResult`: has been renamed to `S200Result` to better reflect its purpose when used for both S200B and S200D devices.
+- `S200BRotationParams`: has been renamed to `S200RotationParams` to better reflect its purpose when used for both S200B and S200D devices.
+- `S200BLog`: has been renamed to `S200Log` to better reflect its purpose when used for both S200B and S200D devices.
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
-- `EnergyUsageResult`: re-added the `current_power` field. It was removed in v0.8.6 because some energy-monitoring plugs omit it, but it is back as optional since it provides higher precision than `get_current_power`.
-- `EnergyUsageResult`: added the `electricity_charge` field to represent electricity charge/cost data reported by the device using the tariff configured in the Tapo app.
+- `RgbicLightStripHandler`: added `set_segment_effect` method to apply lighting effects to individual segments of RGBIC light strips, enabling the newer effects available in the Tapo app that cannot be achieved through the `set_lighting_effect` method. (thanks to @Oliyy)
+- `HubHandler`: added `s200d` method to create handlers for the S200D smart dimmer devices. (thanks to @mibofra)
+- `EnergyUsageResult`: re-added the `current_power` property. It was removed in v0.8.6 because some energy-monitoring plugs omit it, but it is back as optional since it provides higher precision than `get_current_power`. (thanks to @nazamhussain)
+- `EnergyUsageResult`: added the `electricity_charge` property to represent electricity charge/cost data reported by the device using the tariff configured in the Tapo app. (thanks to @nazamhussain)
+
+### Changed
+
+- `S200BHandler`: has been renamed to `S200Handler` to better reflect its purpose when used for both S200B and S200D devices.
+- `S200BResult`: has been renamed to `S200Result` to better reflect its purpose when used for both S200B and S200D devices.
+- `S200BRotationParams`: has been renamed to `S200RotationParams` to better reflect its purpose when used for both S200B and S200D devices.
+- `S200BLog`: has been renamed to `S200Log` to better reflect its purpose when used for both S200B and S200D devices.
 
 ## [Rust v0.8.8][v0.8.8] - 2025-11-23
 

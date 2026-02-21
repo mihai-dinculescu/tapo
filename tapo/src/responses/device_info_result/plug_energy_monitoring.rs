@@ -9,7 +9,7 @@ use super::{
 
 /// Device info of Tapo P110, P110M and P115. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs, deprecated)]
 pub struct DeviceInfoPlugEnergyMonitoringResult {
     //

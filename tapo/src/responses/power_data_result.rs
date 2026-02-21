@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 use crate::responses::TapoResponseExt;
 
 /// Power data result for the requested [`crate::requests::PowerDataInterval`].
-#[derive(Debug, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct PowerDataResult {
     /// Start date and time of this result in UTC.
     pub start_date_time: DateTime<Utc>,
@@ -34,7 +34,7 @@ impl PowerDataResult {
 
 /// Power data result for a specific interval.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct PowerDataIntervalResult {
     /// Start date and time of this interval in UTC.
     pub start_date_time: DateTime<Utc>,

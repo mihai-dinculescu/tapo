@@ -7,7 +7,7 @@ use tapo::responses::{KE100Result, TemperatureUnitKE100};
 use crate::call_handler_method;
 
 #[derive(Clone)]
-#[pyclass(name = "KE100Handler")]
+#[pyclass(from_py_object, name = "KE100Handler")]
 pub struct PyKE100Handler {
     inner: Arc<KE100Handler>,
 }

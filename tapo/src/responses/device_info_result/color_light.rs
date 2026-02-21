@@ -5,7 +5,7 @@ use crate::responses::{DecodableResultExt, DefaultStateType, TapoResponseExt, de
 
 /// Device info of Tapo L530, L535 and L630. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct DeviceInfoColorLightResult {
     //
@@ -76,7 +76,7 @@ impl DecodableResultExt for DeviceInfoColorLightResult {
 
 /// Color Light Default State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct DefaultColorLightState {
     pub r#type: DefaultStateType,
@@ -85,7 +85,7 @@ pub struct DefaultColorLightState {
 
 /// Color Light State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct ColorLightState {
     pub brightness: u8,

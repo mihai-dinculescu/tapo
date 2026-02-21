@@ -8,7 +8,10 @@ use log::LevelFilter;
 use pyo3::prelude::*;
 use pyo3_log::{Caching, Logger};
 
-use tapo::requests::{AlarmRingtone, AlarmVolume, Color, LightingEffectPreset, LightingEffectType};
+use tapo::requests::{
+    AlarmRingtone, AlarmVolume, Color, LightingEffectPreset, LightingEffectType,
+    SegmentEffectPreset, SegmentEffectType,
+};
 use tapo::responses::{
     AutoOffStatus, ColorLightState, CurrentPowerResult, DefaultBrightnessState,
     DefaultColorLightState, DefaultLightState, DefaultPlugState, DefaultPowerType,
@@ -20,7 +23,7 @@ use tapo::responses::{
     EnergyDataResult, EnergyUsageResult, KE100Result, OvercurrentStatus, OverheatStatus, PlugState,
     PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
     PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, RgbLightStripState,
-    RgbicLightStripState, S200BLog, S200BResult, S200BRotationParams, Status, T31XResult, T100Log,
+    RgbicLightStripState, S200Log, S200Result, S200RotationParams, Status, T31XResult, T100Log,
     T100Result, T110Log, T110Result, T300Log, T300Result, TemperatureHumidityRecord,
     TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, UsageByPeriodResult,
     WaterLeakStatus,
@@ -36,10 +39,10 @@ use api::{
 };
 use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyLightingEffect,
-    PyPowerDataInterval,
+    PyPowerDataInterval, PySegmentEffect,
 };
 use responses::{
-    TriggerLogsS200BResult, TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
+    TriggerLogsS200Result, TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
 };
 
 #[pymodule]
@@ -75,6 +78,9 @@ fn register_requests(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyLightingEffect>()?;
     module.add_class::<LightingEffectPreset>()?;
     module.add_class::<LightingEffectType>()?;
+    module.add_class::<PySegmentEffect>()?;
+    module.add_class::<SegmentEffectPreset>()?;
+    module.add_class::<SegmentEffectType>()?;
     module.add_class::<PyColorLightSetDeviceInfoParams>()?;
     module.add_class::<PyEnergyDataInterval>()?;
     module.add_class::<PyPowerDataInterval>()?;
@@ -171,15 +177,15 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
 fn register_responses_hub(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DeviceInfoHubResult>()?;
     module.add_class::<KE100Result>()?;
-    module.add_class::<S200BResult>()?;
+    module.add_class::<S200Result>()?;
     module.add_class::<T100Result>()?;
     module.add_class::<T110Result>()?;
     module.add_class::<T300Result>()?;
     module.add_class::<T31XResult>()?;
 
     // child devices
-    module.add_class::<S200BLog>()?;
-    module.add_class::<S200BRotationParams>()?;
+    module.add_class::<S200Log>()?;
+    module.add_class::<S200RotationParams>()?;
     module.add_class::<Status>()?;
     module.add_class::<T100Log>()?;
     module.add_class::<T110Log>()?;
@@ -188,7 +194,7 @@ fn register_responses_hub(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<TemperatureHumidityRecords>()?;
     module.add_class::<TemperatureUnit>()?;
     module.add_class::<TemperatureUnitKE100>()?;
-    module.add_class::<TriggerLogsS200BResult>()?;
+    module.add_class::<TriggerLogsS200Result>()?;
     module.add_class::<TriggerLogsT100Result>()?;
     module.add_class::<TriggerLogsT110Result>()?;
     module.add_class::<TriggerLogsT300Result>()?;

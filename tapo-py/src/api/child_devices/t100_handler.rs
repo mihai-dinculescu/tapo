@@ -7,7 +7,7 @@ use crate::call_handler_method;
 use crate::responses::TriggerLogsT100Result;
 
 #[derive(Clone)]
-#[pyclass(name = "T100Handler")]
+#[pyclass(from_py_object, name = "T100Handler")]
 pub struct PyT100Handler {
     inner: Arc<T100Handler>,
 }

@@ -7,7 +7,7 @@ use tapo::responses::PowerStripPlugResult;
 use crate::call_handler_method;
 
 #[derive(Clone)]
-#[pyclass(name = "PowerStripPlugHandler")]
+#[pyclass(from_py_object, name = "PowerStripPlugHandler")]
 pub struct PyPowerStripPlugHandler {
     inner: Arc<PowerStripPlugHandler>,
 }

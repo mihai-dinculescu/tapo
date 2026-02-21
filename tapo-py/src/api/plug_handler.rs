@@ -10,7 +10,7 @@ use tokio::sync::RwLock;
 use crate::call_handler_method;
 
 #[derive(Clone)]
-#[pyclass(name = "PlugHandler")]
+#[pyclass(from_py_object, name = "PlugHandler")]
 pub struct PyPlugHandler {
     inner: Arc<RwLock<PlugHandler>>,
 }

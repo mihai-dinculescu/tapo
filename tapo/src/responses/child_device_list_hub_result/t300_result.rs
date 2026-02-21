@@ -6,7 +6,10 @@ use crate::responses::{DecodableResultExt, Status, TapoResponseExt, decode_value
 /// Water leak status.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+)]
 #[allow(missing_docs)]
 pub enum WaterLeakStatus {
     Normal,
@@ -19,7 +22,7 @@ pub enum WaterLeakStatus {
 /// Specific properties: `in_alarm`, `water_leak_status`, `report_interval`,
 /// `last_onboarding_timestamp`, `status_follow_edge`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct T300Result {
     // Common properties to all Hub child devices.
@@ -77,7 +80,7 @@ impl DecodableResultExt for T300Result {
 /// T300 Log.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "event")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub enum T300Log {
     WaterDry { id: u64, timestamp: u64 },

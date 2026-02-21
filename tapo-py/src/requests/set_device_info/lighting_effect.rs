@@ -2,7 +2,7 @@ use pyo3::prelude::*;
 use tapo::requests::{LightingEffect, LightingEffectType};
 
 #[derive(Clone)]
-#[pyclass(name = "LightingEffect")]
+#[pyclass(from_py_object, name = "LightingEffect")]
 pub struct PyLightingEffect {
     inner: LightingEffect,
 }

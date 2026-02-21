@@ -9,14 +9,14 @@ use tapo::{DeviceManagementExt as _, Error, HubDevice, HubHandler};
 use tokio::sync::RwLock;
 
 use crate::api::{
-    PyKE100Handler, PyS200BHandler, PyT31XHandler, PyT100Handler, PyT110Handler, PyT300Handler,
+    PyKE100Handler, PyS200Handler, PyT31XHandler, PyT100Handler, PyT110Handler, PyT300Handler,
 };
 use crate::call_handler_method;
 use crate::errors::ErrorWrapper;
 use crate::requests::PyAlarmDuration;
 
 #[derive(Clone)]
-#[pyclass(name = "HubHandler")]
+#[pyclass(from_py_object, name = "HubHandler")]
 pub struct PyHubHandler {
     inner: Arc<RwLock<HubHandler>>,
 }
@@ -99,6 +99,9 @@ impl PyHubHandler {
                         results.append(device.into_pyobject(py)?)?;
                     }
                     ChildDeviceHubResult::S200B(device) => {
+                        results.append(device.into_pyobject(py)?)?;
+                    }
+                    ChildDeviceHubResult::S200D(device) => {
                         results.append(device.into_pyobject(py)?)?;
                     }
                     ChildDeviceHubResult::T100(device) => {
@@ -215,13 +218,27 @@ impl PyHubHandler {
         &self,
         device_id: Option<String>,
         nickname: Option<String>,
-    ) -> PyResult<PyS200BHandler> {
+    ) -> PyResult<PyS200Handler> {
         let handler = self.inner.clone();
         let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
 
         let child_handler =
             call_handler_method!(handler.read().await.deref(), HubHandler::s200b, identifier)?;
-        Ok(PyS200BHandler::new(child_handler))
+        Ok(PyS200Handler::new(child_handler))
+    }
+
+    #[pyo3(signature = (device_id=None, nickname=None))]
+    pub async fn s200d(
+        &self,
+        device_id: Option<String>,
+        nickname: Option<String>,
+    ) -> PyResult<PyS200Handler> {
+        let handler = self.inner.clone();
+        let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
+
+        let child_handler =
+            call_handler_method!(handler.read().await.deref(), HubHandler::s200d, identifier)?;
+        Ok(PyS200Handler::new(child_handler))
     }
 
     #[pyo3(signature = (device_id=None, nickname=None))]

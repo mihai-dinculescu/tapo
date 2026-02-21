@@ -1,7 +1,10 @@
 use anyhow::Context;
 use crc32fast::Hasher;
+use rand::{
+    Rng, SeedableRng,
+    rngs::{StdRng, SysRng},
+};
 use rsa::pkcs1::EncodeRsaPublicKey;
-use rsa::rand_core::{OsRng, RngCore};
 use rsa::{RsaPrivateKey, RsaPublicKey};
 use serde_json::json;
 
@@ -11,8 +14,9 @@ struct KeyPair {
 
 impl KeyPair {
     fn new(key_size: usize) -> anyhow::Result<KeyPair> {
-        let private_key = RsaPrivateKey::new(&mut OsRng, key_size)
-            .context("Failed to generate RSA private key")?;
+        let mut rng = StdRng::try_from_rng(&mut SysRng).context("Failed to initialize RNG")?;
+        let private_key =
+            RsaPrivateKey::new(&mut rng, key_size).context("Failed to generate RSA private key")?;
         let public_key = RsaPublicKey::from(&private_key);
         Ok(KeyPair { public_key })
     }
@@ -36,7 +40,8 @@ impl AesDiscoveryQueryGenerator {
 
     pub(crate) fn generate(&mut self) -> anyhow::Result<Vec<u8>> {
         let mut secret = [0u8; 4];
-        OsRng.fill_bytes(&mut secret);
+        let mut rng = StdRng::try_from_rng(&mut SysRng).context("Failed to initialize RNG")?;
+        rng.fill_bytes(&mut secret);
 
         let key_payload = json!({
             "params": {

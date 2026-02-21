@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{DecodableResultExt, Status, TapoResponseExt, decode_value};
 
-/// Device info of Tapo S200B button switch.
+/// Device info of Tapo S200B and S200D button switches.
 ///
 /// Specific properties: `report_interval`, `last_onboarding_timestamp`, `status_follow_edge`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
-pub struct S200BResult {
+pub struct S200Result {
     // Common properties to all Hub child devices.
     pub at_low_battery: bool,
     pub avatar: String,
@@ -41,7 +41,7 @@ pub struct S200BResult {
 
 #[cfg(feature = "python")]
 #[pyo3::pymethods]
-impl S200BResult {
+impl S200Result {
     /// Gets all the properties of this result as a dictionary.
     pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
         let value = serde_json::to_value(self)
@@ -51,27 +51,27 @@ impl S200BResult {
     }
 }
 
-impl TapoResponseExt for S200BResult {}
+impl TapoResponseExt for S200Result {}
 
-impl DecodableResultExt for S200BResult {
+impl DecodableResultExt for S200Result {
     fn decode(mut self) -> Result<Self, Error> {
         self.nickname = decode_value(&self.nickname)?;
         Ok(self)
     }
 }
 
-/// S200B Rotation log params.
+/// S200B and S200D Rotation log params.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
-pub struct S200BRotationParams {
+pub struct S200RotationParams {
     #[serde(rename = "rotate_deg")]
     pub rotation_degrees: i16,
 }
 
 #[cfg(feature = "python")]
 #[pyo3::pymethods]
-impl S200BRotationParams {
+impl S200RotationParams {
     /// Gets all the properties of this result as a dictionary.
     pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
         let value = serde_json::to_value(self)
@@ -81,16 +81,16 @@ impl S200BRotationParams {
     }
 }
 
-/// S200B Log.
+/// S200B and S200D Log.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "event")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
-pub enum S200BLog {
+pub enum S200Log {
     Rotation {
         id: u64,
         timestamp: u64,
-        params: S200BRotationParams,
+        params: S200RotationParams,
     },
     SingleClick {
         id: u64,
@@ -108,7 +108,7 @@ pub enum S200BLog {
 
 #[cfg(feature = "python")]
 #[pyo3::pymethods]
-impl S200BLog {
+impl S200Log {
     /// Gets all the properties of this result as a dictionary.
     pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
         let value = serde_json::to_value(self)

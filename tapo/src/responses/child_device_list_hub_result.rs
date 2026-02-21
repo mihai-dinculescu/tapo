@@ -1,12 +1,12 @@
 mod ke100_result;
-mod s200b_result;
+mod s200_result;
 mod t100_result;
 mod t110_result;
 mod t300_result;
 mod t31x_result;
 
 pub use ke100_result::*;
-pub use s200b_result::*;
+pub use s200_result::*;
 pub use t31x_result::*;
 pub use t100_result::*;
 pub use t110_result::*;
@@ -42,7 +42,10 @@ impl TapoResponseExt for ChildDeviceListHubResult {}
 /// Device status.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+)]
 #[allow(missing_docs)]
 pub enum Status {
     Online,
@@ -56,7 +59,9 @@ pub enum ChildDeviceHubResult {
     /// KE100 thermostatic radiator valve (TRV).
     KE100(Box<KE100Result>),
     /// S200B button switch.
-    S200B(Box<S200BResult>),
+    S200B(Box<S200Result>),
+    /// S200D button switch.
+    S200D(Box<S200Result>),
     /// T100 motion sensor.
     T100(Box<T100Result>),
     /// T110 contact sensor.
@@ -81,6 +86,9 @@ impl DecodableResultExt for ChildDeviceHubResult {
             }
             ChildDeviceHubResult::S200B(device) => {
                 Ok(ChildDeviceHubResult::S200B(Box::new(device.decode()?)))
+            }
+            ChildDeviceHubResult::S200D(device) => {
+                Ok(ChildDeviceHubResult::S200D(Box::new(device.decode()?)))
             }
             ChildDeviceHubResult::T100(device) => {
                 Ok(ChildDeviceHubResult::T100(Box::new(device.decode()?)))

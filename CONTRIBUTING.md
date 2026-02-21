@@ -5,6 +5,12 @@ If you're thinking to create a PR with large feature/change, please first discus
 
 [issues]: https://github.com/mihai-dinculescu/tapo/issues
 
+## Reverse Engineering the Tapo API
+The Tapo API is not documented, but it can be discovered by reverse engineering the Android app.
+
+- Download the APK (i.e. from [APKMirror](https://www.apkmirror.com/?&s=tapo))
+- Decompile it using APK Studio or JADX
+
 ## Releasing new versions
 
 - Update version in `tapo/Cargo.toml`

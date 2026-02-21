@@ -7,7 +7,7 @@ use tokio::sync::Mutex;
 use super::{PyMaybeDiscoveryResult, convert_result_to_maybe_py};
 
 #[derive(Clone)]
-#[pyclass(name = "DeviceDiscovery")]
+#[pyclass(from_py_object, name = "DeviceDiscovery")]
 pub struct PyDeviceDiscovery {
     pub inner: Arc<Mutex<DeviceDiscovery>>,
 }

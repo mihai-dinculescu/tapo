@@ -1,12 +1,12 @@
 from typing import List, Optional, Union
 
-from tapo import KE100Handler, S200BHandler, T100Handler, T110Handler, T300Handler, T31XHandler
+from tapo import KE100Handler, S200Handler, T100Handler, T110Handler, T300Handler, T31XHandler
 from tapo.device_management_ext import DeviceManagementExt
 from tapo.requests import AlarmDuration, AlarmRingtone, AlarmVolume
 from tapo.responses import (
     DeviceInfoHubResult,
     KE100Result,
-    S200BResult,
+    S200Result,
     T100Result,
     T110Result,
     T300Result,
@@ -45,10 +45,8 @@ class HubHandler(DeviceManagementExt):
 
     async def get_child_device_list(
         self,
-    ) -> List[
-        Union[KE100Result, S200BResult, T100Result, T110Result, T300Result, T31XResult, None]
-    ]:
-        """Returns *child device list* as `List[KE100Result | S200BResult | T100Result | T110Result | T300Result | T31XResult | None]`.
+    ) -> List[Union[KE100Result, S200Result, T100Result, T110Result, T300Result, T31XResult, None]]:
+        """Returns *child device list* as `List[KE100Result | S200Result | T100Result | T110Result | T300Result | T31XResult | None]`.
         It is not guaranteed to contain all the properties returned from the Tapo API
         or to support all the possible devices connected to the hub.
         If the deserialization fails, or if a property that you care about it's not present,
@@ -134,15 +132,16 @@ class HubHandler(DeviceManagementExt):
 
     async def s200b(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
-    ) -> S200BHandler:
-        """Returns a `S200BHandler` for the device matching the provided `device_id` or `nickname`.
+    ) -> S200Handler:
+        """Returns a `S200Handler` for the device matching the provided `device_id` or `nickname`.
 
         Args:
             device_id (Optional[str]): The Device ID of the device
             nickname (Optional[str]): The Nickname of the device
 
         Returns:
-            S200BHandler: Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) devices.
+            S200Handler: Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) and
+            [S200D](https://www.tapo.com/en/search/?q=S200D) devices.
 
         Example:
             ```python
@@ -152,6 +151,34 @@ class HubHandler(DeviceManagementExt):
 
             # Get a handler for the child device
             device = await hub.s200b(device_id="0000000000000000000000000000000000000000")
+
+            # Get the device info of the child device
+            device_info = await device.get_device_info()
+            print(f"Device info: {device_info.to_dict()}")
+            ```
+        """
+
+    async def s200d(
+        self, device_id: Optional[str] = None, nickname: Optional[str] = None
+    ) -> S200Handler:
+        """Returns a `S200Handler` for the device matching the provided `device_id` or `nickname`.
+
+        Args:
+            device_id (Optional[str]): The Device ID of the device
+            nickname (Optional[str]): The Nickname of the device
+
+        Returns:
+            S200Handler: Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) and
+            [S200D](https://www.tapo.com/en/search/?q=S200D) devices.
+
+        Example:
+            ```python
+            # Connect to the hub
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            hub = await client.h100("192.168.1.100")
+
+            # Get a handler for the child device
+            device = await hub.s200d(device_id="0000000000000000000000000000000000000000")
 
             # Get the device info of the child device
             device_info = await device.get_device_info()
