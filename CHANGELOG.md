@@ -6,7 +6,17 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `EnergyUsageResult`: re-added the `current_power` field. It was removed in v0.8.6 because some energy-monitoring plugs omit it, but it is back as optional since it provides higher precision than `get_current_power`.
+- `EnergyUsageResult`: added the `electricity_charge` field to represent electricity charge/cost data reported by the device using the tariff configured in the Tapo app.
+
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- `EnergyUsageResult`: re-added the `current_power` field. It was removed in v0.8.6 because some energy-monitoring plugs omit it, but it is back as optional since it provides higher precision than `get_current_power`.
+- `EnergyUsageResult`: added the `electricity_charge` field to represent electricity charge/cost data reported by the device using the tariff configured in the Tapo app.
 
 ## [Rust v0.8.8][v0.8.8] - 2025-11-23
 
