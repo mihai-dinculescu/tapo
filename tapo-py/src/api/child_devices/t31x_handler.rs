@@ -7,7 +7,7 @@ use tapo::responses::{T31XResult, TemperatureHumidityRecords};
 use crate::call_handler_method;
 
 #[derive(Clone)]
-#[pyclass(name = "T31XHandler")]
+#[pyclass(from_py_object, name = "T31XHandler")]
 pub struct PyT31XHandler {
     inner: Arc<T31XHandler>,
 }

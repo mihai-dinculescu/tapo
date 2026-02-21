@@ -16,7 +16,7 @@ use crate::call_handler_method;
 use crate::requests::{PyEnergyDataInterval, PyPowerDataInterval};
 
 #[derive(Clone)]
-#[pyclass(name = "PlugEnergyMonitoringHandler")]
+#[pyclass(from_py_object, name = "PlugEnergyMonitoringHandler")]
 pub struct PyPlugEnergyMonitoringHandler {
     inner: Arc<RwLock<PlugEnergyMonitoringHandler>>,
 }

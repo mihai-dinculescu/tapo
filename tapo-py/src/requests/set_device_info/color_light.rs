@@ -10,7 +10,7 @@ use crate::errors::ErrorWrapper;
 use crate::runtime::tokio;
 
 #[derive(Clone)]
-#[pyclass(name = "LightSetDeviceInfoParams")]
+#[pyclass(from_py_object, name = "LightSetDeviceInfoParams")]
 pub struct PyColorLightSetDeviceInfoParams {
     params: ColorLightSetDeviceInfoParams,
 }

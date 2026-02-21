@@ -8,7 +8,7 @@ use crate::responses::{DecodableResultExt, Status, TapoResponseExt, decode_value
 /// Specific properties: `open`, `report_interval`,
 /// `last_onboarding_timestamp`,`status_follow_edge`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct T110Result {
     // Common properties to all Hub child devices.
@@ -65,7 +65,7 @@ impl DecodableResultExt for T110Result {
 /// T110 Log.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "event")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub enum T110Log {
     Close {

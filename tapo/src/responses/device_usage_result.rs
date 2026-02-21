@@ -5,7 +5,7 @@ use crate::utils::ok_or_default;
 
 /// Contains the time usage.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct DeviceUsageResult {
     /// Time usage in minutes.
     pub time_usage: UsageByPeriodResult,
@@ -26,7 +26,7 @@ impl DeviceUsageResult {
 
 /// Usage by period result for today, the past 7 days, and the past 30 days.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct UsageByPeriodResult {
     /// Today.
     #[serde(deserialize_with = "ok_or_default")]

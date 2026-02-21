@@ -7,7 +7,10 @@ use crate::responses::{DecodableResultExt, Status, TapoResponseExt, decode_value
 /// Currently *Celsius* is the only unit supported by KE100.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+)]
 #[allow(missing_docs)]
 pub enum TemperatureUnitKE100 {
     Celsius,
@@ -19,7 +22,7 @@ pub enum TemperatureUnitKE100 {
 /// `min_control_temperature`, `max_control_temperature`, `temperature_offset`,
 /// `child_protection_on`, `frost_protection_on`, `location`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct KE100Result {
     // Common properties to all Hub child devices.

@@ -5,8 +5,8 @@ use crate::responses::TapoResponseExt;
 use crate::utils::der_tapo_datetime_format;
 
 /// Contains local time, current power and the energy usage and runtime for today and for the current month.
-#[derive(Debug, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct EnergyUsageResult {
     /// Local time of the device.
     #[serde(deserialize_with = "der_tapo_datetime_format")]

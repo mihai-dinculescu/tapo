@@ -7,7 +7,7 @@ use crate::responses::{DecodableResultExt, TapoResponseExt, decode_value};
 /// Please open an [issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues) if you'd like to discuss
 /// the possibility of adding support for a specific type of device that is currently unsupported.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct DeviceInfoGenericResult {
     pub device_id: String,

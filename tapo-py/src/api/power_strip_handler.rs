@@ -12,7 +12,7 @@ use crate::call_handler_method;
 use crate::errors::ErrorWrapper;
 
 #[derive(Clone)]
-#[pyclass(name = "PowerStripHandler")]
+#[pyclass(from_py_object, name = "PowerStripHandler")]
 pub struct PyPowerStripHandler {
     inner: Arc<RwLock<PowerStripHandler>>,
 }

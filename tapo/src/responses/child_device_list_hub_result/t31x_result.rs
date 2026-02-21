@@ -8,7 +8,10 @@ use crate::responses::{DecodableResultExt, Status, TapoResponseExt, decode_value
 /// Temperature unit.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all, eq, eq_int))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+)]
 #[allow(missing_docs)]
 pub enum TemperatureUnit {
     Celsius,
@@ -21,7 +24,7 @@ pub enum TemperatureUnit {
 /// `current_temperature_exception`, `current_humidity`, `current_humidity_exception`,
 /// `report_interval`, `last_onboarding_timestamp`, `status_follow_edge`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct T31XResult {
     // Common properties to all Hub child devices.
@@ -102,7 +105,7 @@ impl TapoResponseExt for TemperatureHumidityRecordsRaw {}
 
 /// Temperature and Humidity record as an average over a 15 minute interval.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct TemperatureHumidityRecord {
     /// Record's DateTime in UTC.
@@ -132,8 +135,8 @@ impl TemperatureHumidityRecord {
 }
 
 /// Temperature and Humidity records for the last 24 hours at 15 minute intervals.
-#[derive(Debug, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct TemperatureHumidityRecords {
     /// The datetime in UTC of when this response was generated.

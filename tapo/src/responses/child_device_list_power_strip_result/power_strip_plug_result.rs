@@ -34,7 +34,7 @@ impl TapoResponseExt for ChildDeviceListPowerStripResult {}
 /// Specific properties: `auto_off_remain_time`, `auto_off_status`,
 /// `bind_count`, `default_states`, `overheat_status`, `position`, `slot_number`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct PowerStripPlugResult {
     pub auto_off_remain_time: u64,

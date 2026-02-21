@@ -8,7 +8,7 @@ use crate::call_handler_method;
 use crate::responses::TriggerLogsS200Result;
 
 #[derive(Clone)]
-#[pyclass(name = "S200Handler")]
+#[pyclass(from_py_object, name = "S200Handler")]
 pub struct PyS200Handler {
     inner: Arc<S200Handler>,
 }

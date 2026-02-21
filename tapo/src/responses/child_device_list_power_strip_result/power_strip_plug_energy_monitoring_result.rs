@@ -37,7 +37,7 @@ impl TapoResponseExt for ChildDeviceListPowerStripEnergyMonitoringResult {}
 /// `overcurrent_status`, `overheat_status`, `position`,
 /// `power_protection_status`, `slot_number`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct PowerStripPlugEnergyMonitoringResult {
     pub auto_off_remain_time: u64,

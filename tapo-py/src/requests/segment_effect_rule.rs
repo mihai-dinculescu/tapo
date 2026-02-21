@@ -2,7 +2,7 @@ use pyo3::prelude::*;
 use tapo::requests::{SegmentEffect, SegmentEffectType};
 
 #[derive(Clone)]
-#[pyclass(name = "SegmentEffect")]
+#[pyclass(from_py_object, name = "SegmentEffect")]
 pub struct PySegmentEffect {
     inner: SegmentEffect,
 }

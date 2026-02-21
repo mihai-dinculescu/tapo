@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use tapo::responses::{S200Log, TriggerLogsResult};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[pyclass(get_all)]
+#[pyclass(from_py_object, get_all)]
 #[allow(missing_docs)]
 pub struct TriggerLogsS200Result {
     start_id: u64,

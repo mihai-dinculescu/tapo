@@ -16,7 +16,7 @@ use crate::call_handler_method;
 use crate::requests::{PyColorLightSetDeviceInfoParams, PyLightingEffect, PySegmentEffect};
 
 #[derive(Clone)]
-#[pyclass(name = "RgbicLightStripHandler")]
+#[pyclass(from_py_object, name = "RgbicLightStripHandler")]
 pub struct PyRgbicLightStripHandler {
     pub inner: Arc<RwLock<RgbicLightStripHandler>>,
 }

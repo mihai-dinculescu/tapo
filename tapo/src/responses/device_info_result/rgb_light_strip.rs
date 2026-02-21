@@ -5,7 +5,7 @@ use crate::responses::{DecodableResultExt, DefaultStateType, TapoResponseExt, de
 
 /// Device info of Tapo L900. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct DeviceInfoRgbLightStripResult {
     //
@@ -72,7 +72,7 @@ impl DecodableResultExt for DeviceInfoRgbLightStripResult {
 
 /// RGB Light Strip Default State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct DefaultRgbLightStripState {
     pub r#type: DefaultStateType,
@@ -81,7 +81,7 @@ pub struct DefaultRgbLightStripState {
 
 /// RGB Light Strip State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct RgbLightStripState {
     pub brightness: Option<u8>,

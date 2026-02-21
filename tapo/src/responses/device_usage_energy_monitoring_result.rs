@@ -4,7 +4,7 @@ use super::{TapoResponseExt, UsageByPeriodResult};
 
 /// Contains the time usage, the power consumption, and the energy savings of the device.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct DeviceUsageEnergyMonitoringResult {
     /// Time usage in minutes.
     pub time_usage: UsageByPeriodResult,

@@ -7,7 +7,7 @@ use crate::responses::{DecodableResultExt, Status, TapoResponseExt, decode_value
 ///
 /// Specific properties: `report_interval`, `last_onboarding_timestamp`, `status_follow_edge`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct S200Result {
     // Common properties to all Hub child devices.
@@ -62,7 +62,7 @@ impl DecodableResultExt for S200Result {
 
 /// S200B and S200D Rotation log params.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct S200RotationParams {
     #[serde(rename = "rotate_deg")]
@@ -84,7 +84,7 @@ impl S200RotationParams {
 /// S200B and S200D Log.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "event")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub enum S200Log {
     Rotation {

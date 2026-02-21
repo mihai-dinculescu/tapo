@@ -5,7 +5,7 @@ use crate::responses::{DecodableResultExt, TapoResponseExt, decode_value};
 
 /// Device info of Tapo P300, P304M, P306 and P316M. Superset of [`crate::responses::DeviceInfoGenericResult`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct DeviceInfoPowerStripResult {
     //

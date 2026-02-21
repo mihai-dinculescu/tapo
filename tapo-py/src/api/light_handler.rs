@@ -10,7 +10,7 @@ use tokio::sync::RwLock;
 use crate::call_handler_method;
 
 #[derive(Clone)]
-#[pyclass(name = "LightHandler")]
+#[pyclass(from_py_object, name = "LightHandler")]
 pub struct PyLightHandler {
     inner: Arc<RwLock<LightHandler>>,
 }

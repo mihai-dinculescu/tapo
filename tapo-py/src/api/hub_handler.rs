@@ -16,7 +16,7 @@ use crate::errors::ErrorWrapper;
 use crate::requests::PyAlarmDuration;
 
 #[derive(Clone)]
-#[pyclass(name = "HubHandler")]
+#[pyclass(from_py_object, name = "HubHandler")]
 pub struct PyHubHandler {
     inner: Arc<RwLock<HubHandler>>,
 }
