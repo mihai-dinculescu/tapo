@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.8.9][v0.8.9] - 2026-02-21
+
 ### Added
 
 - `RgbicLightStripHandler`: added `set_segment_effect` method to apply lighting effects to individual segments of RGBIC light strips, enabling the newer effects available in the Tapo app that cannot be achieved through the `set_lighting_effect` method. (thanks to @Oliyy)
@@ -20,7 +24,7 @@ file. This change log follows the conventions of
 - `S200BRotationParams`: has been renamed to `S200RotationParams` to better reflect its purpose when used for both S200B and S200D devices.
 - `S200BLog`: has been renamed to `S200Log` to better reflect its purpose when used for both S200B and S200D devices.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.8.9][v0.8.9] - 2026-02-21
 
 ### Added
 
