@@ -1,11 +1,15 @@
 use std::fmt;
 
+use anyhow::Context as _;
 use async_trait::async_trait;
 use base64::{Engine as _, engine::general_purpose};
 use log::{debug, trace};
+use rand::{
+    SeedableRng,
+    rngs::{StdRng, SysRng},
+};
 use reqwest::Client;
 use reqwest::header::COOKIE;
-use rsa::rand_core::OsRng;
 use serde::de::DeserializeOwned;
 
 use crate::api::protocol::TapoProtocol;
@@ -131,9 +135,10 @@ impl TapoProtocolExt for PassthroughProtocol {
 
 impl PassthroughProtocol {
     pub fn new(client: Client) -> Result<Self, Error> {
+        let mut rng = StdRng::try_from_rng(&mut SysRng).context("Failed to initialize RNG")?;
         Ok(Self {
             client,
-            key_pair: PassthroughKeyPair::new(OsRng)?,
+            key_pair: PassthroughKeyPair::new(&mut rng)?,
             session: None,
         })
     }

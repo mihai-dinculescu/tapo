@@ -3,8 +3,8 @@ use aes::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, block_padding};
 use base64::{Engine as _, engine::general_purpose};
 use cbc::{Decryptor, Encryptor};
 use log::debug;
+use rand::{CryptoRng, Rng};
 use rsa::pkcs8::{EncodePublicKey, LineEnding};
-use rsa::rand_core::CryptoRngCore;
 use rsa::{Pkcs1v15Encrypt, RsaPrivateKey};
 use sha1::{Digest, Sha1};
 
@@ -14,12 +14,12 @@ pub(crate) struct PassthroughKeyPair {
 }
 
 impl PassthroughKeyPair {
-    pub fn new<R>(mut rng: R) -> anyhow::Result<Self>
+    pub fn new<R>(rng: &mut R) -> anyhow::Result<Self>
     where
-        R: CryptoRngCore,
+        R: CryptoRng + Rng + ?Sized,
     {
         debug!("Generating RSA key pair...");
-        let rsa = RsaPrivateKey::new(&mut rng, 1024)?;
+        let rsa = RsaPrivateKey::new(rng, 1024)?;
 
         Ok(Self { rsa })
     }
@@ -97,23 +97,19 @@ mod tests {
 
     #[test]
     fn test_passthrough_cipher() -> anyhow::Result<()> {
-        let mut rng = StdRng::seed_from_u64(0);
+        let mut rng = StdRng::from_seed([0u8; 32]);
 
         let key_pair = PassthroughKeyPair::new(&mut rng)?;
 
         let public_key = key_pair.get_public_key()?;
-        assert_eq!(public_key.len(), 272);
         assert_eq!(
             public_key,
-            "-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDimR6OafJxMw3NNPTE8fTGA+I5
-Djrk5YCtTAcnGXPsWP8tgGfgJ/S5SI21CzMiNA0GrbA1a2fIYafR73a5Be3+DTWd
-pg/BjhASlKZos6CbkkVsOMeVKQOkdToGrRtHW6cIofLM6ZvZvuzVTTPdMd+paEjq
-waihnXBCkPwQndikfwIDAQAB
------END PUBLIC KEY-----\n"
+            "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDVBqhjRpIFPl0ee9v5fNxvf0z4\nebYgYfTQYNKELi50Ba4yDm7l3BMyvwGe8OWb+hqP8zZVHDCAQz0cMm4CplYdi4qA\nbrbdHXhkgo6+Y1J6Wo7xXkaH3IxuMTJ0LXphqFPkqvdApD8xfZMbQbL1D5HT6AVM\nKntJZXJnX9/czU/fdQIDAQAB\n-----END PUBLIC KEY-----\n"
         );
 
-        let key_bytes = vec![rng.r#gen(); 32];
+        let mut key_bytes = [0u8; 32];
+        rng.fill_bytes(&mut key_bytes);
+        let key_bytes = key_bytes.to_vec();
         let key_encrypted_bytes =
             key_pair
                 .rsa
@@ -124,14 +120,14 @@ waihnXBCkPwQndikfwIDAQAB
         assert_eq!(
             key_encrypted_bytes,
             vec![
-                166, 230, 248, 62, 63, 183, 64, 126, 54, 24, 66, 139, 130, 63, 33, 84, 139, 98, 55,
-                39, 200, 61, 91, 180, 108, 199, 245, 34, 183, 145, 198, 211, 79, 76, 151, 50, 16,
-                136, 184, 88, 9, 118, 167, 70, 106, 212, 38, 17, 146, 140, 177, 42, 146, 149, 70,
-                129, 229, 16, 56, 138, 206, 24, 168, 167, 65, 225, 136, 188, 137, 208, 216, 31, 44,
-                195, 218, 150, 61, 172, 36, 63, 66, 56, 144, 5, 80, 199, 223, 153, 201, 237, 187,
-                243, 81, 255, 139, 78, 27, 126, 49, 186, 218, 135, 98, 88, 250, 254, 135, 155, 196,
-                101, 62, 234, 63, 254, 184, 34, 195, 110, 70, 213, 237, 228, 199, 37, 101, 3, 33,
-                157
+                208, 156, 169, 76, 213, 173, 29, 141, 119, 45, 60, 47, 142, 214, 125, 2, 185, 30,
+                32, 205, 2, 64, 148, 28, 130, 197, 152, 45, 115, 84, 14, 87, 61, 156, 88, 191, 56,
+                122, 85, 27, 172, 49, 245, 224, 242, 14, 125, 195, 255, 94, 158, 112, 151, 172,
+                197, 19, 82, 22, 207, 151, 80, 165, 51, 185, 189, 229, 78, 204, 107, 98, 211, 101,
+                248, 157, 110, 55, 16, 97, 101, 93, 190, 223, 210, 193, 48, 147, 233, 106, 229,
+                119, 54, 38, 36, 74, 106, 85, 44, 63, 1, 221, 71, 238, 183, 120, 232, 216, 66, 74,
+                9, 77, 131, 37, 15, 72, 121, 25, 5, 245, 250, 134, 61, 126, 202, 144, 55, 15, 4,
+                156
             ]
         );
 
@@ -143,7 +139,7 @@ waihnXBCkPwQndikfwIDAQAB
         let message_encrypted = cipher.encrypt(message)?;
 
         assert_eq!(message_encrypted.len(), 24);
-        assert_eq!(message_encrypted, "qUAXr1/bAt6+pHYjns76KA==");
+        assert_eq!(message_encrypted, "xd8NUSekkgt3UdW6UHZCkA==");
 
         assert_eq!(cipher.decrypt(&message_encrypted)?, message);
 
