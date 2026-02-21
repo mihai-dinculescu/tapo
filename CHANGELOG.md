@@ -10,6 +10,8 @@ file. This change log follows the conventions of
 
 - `RgbicLightStripHandler`: added `set_segment_effect` method to apply lighting effects to individual segments of RGBIC light strips, enabling the newer effects available in the Tapo app that cannot be achieved through the `set_lighting_effect` method. (thanks to @Oliyy)
 - `HubHandler`: added `s200d` method to create handlers for the S200D smart dimmer devices. (thanks to @mibofra)
+- `EnergyUsageResult`: re-added the `current_power` property. It was removed in v0.8.6 because some energy-monitoring plugs omit it, but it is back as optional since it provides higher precision than `get_current_power`. (thanks to @nazamhussain)
+- `EnergyUsageResult`: added the `electricity_charge` property to represent electricity charge/cost data reported by the device using the tariff configured in the Tapo app. (thanks to @nazamhussain)
 
 ### Changed
 
@@ -24,6 +26,8 @@ file. This change log follows the conventions of
 
 - `RgbicLightStripHandler`: added `set_segment_effect` method to apply lighting effects to individual segments of RGBIC light strips, enabling the newer effects available in the Tapo app that cannot be achieved through the `set_lighting_effect` method. (thanks to @Oliyy)
 - `HubHandler`: added `s200d` method to create handlers for the S200D smart dimmer devices. (thanks to @mibofra)
+- `EnergyUsageResult`: re-added the `current_power` property. It was removed in v0.8.6 because some energy-monitoring plugs omit it, but it is back as optional since it provides higher precision than `get_current_power`. (thanks to @nazamhussain)
+- `EnergyUsageResult`: added the `electricity_charge` property to represent electricity charge/cost data reported by the device using the tariff configured in the Tapo app. (thanks to @nazamhussain)
 
 ### Changed
 
