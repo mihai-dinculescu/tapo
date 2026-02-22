@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Fixed
+
+- `HubHandler::s200d`: fixed an issue where the method was incorrectly filtering for `S200B` devices instead of `S200D` devices.
+
 ## [Python Unreleased][Unreleased]
+
+### Fixed
+
+- `HubHandler.s200d`: fixed an issue where the method was incorrectly filtering for `S200B` devices instead of `S200D` devices.
 
 ## [Rust v0.8.9][v0.8.9] - 2026-02-21
 

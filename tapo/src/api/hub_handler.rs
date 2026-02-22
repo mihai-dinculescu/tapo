@@ -237,7 +237,7 @@ impl HubHandler {
     /// # }
     /// ```
     pub async fn s200d(&self, identifier: HubDevice) -> Result<S200Handler, Error> {
-        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::S200B);
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::S200D);
         Ok(S200Handler::new(self.client.clone(), device_id))
     }
 
