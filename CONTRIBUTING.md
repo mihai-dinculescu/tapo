@@ -14,7 +14,7 @@ The Tapo API is not documented, but it can be discovered by reverse engineering 
 ## Releasing new versions
 
 - Update version in `tapo/Cargo.toml`
-- Update version in `tapo-py/pyproject.toml` (two places)
+- Update version in `tapo-py/pyproject.toml`
 - Update CHANGELOG.md
 - Commit
 - Add tag
