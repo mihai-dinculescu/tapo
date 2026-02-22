@@ -6,11 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.8.10][v0.8.10] - 2026-02-22
+
 ### Fixed
 
 - `HubHandler::s200d`: fixed an issue where the method was incorrectly filtering for `S200B` devices instead of `S200D` devices.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.8.10][v0.8.10] - 2026-02-22
 
 ### Fixed
 
@@ -788,6 +792,9 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.8.10]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.10
+[v0.8.9]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.9
+[v0.8.8]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.8
 [v0.8.7]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.7
 [v0.8.6]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.6
 [v0.8.5]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.5
