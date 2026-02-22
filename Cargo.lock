@@ -1590,7 +1590,7 @@ dependencies = [
 
 [[package]]
 name = "tapo-py"
-version = "0.1.0"
+version = "0.8.10"
 dependencies = [
  "anyhow",
  "chrono",
