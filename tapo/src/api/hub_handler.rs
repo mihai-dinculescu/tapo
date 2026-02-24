@@ -322,7 +322,7 @@ impl HubHandler {
     ///     .await?;
     /// // Get a handler for the child device
     /// let device_id = "0000000000000000000000000000000000000000".to_string();
-    /// let device = hub.t310(HubDevice::ByDeviceId(device_id)).await?;
+    /// let device = hub.t31x(HubDevice::ByDeviceId(device_id)).await?;
     /// // Get the device info of the child device
     /// let device_info = device.get_device_info().await?;
     /// # Ok(())
