@@ -207,7 +207,7 @@ impl HubHandler {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn s200(&self, identifier: HubDevice) -> Result<S200Handler, Error>  {
+    pub async fn s200(&self, identifier: HubDevice) -> Result<S200Handler, Error> {
         let device_id = get_device_id!(
             self,
             identifier,
@@ -337,7 +337,6 @@ impl HubHandler {
         );
         Ok(T31XHandler::new(self.client.clone(), device_id))
     }
-
 }
 
 #[async_trait]

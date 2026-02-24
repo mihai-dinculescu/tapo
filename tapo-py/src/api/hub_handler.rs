@@ -282,5 +282,4 @@ impl PyHubHandler {
             call_handler_method!(handler.read().await.deref(), HubHandler::t31x, identifier)?;
         Ok(PyT31XHandler::new(child_handler))
     }
-    
 }
