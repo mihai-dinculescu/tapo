@@ -42,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             ChildDeviceHubResult::S200B(device) | ChildDeviceHubResult::S200D(device) => {
                 let s200 = hub
-                    .s200b(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .s200(HubDevice::ByDeviceId(device.device_id.clone()))
                     .await?;
                 let trigger_logs = s200.get_trigger_logs(5, 0).await?;
 
@@ -90,7 +90,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             ChildDeviceHubResult::T310(device) | ChildDeviceHubResult::T315(device) => {
                 let t31x = hub
-                    .t315(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .t31x(HubDevice::ByDeviceId(device.device_id.clone()))
                     .await?;
                 let temperature_humidity_records = t31x.get_temperature_humidity_records().await?;
 

@@ -36,7 +36,7 @@ async def main():
                 )
             )
         elif isinstance(child, S200Result):
-            s200 = await hub.s200b(device_id=child.device_id)
+            s200 = await hub.s200(device_id=child.device_id)
             trigger_logs = await s200.get_trigger_logs(5, 0)
 
             print(
