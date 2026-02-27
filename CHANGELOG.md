@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [Rust v0.8.11][v0.8.11] - 2026-02-27
+
 ### Changed
     
 - `HubHandler`: `s200b` and `s200d` handler builders have been consolidated into a single `s200` method. (thanks to @mibofra)
@@ -13,7 +17,7 @@ file. This change log follows the conventions of
 - `ChildDeviceHubResult`: `S200B` and `S200D` variants have been consolidated into a single `S200` variant.
 - `ChildDeviceHubResult`: `T310` and `T315` variants have been consolidated into a single `T31X` variant.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.8.11][v0.8.11] - 2026-02-27
 
 ### Changed
 
@@ -804,6 +808,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.8.11]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.11
 [v0.8.10]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.10
 [v0.8.9]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.9
 [v0.8.8]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.8
