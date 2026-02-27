@@ -214,7 +214,7 @@ impl PyHubHandler {
     }
 
     #[pyo3(signature = (device_id=None, nickname=None))]
-    pub async fn s200b(
+    pub async fn s200(
         &self,
         device_id: Option<String>,
         nickname: Option<String>,
@@ -223,21 +223,7 @@ impl PyHubHandler {
         let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
 
         let child_handler =
-            call_handler_method!(handler.read().await.deref(), HubHandler::s200b, identifier)?;
-        Ok(PyS200Handler::new(child_handler))
-    }
-
-    #[pyo3(signature = (device_id=None, nickname=None))]
-    pub async fn s200d(
-        &self,
-        device_id: Option<String>,
-        nickname: Option<String>,
-    ) -> PyResult<PyS200Handler> {
-        let handler = self.inner.clone();
-        let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
-
-        let child_handler =
-            call_handler_method!(handler.read().await.deref(), HubHandler::s200d, identifier)?;
+            call_handler_method!(handler.read().await.deref(), HubHandler::s200, identifier)?;
         Ok(PyS200Handler::new(child_handler))
     }
 
@@ -284,7 +270,7 @@ impl PyHubHandler {
     }
 
     #[pyo3(signature = (device_id=None, nickname=None))]
-    pub async fn t310(
+    pub async fn t31x(
         &self,
         device_id: Option<String>,
         nickname: Option<String>,
@@ -293,16 +279,7 @@ impl PyHubHandler {
         let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
 
         let child_handler =
-            call_handler_method!(handler.read().await.deref(), HubHandler::t310, identifier)?;
+            call_handler_method!(handler.read().await.deref(), HubHandler::t31x, identifier)?;
         Ok(PyT31XHandler::new(child_handler))
-    }
-
-    #[pyo3(signature = (device_id=None, nickname=None))]
-    pub async fn t315(
-        &self,
-        device_id: Option<String>,
-        nickname: Option<String>,
-    ) -> PyResult<PyT31XHandler> {
-        self.t310(device_id, nickname).await
     }
 }

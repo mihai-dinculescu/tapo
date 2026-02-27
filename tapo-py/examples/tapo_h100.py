@@ -36,7 +36,7 @@ async def main():
                 )
             )
         elif isinstance(child, S200Result):
-            s200 = await hub.s200b(device_id=child.device_id)
+            s200 = await hub.s200(device_id=child.device_id)
             trigger_logs = await s200.get_trigger_logs(5, 0)
 
             print(
@@ -84,7 +84,7 @@ async def main():
                 )
             )
         elif isinstance(child, T31XResult):
-            t31x = await hub.t315(device_id=child.device_id)
+            t31x = await hub.t31x(device_id=child.device_id)
             temperature_humidity_records = await t31x.get_temperature_humidity_records()
 
             print(

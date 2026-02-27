@@ -130,7 +130,7 @@ class HubHandler(DeviceManagementExt):
             ```
         """
 
-    async def s200b(
+    async def s200(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> S200Handler:
         """Returns a `S200Handler` for the device matching the provided `device_id` or `nickname`.
@@ -150,35 +150,7 @@ class HubHandler(DeviceManagementExt):
             hub = await client.h100("192.168.1.100")
 
             # Get a handler for the child device
-            device = await hub.s200b(device_id="0000000000000000000000000000000000000000")
-
-            # Get the device info of the child device
-            device_info = await device.get_device_info()
-            print(f"Device info: {device_info.to_dict()}")
-            ```
-        """
-
-    async def s200d(
-        self, device_id: Optional[str] = None, nickname: Optional[str] = None
-    ) -> S200Handler:
-        """Returns a `S200Handler` for the device matching the provided `device_id` or `nickname`.
-
-        Args:
-            device_id (Optional[str]): The Device ID of the device
-            nickname (Optional[str]): The Nickname of the device
-
-        Returns:
-            S200Handler: Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) and
-            [S200D](https://www.tapo.com/en/search/?q=S200D) devices.
-
-        Example:
-            ```python
-            # Connect to the hub
-            client = ApiClient("tapo-username@example.com", "tapo-password")
-            hub = await client.h100("192.168.1.100")
-
-            # Get a handler for the child device
-            device = await hub.s200d(device_id="0000000000000000000000000000000000000000")
+            device = await hub.s200(device_id="0000000000000000000000000000000000000000")
 
             # Get the device info of the child device
             device_info = await device.get_device_info()
@@ -267,7 +239,7 @@ class HubHandler(DeviceManagementExt):
             ```
         """
 
-    async def t310(
+    async def t31x(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> T31XHandler:
         """Returns a `T31XHandler` for the device matching the provided `device_id` or `nickname`.
@@ -287,33 +259,6 @@ class HubHandler(DeviceManagementExt):
 
             # Get a handler for the child device
             device = await hub.t310(device_id="0000000000000000000000000000000000000000")
-
-            # Get the device info of the child device
-            device_info = await device.get_device_info()
-            print(f"Device info: {device_info.to_dict()}")
-            ```
-        """
-
-    async def t315(
-        self, device_id: Optional[str] = None, nickname: Optional[str] = None
-    ) -> T31XHandler:
-        """Returns a `T31XHandler` for the device matching the provided `device_id` or `nickname`.
-        Args:
-            device_id (Optional[str]): The Device ID of the device
-            nickname (Optional[str]): The Nickname of the device
-
-        Returns:
-            T31XHandler: Handler for the [T310](https://www.tapo.com/en/search/?q=T310)
-            and [T315](https://www.tapo.com/en/search/?q=T315) devices.
-
-        Example:
-            ```python
-            # Connect to the hub
-            client = ApiClient("tapo-username@example.com", "tapo-password")
-            hub = await client.h100("192.168.1.100")
-
-            # Get a handler for the child device
-            device = await hub.t315(device_id="0000000000000000000000000000000000000000")
 
             # Get the device info of the child device
             device_info = await device.get_device_info()
