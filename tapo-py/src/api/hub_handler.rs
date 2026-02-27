@@ -98,10 +98,7 @@ impl PyHubHandler {
                     ChildDeviceHubResult::KE100(device) => {
                         results.append(device.into_pyobject(py)?)?;
                     }
-                    ChildDeviceHubResult::S200B(device) => {
-                        results.append(device.into_pyobject(py)?)?;
-                    }
-                    ChildDeviceHubResult::S200D(device) => {
+                    ChildDeviceHubResult::S200(device) => {
                         results.append(device.into_pyobject(py)?)?;
                     }
                     ChildDeviceHubResult::T100(device) => {
@@ -113,10 +110,7 @@ impl PyHubHandler {
                     ChildDeviceHubResult::T300(device) => {
                         results.append(device.into_pyobject(py)?)?;
                     }
-                    ChildDeviceHubResult::T310(device) => {
-                        results.append(device.into_pyobject(py)?)?;
-                    }
-                    ChildDeviceHubResult::T315(device) => {
+                    ChildDeviceHubResult::T31X(device) => {
                         results.append(device.into_pyobject(py)?)?;
                     }
                     _ => {

@@ -208,12 +208,7 @@ impl HubHandler {
     /// # }
     /// ```
     pub async fn s200(&self, identifier: HubDevice) -> Result<S200Handler, Error> {
-        let device_id = get_device_id!(
-            self,
-            identifier,
-            ChildDeviceHubResult::S200B,
-            ChildDeviceHubResult::S200D
-        );
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::S200);
         Ok(S200Handler::new(self.client.clone(), device_id))
     }
 
@@ -329,12 +324,7 @@ impl HubHandler {
     /// # }
     /// ```
     pub async fn t31x(&self, identifier: HubDevice) -> Result<T31XHandler, Error> {
-        let device_id = get_device_id!(
-            self,
-            identifier,
-            ChildDeviceHubResult::T310,
-            ChildDeviceHubResult::T315
-        );
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::T31X);
         Ok(T31XHandler::new(self.client.clone(), device_id))
     }
 }

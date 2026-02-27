@@ -58,20 +58,18 @@ pub enum Status {
 pub enum ChildDeviceHubResult {
     /// KE100 thermostatic radiator valve (TRV).
     KE100(Box<KE100Result>),
-    /// S200B button switch.
-    S200B(Box<S200Result>),
-    /// S200D button switch.
-    S200D(Box<S200Result>),
+    /// S200B/S200D button switch.
+    #[serde(rename = "S200B", alias = "S200D")]
+    S200(Box<S200Result>),
     /// T100 motion sensor.
     T100(Box<T100Result>),
     /// T110 contact sensor.
     T110(Box<T110Result>),
     /// T300 water sensor.
     T300(Box<T300Result>),
-    /// T310 temperature and humidity sensor.
-    T310(Box<T31XResult>),
-    /// T315 temperature and humidity sensor.
-    T315(Box<T31XResult>),
+    /// T310/T315 temperature and humidity sensor.
+    #[serde(rename = "T310", alias = "T315")]
+    T31X(Box<T31XResult>),
     /// Catch-all for currently unsupported devices.
     /// Please open an issue if you need support for a new device.
     #[serde(other)]
@@ -84,11 +82,8 @@ impl DecodableResultExt for ChildDeviceHubResult {
             ChildDeviceHubResult::KE100(device) => {
                 Ok(ChildDeviceHubResult::KE100(Box::new(device.decode()?)))
             }
-            ChildDeviceHubResult::S200B(device) => {
-                Ok(ChildDeviceHubResult::S200B(Box::new(device.decode()?)))
-            }
-            ChildDeviceHubResult::S200D(device) => {
-                Ok(ChildDeviceHubResult::S200D(Box::new(device.decode()?)))
+            ChildDeviceHubResult::S200(device) => {
+                Ok(ChildDeviceHubResult::S200(Box::new(device.decode()?)))
             }
             ChildDeviceHubResult::T100(device) => {
                 Ok(ChildDeviceHubResult::T100(Box::new(device.decode()?)))
@@ -99,11 +94,8 @@ impl DecodableResultExt for ChildDeviceHubResult {
             ChildDeviceHubResult::T300(device) => {
                 Ok(ChildDeviceHubResult::T300(Box::new(device.decode()?)))
             }
-            ChildDeviceHubResult::T310(device) => {
-                Ok(ChildDeviceHubResult::T310(Box::new(device.decode()?)))
-            }
-            ChildDeviceHubResult::T315(device) => {
-                Ok(ChildDeviceHubResult::T315(Box::new(device.decode()?)))
+            ChildDeviceHubResult::T31X(device) => {
+                Ok(ChildDeviceHubResult::T31X(Box::new(device.decode()?)))
             }
             ChildDeviceHubResult::Other => Ok(ChildDeviceHubResult::Other),
         }

@@ -6,7 +6,19 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Changed
+    
+- `HubHandler`: `s200b` and `s200d` handler builders have been consolidated into a single `s200` method. (thanks to @mibofra)
+- `HubHandler`: `t310` and `t315` handler builders have been consolidated into a single `t31x` method. (thanks to @mibofra)
+- `ChildDeviceHubResult`: `S200B` and `S200D` variants have been consolidated into a single `S200` variant.
+- `ChildDeviceHubResult`: `T310` and `T315` variants have been consolidated into a single `T31X` variant.
+
 ## [Python Unreleased][Unreleased]
+
+### Changed
+
+- `HubHandler`: `s200b` and `s200d` handler builders have been consolidated into a single `s200` method. (thanks to @mibofra)
+- `HubHandler`: `t310` and `t315` handler builders have been consolidated into a single `t31x` method. (thanks to @mibofra)
 
 ## [Rust v0.8.10][v0.8.10] - 2026-02-22
 

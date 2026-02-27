@@ -40,7 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     device.temperature_unit,
                 );
             }
-            ChildDeviceHubResult::S200B(device) | ChildDeviceHubResult::S200D(device) => {
+            ChildDeviceHubResult::S200(device) => {
                 let s200 = hub
                     .s200(HubDevice::ByDeviceId(device.device_id.clone()))
                     .await?;
@@ -88,7 +88,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     trigger_logs
                 );
             }
-            ChildDeviceHubResult::T310(device) | ChildDeviceHubResult::T315(device) => {
+            ChildDeviceHubResult::T31X(device) => {
                 let t31x = hub
                     .t31x(HubDevice::ByDeviceId(device.device_id.clone()))
                     .await?;
