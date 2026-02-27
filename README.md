@@ -95,6 +95,10 @@ python examples/tapo_p110.py
 
 See all examples in [/tapo-py/examples][examples-py].
 
+## Community Projects
+
+- [tapo-pywal][tapo_pywal] - Sync Tapo smart bulb colors with pywal color schemes. Change your wallpaper, watch your room lighting match.
+
 ## Contributing
 
 Contributions are welcome and encouraged! See [/CONTRIBUTING.md][contributing].
@@ -107,5 +111,6 @@ Inspired by [petretiandrea/plugp100][inspired_by].
 [examples]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo/examples
 [examples-py]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples
 [tapo_rest]: https://github.com/ClementNerma/tapo-rest
+[tapo_pywal]: https://github.com/d0ksan8/tapo-pywal
 [contributing]: https://github.com/mihai-dinculescu/tapo/blob/main/CONTRIBUTING.md
 [inspired_by]: https://github.com/petretiandrea/plugp100
