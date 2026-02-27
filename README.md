@@ -80,9 +80,9 @@ await device.on()
 
 ```bash
 cd tapo-py
-poetry install # On the initial run
-poetry shell
-maturin develop # On the initial run and whenever the Rust code is modified
+uv venv # On the initial run
+uv sync --dev --locked
+uv run maturin develop # On the initial run and whenever the Rust code is modified
 
 export TAPO_USERNAME=
 export TAPO_PASSWORD=

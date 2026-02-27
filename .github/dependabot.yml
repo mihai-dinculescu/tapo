@@ -11,7 +11,7 @@ updates:
       prefix: "chore"
       prefix-development: "chore"
       include: "scope"
-  - package-ecosystem: pip
+  - package-ecosystem: uv
     directory: "/tapo-py"
     schedule:
       interval: "daily"
