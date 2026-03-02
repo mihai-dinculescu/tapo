@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Changed
+
+- `DeviceDiscovery`: the `discover` method stream now raises `tapo::TapoDiscoveryError` exceptions instead of `tapo::TapoError` to allow for more specific error handling, such as including the IP of the device that caused the error.
+
 ## [Python Unreleased][Unreleased]
+
+### Changed
+
+- `DeviceDiscovery`: the `discover` method stream now raises `tapo.TapoDiscoveryError` exceptions instead of `tapo.TapoError` to allow for more specific error handling, such as including the IP of the device that caused the error.
 
 ## [Rust v0.8.11][v0.8.11] - 2026-02-27
 

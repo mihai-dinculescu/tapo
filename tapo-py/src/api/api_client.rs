@@ -2,13 +2,12 @@ use std::time::Duration;
 
 use pyo3::prelude::*;
 use tapo::{
-    ApiClient, ColorLightHandler, DeviceDiscovery, GenericDeviceHandler, HubHandler, LightHandler,
-    PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
-    RgbLightStripHandler, RgbicLightStripHandler,
+    ApiClient, ColorLightHandler, DeviceDiscovery, Error, GenericDeviceHandler, HubHandler,
+    LightHandler, PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler,
+    PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
 };
 
 use crate::call_handler_constructor;
-use crate::errors::ErrorWrapper;
 
 use super::{
     PyColorLightHandler, PyDeviceDiscovery, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
@@ -29,7 +28,7 @@ impl PyApiClient {
         tapo_username: String,
         tapo_password: String,
         timeout_s: Option<u64>,
-    ) -> Result<Self, ErrorWrapper> {
+    ) -> Result<Self, Error> {
         let client = match timeout_s {
             Some(timeout_s) => ApiClient::new(tapo_username, tapo_password)
                 .with_timeout(Duration::from_secs(timeout_s)),
@@ -43,7 +42,7 @@ impl PyApiClient {
         &self,
         target: String,
         timeout_s: u64,
-    ) -> Result<PyDeviceDiscovery, ErrorWrapper> {
+    ) -> Result<PyDeviceDiscovery, Error> {
         let discovery: DeviceDiscovery =
             call_handler_constructor!(self, tapo::ApiClient::discover_devices, target, timeout_s);
         Ok(PyDeviceDiscovery::new(discovery))

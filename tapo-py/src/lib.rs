@@ -1,5 +1,4 @@
 mod api;
-mod errors;
 mod requests;
 mod responses;
 mod runtime;

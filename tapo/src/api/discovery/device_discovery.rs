@@ -13,14 +13,14 @@ pub use tokio_stream::StreamExt;
 
 use super::aes_discovery_query_generator::AesDiscoveryQueryGenerator;
 use super::discovery_result::DiscoveryResult;
-use crate::{ApiClient, Error};
+use crate::{ApiClient, DiscoveryError};
 
 // Attempts discovery every 3 seconds.
 const DISCOVERY_INTERVAL: Duration = Duration::from_secs(3);
 
 /// Device discovery process for Tapo devices.
 pub struct DeviceDiscovery {
-    rx: Receiver<Option<Result<DiscoveryResult, Error>>>,
+    rx: Receiver<Option<Result<DiscoveryResult, DiscoveryError>>>,
 }
 
 impl DeviceDiscovery {
@@ -85,9 +85,10 @@ impl DeviceDiscovery {
         transport: Arc<UdpSocket>,
         target: SocketAddr,
         seen_addrs: Arc<Mutex<Vec<SocketAddr>>>,
-        tx: mpsc::Sender<Option<Result<DiscoveryResult, Error>>>,
+        tx: mpsc::Sender<Option<Result<DiscoveryResult, DiscoveryError>>>,
     ) {
         let error_handling_tx = tx.clone();
+        let ip = target.ip().to_string();
 
         let result = async move {
             let aes_discovery_query = AesDiscoveryQueryGenerator::new()?.generate()?;
@@ -117,7 +118,12 @@ impl DeviceDiscovery {
         .await;
 
         if let Err(e) = result {
-            let _ = error_handling_tx.send(Some(Err(e.into()))).await;
+            let _ = error_handling_tx
+                .send(Some(Err(DiscoveryError {
+                    ip,
+                    source: e.into(),
+                })))
+                .await;
         }
     }
 
@@ -126,7 +132,7 @@ impl DeviceDiscovery {
         transport: Arc<UdpSocket>,
         target: SocketAddr,
         seen_addrs: Arc<Mutex<Vec<SocketAddr>>>,
-        tx: mpsc::Sender<Option<Result<DiscoveryResult, Error>>>,
+        tx: mpsc::Sender<Option<Result<DiscoveryResult, DiscoveryError>>>,
     ) {
         loop {
             if tx.is_closed() {
@@ -174,7 +180,12 @@ impl DeviceDiscovery {
                 Err(e) => {
                     let error =
                         anyhow::Error::from(e).context("Failed to receive discovery response");
-                    tx.send(Some(Err(error.into()))).await.ok();
+                    tx.send(Some(Err(DiscoveryError {
+                        ip: target.ip().to_string(),
+                        source: error.into(),
+                    })))
+                    .await
+                    .ok();
                     break;
                 }
             }
@@ -185,11 +196,14 @@ impl DeviceDiscovery {
         client: Arc<RwLock<ApiClient>>,
         ip_addr: IpAddr,
         target: IpAddr,
-        tx: mpsc::Sender<Option<Result<DiscoveryResult, Error>>>,
+        tx: mpsc::Sender<Option<Result<DiscoveryResult, DiscoveryError>>>,
     ) {
         let client = client.read().await.clone();
+        let ip = ip_addr.to_string();
 
-        let result = DiscoveryResult::new(client, ip_addr).await;
+        let result = DiscoveryResult::new(client, ip_addr)
+            .await
+            .map_err(|source| DiscoveryError { ip, source });
 
         let _ = tx.send(Some(result)).await;
 
@@ -201,12 +215,12 @@ impl DeviceDiscovery {
 }
 
 impl Stream for DeviceDiscovery {
-    type Item = Result<DiscoveryResult, Error>;
+    type Item = Result<DiscoveryResult, DiscoveryError>;
 
     fn poll_next(
         mut self: Pin<&mut Self>,
         cx: &mut TaskContext<'_>,
-    ) -> Poll<Option<Result<DiscoveryResult, Error>>> {
+    ) -> Poll<Option<Result<DiscoveryResult, DiscoveryError>>> {
         match Pin::new(&mut self.rx).poll_recv(cx) {
             Poll::Ready(result) => match result {
                 Some(result) => Poll::Ready(result),

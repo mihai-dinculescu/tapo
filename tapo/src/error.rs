@@ -73,3 +73,27 @@ pub enum Error {
     #[error(transparent)]
     Other(#[from] anyhow::Error),
 }
+
+#[cfg(feature = "python")]
+impl From<Error> for pyo3::PyErr {
+    fn from(err: Error) -> pyo3::PyErr {
+        pyo3::exceptions::PyException::new_err(format!("{:?}", err))
+    }
+}
+
+/// Discovery Error. Wraps an error that occurred while discovering a specific device.
+#[derive(thiserror::Error, Debug)]
+#[error("Failed to discover device at {ip}: {source}")]
+pub struct DiscoveryError {
+    /// The IP address of the device that failed to be discovered.
+    pub ip: String,
+    /// The underlying error.
+    pub source: Error,
+}
+
+#[cfg(feature = "python")]
+impl From<DiscoveryError> for pyo3::PyErr {
+    fn from(err: DiscoveryError) -> pyo3::PyErr {
+        pyo3::exceptions::PyException::new_err(format!("{:?}", err))
+    }
+}

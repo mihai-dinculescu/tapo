@@ -9,7 +9,6 @@ use tokio::sync::RwLock;
 
 use crate::api::PyPowerStripPlugEnergyMonitoringHandler;
 use crate::call_handler_method;
-use crate::errors::ErrorWrapper;
 
 #[derive(Clone)]
 #[pyclass(from_py_object, name = "PowerStripEnergyMonitoringHandler")]
@@ -33,10 +32,10 @@ impl PyPowerStripEnergyMonitoringHandler {
             (Some(device_id), _, _) => Ok(Plug::ByDeviceId(device_id)),
             (None, Some(nickname), _) => Ok(Plug::ByNickname(nickname)),
             (None, None, Some(position)) => Ok(Plug::ByPosition(position)),
-            _ => Err(Into::<ErrorWrapper>::into(Error::Validation {
+            _ => Err(Error::Validation {
                 field: "identifier".to_string(),
                 message: "Either a device_id, nickname, or position must be provided".to_string(),
-            })
+            }
             .into()),
         }
     }

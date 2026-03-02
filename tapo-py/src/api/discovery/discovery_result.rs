@@ -4,15 +4,13 @@ use tapo::responses::{
     DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
     DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
 };
-use tapo::{DiscoveryResult, Error};
+use tapo::{DiscoveryError, DiscoveryResult};
 
 use crate::api::{
     PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
     PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
     PyPowerStripHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler,
 };
-use crate::errors::ErrorWrapper;
-
 #[pyclass(name = "DiscoveryResult")]
 #[allow(clippy::large_enum_variant)]
 pub enum PyDiscoveryResult {
@@ -61,7 +59,7 @@ pub enum PyDiscoveryResult {
 #[pyclass(name = "MaybeDiscoveryResult")]
 pub struct PyMaybeDiscoveryResult {
     result: Option<PyDiscoveryResult>,
-    exception: Option<ErrorWrapper>,
+    exception: Option<DiscoveryError>,
 }
 
 #[pymethods]
@@ -80,7 +78,7 @@ impl PyMaybeDiscoveryResult {
 }
 
 pub fn convert_result_to_maybe_py(
-    result: Result<DiscoveryResult, Error>,
+    result: Result<DiscoveryResult, DiscoveryError>,
 ) -> PyResult<PyMaybeDiscoveryResult> {
     match result {
         Ok(result) => Ok(PyMaybeDiscoveryResult {
@@ -89,7 +87,7 @@ pub fn convert_result_to_maybe_py(
         }),
         Err(e) => Ok(PyMaybeDiscoveryResult {
             result: None,
-            exception: Some(ErrorWrapper::from(e)),
+            exception: Some(e),
         }),
     }
 }

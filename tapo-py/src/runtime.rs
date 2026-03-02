@@ -13,11 +13,9 @@ macro_rules! call_handler_constructor {
             .spawn(async move {
                 $constructor(client, $($params),*)
                     .await
-                    .map_err($crate::errors::ErrorWrapper)
             })
             .await
-            .map_err(anyhow::Error::from)
-            .map_err($crate::errors::ErrorWrapper::from)??;
+            .map_err(anyhow::Error::from)??;
 
         handler
     }};
@@ -31,14 +29,12 @@ macro_rules! call_handler_method {
         let result = $crate::runtime::tokio()
             .spawn(async move {
                 let result = $method($handler, $($param),*)
-                    .await
-                    .map_err($crate::errors::ErrorWrapper)?;
+                    .await?;
 
-                Ok::<_, $crate::errors::ErrorWrapper>(result)
+                Ok::<_, tapo::Error>(result)
             })
             .await
-            .map_err(anyhow::Error::from)
-            .map_err($crate::errors::ErrorWrapper::from)??;
+            .map_err(anyhow::Error::from)??;
 
         Ok::<_, PyErr>(result)
     }};
@@ -46,14 +42,12 @@ macro_rules! call_handler_method {
         let result = $crate::runtime::tokio()
             .spawn(async move {
                 $method($handler, $($param),*)
-                    .await
-                    .map_err($crate::errors::ErrorWrapper)?;
+                    .await?;
 
-                Ok::<_, $crate::errors::ErrorWrapper>(())
+                Ok::<_, tapo::Error>(())
             })
             .await
-            .map_err(anyhow::Error::from)
-            .map_err($crate::errors::ErrorWrapper::from)??;
+            .map_err(anyhow::Error::from)??;
 
         Ok(result)
     }};

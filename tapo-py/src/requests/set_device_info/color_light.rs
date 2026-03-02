@@ -6,7 +6,6 @@ use tapo::requests::{Color, ColorLightSetDeviceInfoParams};
 use crate::api::{
     PyColorLightHandler, PyHandlerExt, PyRgbLightStripHandler, PyRgbicLightStripHandler,
 };
-use crate::errors::ErrorWrapper;
 use crate::runtime::tokio;
 
 #[derive(Clone)]
@@ -30,16 +29,12 @@ impl PyColorLightSetDeviceInfoParams {
             .spawn(async move {
                 let handler_lock = handler.read().await;
 
-                params
-                    .send(handler_lock.deref())
-                    .await
-                    .map_err(ErrorWrapper)?;
+                params.send(handler_lock.deref()).await?;
 
-                Ok::<_, ErrorWrapper>(())
+                Ok::<_, tapo::Error>(())
             })
             .await
-            .map_err(anyhow::Error::from)
-            .map_err(ErrorWrapper::from)??;
+            .map_err(anyhow::Error::from)??;
 
         Ok(())
     }

@@ -12,7 +12,6 @@ use crate::api::{
     PyKE100Handler, PyS200Handler, PyT31XHandler, PyT100Handler, PyT110Handler, PyT300Handler,
 };
 use crate::call_handler_method;
-use crate::errors::ErrorWrapper;
 use crate::requests::PyAlarmDuration;
 
 #[derive(Clone)]
@@ -35,10 +34,10 @@ impl PyHubHandler {
         match (device_id, nickname) {
             (Some(device_id), _) => Ok(HubDevice::ByDeviceId(device_id)),
             (None, Some(nickname)) => Ok(HubDevice::ByNickname(nickname)),
-            _ => Err(Into::<ErrorWrapper>::into(Error::Validation {
+            _ => Err(Error::Validation {
                 field: "identifier".to_string(),
                 message: "Either a device_id or nickname must be provided".to_string(),
-            })
+            }
             .into()),
         }
     }
@@ -167,12 +166,12 @@ impl PyHubHandler {
                 if let Some(seconds) = seconds {
                     AlarmDuration::Seconds(seconds)
                 } else {
-                    return Err(Into::<ErrorWrapper>::into(Error::Validation {
+                    return Err(Error::Validation {
                         field: "seconds".to_string(),
                         message:
                             "A value must be provided for seconds when duration = AlarmDuration.Seconds"
                                 .to_string(),
-                    })
+                    }
                     .into());
                 }
             }
