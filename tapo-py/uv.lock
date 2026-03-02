@@ -156,15 +156,16 @@ name = "tapo"
 version = "0.8.11"
 source = { editable = "." }
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "black" },
     { name = "maturin" },
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "black", marker = "extra == 'dev'", specifier = ">=25.0,<27.0" },
-    { name = "maturin", marker = "extra == 'dev'", specifier = ">=1.0,<2.0" },
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "black", specifier = ">=25.0,<27.0" },
+    { name = "maturin", specifier = ">=1.0,<2.0" },
 ]
-provides-extras = ["dev"]

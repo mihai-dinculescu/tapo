@@ -80,8 +80,8 @@ await device.on()
 
 ```bash
 cd tapo-py
-uv venv # On the initial run
-uv sync --dev --locked
+uv venv # On the initial run only
+uv sync --group dev --locked
 uv run maturin develop # On the initial run and whenever the Rust code is modified
 
 export TAPO_USERNAME=
