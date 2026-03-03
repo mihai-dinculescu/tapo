@@ -17,11 +17,22 @@ async def main():
     api_client = ApiClient(tapo_username, tapo_password)
     discovery = await api_client.discover_devices(target, timeout_s)
 
+    # NOTE: This example uses explicit pattern matching to demonstrate all
+    # DiscoveryResult variants and the way in which they expose `device_info`
+    # and `handler`. For a more concise approach, you can use the
+    # accessor properties instead for a few common properties:
+    #
+    #   device_id = discovery_result.device_id
+    #   nickname = discovery_result.nickname
+    #   model = discovery_result.model
+    #   ip = discovery_result.ip
+    #   device_type = discovery_result.device_type
+
     async for discovery_result in discovery:
         try:
-            device = discovery_result.get()
+            discovery_result = discovery_result.get()
 
-            match device:
+            match discovery_result:
                 case DiscoveryResult.GenericDevice(device_info, _handler):
                     print(
                         f"Found Unsupported Device '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."

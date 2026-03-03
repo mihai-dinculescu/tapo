@@ -7,6 +7,7 @@ use log::LevelFilter;
 use pyo3::prelude::*;
 use pyo3_log::{Caching, Logger};
 
+use tapo::DeviceType;
 use tapo::requests::{
     AlarmRingtone, AlarmVolume, Color, LightingEffectPreset, LightingEffectType,
     SegmentEffectPreset, SegmentEffectType,
@@ -115,6 +116,7 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyPowerStripPlugHandler>()?;
     module.add_class::<PyPowerStripPlugEnergyMonitoringHandler>()?;
 
+    module.add_class::<DeviceType>()?;
     module.add_class::<PyDeviceDiscovery>()?;
     module.add_class::<PyDeviceDiscoveryIter>()?;
     module.add_class::<PyDiscoveryResult>()?;

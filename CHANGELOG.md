@@ -6,11 +6,21 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `DeviceType` enum that categorizes Tapo devices by their handlers (e.g. `Light`, `Plug`, `Hub`), with a `from_model` constructor for mapping model strings.
+- `DiscoveryResult` accessor methods: `device_type()`, `model()`, `ip()`, `device_id()`, and `nickname()` for convenient access to common properties without pattern matching.
+
 ### Changed
 
 - `DeviceDiscovery`: the `discover` method stream now raises `tapo::TapoDiscoveryError` exceptions instead of `tapo::TapoError` to allow for more specific error handling, such as including the IP of the device that caused the error.
 
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- `DeviceType` enum that categorizes Tapo devices by their handlers (e.g. `Light`, `Plug`, `Hub`).
+- `DiscoveryResult` accessor properties: `device_type`, `model`, `ip`, `device_id`, and `nickname` for convenient access to common properties without pattern matching.
 
 ### Changed
 

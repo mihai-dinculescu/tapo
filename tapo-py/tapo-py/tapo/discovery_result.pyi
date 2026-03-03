@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Type, Union
+from typing import Protocol, Type, Union
 
 from tapo import (
     ColorLightHandler,
@@ -13,6 +13,7 @@ from tapo import (
     RgbicLightStripHandler,
     RgbLightStripHandler,
 )
+from tapo.device_type import DeviceType
 from tapo.responses import (
     DeviceInfoColorLightResult,
     DeviceInfoGenericResult,
@@ -25,27 +26,34 @@ from tapo.responses import (
     DeviceInfoRgbLightStripResult,
 )
 
-class MaybeDiscoveryResult:
-    """Potential result of the device discovery process. Using `get` will return the actual result or raise an exception."""
+class DiscoveryResultBase(Protocol):
+    """Common properties available on all discovery result variants."""
 
-    def get(
-        self,
-    ) -> Union[
-        GenericDevice,
-        Light,
-        ColorLight,
-        RgbLightStrip,
-        RgbicLightStrip,
-        Plug,
-        PlugEnergyMonitoring,
-        PowerStrip,
-        PowerStripEnergyMonitoring,
-        Hub,
-    ]:
-        """Retrieves the actual discovery result or raises an exception."""
+    @property
+    def device_type(self) -> DeviceType:
+        """Returns the device type category."""
+
+    @property
+    def model(self) -> str:
+        """Returns the model string (e.g. "L530", "P110")."""
+
+    @property
+    def ip(self) -> str:
+        """Returns the IP address of the device."""
+
+    @property
+    def device_id(self) -> str:
+        """Returns the device ID."""
+
+    @property
+    def nickname(self) -> str:
+        """Returns the device nickname.
+
+        PowerStrip variants return a descriptive name since they lack a nickname field.
+        """
 
 @dataclass
-class GenericDevice:
+class GenericDevice(DiscoveryResultBase):
     """A Generic Tapo device.
 
     If you believe this device is already supported, or would like to explore adding support for a currently
@@ -55,7 +63,7 @@ class GenericDevice:
 
     device_info: DeviceInfoGenericResult
     """Device info of a Generic Tapo device.
-    
+
     If you believe this device is already supported, or would like to explore adding support for a currently
     unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
     to start the discussion.
@@ -63,7 +71,7 @@ class GenericDevice:
 
     handler: GenericDeviceHandler
     """Handler for generic devices. It provides the functionality common to all Tapo [devices](https://www.tapo.com/en/).
-    
+
     If you believe this device is already supported, or would like to explore adding support for a currently
     unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
     to start the discussion.
@@ -75,7 +83,7 @@ class GenericDevice:
     )
 
 @dataclass
-class Light:
+class Light(DiscoveryResultBase):
     """Tapo L510, L520 and L610 devices."""
 
     device_info: DeviceInfoLightResult
@@ -93,7 +101,7 @@ class Light:
     )
 
 @dataclass
-class ColorLight:
+class ColorLight(DiscoveryResultBase):
     """Tapo L530, L535 and L630 devices."""
 
     device_info: DeviceInfoColorLightResult
@@ -111,7 +119,7 @@ class ColorLight:
     )
 
 @dataclass
-class RgbLightStrip:
+class RgbLightStrip(DiscoveryResultBase):
     """Tapo L900 devices."""
 
     device_info: DeviceInfoRgbLightStripResult
@@ -126,7 +134,7 @@ class RgbLightStrip:
     )
 
 @dataclass
-class RgbicLightStrip:
+class RgbicLightStrip(DiscoveryResultBase):
     """Tapo L920 and L930 devices."""
 
     device_info: DeviceInfoRgbicLightStripResult
@@ -142,7 +150,7 @@ class RgbicLightStrip:
     )
 
 @dataclass
-class Plug:
+class Plug(DiscoveryResultBase):
     """Tapo P100 and P105 devices."""
 
     device_info: DeviceInfoPlugResult
@@ -158,7 +166,7 @@ class Plug:
     )
 
 @dataclass
-class PlugEnergyMonitoring:
+class PlugEnergyMonitoring(DiscoveryResultBase):
     """Tapo P110, P110M and P115 devices."""
 
     device_info: DeviceInfoPlugEnergyMonitoringResult
@@ -175,7 +183,7 @@ class PlugEnergyMonitoring:
     )
 
 @dataclass
-class PowerStrip:
+class PowerStrip(DiscoveryResultBase):
     """Tapo P300 and P306 devices."""
 
     device_info: DeviceInfoPowerStripResult
@@ -192,7 +200,7 @@ class PowerStrip:
     )
 
 @dataclass
-class PowerStripEnergyMonitoring:
+class PowerStripEnergyMonitoring(DiscoveryResultBase):
     """Tapo P304M and P316M devices."""
 
     device_info: DeviceInfoPowerStripResult
@@ -209,7 +217,7 @@ class PowerStripEnergyMonitoring:
     )
 
 @dataclass
-class Hub:
+class Hub(DiscoveryResultBase):
     """Tapo H100 devices."""
 
     device_info: DeviceInfoHubResult
@@ -223,7 +231,24 @@ class Hub:
         "handler",
     )
 
-class DiscoveryResult:
+class MaybeDiscoveryResult:
+    """Potential result of the device discovery process. Using `get` will return the actual result or raise an exception."""
+
+    def get(self) -> Union[
+        GenericDevice,
+        Light,
+        ColorLight,
+        RgbLightStrip,
+        RgbicLightStrip,
+        Plug,
+        PlugEnergyMonitoring,
+        PowerStrip,
+        PowerStripEnergyMonitoring,
+        Hub,
+    ]:
+        """Retrieves the actual discovery result or raises an exception."""
+
+class DiscoveryResult(DiscoveryResultBase):
     """Result of the device discovery process."""
 
     GenericDevice: Type[GenericDevice] = GenericDevice

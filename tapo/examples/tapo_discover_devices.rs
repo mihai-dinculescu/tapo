@@ -24,9 +24,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let api_client = ApiClient::new(tapo_username, tapo_password);
     let mut discovery = api_client.discover_devices(target, timeout_s).await?;
 
+    // NOTE: This example uses explicit pattern matching to demonstrate all
+    // DiscoveryResult variants and the way in which they expose `device_info`
+    // and `handler`. For a more concise approach, you can use the
+    // accessor methods instead for a few common properties:
+    //
+    //   let device_id = discovery_result.device_id();
+    //   let nickname = discovery_result.nickname();
+    //   let model = discovery_result.model();
+    //   let ip = discovery_result.ip();
+    //   let device_type = discovery_result.device_type();
+
     while let Some(discovery_result) = discovery.next().await {
-        if let Ok(device) = discovery_result {
-            match device {
+        if let Ok(discovery_result) = discovery_result {
+            match discovery_result {
                 DiscoveryResult::GenericDevice {
                     device_info,
                     handler: _,
