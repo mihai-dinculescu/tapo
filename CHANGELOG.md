@@ -25,6 +25,16 @@ file. This change log follows the conventions of
 ### Changed
 
 - `DeviceDiscovery`: the `discover` method stream now raises `tapo.TapoDiscoveryError` exceptions instead of `tapo.TapoError` to allow for more specific error handling, such as including the IP of the device that caused the error.
+- `ApiClient`: the `discover_devices` method's `timeout_s` parameter now defaults to `10` seconds, making it optional.
+- `ApiClient`: the `timeout_s` parameter type has been corrected to `Optional[int]`.
+
+### Fixed
+
+- `ApiClient`: fixed `p316()` return type from `PowerStripHandler` to `PowerStripEnergyMonitoringHandler`.
+- `HubHandler`: fixed missing `self` parameter on `get_supported_ringtone_list()`.
+- `S200Handler`: fixed missing module registration that prevented `from tapo import S200Handler` from working.
+- `ColorLightSetDeviceInfoParams`: added `RgbicLightStripHandler` to the `send()` method's accepted handler types.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: fixed `start_date` and `end_date` parameter types in `get_energy_data()` from `datetime` to `date`.
 
 ## [Rust v0.8.11][v0.8.11] - 2026-02-27
 

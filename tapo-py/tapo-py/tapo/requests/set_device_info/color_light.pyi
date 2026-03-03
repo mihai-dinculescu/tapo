@@ -3,6 +3,7 @@ from typing import Union
 from tapo.color_light_handler import ColorLightHandler
 from tapo.requests import Color
 from tapo.rgb_light_strip_handler import RgbLightStripHandler
+from tapo.rgbic_light_strip_handler import RgbicLightStripHandler
 
 class ColorLightSetDeviceInfoParams:
     """Builder that is used by the `ColorLightHandler.set` API to set
@@ -57,9 +58,11 @@ class ColorLightSetDeviceInfoParams:
             color_temperature (int): between 2500 and 6500
         """
 
-    async def send(self, handler: Union[ColorLightHandler, RgbLightStripHandler]) -> None:
+    async def send(
+        self, handler: Union[ColorLightHandler, RgbLightStripHandler, RgbicLightStripHandler]
+    ) -> None:
         """Performs a request to apply the changes to the device.
 
         Args:
-            handler (`ColorLightHandler` | `RgbLightStripHandler`)
+            handler (`ColorLightHandler` | `RgbLightStripHandler` | `RgbicLightStripHandler`)
         """

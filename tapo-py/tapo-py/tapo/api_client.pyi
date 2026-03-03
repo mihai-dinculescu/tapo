@@ -22,6 +22,8 @@ Example:
 See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
 """
 
+from typing import Optional
+
 from .color_light_handler import ColorLightHandler
 from .device_discovery import DeviceDiscovery
 from .generic_device_handler import GenericDeviceHandler
@@ -59,13 +61,15 @@ class ApiClient:
     See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
     """
 
-    def __init__(self, tapo_username: str, tapo_password: str, timeout_s: int = 30) -> None:
+    def __init__(
+        self, tapo_username: str, tapo_password: str, timeout_s: Optional[int] = None
+    ) -> None:
         """Returns a new instance of `ApiClient`.
 
         Args:
             tapo_username (str): The Tapo username.
             tapo_password (str): The Tapo password.
-            timeout_s (int): The connection timeout in seconds. The default value is 30 seconds.
+            timeout_s (Optional[int]): The connection timeout in seconds. The default value is 30 seconds.
 
         Returns:
             ApiClient: Tapo API Client.
@@ -447,8 +451,8 @@ class ApiClient:
             ```
         """
 
-    async def p316(self, ip_address: str) -> PowerStripHandler:
-        """Specializes the given `ApiClient` into an authenticated `PowerStripHandler`.
+    async def p316(self, ip_address: str) -> PowerStripEnergyMonitoringHandler:
+        """Specializes the given `ApiClient` into an authenticated `PowerStripEnergyMonitoringHandler`.
 
         Args:
             ip_address (str): The IP address of the device

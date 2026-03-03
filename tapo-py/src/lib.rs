@@ -34,8 +34,8 @@ use api::{
     PyGenericDeviceHandler, PyHubHandler, PyKE100Handler, PyLightHandler, PyMaybeDiscoveryResult,
     PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
     PyPowerStripHandler, PyPowerStripPlugEnergyMonitoringHandler, PyPowerStripPlugHandler,
-    PyRgbLightStripHandler, PyRgbicLightStripHandler, PyT31XHandler, PyT100Handler, PyT110Handler,
-    PyT300Handler,
+    PyRgbLightStripHandler, PyRgbicLightStripHandler, PyS200Handler, PyT31XHandler, PyT100Handler,
+    PyT110Handler, PyT300Handler,
 };
 use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyLightingEffect,
@@ -109,6 +109,7 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyT100Handler>()?;
     module.add_class::<PyT110Handler>()?;
     module.add_class::<PyT300Handler>()?;
+    module.add_class::<PyS200Handler>()?;
     module.add_class::<PyT31XHandler>()?;
 
     module.add_class::<PyPowerStripHandler>()?;

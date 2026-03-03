@@ -38,6 +38,7 @@ impl PyApiClient {
         Ok(Self { client })
     }
 
+    #[pyo3(signature = (target, timeout_s=10))]
     pub async fn discover_devices(
         &self,
         target: String,

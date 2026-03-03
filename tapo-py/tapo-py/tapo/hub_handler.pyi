@@ -76,7 +76,7 @@ class HubHandler(DeviceManagementExt):
             dict: Device info as a dictionary.
         """
 
-    async def get_supported_ringtone_list() -> List[str]:
+    async def get_supported_ringtone_list(self) -> List[str]:
         """Returns a list of ringtones (alarm types) supported by the hub.
         Used for debugging only.
 
