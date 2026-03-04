@@ -35,6 +35,7 @@ file. This change log follows the conventions of
 - `S200Handler`: fixed missing module registration that prevented `from tapo import S200Handler` from working.
 - `ColorLightSetDeviceInfoParams`: added `RgbicLightStripHandler` to the `send()` method's accepted handler types.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: fixed `start_date` and `end_date` parameter types in `get_energy_data()` from `datetime` to `date`.
+- `LightHandler`, `ColorLightHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: fixed `get_device_usage()` return type from `DeviceUsageResult` to `DeviceUsageEnergyMonitoringResult`.
 
 ## [Rust v0.8.11][v0.8.11] - 2026-02-27
 

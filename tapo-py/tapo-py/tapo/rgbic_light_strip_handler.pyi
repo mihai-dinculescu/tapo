@@ -9,7 +9,7 @@ from tapo.requests import (
     SegmentEffect,
     SegmentEffectPreset,
 )
-from tapo.responses import DeviceInfoRgbicLightStripResult, DeviceUsageResult
+from tapo.responses import DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult
 
 class RgbicLightStripHandler(DeviceManagementExt):
     """Handler for the [L920](https://www.tapo.com/en/search/?q=L920) and
@@ -49,11 +49,12 @@ class RgbicLightStripHandler(DeviceManagementExt):
             dict: Device info as a dictionary.
         """
 
-    async def get_device_usage(self) -> DeviceUsageResult:
-        """Returns *device usage* as `DeviceUsageResult`.
+    async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:
+        """Returns *device usage* as `DeviceUsageEnergyMonitoringResult`.
 
         Returns:
-            DeviceUsageResult: Contains the time usage.
+            DeviceUsageEnergyMonitoringResult:
+            Contains the time usage, the power consumption, and the energy savings of the device.
         """
 
     def set(self) -> ColorLightSetDeviceInfoParams:

@@ -1,6 +1,6 @@
 from tapo.device_management_ext import DeviceManagementExt
 from tapo.requests import Color, ColorLightSetDeviceInfoParams
-from tapo.responses import DeviceInfoRgbLightStripResult, DeviceUsageResult
+from tapo.responses import DeviceInfoRgbLightStripResult, DeviceUsageEnergyMonitoringResult
 
 class RgbLightStripHandler(DeviceManagementExt):
     """Handler for the [L900](https://www.tapo.com/en/search/?q=L900) devices."""
@@ -38,11 +38,12 @@ class RgbLightStripHandler(DeviceManagementExt):
             dict: Device info as a dictionary.
         """
 
-    async def get_device_usage(self) -> DeviceUsageResult:
-        """Returns *device usage* as `DeviceUsageResult`.
+    async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:
+        """Returns *device usage* as `DeviceUsageEnergyMonitoringResult`.
 
         Returns:
-            DeviceUsageResult: Contains the time usage.
+            DeviceUsageEnergyMonitoringResult:
+            Contains the time usage, the power consumption, and the energy savings of the device.
         """
 
     def set(self) -> ColorLightSetDeviceInfoParams:

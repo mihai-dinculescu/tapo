@@ -1,6 +1,6 @@
 from tapo.device_management_ext import DeviceManagementExt
 from tapo.requests import Color, ColorLightSetDeviceInfoParams
-from tapo.responses import DeviceInfoColorLightResult, DeviceUsageResult
+from tapo.responses import DeviceInfoColorLightResult, DeviceUsageEnergyMonitoringResult
 
 class ColorLightHandler(DeviceManagementExt):
     """Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
@@ -41,11 +41,12 @@ class ColorLightHandler(DeviceManagementExt):
             dict: Device info as a dictionary.
         """
 
-    async def get_device_usage(self) -> DeviceUsageResult:
-        """Returns *device usage* as `DeviceUsageResult`.
+    async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:
+        """Returns *device usage* as `DeviceUsageEnergyMonitoringResult`.
 
         Returns:
-            DeviceUsageResult: Contains the time usage.
+            DeviceUsageEnergyMonitoringResult:
+            Contains the time usage, the power consumption, and the energy savings of the device.
         """
 
     def set(self) -> ColorLightSetDeviceInfoParams:

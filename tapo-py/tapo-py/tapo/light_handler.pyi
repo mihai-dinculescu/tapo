@@ -1,5 +1,5 @@
 from tapo.device_management_ext import DeviceManagementExt
-from tapo.responses import DeviceInfoLightResult, DeviceUsageResult
+from tapo.responses import DeviceInfoLightResult, DeviceUsageEnergyMonitoringResult
 
 class LightHandler(DeviceManagementExt):
     """Handler for the [L510](https://www.tapo.com/en/search/?q=L510),
@@ -39,11 +39,12 @@ class LightHandler(DeviceManagementExt):
             dict: Device info as a dictionary.
         """
 
-    async def get_device_usage(self) -> DeviceUsageResult:
-        """Returns *device usage* as `DeviceUsageResult`.
+    async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:
+        """Returns *device usage* as `DeviceUsageEnergyMonitoringResult`.
 
         Returns:
-            DeviceUsageResult: Contains the time usage.
+            DeviceUsageEnergyMonitoringResult:
+            Contains the time usage, the power consumption, and the energy savings of the device.
         """
 
     async def set_brightness(self, brightness: int) -> None:
