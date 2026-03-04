@@ -10,4 +10,5 @@ log = "0.4"
 pyo3 = { version = "0.28" }
 serde = { version = "1.0" }
 serde_json = { version = "1.0" }
+thiserror = "2.0"
 tokio = { version = "1.49", default-features = false }

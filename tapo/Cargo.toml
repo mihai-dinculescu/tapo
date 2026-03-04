@@ -27,7 +27,7 @@ reqwest = { version = "0.13", default-features = false, features = ["cookies", "
 serde = { workspace = true, features = ["derive", "serde_derive"] }
 serde_json = { workspace = true }
 serde_with = "3.17"
-thiserror = "2.0"
+thiserror = { workspace = true }
 tokio = { workspace = true, features = ["sync"] }
 tokio-stream = "0.1"
 uuid = { version = "1.21", features = ["serde", "v4"] }
