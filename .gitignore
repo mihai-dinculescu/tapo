@@ -1,5 +1,6 @@
-/target
+.claude/settings.local.json
+.DS_Store
 .vscode
 /.idea
-.DS_Store
+/target
 TODO.md
