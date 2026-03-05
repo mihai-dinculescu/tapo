@@ -10,6 +10,9 @@ pub(crate) struct GetEnergyDataParams {
 }
 
 impl GetEnergyDataParams {
+    // safe: and_hms_opt with fixed valid HMS values always returns Some.
+    // safe: and_local_timezone with midnight/23:59:59 is unambiguous in practice
+    // (DST transitions do not occur at these times in any known timezone).
     pub fn new(interval: EnergyDataInterval) -> Self {
         let timezone = chrono::Local::now().timezone();
 

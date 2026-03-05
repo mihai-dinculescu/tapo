@@ -205,6 +205,7 @@ impl TryFrom<TemperatureHumidityRecordsRaw> for TemperatureHumidityRecords {
             }
 
             interval_time = interval_time
+                // safe: 15 minutes is always a valid Duration (only overflows for extremely large values)
                 .checked_sub_signed(Duration::try_minutes(15).unwrap())
                 .ok_or_else(|| anyhow::anyhow!("Failed to subtract from interval"))?;
         }
