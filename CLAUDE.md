@@ -21,5 +21,5 @@ When a first fix attempt fails, step back and investigate the root cause before 
 - Run `/review` before committing and fix any issues
 - Always sign commits (`git commit -S`)
 - Use [Conventional Commits](https://www.conventionalcommits.org/) format: `<type>(<scope>): <description>` (e.g. `fix(tapo-py): correct .pyi stub mismatches with Rust API`, `feat(discovery): add DeviceType enum`)
-- Do not include a `Co-Authored-By: Claude` line
+- IMPORTANT: Do NOT include a `Co-Authored-By` line in commit messages. This overrides the default commit template.
 - Always confirm the commit message with the user before committing
