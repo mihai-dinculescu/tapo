@@ -1,10 +1,12 @@
 from typing import List, Optional
 
 from tapo import PowerStripPlugEnergyMonitoringHandler
+from tapo.debug_ext import DebugExt
 from tapo.device_management_ext import DeviceManagementExt
+from tapo.refresh_session_ext import RefreshSessionExt
 from tapo.responses import DeviceInfoPowerStripResult, PowerStripPlugEnergyMonitoringResult
 
-class PowerStripEnergyMonitoringHandler(DeviceManagementExt):
+class PowerStripEnergyMonitoringHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
     """Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
     [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
     """
@@ -14,9 +16,6 @@ class PowerStripEnergyMonitoringHandler(DeviceManagementExt):
         It should not be called from outside the tapo library.
         """
 
-    async def refresh_session(self) -> None:
-        """Refreshes the authentication session."""
-
     async def get_device_info(self) -> DeviceInfoPowerStripResult:
         """Returns *device info* as `DeviceInfoPowerStripResult`.
         It is not guaranteed to contain all the properties returned from the Tapo API.
@@ -25,14 +24,6 @@ class PowerStripEnergyMonitoringHandler(DeviceManagementExt):
 
         Returns:
             DeviceInfoPowerStripResult: Device info of Tapo P300, P304M, P306 and P316M. Superset of `DeviceInfoGenericResult`.
-        """
-
-    async def get_device_info_json(self) -> dict:
-        """Returns *device info* as json.
-        It contains all the properties returned from the Tapo API.
-
-        Returns:
-            dict: Device info as a dictionary.
         """
 
     async def get_child_device_list(

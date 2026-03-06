@@ -1,7 +1,8 @@
+from tapo.debug_ext import DebugExt
 from tapo.requests import TemperatureUnitKE100
 from tapo.responses import KE100Result
 
-class KE100Handler:
+class KE100Handler(DebugExt):
     """Handler for the [KE100](https://www.tp-link.com/en/search/?q=KE100) devices."""
 
     async def get_device_info(self) -> KE100Result:
@@ -12,14 +13,6 @@ class KE100Handler:
 
         Returns:
             KE100Result: Device info of Tapo KE100 thermostatic radiator valve (TRV).
-        """
-
-    async def get_device_info_json(self) -> dict:
-        """Returns *device info* as json.
-        It contains all the properties returned from the Tapo API.
-
-        Returns:
-            dict: Device info as a dictionary.
         """
 
     async def set_child_protection(self, on: bool) -> None:

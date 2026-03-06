@@ -1,23 +1,17 @@
+from tapo.debug_ext import DebugExt
 from tapo.device_management_ext import DeviceManagementExt
+from tapo.on_off_ext import OnOffExt
+from tapo.refresh_session_ext import RefreshSessionExt
 from tapo.requests import Color, ColorLightSetDeviceInfoParams
 from tapo.responses import DeviceInfoRgbLightStripResult, DeviceUsageEnergyMonitoringResult
 
-class RgbLightStripHandler(DeviceManagementExt):
+class RgbLightStripHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, DebugExt):
     """Handler for the [L900](https://www.tapo.com/en/search/?q=L900) devices."""
 
     def __init__(self, handler: object):
         """Private constructor.
         It should not be called from outside the tapo library.
         """
-
-    async def refresh_session(self) -> None:
-        """Refreshes the authentication session."""
-
-    async def on(self) -> None:
-        """Turns *on* the device."""
-
-    async def off(self) -> None:
-        """Turns *off* the device."""
 
     async def get_device_info(self) -> DeviceInfoRgbLightStripResult:
         """Returns *device info* as `DeviceInfoRgbLightStripResult`.
@@ -28,14 +22,6 @@ class RgbLightStripHandler(DeviceManagementExt):
         Returns:
             DeviceInfoRgbLightStripResult: Device info of Tapo L900.
             Superset of `GenericDeviceInfoResult`.
-        """
-
-    async def get_device_info_json(self) -> dict:
-        """Returns *device info* as json.
-        It contains all the properties returned from the Tapo API.
-
-        Returns:
-            dict: Device info as a dictionary.
         """
 
     async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:

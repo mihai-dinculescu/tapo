@@ -1,7 +1,9 @@
 from typing import List, Literal, Optional
+
+from tapo.debug_ext import DebugExt
 from tapo.responses import S200Result
 
-class S200Handler:
+class S200Handler(DebugExt):
     """Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) and
     [S200D](https://www.tapo.com/en/search/?q=S200D) devices."""
 
@@ -13,14 +15,6 @@ class S200Handler:
 
         Returns:
             S200Result: Device info of Tapo S200B and S200D button switches.
-        """
-
-    async def get_device_info_json(self) -> dict:
-        """Returns *device info* as json.
-        It contains all the properties returned from the Tapo API.
-
-        Returns:
-            dict: Device info as a dictionary.
         """
 
     async def get_trigger_logs(self, page_size: int, start_id: int) -> TriggerLogsS200Result:

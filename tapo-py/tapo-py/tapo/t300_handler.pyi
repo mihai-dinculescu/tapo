@@ -1,7 +1,9 @@
 from typing import List, Literal
+
+from tapo.debug_ext import DebugExt
 from tapo.responses import T300Result
 
-class T300Handler:
+class T300Handler(DebugExt):
     """Handler for the [T300](https://www.tapo.com/en/search/?q=T300) devices."""
 
     async def get_device_info(self) -> T300Result:
@@ -12,14 +14,6 @@ class T300Handler:
 
         Returns:
             T300Result: Device info of Tapo T300 water sensor.
-        """
-
-    async def get_device_info_json(self) -> dict:
-        """Returns *device info* as json.
-        It contains all the properties returned from the Tapo API.
-
-        Returns:
-            dict: Device info as a dictionary.
         """
 
     async def get_trigger_logs(self, page_size: int, start_id: int) -> TriggerLogsT300Result:

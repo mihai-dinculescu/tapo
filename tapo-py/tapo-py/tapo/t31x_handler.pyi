@@ -1,6 +1,7 @@
+from tapo.debug_ext import DebugExt
 from tapo.responses import T31XResult, TemperatureHumidityRecords
 
-class T31XHandler:
+class T31XHandler(DebugExt):
     """Handler for the [T310](https://www.tapo.com/en/search/?q=T310)
     and [T315](https://www.tapo.com/en/search/?q=T315) devices."""
 
@@ -12,14 +13,6 @@ class T31XHandler:
 
         Returns:
             T31XResult: Device info of Tapo T310 and T315 temperature and humidity sensors.
-        """
-
-    async def get_device_info_json(self) -> dict:
-        """Returns *device info* as json.
-        It contains all the properties returned from the Tapo API.
-
-        Returns:
-            dict: Device info as a dictionary.
         """
 
     async def get_temperature_humidity_records(self) -> TemperatureHumidityRecords:

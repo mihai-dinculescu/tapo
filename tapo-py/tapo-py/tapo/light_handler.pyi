@@ -1,7 +1,10 @@
+from tapo.debug_ext import DebugExt
 from tapo.device_management_ext import DeviceManagementExt
+from tapo.on_off_ext import OnOffExt
+from tapo.refresh_session_ext import RefreshSessionExt
 from tapo.responses import DeviceInfoLightResult, DeviceUsageEnergyMonitoringResult
 
-class LightHandler(DeviceManagementExt):
+class LightHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, DebugExt):
     """Handler for the [L510](https://www.tapo.com/en/search/?q=L510),
     [L520](https://www.tapo.com/en/search/?q=L520) and
     [L610](https://www.tapo.com/en/search/?q=L610) devices."""
@@ -10,15 +13,6 @@ class LightHandler(DeviceManagementExt):
         """Private constructor.
         It should not be called from outside the tapo library.
         """
-
-    async def refresh_session(self) -> None:
-        """Refreshes the authentication session."""
-
-    async def on(self) -> None:
-        """Turns *on* the device."""
-
-    async def off(self) -> None:
-        """Turns *off* the device."""
 
     async def get_device_info(self) -> DeviceInfoLightResult:
         """Returns *device info* as `DeviceInfoLightResult`.
@@ -29,14 +23,6 @@ class LightHandler(DeviceManagementExt):
         Returns:
             DeviceInfoLightResult: Device info of Tapo L510, L520 and L610.
             Superset of `GenericDeviceInfoResult`.
-        """
-
-    async def get_device_info_json(self) -> dict:
-        """Returns *device info* as json.
-        It contains all the properties returned from the Tapo API.
-
-        Returns:
-            dict: Device info as a dictionary.
         """
 
     async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:
