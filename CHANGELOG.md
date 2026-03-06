@@ -10,6 +10,7 @@ file. This change log follows the conventions of
 
 - `DeviceType` enum that categorizes Tapo devices by their handlers (e.g. `Light`, `Plug`, `Hub`), with a `from_model` constructor for mapping model strings.
 - `DiscoveryResult` accessor methods: `device_type()`, `model()`, `ip()`, `device_id()`, and `nickname()` for convenient access to common properties without pattern matching.
+- `debug` feature flag that gates debug/inspection methods: `get_device_info_json()`, `get_child_device_list_json()`, `get_child_device_component_list_json()`, and `get_supported_ringtone_list()`.
 
 ### Changed
 

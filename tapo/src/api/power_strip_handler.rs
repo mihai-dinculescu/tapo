@@ -28,12 +28,14 @@ impl PowerStripHandler {
 
     /// Returns *child device list* as [`serde_json::Value`].
     /// It contains all the properties returned from the Tapo API.
+    #[cfg(feature = "debug")]
     pub async fn get_child_device_list_json(&self) -> Result<serde_json::Value, Error> {
         self.client.read().await.get_child_device_list(0).await
     }
 
     /// Returns *child device component list* as [`serde_json::Value`].
     /// This information is useful in debugging or when investigating new functionality to add.
+    #[cfg(feature = "debug")]
     pub async fn get_child_device_component_list_json(&self) -> Result<serde_json::Value, Error> {
         self.client
             .read()

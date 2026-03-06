@@ -15,11 +15,12 @@ use crate::requests::{
     MultipleRequestParams, PlayAlarmParams, PowerDataInterval, SegmentEffect, TapoParams,
     TapoRequest,
 };
+#[cfg(feature = "debug")]
+use crate::responses::SupportedAlarmTypeListResult;
 use crate::responses::{
     ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
     EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw,
-    SupportedAlarmTypeListResult, TapoMultipleResponse, TapoResponseExt, TapoResult,
-    validate_response,
+    TapoMultipleResponse, TapoResponseExt, TapoResult, validate_response,
 };
 
 use super::discovery::DeviceDiscovery;
@@ -664,6 +665,7 @@ impl ApiClient {
             .await
     }
 
+    #[cfg(feature = "debug")]
     pub(crate) async fn get_supported_alarm_type_list(
         &self,
     ) -> Result<SupportedAlarmTypeListResult, Error> {
@@ -825,6 +827,7 @@ impl ApiClient {
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
     }
 
+    #[cfg(feature = "debug")]
     pub(crate) async fn get_child_device_component_list<R>(&self) -> Result<R, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,

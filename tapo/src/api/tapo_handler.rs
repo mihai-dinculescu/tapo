@@ -147,6 +147,7 @@ macro_rules! tapo_handler {
 
             /// Returns *device info* as [`serde_json::Value`].
             /// It contains all the properties returned from the Tapo API.
+            #[cfg(feature = "debug")]
             pub async fn get_device_info_json(
                 &self,
             ) -> Result<serde_json::Value, crate::error::Error> {
@@ -312,6 +313,7 @@ macro_rules! tapo_child_handler {
 
             /// Returns *device info* as [`serde_json::Value`].
             /// It contains all the properties returned from the Tapo API.
+            #[cfg(feature = "debug")]
             pub async fn get_device_info_json(
                 &self,
             ) -> Result<serde_json::Value, crate::error::Error> {

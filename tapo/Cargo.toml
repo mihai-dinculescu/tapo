@@ -13,6 +13,7 @@ repository = "https://github.com/mihai-dinculescu/tapo"
 
 [features]
 default = []
+debug = []
 python = ["dep:pyo3"]
 
 [dependencies]

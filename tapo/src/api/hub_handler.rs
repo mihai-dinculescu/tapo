@@ -70,6 +70,7 @@ impl HubHandler {
     ///
     /// * `start_index` - the index to start fetching the child device list.
     ///   It should be `0` for the first page, `10` for the second, and so on.
+    #[cfg(feature = "debug")]
     pub async fn get_child_device_list_json(
         &self,
         start_index: u64,
@@ -83,6 +84,7 @@ impl HubHandler {
 
     /// Returns *child device component list* as [`serde_json::Value`].
     /// This information is useful in debugging or when investigating new functionality to add.
+    #[cfg(feature = "debug")]
     pub async fn get_child_device_component_list_json(&self) -> Result<serde_json::Value, Error> {
         self.client
             .read()
@@ -93,6 +95,7 @@ impl HubHandler {
 
     /// Returns a list of ringtones (alarm types) supported by the hub.
     /// Used for debugging only.
+    #[cfg(feature = "debug")]
     pub async fn get_supported_ringtone_list(&self) -> Result<Vec<String>, Error> {
         self.client
             .read()

@@ -34,6 +34,7 @@ pub use trigger_logs_result::*;
 pub(crate) use control_child_result::*;
 pub(crate) use decodable_result_ext::*;
 pub(crate) use handshake_result::*;
+#[cfg(feature = "debug")]
 pub(crate) use supported_alarm_type_list_result::*;
 pub(crate) use tapo_response::*;
 pub(crate) use tapo_result::*;

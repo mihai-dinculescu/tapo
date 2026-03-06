@@ -31,4 +31,4 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "sync"] }
 
-tapo = { path = "../tapo", features = ["python"] }
+tapo = { path = "../tapo", features = ["python", "debug"] }

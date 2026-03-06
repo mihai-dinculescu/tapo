@@ -124,10 +124,11 @@ macro_rules! map_device_model {
 }
 
 impl DiscoveryResult {
-    pub(crate) async fn new(client: ApiClient, ip_addr: IpAddr) -> Result<Self, Error> {
-        let handler = client.generic_device(ip_addr.to_string()).await?;
-
-        let device_info = handler.get_device_info_json().await?;
+    pub(crate) async fn new(mut client: ApiClient, ip_addr: IpAddr) -> Result<Self, Error> {
+        client.login(ip_addr.to_string()).await?;
+        let device_info: serde_json::Value = client.get_device_info().await?;
+        let handler =
+            GenericDeviceHandler::new(std::sync::Arc::new(tokio::sync::RwLock::new(client)));
 
         let model = device_info
             .as_object()

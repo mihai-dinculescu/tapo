@@ -15,7 +15,7 @@ args = ["check", "--verbose"]
 [tasks.check-doc]
 env = { "RUSTDOCFLAGS" = "-D warnings" }
 command = "cargo"
-args = ["doc", "--no-deps"]
+args = ["doc", "--no-deps", "--all-features"]
 
 [tasks.clippy]
 command = "cargo"
