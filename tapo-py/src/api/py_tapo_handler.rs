@@ -109,6 +109,17 @@ macro_rules! py_handler {
                     tapo::python::serde_object_to_py_dict(py, &result)
                 })
             }
+
+            pub async fn get_component_list(
+                &self,
+            ) -> pyo3::prelude::PyResult<Vec<tapo::responses::Component>> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_component_list
+                )
+            }
         }
 
         impl crate::api::PyHandlerExt for $py_name {
@@ -253,6 +264,17 @@ macro_rules! py_child_handler {
                 pyo3::prelude::Python::attach(|py| {
                     tapo::python::serde_object_to_py_dict(py, &result)
                 })
+            }
+
+            pub async fn get_component_list(
+                &self,
+            ) -> pyo3::prelude::PyResult<Vec<tapo::responses::Component>> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.deref(),
+                    $handler::get_component_list
+                )
             }
         }
     };

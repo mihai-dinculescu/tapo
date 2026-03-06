@@ -13,7 +13,7 @@ use tapo::requests::{
     SegmentEffectPreset, SegmentEffectType,
 };
 use tapo::responses::{
-    AutoOffStatus, ColorLightState, CurrentPowerResult, DefaultBrightnessState,
+    AutoOffStatus, ColorLightState, Component, CurrentPowerResult, DefaultBrightnessState,
     DefaultColorLightState, DefaultLightState, DefaultPlugState, DefaultPowerType,
     DefaultRgbLightStripState, DefaultRgbicLightStripState, DefaultStateType,
     DeviceInfoColorLightResult, DeviceInfoGenericResult, DeviceInfoHubResult,
@@ -127,6 +127,7 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
 }
 
 fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
+    module.add_class::<Component>()?;
     module.add_class::<CurrentPowerResult>()?;
     module.add_class::<DefaultBrightnessState>()?;
     module.add_class::<DefaultPowerType>()?;

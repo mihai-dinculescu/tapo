@@ -153,6 +153,14 @@ macro_rules! tapo_handler {
             ) -> Result<serde_json::Value, crate::error::Error> {
                 self.client.read().await.get_device_info().await
             }
+
+            /// Returns the *component list* of the device.
+            #[cfg(feature = "debug")]
+            pub async fn get_component_list(
+                &self,
+            ) -> Result<Vec<crate::responses::Component>, crate::error::Error> {
+                self.client.read().await.get_component_list().await
+            }
         }
 
         #[async_trait::async_trait]
@@ -329,6 +337,28 @@ macro_rules! tapo_child_handler {
                     .ok_or_else(|| {
                         crate::error::Error::Tapo(crate::error::TapoResponseError::EmptyResult)
                     })
+            }
+
+            /// Returns the *component list* of the device.
+            #[cfg(feature = "debug")]
+            pub async fn get_component_list(
+                &self,
+            ) -> Result<Vec<crate::responses::Component>, crate::error::Error> {
+                let request = crate::requests::TapoRequest::ComponentNegotiation(
+                    crate::requests::TapoParams::new(crate::requests::EmptyParams),
+                );
+
+                let result: crate::responses::ComponentListResult = self
+                    .client
+                    .read()
+                    .await
+                    .control_child(self.device_id.clone(), request)
+                    .await?
+                    .ok_or_else(|| {
+                        crate::error::Error::Tapo(crate::error::TapoResponseError::EmptyResult)
+                    })?;
+
+                Ok(result.component_list)
             }
         }
     };

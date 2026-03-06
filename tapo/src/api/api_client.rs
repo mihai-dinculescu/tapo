@@ -16,7 +16,7 @@ use crate::requests::{
     TapoRequest,
 };
 #[cfg(feature = "debug")]
-use crate::responses::SupportedAlarmTypeListResult;
+use crate::responses::{Component, ComponentListResult, SupportedAlarmTypeListResult};
 use crate::responses::{
     ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
     EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw,
@@ -695,6 +695,20 @@ impl ApiClient {
             .await?;
 
         Ok(())
+    }
+
+    #[cfg(feature = "debug")]
+    pub(crate) async fn get_component_list(&self) -> Result<Vec<Component>, Error> {
+        debug!("Get Component list...");
+        let request = TapoRequest::ComponentNegotiation(TapoParams::new(EmptyParams));
+
+        let result: ComponentListResult = self
+            .get_protocol()?
+            .execute_request(request, true)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        Ok(result.component_list)
     }
 
     pub(crate) async fn get_device_info<R>(&self) -> Result<R, Error>

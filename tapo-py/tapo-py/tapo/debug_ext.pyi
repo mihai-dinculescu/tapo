@@ -1,3 +1,5 @@
+from .responses import Component
+
 class DebugExt:
     """Extension class for debug capabilities like `get_device_info_json`."""
 
@@ -7,4 +9,11 @@ class DebugExt:
 
         Returns:
             dict: Device info as a dictionary.
+        """
+
+    async def get_component_list(self) -> list[Component]:
+        """Returns the *component list* of the device.
+
+        Returns:
+            list[Component]: The list of components supported by the device.
         """

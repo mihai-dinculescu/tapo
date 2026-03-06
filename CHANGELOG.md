@@ -8,35 +8,38 @@ file. This change log follows the conventions of
 
 ### Added
 
-- `DeviceType` enum that categorizes Tapo devices by their handlers (e.g. `Light`, `Plug`, `Hub`), with a `from_model` constructor for mapping model strings.
-- `DiscoveryResult` accessor methods: `device_type()`, `model()`, `ip()`, `device_id()`, and `nickname()` for convenient access to common properties without pattern matching.
-- `debug` feature flag that gates debug/inspection methods: `get_device_info_json()`, `get_child_device_list_json()`, `get_child_device_component_list_json()`, and `get_supported_ringtone_list()`.
+- `DeviceType`: added enum that categorizes Tapo devices by their handlers (e.g. `Light`, `Plug`, `Hub`), with a `from_model` constructor for mapping model strings.
+- `DiscoveryResult`: added accessor methods `device_type()`, `model()`, `ip()`, `device_id()`, and `nickname()` for convenient access to common properties without pattern matching.
+- All handlers: added `debug` feature flag that gates inspection methods `get_device_info_json()`, `get_child_device_list_json()`, `get_child_device_component_list_json()`, `get_supported_ringtone_list()`, and `get_component_list()`.
+- All handlers: added `get_component_list()` method (behind `debug` feature) for inspecting device capabilities.
 
 ### Changed
 
-- `DeviceDiscovery`: the `discover` method stream now raises `tapo::TapoDiscoveryError` exceptions instead of `tapo::TapoError` to allow for more specific error handling, such as including the IP of the device that caused the error.
+- `DeviceDiscovery`: changed the `discover` method stream to raise `tapo::TapoDiscoveryError` instead of `tapo::TapoError` for more specific error handling, such as including the IP of the device that caused the error.
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
-- `DeviceType` enum that categorizes Tapo devices by their handlers (e.g. `Light`, `Plug`, `Hub`).
-- `DiscoveryResult` accessor properties: `device_type`, `model`, `ip`, `device_id`, and `nickname` for convenient access to common properties without pattern matching.
+- `DeviceType`: added enum that categorizes Tapo devices by their handlers (e.g. `Light`, `Plug`, `Hub`).
+- `DiscoveryResult`: added accessor properties `device_type`, `model`, `ip`, `device_id`, and `nickname` for convenient access to common properties without pattern matching.
+- `Component`: added class (behind `debug` feature) for inspecting device capabilities returned by `get_component_list()`.
+- All handlers: added `get_component_list()` method (behind `debug` feature) for inspecting device capabilities.
 
 ### Changed
 
-- `DeviceDiscovery`: the `discover` method stream now raises `tapo.TapoDiscoveryError` exceptions instead of `tapo.TapoError` to allow for more specific error handling, such as including the IP of the device that caused the error.
-- `ApiClient`: the `discover_devices` method's `timeout_s` parameter now defaults to `10` seconds, making it optional.
-- `ApiClient`: the `timeout_s` parameter type has been corrected to `Optional[int]`.
+- `DeviceDiscovery`: changed the `discover` method stream to raise `tapo.TapoDiscoveryError` instead of `tapo.TapoError` for more specific error handling, such as including the IP of the device that caused the error.
+- `ApiClient`: changed the `discover_devices` method's `timeout_s` parameter to default to `10` seconds, making it optional.
 
 ### Fixed
 
-- `ApiClient`: fixed `p316()` return type from `PowerStripHandler` to `PowerStripEnergyMonitoringHandler`.
-- `HubHandler`: fixed missing `self` parameter on `get_supported_ringtone_list()`.
-- `S200Handler`: fixed missing module registration that prevented `from tapo import S200Handler` from working.
+- `ApiClient`: corrected the `timeout_s` parameter type to `Optional[int]`.
+- `ApiClient`: corrected `p316()` return type from `PowerStripHandler` to `PowerStripEnergyMonitoringHandler`.
+- `HubHandler`: corrected missing `self` parameter on `get_supported_ringtone_list()`.
+- `S200Handler`: added missing module registration that prevented `from tapo import S200Handler` from working.
 - `ColorLightSetDeviceInfoParams`: added `RgbicLightStripHandler` to the `send()` method's accepted handler types.
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: fixed `start_date` and `end_date` parameter types in `get_energy_data()` from `datetime` to `date`.
-- `LightHandler`, `ColorLightHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: fixed `get_device_usage()` return type from `DeviceUsageResult` to `DeviceUsageEnergyMonitoringResult`.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `start_date` and `end_date` parameter types in `get_energy_data()` from `datetime` to `date`.
+- `LightHandler`, `ColorLightHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: corrected `get_device_usage()` return type from `DeviceUsageResult` to `DeviceUsageEnergyMonitoringResult`.
 
 ## [Rust v0.8.11][v0.8.11] - 2026-02-27
 
