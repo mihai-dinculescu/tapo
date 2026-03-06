@@ -8,6 +8,7 @@ Run all checks, fix any issues found, then present a summary table.
 - `cargo clippy` — fix warnings
 - `cargo fmt` — fix formatting
 - `cargo test -p tapo` — fix failures
+- `cargo clean --doc && RUSTDOCFLAGS="-D warnings" cargo doc -p tapo --no-deps --all-features` — fix documentation issues
 - No `unwrap()` in non-test code without a safety comment
 - No unnecessary clones
 - No deeply nested `use` (max one level of `{}` nesting)
