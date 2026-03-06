@@ -8,7 +8,7 @@ use tapo::requests::{
     Color, LightingEffect, LightingEffectPreset, SegmentEffect, SegmentEffectPreset,
 };
 use tapo::responses::{DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult};
-use tapo::{DeviceManagementExt as _, HandlerExt, RgbicLightStripHandler};
+use tapo::{HandlerExt, RgbicLightStripHandler};
 use tokio::sync::RwLock;
 
 use crate::api::PyHandlerExt;

@@ -1,51 +1,13 @@
-use std::sync::Arc;
-
-use tokio::sync::RwLock;
-
-use crate::api::ApiClient;
 use crate::error::{Error, TapoResponseError};
-use crate::requests::{EmptyParams, GetTriggerLogsParams, TapoParams, TapoRequest};
-use crate::responses::{DecodableResultExt, T300Result};
-use crate::responses::{T300Log, TriggerLogsResult};
+use crate::requests::{GetTriggerLogsParams, TapoParams, TapoRequest};
+use crate::responses::{T300Log, T300Result, TriggerLogsResult};
 
-/// Handler for the [T300](https://www.tapo.com/en/search/?q=T300) devices.
-pub struct T300Handler {
-    client: Arc<RwLock<ApiClient>>,
-    device_id: String,
+tapo_child_handler! {
+    /// Handler for the [T300](https://www.tapo.com/en/search/?q=T300) devices.
+    T300Handler(T300Result),
 }
 
 impl T300Handler {
-    pub(crate) fn new(client: Arc<RwLock<ApiClient>>, device_id: String) -> Self {
-        Self { client, device_id }
-    }
-
-    /// Returns *device info* as [`T300Result`].
-    /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    pub async fn get_device_info(&self) -> Result<T300Result, Error> {
-        let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
-
-        self.client
-            .read()
-            .await
-            .control_child::<T300Result>(self.device_id.clone(), request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
-            .map(|result| result.decode())?
-    }
-
-    /// Returns *device info* as [`serde_json::Value`].
-    /// It contains all the properties returned from the Tapo API.
-    pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
-        let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
-
-        self.client
-            .read()
-            .await
-            .control_child::<serde_json::Value>(self.device_id.clone(), request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
-    }
-
     /// Returns a list of *trigger logs*.
     ///
     /// # Arguments

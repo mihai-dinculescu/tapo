@@ -1,33 +1,17 @@
-use std::sync::Arc;
-
-use async_trait::async_trait;
-use tokio::sync::{RwLock, RwLockReadGuard};
-
 use crate::error::Error;
 use crate::requests::{Color, ColorLightSetDeviceInfoParams};
 use crate::responses::{DeviceInfoColorLightResult, DeviceUsageEnergyMonitoringResult};
 
-use super::{ApiClient, ApiClientExt, DeviceManagementExt, HandlerExt};
-
-/// Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
-/// [L535](https://www.tapo.com/en/search/?q=L535) and
-/// [L630](https://www.tapo.com/en/search/?q=L630) devices.
-#[derive(Debug)]
-pub struct ColorLightHandler {
-    client: Arc<RwLock<ApiClient>>,
+tapo_handler! {
+    /// Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
+    /// [L535](https://www.tapo.com/en/search/?q=L535) and
+    /// [L630](https://www.tapo.com/en/search/?q=L630) devices.
+    ColorLightHandler(DeviceInfoColorLightResult),
+    device_usage = DeviceUsageEnergyMonitoringResult,
+    device_management,
 }
 
 impl ColorLightHandler {
-    pub(crate) fn new(client: Arc<RwLock<ApiClient>>) -> Self {
-        Self { client }
-    }
-
-    /// Refreshes the authentication session.
-    pub async fn refresh_session(&mut self) -> Result<&mut Self, Error> {
-        self.client.write().await.refresh_session().await?;
-        Ok(self)
-    }
-
     /// Turns *on* the device.
     pub async fn on(&self) -> Result<(), Error> {
         ColorLightSetDeviceInfoParams::new().on().send(self).await
@@ -36,24 +20,6 @@ impl ColorLightHandler {
     /// Turns *off* the device.
     pub async fn off(&self) -> Result<(), Error> {
         ColorLightSetDeviceInfoParams::new().off().send(self).await
-    }
-
-    /// Returns *device info* as [`DeviceInfoColorLightResult`].
-    /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`ColorLightHandler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<DeviceInfoColorLightResult, Error> {
-        self.client.read().await.get_device_info().await
-    }
-
-    /// Returns *device info* as [`serde_json::Value`].
-    /// It contains all the properties returned from the Tapo API.
-    pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
-        self.client.read().await.get_device_info().await
-    }
-
-    /// Returns *device usage* as [`DeviceUsageEnergyMonitoringResult`].
-    pub async fn get_device_usage(&self) -> Result<DeviceUsageEnergyMonitoringResult, Error> {
-        self.client.read().await.get_device_usage().await
     }
 
     /// Returns a [`ColorLightSetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
@@ -131,15 +97,3 @@ impl ColorLightHandler {
             .await
     }
 }
-
-#[async_trait]
-impl HandlerExt for ColorLightHandler {
-    async fn get_client(&self) -> RwLockReadGuard<'_, dyn ApiClientExt> {
-        RwLockReadGuard::map(
-            self.client.read().await,
-            |client: &ApiClient| -> &dyn ApiClientExt { client },
-        )
-    }
-}
-
-impl DeviceManagementExt for ColorLightHandler {}

@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use tapo::requests::{AlarmDuration, AlarmRingtone, AlarmVolume};
 use tapo::responses::{ChildDeviceHubResult, DeviceInfoHubResult};
-use tapo::{DeviceManagementExt as _, Error, HubDevice, HubHandler};
+use tapo::{Error, HubDevice, HubHandler};
 use tokio::sync::RwLock;
 
 use crate::api::{

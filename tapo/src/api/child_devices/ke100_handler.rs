@@ -1,53 +1,16 @@
-use std::sync::Arc;
-
-use tokio::sync::RwLock;
-
-use crate::api::ApiClient;
-use crate::error::{Error, TapoResponseError};
+use crate::error::Error;
 use crate::requests::TemperatureUnitKE100;
-use crate::requests::{EmptyParams, TapoParams, TapoRequest, TrvSetDeviceInfoParams};
-use crate::responses::{DecodableResultExt, KE100Result};
+use crate::requests::{TapoParams, TapoRequest, TrvSetDeviceInfoParams};
+use crate::responses::KE100Result;
 
-/// Handler for the [KE100](https://www.tp-link.com/en/search/?q=KE100) devices.
-pub struct KE100Handler {
-    client: Arc<RwLock<ApiClient>>,
-    device_id: String,
+tapo_child_handler! {
+    /// Handler for the [KE100](https://www.tp-link.com/en/search/?q=KE100) devices.
+    KE100Handler(KE100Result),
 }
 
 impl KE100Handler {
-    pub(crate) fn new(client: Arc<RwLock<ApiClient>>, device_id: String) -> Self {
-        Self { client, device_id }
-    }
-
-    /// Returns *device info* as [`KE100Result`].
-    /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    pub async fn get_device_info(&self) -> Result<KE100Result, Error> {
-        let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
-
-        self.client
-            .read()
-            .await
-            .control_child::<KE100Result>(self.device_id.clone(), request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
-            .map(|result| result.decode())?
-    }
-
-    /// Returns *device info* as [`serde_json::Value`].
-    /// It contains all the properties returned from the Tapo API.
-    pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
-        let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
-
-        self.client
-            .read()
-            .await
-            .control_child::<serde_json::Value>(self.device_id.clone(), request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
-    }
-
     /// Sets *child protection* on the device to *on* or *off*.
-    ///     
+    ///
     /// # Arguments
     ///
     /// * `on`
@@ -65,7 +28,7 @@ impl KE100Handler {
     }
 
     /// Sets *frost protection* on the device to *on* or *off*.
-    ///     
+    ///
     /// # Arguments
     ///
     /// * `on`

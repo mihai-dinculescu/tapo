@@ -4,7 +4,7 @@ use std::sync::Arc;
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use tapo::responses::DeviceInfoPowerStripResult;
-use tapo::{DeviceManagementExt as _, Error, Plug, PowerStripEnergyMonitoringHandler};
+use tapo::{Error, Plug, PowerStripEnergyMonitoringHandler};
 use tokio::sync::RwLock;
 
 use crate::api::PyPowerStripPlugEnergyMonitoringHandler;

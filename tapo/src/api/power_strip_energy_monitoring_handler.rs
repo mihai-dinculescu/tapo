@@ -1,51 +1,19 @@
-use std::sync::Arc;
-
-use async_trait::async_trait;
-use tokio::sync::{RwLock, RwLockReadGuard};
-
 use crate::error::Error;
 use crate::responses::{
     ChildDeviceListPowerStripEnergyMonitoringResult, DeviceInfoPowerStripResult,
     PowerStripPlugEnergyMonitoringResult,
 };
 
-use super::{
-    ApiClient, ApiClientExt, DeviceManagementExt, HandlerExt, Plug,
-    PowerStripPlugEnergyMonitoringHandler,
-};
+use super::{Plug, PowerStripPlugEnergyMonitoringHandler};
 
-/// Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
-/// [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
-#[derive(Debug)]
-pub struct PowerStripEnergyMonitoringHandler {
-    client: Arc<RwLock<ApiClient>>,
+tapo_handler! {
+    /// Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+    /// [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
+    PowerStripEnergyMonitoringHandler(DeviceInfoPowerStripResult),
+    device_management,
 }
 
 impl PowerStripEnergyMonitoringHandler {
-    pub(crate) fn new(client: Arc<RwLock<ApiClient>>) -> Self {
-        Self { client }
-    }
-
-    /// Refreshes the authentication session.
-    pub async fn refresh_session(&mut self) -> Result<&mut Self, Error> {
-        self.client.write().await.refresh_session().await?;
-        Ok(self)
-    }
-
-    /// Returns *device info* as [`DeviceInfoPowerStripResult`].
-    /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present,
-    /// try [`PowerStripEnergyMonitoringHandler::get_device_info_json`].
-    pub async fn get_device_info(&self) -> Result<DeviceInfoPowerStripResult, Error> {
-        self.client.read().await.get_device_info().await
-    }
-
-    /// Returns *device info* as [`serde_json::Value`].
-    /// It contains all the properties returned from the Tapo API.
-    pub async fn get_device_info_json(&self) -> Result<serde_json::Value, Error> {
-        self.client.read().await.get_device_info().await
-    }
-
     /// Returns *child device list* as [`Vec<PowerStripPlugEnergyMonitoringResult>`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present,
@@ -137,15 +105,3 @@ impl PowerStripEnergyMonitoringHandler {
         ))
     }
 }
-
-#[async_trait]
-impl HandlerExt for PowerStripEnergyMonitoringHandler {
-    async fn get_client(&self) -> RwLockReadGuard<'_, dyn ApiClientExt> {
-        RwLockReadGuard::map(
-            self.client.read().await,
-            |client: &ApiClient| -> &dyn ApiClientExt { client },
-        )
-    }
-}
-
-impl DeviceManagementExt for PowerStripEnergyMonitoringHandler {}

@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use tapo::requests::Color;
 use tapo::responses::{DeviceInfoRgbLightStripResult, DeviceUsageEnergyMonitoringResult};
-use tapo::{DeviceManagementExt as _, HandlerExt, RgbLightStripHandler};
+use tapo::{HandlerExt, RgbLightStripHandler};
 use tokio::sync::RwLock;
 
 use crate::api::PyHandlerExt;

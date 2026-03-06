@@ -4,12 +4,12 @@ use std::sync::Arc;
 use chrono::{DateTime, NaiveDate, Utc};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
+use tapo::PlugEnergyMonitoringHandler;
 use tapo::requests::{EnergyDataInterval, PowerDataInterval};
 use tapo::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
     EnergyDataResult, EnergyUsageResult, PowerDataResult,
 };
-use tapo::{DeviceManagementExt as _, PlugEnergyMonitoringHandler};
 use tokio::sync::RwLock;
 
 use crate::call_handler_method;
