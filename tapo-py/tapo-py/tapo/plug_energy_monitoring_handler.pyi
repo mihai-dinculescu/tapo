@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import Optional
 
 from tapo.debug_ext import DebugExt
 from tapo.device_management_ext import DeviceManagementExt
@@ -63,7 +64,7 @@ class PlugEnergyMonitoringHandler(OnOffExt, DeviceManagementExt, RefreshSessionE
         self,
         interval: EnergyDataInterval,
         start_date: date,
-        end_date: date = None,
+        end_date: Optional[date] = None,
     ) -> EnergyDataResult:
         """Returns *energy data* as `EnergyDataResult`.
 

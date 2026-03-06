@@ -1,6 +1,6 @@
-from enum import Enum
 from typing import Optional, Union
 
+from tapo.responses.child_device_list_power_strip_result.auto_off_status import AutoOffStatus
 from tapo.responses.device_info_result.default_plug_state import Custom, LastStates
 from tapo.responses.device_info_result.power_status import (
     ChargingStatus,
@@ -57,7 +57,3 @@ class PowerStripPlugEnergyMonitoringResult:
         Returns:
             dict: The result as a dictionary.
         """
-
-class AutoOffStatus(str, Enum):
-    On = "on"
-    Off = "off"
