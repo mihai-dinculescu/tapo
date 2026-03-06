@@ -6,22 +6,74 @@
 /// tapo_handler! {
 ///     /// Doc comment for the handler.
 ///     Handler(DeviceInfoResult),
+///     on_off,
 ///     device_usage = DeviceUsageResult,
 ///     device_management,
 /// }
 /// ```
 ///
+/// All options (`on_off`, `device_usage`, `device_management`) are independently optional.
+///
 /// # Generated code
 ///
-/// * Struct with `client: Arc<RwLock<ApiClient>>` field and `#[derive(Debug)]`
+/// * `#[derive(Debug)]` struct with `client: Arc<RwLock<ApiClient>>` field
 /// * `new(client)` constructor
 /// * `refresh_session()` method
 /// * `get_device_info()` method (typed)
 /// * `get_device_info_json()` method
+/// * `on()` and `off()` methods (if `on_off` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
 /// * `device_reboot()` and `device_reset()` methods (if `device_management` specified)
 /// * `impl HandlerExt` with `get_client()`
 macro_rules! tapo_handler {
+    // With on_off + device_usage + device_management
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        on_off,
+        device_usage = $device_usage:ty,
+        device_management,
+    ) => {
+        tapo_handler!(@base $(#[$meta])* $name($device_info));
+        tapo_handler!(@on_off $name);
+        tapo_handler!(@device_usage $name, $device_usage);
+        tapo_handler!(@device_management $name);
+    };
+
+    // With on_off + device_usage only
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        on_off,
+        device_usage = $device_usage:ty,
+    ) => {
+        tapo_handler!(@base $(#[$meta])* $name($device_info));
+        tapo_handler!(@on_off $name);
+        tapo_handler!(@device_usage $name, $device_usage);
+    };
+
+    // With on_off + device_management only
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        on_off,
+        device_management,
+    ) => {
+        tapo_handler!(@base $(#[$meta])* $name($device_info));
+        tapo_handler!(@on_off $name);
+        tapo_handler!(@device_management $name);
+    };
+
+    // With on_off only
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        on_off,
+    ) => {
+        tapo_handler!(@base $(#[$meta])* $name($device_info));
+        tapo_handler!(@on_off $name);
+    };
+
     // With device_usage + device_management
     (
         $(#[$meta:meta])*
@@ -115,6 +167,27 @@ macro_rules! tapo_handler {
         }
     };
 
+    // Internal: on_off
+    (@on_off $name:ident) => {
+        impl $name {
+            /// Turns *on* the device.
+            pub async fn on(&self) -> Result<(), crate::error::Error> {
+                let json = serde_json::to_value(
+                    crate::requests::GenericSetDeviceInfoParams::device_on(true)?,
+                )?;
+                crate::api::ApiClientExt::set_device_info(&*self.client.read().await, json).await
+            }
+
+            /// Turns *off* the device.
+            pub async fn off(&self) -> Result<(), crate::error::Error> {
+                let json = serde_json::to_value(
+                    crate::requests::GenericSetDeviceInfoParams::device_on(false)?,
+                )?;
+                crate::api::ApiClientExt::set_device_info(&*self.client.read().await, json).await
+            }
+        }
+    };
+
     // Internal: device_usage
     (@device_usage $name:ident, $device_usage:ty) => {
         impl $name {
@@ -167,20 +240,40 @@ macro_rules! tapo_handler {
 /// tapo_child_handler! {
 ///     /// Doc comment for the handler.
 ///     ChildHandler(DeviceInfoResult),
+///     on_off,
 /// }
 /// ```
+///
+/// The `on_off` option is optional.
 ///
 /// # Generated code
 ///
 /// * Struct with `client: Arc<RwLock<ApiClient>>` and `device_id: String` fields
 /// * `new(client, device_id)` constructor
-/// * `get_device_info()` method (typed, using `control_child`)
-/// * `get_device_info_json()` method (using `control_child`)
+/// * `get_device_info()` method (typed)
+/// * `get_device_info_json()` method
+/// * `on()` and `off()` methods (if `on_off` specified)
 macro_rules! tapo_child_handler {
+    // With on_off
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        on_off,
+    ) => {
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info));
+        tapo_child_handler!(@on_off $name);
+    };
+
+    // No options
     (
         $(#[$meta:meta])*
         $name:ident($device_info:ty),
     ) => {
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info));
+    };
+
+    // Internal: base struct + core methods
+    (@base $(#[$meta:meta])* $name:ident($device_info:ty)) => {
         $(#[$meta])*
         pub struct $name {
             client: std::sync::Arc<tokio::sync::RwLock<crate::api::ApiClient>>,
@@ -234,6 +327,47 @@ macro_rules! tapo_child_handler {
                     .ok_or_else(|| {
                         crate::error::Error::Tapo(crate::error::TapoResponseError::EmptyResult)
                     })
+            }
+        }
+    };
+
+    // Internal: on_off for child devices
+    (@on_off $name:ident) => {
+        impl $name {
+            /// Turns *on* the device.
+            pub async fn on(&self) -> Result<(), crate::error::Error> {
+                let json = serde_json::to_value(
+                    crate::requests::GenericSetDeviceInfoParams::device_on(true)?,
+                )?;
+                let request = crate::requests::TapoRequest::SetDeviceInfo(
+                    Box::new(crate::requests::TapoParams::new(json)),
+                );
+
+                self.client
+                    .read()
+                    .await
+                    .control_child::<serde_json::Value>(self.device_id.clone(), request)
+                    .await?;
+
+                Ok(())
+            }
+
+            /// Turns *off* the device.
+            pub async fn off(&self) -> Result<(), crate::error::Error> {
+                let json = serde_json::to_value(
+                    crate::requests::GenericSetDeviceInfoParams::device_on(false)?,
+                )?;
+                let request = crate::requests::TapoRequest::SetDeviceInfo(
+                    Box::new(crate::requests::TapoParams::new(json)),
+                );
+
+                self.client
+                    .read()
+                    .await
+                    .control_child::<serde_json::Value>(self.device_id.clone(), request)
+                    .await?;
+
+                Ok(())
             }
         }
     };

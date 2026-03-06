@@ -11,31 +11,12 @@ tapo_handler! {
     /// [L520](https://www.tapo.com/en/search/?q=L520) and
     /// [L610](https://www.tapo.com/en/search/?q=L610) devices.
     LightHandler(DeviceInfoLightResult),
+    on_off,
     device_usage = DeviceUsageEnergyMonitoringResult,
     device_management,
 }
 
 impl LightHandler {
-    /// Turns *on* the device.
-    pub async fn on(&self) -> Result<(), Error> {
-        let client = RwLockReadGuard::map(
-            self.client.read().await,
-            |client: &ApiClient| -> &dyn ApiClientExt { client },
-        );
-
-        LightSetDeviceInfoParams::new(client).on().send().await
-    }
-
-    /// Turns *off* the device.
-    pub async fn off(&self) -> Result<(), Error> {
-        let client = RwLockReadGuard::map(
-            self.client.read().await,
-            |client: &ApiClient| -> &dyn ApiClientExt { client },
-        );
-
-        LightSetDeviceInfoParams::new(client).off().send().await
-    }
-
     /// Sets the *brightness* and turns *on* the device.
     ///
     /// # Arguments

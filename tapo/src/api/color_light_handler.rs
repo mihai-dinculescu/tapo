@@ -7,21 +7,12 @@ tapo_handler! {
     /// [L535](https://www.tapo.com/en/search/?q=L535) and
     /// [L630](https://www.tapo.com/en/search/?q=L630) devices.
     ColorLightHandler(DeviceInfoColorLightResult),
+    on_off,
     device_usage = DeviceUsageEnergyMonitoringResult,
     device_management,
 }
 
 impl ColorLightHandler {
-    /// Turns *on* the device.
-    pub async fn on(&self) -> Result<(), Error> {
-        ColorLightSetDeviceInfoParams::new().on().send(self).await
-    }
-
-    /// Turns *off* the device.
-    pub async fn off(&self) -> Result<(), Error> {
-        ColorLightSetDeviceInfoParams::new().off().send(self).await
-    }
-
     /// Returns a [`ColorLightSetDeviceInfoParams`] builder that allows multiple properties to be set in a single request.
     /// [`ColorLightSetDeviceInfoParams::send`] must be called at the end to apply the changes.
     ///

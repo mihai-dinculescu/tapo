@@ -1,7 +1,7 @@
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
-    EmptyParams, EnergyDataInterval, GenericSetDeviceInfoParams, GetEnergyDataParams,
-    GetPowerDataParams, PowerDataInterval, TapoParams, TapoRequest,
+    EmptyParams, EnergyDataInterval, GetEnergyDataParams, GetPowerDataParams, PowerDataInterval,
+    TapoParams, TapoRequest,
 };
 use crate::responses::{
     CurrentPowerResult, DeviceUsageEnergyMonitoringResult, EnergyDataResult, EnergyDataResultRaw,
@@ -12,37 +12,10 @@ tapo_child_handler! {
     /// Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
     /// [P316M](https://www.tp-link.com/us/search/?q=P316M) child plugs.
     PowerStripPlugEnergyMonitoringHandler(PowerStripPlugEnergyMonitoringResult),
+    on_off,
 }
 
 impl PowerStripPlugEnergyMonitoringHandler {
-    /// Turns *on* the device.
-    pub async fn on(&self) -> Result<(), Error> {
-        let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(true)?)?;
-        let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
-
-        self.client
-            .read()
-            .await
-            .control_child::<serde_json::Value>(self.device_id.clone(), request)
-            .await?;
-
-        Ok(())
-    }
-
-    /// Turns *off* the device.
-    pub async fn off(&self) -> Result<(), Error> {
-        let json = serde_json::to_value(GenericSetDeviceInfoParams::device_on(false)?)?;
-        let request = TapoRequest::SetDeviceInfo(Box::new(TapoParams::new(json)));
-
-        self.client
-            .read()
-            .await
-            .control_child::<serde_json::Value>(self.device_id.clone(), request)
-            .await?;
-
-        Ok(())
-    }
-
     /// Returns *current power* as [`CurrentPowerResult`].
     pub async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
         let request = TapoRequest::GetCurrentPower(TapoParams::new(EmptyParams));
