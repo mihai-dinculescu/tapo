@@ -1,4 +1,6 @@
 use crate::error::Error;
+#[cfg(feature = "debug")]
+use crate::responses::ChildDeviceComponentList;
 use crate::responses::{
     ChildDeviceListPowerStripResult, DeviceInfoPowerStripResult, PowerStripPlugResult,
 };
@@ -33,10 +35,12 @@ impl PowerStripHandler {
         self.client.read().await.get_child_device_list(0).await
     }
 
-    /// Returns *child device component list* as [`serde_json::Value`].
+    /// Returns *child device component list* as [`Vec<ChildDeviceComponentList>`].
     /// This information is useful in debugging or when investigating new functionality to add.
     #[cfg(feature = "debug")]
-    pub async fn get_child_device_component_list_json(&self) -> Result<serde_json::Value, Error> {
+    pub async fn get_child_device_component_list(
+        &self,
+    ) -> Result<Vec<ChildDeviceComponentList>, Error> {
         self.client
             .read()
             .await

@@ -6,6 +6,7 @@ from tapo.device_management_ext import DeviceManagementExt
 from tapo.refresh_session_ext import RefreshSessionExt
 from tapo.requests import AlarmDuration, AlarmRingtone, AlarmVolume
 from tapo.responses import (
+    ChildDeviceComponentList,
     DeviceInfoHubResult,
     KE100Result,
     S200Result,
@@ -59,12 +60,12 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
             dict: Device info as a dictionary.
         """
 
-    async def get_child_device_component_list_json(self) -> dict:
-        """Returns *child device component list* as json.
-        It contains all the properties returned from the Tapo API.
+    async def get_child_device_component_list(self) -> List[ChildDeviceComponentList]:
+        """Returns *child device component list* as a list of `ChildDeviceComponentList`.
+        This information is useful in debugging or when investigating new functionality to add.
 
         Returns:
-            dict: Device info as a dictionary.
+            List[ChildDeviceComponentList]: The component list for each child device.
         """
 
     async def get_supported_ringtone_list(self) -> List[str]:

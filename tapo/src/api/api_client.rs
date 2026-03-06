@@ -16,7 +16,10 @@ use crate::requests::{
     TapoRequest,
 };
 #[cfg(feature = "debug")]
-use crate::responses::{Component, ComponentListResult, SupportedAlarmTypeListResult};
+use crate::responses::{
+    ChildDeviceComponentList, ChildDeviceComponentListResult, Component, ComponentListResult,
+    SupportedAlarmTypeListResult,
+};
 use crate::responses::{
     ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
     EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw,
@@ -842,18 +845,19 @@ impl ApiClient {
     }
 
     #[cfg(feature = "debug")]
-    pub(crate) async fn get_child_device_component_list<R>(&self) -> Result<R, Error>
-    where
-        R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
-    {
+    pub(crate) async fn get_child_device_component_list(
+        &self,
+    ) -> Result<Vec<ChildDeviceComponentList>, Error> {
         debug!("Get Child device component list...");
         let request = TapoRequest::GetChildDeviceComponentList(TapoParams::new(EmptyParams));
 
-        self.get_protocol()?
-            .execute_request::<R>(request, true)
+        let result: ChildDeviceComponentListResult = self
+            .get_protocol()?
+            .execute_request(request, true)
             .await?
-            .map(|result| result.decode())
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        Ok(result.child_component_list)
     }
 
     pub(crate) async fn control_child<R>(

@@ -1,7 +1,10 @@
 //! Tapo response objects.
 
+#[cfg(feature = "debug")]
+mod child_device_component_list_result;
 mod child_device_list_hub_result;
 mod child_device_list_power_strip_result;
+#[cfg(feature = "debug")]
 mod component_list_result;
 mod control_child_result;
 mod current_power_result;
@@ -21,6 +24,8 @@ mod trigger_logs_result;
 
 pub use crate::requests::{LightingEffect, LightingEffectType};
 
+#[cfg(feature = "debug")]
+pub use child_device_component_list_result::*;
 pub use child_device_list_hub_result::*;
 pub use child_device_list_power_strip_result::*;
 #[cfg(feature = "debug")]

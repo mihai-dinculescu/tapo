@@ -4,7 +4,11 @@ from tapo import PowerStripPlugEnergyMonitoringHandler
 from tapo.debug_ext import DebugExt
 from tapo.device_management_ext import DeviceManagementExt
 from tapo.refresh_session_ext import RefreshSessionExt
-from tapo.responses import DeviceInfoPowerStripResult, PowerStripPlugEnergyMonitoringResult
+from tapo.responses import (
+    ChildDeviceComponentList,
+    DeviceInfoPowerStripResult,
+    PowerStripPlugEnergyMonitoringResult,
+)
 
 class PowerStripEnergyMonitoringHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
     """Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
@@ -46,12 +50,12 @@ class PowerStripEnergyMonitoringHandler(DeviceManagementExt, RefreshSessionExt, 
             dict: Device info as a dictionary.
         """
 
-    async def get_child_device_component_list_json(self) -> dict:
-        """Returns *child device component list* as json.
-        It contains all the properties returned from the Tapo API.
+    async def get_child_device_component_list(self) -> List[ChildDeviceComponentList]:
+        """Returns *child device component list* as a list of `ChildDeviceComponentList`.
+        This information is useful in debugging or when investigating new functionality to add.
 
         Returns:
-            dict: Device info as a dictionary.
+            List[ChildDeviceComponentList]: The component list for each child device.
         """
 
     async def plug(

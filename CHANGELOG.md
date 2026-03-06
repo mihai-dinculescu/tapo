@@ -10,12 +10,12 @@ file. This change log follows the conventions of
 
 - `DeviceType`: added enum that categorizes Tapo devices by their handlers (e.g. `Light`, `Plug`, `Hub`), with a `from_model` constructor for mapping model strings.
 - `DiscoveryResult`: added accessor methods `device_type()`, `model()`, `ip()`, `device_id()`, and `nickname()` for convenient access to common properties without pattern matching.
-- All handlers: added `debug` feature flag that gates inspection methods `get_device_info_json()`, `get_child_device_list_json()`, `get_child_device_component_list_json()`, `get_supported_ringtone_list()`, and `get_component_list()`.
+- All handlers: added `debug` feature flag that gates inspection methods `get_device_info_json()`, `get_child_device_list_json()`, `get_child_device_component_list()`, `get_supported_ringtone_list()`, and `get_component_list()`.
 - All handlers: added `get_component_list()` method (behind `debug` feature) for inspecting device capabilities.
-
 ### Changed
 
 - `DeviceDiscovery`: changed the `discover` method stream to raise `tapo::TapoDiscoveryError` instead of `tapo::TapoError` for more specific error handling, such as including the IP of the device that caused the error.
+- `HubHandler`, `PowerStripHandler`, `PowerStripEnergyMonitoringHandler`: replaced `get_child_device_component_list_json()` with `get_child_device_component_list()` (behind `debug` feature) returning `Vec<ChildDeviceComponentList>` instead of raw JSON.
 
 ## [Python Unreleased][Unreleased]
 
@@ -29,6 +29,7 @@ file. This change log follows the conventions of
 ### Changed
 
 - `DeviceDiscovery`: changed the `discover` method stream to raise `tapo.TapoDiscoveryError` instead of `tapo.TapoError` for more specific error handling, such as including the IP of the device that caused the error.
+- `HubHandler`, `PowerStripHandler`, `PowerStripEnergyMonitoringHandler`: replaced `get_child_device_component_list_json()` with `get_child_device_component_list()` returning `list[ChildDeviceComponentList]` instead of raw JSON.
 - `ApiClient`: changed the `discover_devices` method's `timeout_s` parameter to default to `10` seconds, making it optional.
 
 ### Fixed

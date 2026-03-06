@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
-use tapo::responses::DeviceInfoPowerStripResult;
+use tapo::responses::{ChildDeviceComponentList, DeviceInfoPowerStripResult};
 use tapo::{Error, Plug, PowerStripEnergyMonitoringHandler};
 
 use crate::api::PyPowerStripPlugEnergyMonitoringHandler;
@@ -62,13 +62,12 @@ impl PyPowerStripEnergyMonitoringHandler {
         Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
-    pub async fn get_child_device_component_list_json(&self) -> PyResult<Py<PyDict>> {
+    pub async fn get_child_device_component_list(&self) -> PyResult<Vec<ChildDeviceComponentList>> {
         let handler = self.inner.clone();
-        let result = call_handler_method!(
+        call_handler_method!(
             handler.read().await.deref(),
-            PowerStripEnergyMonitoringHandler::get_child_device_component_list_json
-        )?;
-        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
+            PowerStripEnergyMonitoringHandler::get_child_device_component_list
+        )
     }
 
     #[pyo3(signature = (device_id=None, nickname=None, position=None))]

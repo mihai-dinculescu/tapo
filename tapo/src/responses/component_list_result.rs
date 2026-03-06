@@ -1,15 +1,16 @@
-#[cfg(feature = "debug")]
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+use serde::{Deserialize, Serialize};
+
+use crate::responses::TapoResponseExt;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct ComponentListResult {
     pub component_list: Vec<Component>,
 }
 
-#[cfg(feature = "debug")]
-impl crate::responses::TapoResponseExt for ComponentListResult {}
+impl TapoResponseExt for ComponentListResult {}
 
 /// A component (feature/capability) reported by a Tapo device.
-#[cfg(feature = "debug")]
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct Component {
     /// The component identifier (e.g. `"energy_monitoring"`, `"countdown"`).
@@ -18,7 +19,7 @@ pub struct Component {
     pub ver_code: u8,
 }
 
-#[cfg(all(feature = "debug", feature = "python"))]
+#[cfg(feature = "python")]
 #[pyo3::pymethods]
 impl Component {
     /// Gets all the properties of this result as a dictionary.

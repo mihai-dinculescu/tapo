@@ -1,3 +1,4 @@
+from .child_device_component_list_result import *
 from .child_device_list_hub_result import *
 from .child_device_list_power_strip_result import *
 from .component_list_result import *
