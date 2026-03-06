@@ -22,6 +22,7 @@ pyo3 = { workspace = true, features = [
     "chrono",
     "experimental-async",
     "extension-module",
+    "multiple-pymethods",
     "py-clone",
 ] }
 pyo3-async-runtimes = { version = "0.28", features = ["attributes", "tokio-runtime"] }

@@ -1,12 +1,10 @@
-use std::ops::{Deref, DerefMut};
-use std::sync::Arc;
+use std::ops::Deref;
 
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use tapo::requests::{AlarmDuration, AlarmRingtone, AlarmVolume};
 use tapo::responses::{ChildDeviceHubResult, DeviceInfoHubResult};
 use tapo::{Error, HubDevice, HubHandler};
-use tokio::sync::RwLock;
 
 use crate::api::{
     PyKE100Handler, PyS200Handler, PyT31XHandler, PyT100Handler, PyT110Handler, PyT300Handler,
@@ -14,19 +12,13 @@ use crate::api::{
 use crate::call_handler_method;
 use crate::requests::PyAlarmDuration;
 
-#[derive(Clone)]
-#[pyclass(from_py_object, name = "HubHandler")]
-pub struct PyHubHandler {
-    inner: Arc<RwLock<HubHandler>>,
+py_handler! {
+    PyHubHandler(HubHandler, DeviceInfoHubResult),
+    py_name = "HubHandler",
+    device_management,
 }
 
 impl PyHubHandler {
-    pub fn new(handler: HubHandler) -> Self {
-        Self {
-            inner: Arc::new(RwLock::new(handler)),
-        }
-    }
-
     fn parse_identifier(
         device_id: Option<String>,
         nickname: Option<String>,
@@ -45,43 +37,6 @@ impl PyHubHandler {
 
 #[pymethods]
 impl PyHubHandler {
-    pub async fn refresh_session(&self) -> PyResult<()> {
-        let handler = self.inner.clone();
-        call_handler_method!(
-            handler.write().await.deref_mut(),
-            HubHandler::refresh_session,
-            discard_result
-        )
-    }
-
-    pub async fn device_reboot(&self, delay_s: u16) -> PyResult<()> {
-        let handler = self.inner.clone();
-        call_handler_method!(
-            handler.read().await.deref(),
-            HubHandler::device_reboot,
-            delay_s
-        )
-    }
-
-    pub async fn device_reset(&self) -> PyResult<()> {
-        let handler = self.inner.clone();
-        call_handler_method!(handler.read().await.deref(), HubHandler::device_reset)
-    }
-
-    pub async fn get_device_info(&self) -> PyResult<DeviceInfoHubResult> {
-        let handler = self.inner.clone();
-        call_handler_method!(handler.read().await.deref(), HubHandler::get_device_info)
-    }
-
-    pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.inner.clone();
-        let result = call_handler_method!(
-            handler.read().await.deref(),
-            HubHandler::get_device_info_json
-        )?;
-        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
-    }
-
     pub async fn get_child_device_list(&self) -> PyResult<Py<PyList>> {
         let handler = self.inner.clone();
         let children = call_handler_method!(

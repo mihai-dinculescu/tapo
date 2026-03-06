@@ -1,7 +1,7 @@
-use std::{ops::Deref, sync::Arc};
+use std::ops::Deref;
 
 use chrono::{DateTime, NaiveDate, Utc};
-use pyo3::{prelude::*, types::PyDict};
+use pyo3::prelude::*;
 use tapo::PowerStripPlugEnergyMonitoringHandler;
 use tapo::requests::{EnergyDataInterval, PowerDataInterval};
 use tapo::responses::{
@@ -12,49 +12,14 @@ use tapo::responses::{
 use crate::call_handler_method;
 use crate::requests::{PyEnergyDataInterval, PyPowerDataInterval};
 
-#[derive(Clone)]
-#[pyclass(from_py_object, name = "PowerStripPlugEnergyMonitoringHandler")]
-pub struct PyPowerStripPlugEnergyMonitoringHandler {
-    inner: Arc<PowerStripPlugEnergyMonitoringHandler>,
-}
-
-impl PyPowerStripPlugEnergyMonitoringHandler {
-    pub fn new(handler: PowerStripPlugEnergyMonitoringHandler) -> Self {
-        Self {
-            inner: Arc::new(handler),
-        }
-    }
+py_child_handler! {
+    PyPowerStripPlugEnergyMonitoringHandler(PowerStripPlugEnergyMonitoringHandler, PowerStripPlugEnergyMonitoringResult),
+    py_name = "PowerStripPlugEnergyMonitoringHandler",
+    on_off,
 }
 
 #[pymethods]
 impl PyPowerStripPlugEnergyMonitoringHandler {
-    pub async fn get_device_info(&self) -> PyResult<PowerStripPlugEnergyMonitoringResult> {
-        let handler = self.inner.clone();
-        call_handler_method!(
-            handler.deref(),
-            PowerStripPlugEnergyMonitoringHandler::get_device_info
-        )
-    }
-
-    pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.inner.clone();
-        let result = call_handler_method!(
-            handler.deref(),
-            PowerStripPlugEnergyMonitoringHandler::get_device_info_json
-        )?;
-        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
-    }
-
-    pub async fn on(&self) -> PyResult<()> {
-        let handler = self.inner.clone();
-        call_handler_method!(handler.deref(), PowerStripPlugEnergyMonitoringHandler::on)
-    }
-
-    pub async fn off(&self) -> PyResult<()> {
-        let handler = self.inner.clone();
-        call_handler_method!(handler.deref(), PowerStripPlugEnergyMonitoringHandler::off)
-    }
-
     pub async fn get_current_power(&self) -> PyResult<CurrentPowerResult> {
         let handler = self.inner.clone();
         call_handler_method!(

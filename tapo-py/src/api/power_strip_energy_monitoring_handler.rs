@@ -1,28 +1,20 @@
-use std::ops::{Deref, DerefMut};
-use std::sync::Arc;
+use std::ops::Deref;
 
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
 use tapo::responses::DeviceInfoPowerStripResult;
 use tapo::{Error, Plug, PowerStripEnergyMonitoringHandler};
-use tokio::sync::RwLock;
 
 use crate::api::PyPowerStripPlugEnergyMonitoringHandler;
 use crate::call_handler_method;
 
-#[derive(Clone)]
-#[pyclass(from_py_object, name = "PowerStripEnergyMonitoringHandler")]
-pub struct PyPowerStripEnergyMonitoringHandler {
-    inner: Arc<RwLock<PowerStripEnergyMonitoringHandler>>,
+py_handler! {
+    PyPowerStripEnergyMonitoringHandler(PowerStripEnergyMonitoringHandler, DeviceInfoPowerStripResult),
+    py_name = "PowerStripEnergyMonitoringHandler",
+    device_management,
 }
 
 impl PyPowerStripEnergyMonitoringHandler {
-    pub fn new(handler: PowerStripEnergyMonitoringHandler) -> Self {
-        Self {
-            inner: Arc::new(RwLock::new(handler)),
-        }
-    }
-
     fn parse_identifier(
         device_id: Option<String>,
         nickname: Option<String>,
@@ -43,49 +35,6 @@ impl PyPowerStripEnergyMonitoringHandler {
 
 #[pymethods]
 impl PyPowerStripEnergyMonitoringHandler {
-    pub async fn refresh_session(&self) -> PyResult<()> {
-        let handler = self.inner.clone();
-        call_handler_method!(
-            handler.write().await.deref_mut(),
-            PowerStripEnergyMonitoringHandler::refresh_session,
-            discard_result
-        )
-    }
-
-    pub async fn device_reboot(&self, delay_s: u16) -> PyResult<()> {
-        let handler = self.inner.clone();
-        call_handler_method!(
-            handler.read().await.deref(),
-            PowerStripEnergyMonitoringHandler::device_reboot,
-            delay_s
-        )
-    }
-
-    pub async fn device_reset(&self) -> PyResult<()> {
-        let handler = self.inner.clone();
-        call_handler_method!(
-            handler.read().await.deref(),
-            PowerStripEnergyMonitoringHandler::device_reset,
-        )
-    }
-
-    pub async fn get_device_info(&self) -> PyResult<DeviceInfoPowerStripResult> {
-        let handler = self.inner.clone();
-        call_handler_method!(
-            handler.read().await.deref(),
-            PowerStripEnergyMonitoringHandler::get_device_info
-        )
-    }
-
-    pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.inner.clone();
-        let result = call_handler_method!(
-            handler.read().await.deref(),
-            PowerStripEnergyMonitoringHandler::get_device_info_json
-        )?;
-        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
-    }
-
     pub async fn get_child_device_list(&self) -> PyResult<Py<PyList>> {
         let handler = self.inner.clone();
         let children = call_handler_method!(

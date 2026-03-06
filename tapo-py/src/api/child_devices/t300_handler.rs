@@ -1,39 +1,19 @@
-use std::{ops::Deref, sync::Arc};
+use std::ops::Deref;
 
-use pyo3::{prelude::*, types::PyDict};
+use pyo3::prelude::*;
 use tapo::T300Handler;
 use tapo::responses::T300Result;
 
 use crate::call_handler_method;
 use crate::responses::TriggerLogsT300Result;
 
-#[derive(Clone)]
-#[pyclass(from_py_object, name = "T300Handler")]
-pub struct PyT300Handler {
-    inner: Arc<T300Handler>,
-}
-
-impl PyT300Handler {
-    pub fn new(handler: T300Handler) -> Self {
-        Self {
-            inner: Arc::new(handler),
-        }
-    }
+py_child_handler! {
+    PyT300Handler(T300Handler, T300Result),
+    py_name = "T300Handler",
 }
 
 #[pymethods]
 impl PyT300Handler {
-    pub async fn get_device_info(&self) -> PyResult<T300Result> {
-        let handler = self.inner.clone();
-        call_handler_method!(handler.deref(), T300Handler::get_device_info)
-    }
-
-    pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.inner.clone();
-        let result = call_handler_method!(handler.deref(), T300Handler::get_device_info_json)?;
-        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
-    }
-
     pub async fn get_trigger_logs(
         &self,
         page_size: u64,

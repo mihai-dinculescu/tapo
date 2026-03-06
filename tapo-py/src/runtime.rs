@@ -23,8 +23,8 @@ macro_rules! call_handler_constructor {
 
 #[macro_export]
 macro_rules! call_handler_method {
-    ($handler:expr, $method:path) => (call_handler_method!($handler, $method,));
-    ($handler:expr, $method:path, discard_result) => (call_handler_method!($handler, $method, discard_result,));
+    ($handler:expr, $method:path) => ($crate::call_handler_method!($handler, $method,));
+    ($handler:expr, $method:path, discard_result) => ($crate::call_handler_method!($handler, $method, discard_result,));
     ($handler:expr, $method:path, $($param:expr),*) => {{
         let result = $crate::runtime::tokio()
             .spawn(async move {
@@ -36,7 +36,7 @@ macro_rules! call_handler_method {
             .await
             .map_err(anyhow::Error::from)??;
 
-        Ok::<_, PyErr>(result)
+        Ok::<_, pyo3::PyErr>(result)
     }};
     ($handler:expr, $method:path, discard_result, $($param:expr),*) => {{
         let result = $crate::runtime::tokio()

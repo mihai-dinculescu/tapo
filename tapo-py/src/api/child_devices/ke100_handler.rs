@@ -1,38 +1,18 @@
-use std::{ops::Deref, sync::Arc};
+use std::ops::Deref;
 
-use pyo3::{prelude::*, types::PyDict};
+use pyo3::prelude::*;
 use tapo::KE100Handler;
 use tapo::responses::{KE100Result, TemperatureUnitKE100};
 
 use crate::call_handler_method;
 
-#[derive(Clone)]
-#[pyclass(from_py_object, name = "KE100Handler")]
-pub struct PyKE100Handler {
-    inner: Arc<KE100Handler>,
-}
-
-impl PyKE100Handler {
-    pub fn new(handler: KE100Handler) -> Self {
-        Self {
-            inner: Arc::new(handler),
-        }
-    }
+py_child_handler! {
+    PyKE100Handler(KE100Handler, KE100Result),
+    py_name = "KE100Handler",
 }
 
 #[pymethods]
 impl PyKE100Handler {
-    pub async fn get_device_info(&self) -> PyResult<KE100Result> {
-        let handler = self.inner.clone();
-        call_handler_method!(handler.deref(), KE100Handler::get_device_info)
-    }
-
-    pub async fn get_device_info_json(&self) -> PyResult<Py<PyDict>> {
-        let handler = self.inner.clone();
-        let result = call_handler_method!(handler.deref(), KE100Handler::get_device_info_json)?;
-        Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
-    }
-
     pub async fn set_child_protection(&self, on: bool) -> PyResult<()> {
         let handler = self.inner.clone();
         call_handler_method!(handler.deref(), KE100Handler::set_child_protection, on)

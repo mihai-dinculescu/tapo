@@ -1,4 +1,6 @@
 mod api_client;
+#[macro_use]
+mod py_tapo_handler;
 mod child_devices;
 mod color_light_handler;
 mod discovery;
