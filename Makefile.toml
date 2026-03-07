@@ -24,13 +24,6 @@ args = ["clippy", "--all-targets", "--all-features", "--verbose", "--", "-D", "w
 [tasks.test]
 command = "cargo"
 args = ["test", "--verbose"]
-condition_script = [
-    "#!@duckscript",
-    "is_py = eq ${CARGO_MAKE_CRATE_NAME} tapo-py",
-    "if ${is_py}",
-    "exit 1",
-    "end",
-]
 
 [tasks.ci-flow]
 dependencies = ["format", "check", "check-doc", "clippy", "test"]
