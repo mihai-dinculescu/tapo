@@ -70,3 +70,6 @@ pub struct DefaultLightState {
     pub brightness: DefaultBrightnessState,
     pub re_power_type: Option<DefaultPowerType>,
 }
+
+#[cfg(feature = "python")]
+crate::impl_to_dict!(DefaultLightState);

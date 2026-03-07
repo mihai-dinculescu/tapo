@@ -10,6 +10,13 @@ class UsageByPeriodResult:
     past30: Optional[int]
     """Past 30 days."""
 
+    def to_dict(self) -> dict:
+        """Gets all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """
+
 class DeviceUsageResult:
     """Contains the time usage."""
 

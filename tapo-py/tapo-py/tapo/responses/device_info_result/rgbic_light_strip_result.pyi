@@ -55,6 +55,13 @@ class DefaultRgbicLightStripState:
     type: DefaultStateType
     state: RgbicLightStripState
 
+    def to_dict(self) -> dict:
+        """Gets all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """
+
 class RgbicLightStripState:
     """RGB IC Light Strip State."""
 
@@ -63,3 +70,10 @@ class RgbicLightStripState:
     saturation: Optional[int]
     color_temp: Optional[int]
     lighting_effect: Optional[LightingEffect]
+
+    def to_dict(self) -> dict:
+        """Gets all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """

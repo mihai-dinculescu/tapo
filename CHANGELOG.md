@@ -12,6 +12,7 @@ file. This change log follows the conventions of
 - `DiscoveryResult`: added accessor methods `device_type()`, `model()`, `ip()`, `device_id()`, and `nickname()` for convenient access to common properties without pattern matching.
 - All handlers: added `debug` feature flag that gates inspection methods `get_device_info_json()`, `get_child_device_list_json()`, `get_child_device_component_list()`, `get_supported_ringtone_list()`, and `get_component_list()`.
 - All handlers: added `get_component_list()` method (behind `debug` feature) for inspecting device capabilities.
+
 ### Changed
 
 - `DeviceDiscovery`: changed the `discover` method stream to raise `tapo::TapoDiscoveryError` instead of `tapo::TapoError` for more specific error handling, such as including the IP of the device that caused the error.
@@ -25,6 +26,7 @@ file. This change log follows the conventions of
 - `DiscoveryResult`: added accessor properties `device_type`, `model`, `ip`, `device_id`, and `nickname` for convenient access to common properties without pattern matching.
 - `Component`: added class (behind `debug` feature) for inspecting device capabilities returned by `get_component_list()`.
 - All handlers: added `get_component_list()` method (behind `debug` feature) for inspecting device capabilities.
+- All response and request classes: added `to_dict()` method for converting to a Python dictionary.
 
 ### Changed
 

@@ -19,4 +19,7 @@ pub struct PlugState {
 }
 
 #[cfg(feature = "python")]
+crate::impl_to_dict!(DefaultPlugState);
+
+#[cfg(feature = "python")]
 crate::impl_to_dict!(PlugState);

@@ -49,3 +49,10 @@ class DefaultLightState:
 
     brightness: DefaultBrightnessState
     re_power_type: Optional[DefaultPowerType]
+
+    def to_dict(self) -> dict:
+        """Gets all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """

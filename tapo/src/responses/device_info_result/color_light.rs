@@ -74,6 +74,9 @@ pub struct DefaultColorLightState {
     pub state: ColorLightState,
 }
 
+#[cfg(feature = "python")]
+crate::impl_to_dict!(DefaultColorLightState);
+
 /// Color Light State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
@@ -84,3 +87,6 @@ pub struct ColorLightState {
     pub saturation: Option<u16>,
     pub color_temp: u16,
 }
+
+#[cfg(feature = "python")]
+crate::impl_to_dict!(ColorLightState);

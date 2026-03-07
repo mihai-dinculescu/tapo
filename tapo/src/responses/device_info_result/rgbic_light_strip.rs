@@ -71,6 +71,9 @@ pub struct DefaultRgbicLightStripState {
     pub state: RgbicLightStripState,
 }
 
+#[cfg(feature = "python")]
+crate::impl_to_dict!(DefaultRgbicLightStripState);
+
 /// RGB IC Light Strip State.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
@@ -82,3 +85,6 @@ pub struct RgbicLightStripState {
     pub color_temp: Option<u16>,
     pub lighting_effect: Option<LightingEffect>,
 }
+
+#[cfg(feature = "python")]
+crate::impl_to_dict!(RgbicLightStripState);

@@ -29,3 +29,6 @@ pub struct UsageByPeriodResult {
     #[serde(deserialize_with = "ok_or_default")]
     pub past30: Option<u64>,
 }
+
+#[cfg(feature = "python")]
+crate::impl_to_dict!(UsageByPeriodResult);

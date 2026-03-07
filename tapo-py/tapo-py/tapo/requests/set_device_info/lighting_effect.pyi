@@ -71,6 +71,12 @@ class LightingEffect:
     def with_transition(self, transition: int) -> LightingEffect: ...
     def with_transition_range(self, transition_range: Tuple[int, int]) -> LightingEffect: ...
     def with_transition_sequence(self, transition_sequence: List[int]) -> LightingEffect: ...
+    def to_dict(self) -> dict:
+        """Gets all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """
 
 class LightingEffectPreset(str, Enum):
     Aurora = "Aurora"

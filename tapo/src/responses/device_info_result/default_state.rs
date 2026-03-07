@@ -34,3 +34,6 @@ pub struct DefaultBrightnessState {
     pub r#type: DefaultStateType,
     pub value: u8,
 }
+
+#[cfg(feature = "python")]
+crate::impl_to_dict!(DefaultBrightnessState);

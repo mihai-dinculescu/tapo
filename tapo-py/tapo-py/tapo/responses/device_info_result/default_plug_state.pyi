@@ -17,6 +17,13 @@ class DefaultPlugState:
     LastStates: Type[LastStates] = LastStates
     Custom: Type[Custom] = Custom
 
+    def to_dict(self) -> dict:
+        """Gets all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """
+
 class PlugState:
     """Plug State."""
 

@@ -55,6 +55,13 @@ class DefaultColorLightState:
     type: DefaultStateType
     state: ColorLightState
 
+    def to_dict(self) -> dict:
+        """Gets all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """
+
 class ColorLightState:
     """Color Light State."""
 
@@ -62,3 +69,10 @@ class ColorLightState:
     hue: Optional[int]
     saturation: Optional[int]
     color_temp: int
+
+    def to_dict(self) -> dict:
+        """Gets all the properties of this result as a dictionary.
+
+        Returns:
+            dict: The result as a dictionary.
+        """
