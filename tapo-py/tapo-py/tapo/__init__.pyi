@@ -1,6 +1,5 @@
 from .api_client import *
 from .color_light_handler import *
-from .debug_ext import *
 from .device_discovery import *
 from .device_type import *
 from .discovery_result import *
@@ -8,14 +7,12 @@ from .generic_device_handler import *
 from .hub_handler import *
 from .ke100_handler import *
 from .light_handler import *
-from .on_off_ext import *
 from .plug_energy_monitoring_handler import *
 from .plug_handler import *
 from .power_strip_energy_monitoring_handler import *
 from .power_strip_handler import *
 from .power_strip_plug_energy_monitoring_handler import *
 from .power_strip_plug_handler import *
-from .refresh_session_ext import *
 from .requests import *
 from .responses import *
 from .rgb_light_strip_handler import *
@@ -25,4 +22,3 @@ from .t100_handler import *
 from .t110_handler import *
 from .t300_handler import *
 from .t31x_handler import *
-from .to_dict_ext import *
