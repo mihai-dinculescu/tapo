@@ -1,7 +1,7 @@
 from tapo.responses.child_device_list_hub_result.status import Status
 from tapo.to_dict_ext import ToDictExt
 
-class HubResult(ToDictExt):
+class HubResultBase(ToDictExt):
     """Hub result. This is an abstract base class for all hub results."""
 
     at_low_battery: bool

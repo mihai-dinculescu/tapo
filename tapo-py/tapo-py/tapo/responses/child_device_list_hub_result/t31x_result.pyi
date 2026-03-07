@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import List
 
-from tapo.responses import HubResult, TemperatureUnit
+from tapo.responses import HubResultBase, TemperatureUnit
 from tapo.responses import TemperatureUnit
 from tapo.to_dict_ext import ToDictExt
 
-class T31XResult(HubResult):
+class T31XResult(HubResultBase):
     """Device info of Tapo T310 and T315 temperature and humidity sensors.
 
     Specific properties: `current_temperature`, `temperature_unit`,

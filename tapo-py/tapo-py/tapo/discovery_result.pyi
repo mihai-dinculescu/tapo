@@ -26,7 +26,7 @@ from tapo.responses import (
     DeviceInfoRgbLightStripResult,
 )
 
-class DiscoveryResultBase(Protocol):
+class DiscoveryResultExt(Protocol):
     """Common properties available on all discovery result variants."""
 
     @property
@@ -53,7 +53,7 @@ class DiscoveryResultBase(Protocol):
         """
 
 @dataclass
-class GenericDevice(DiscoveryResultBase):
+class GenericDevice(DiscoveryResultExt):
     """A Generic Tapo device.
 
     If you believe this device is already supported, or would like to explore adding support for a currently
@@ -83,7 +83,7 @@ class GenericDevice(DiscoveryResultBase):
     )
 
 @dataclass
-class Light(DiscoveryResultBase):
+class Light(DiscoveryResultExt):
     """Tapo L510, L520 and L610 devices."""
 
     device_info: DeviceInfoLightResult
@@ -101,7 +101,7 @@ class Light(DiscoveryResultBase):
     )
 
 @dataclass
-class ColorLight(DiscoveryResultBase):
+class ColorLight(DiscoveryResultExt):
     """Tapo L530, L535 and L630 devices."""
 
     device_info: DeviceInfoColorLightResult
@@ -119,7 +119,7 @@ class ColorLight(DiscoveryResultBase):
     )
 
 @dataclass
-class RgbLightStrip(DiscoveryResultBase):
+class RgbLightStrip(DiscoveryResultExt):
     """Tapo L900 devices."""
 
     device_info: DeviceInfoRgbLightStripResult
@@ -134,7 +134,7 @@ class RgbLightStrip(DiscoveryResultBase):
     )
 
 @dataclass
-class RgbicLightStrip(DiscoveryResultBase):
+class RgbicLightStrip(DiscoveryResultExt):
     """Tapo L920 and L930 devices."""
 
     device_info: DeviceInfoRgbicLightStripResult
@@ -150,7 +150,7 @@ class RgbicLightStrip(DiscoveryResultBase):
     )
 
 @dataclass
-class Plug(DiscoveryResultBase):
+class Plug(DiscoveryResultExt):
     """Tapo P100 and P105 devices."""
 
     device_info: DeviceInfoPlugResult
@@ -166,7 +166,7 @@ class Plug(DiscoveryResultBase):
     )
 
 @dataclass
-class PlugEnergyMonitoring(DiscoveryResultBase):
+class PlugEnergyMonitoring(DiscoveryResultExt):
     """Tapo P110, P110M and P115 devices."""
 
     device_info: DeviceInfoPlugEnergyMonitoringResult
@@ -183,7 +183,7 @@ class PlugEnergyMonitoring(DiscoveryResultBase):
     )
 
 @dataclass
-class PowerStrip(DiscoveryResultBase):
+class PowerStrip(DiscoveryResultExt):
     """Tapo P300 and P306 devices."""
 
     device_info: DeviceInfoPowerStripResult
@@ -200,7 +200,7 @@ class PowerStrip(DiscoveryResultBase):
     )
 
 @dataclass
-class PowerStripEnergyMonitoring(DiscoveryResultBase):
+class PowerStripEnergyMonitoring(DiscoveryResultExt):
     """Tapo P304M and P316M devices."""
 
     device_info: DeviceInfoPowerStripResult
@@ -217,7 +217,7 @@ class PowerStripEnergyMonitoring(DiscoveryResultBase):
     )
 
 @dataclass
-class Hub(DiscoveryResultBase):
+class Hub(DiscoveryResultExt):
     """Tapo H100 devices."""
 
     device_info: DeviceInfoHubResult
@@ -248,7 +248,7 @@ class MaybeDiscoveryResult:
     ]:
         """Retrieves the actual discovery result or raises an exception."""
 
-class DiscoveryResult(DiscoveryResultBase):
+class DiscoveryResult(DiscoveryResultExt):
     """Result of the device discovery process."""
 
     GenericDevice: Type[GenericDevice] = GenericDevice

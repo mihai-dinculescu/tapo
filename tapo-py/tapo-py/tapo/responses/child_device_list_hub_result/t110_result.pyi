@@ -1,6 +1,6 @@
-from tapo.responses.child_device_list_hub_result.hub_result import HubResult
+from tapo.responses.child_device_list_hub_result.hub_result import HubResultBase
 
-class T110Result(HubResult):
+class T110Result(HubResultBase):
     """Device info of Tapo T110 contact sensor.
 
     Specific properties: `open`, `report_interval`,
