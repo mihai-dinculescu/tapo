@@ -21,12 +21,4 @@ impl From<TriggerLogsResult<S200Log>> for TriggerLogsS200Result {
     }
 }
 
-#[pyo3::pymethods]
-impl TriggerLogsS200Result {
-    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
-        let value = serde_json::to_value(self)
-            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
-
-        tapo::python::serde_object_to_py_dict(py, &value)
-    }
-}
+tapo::impl_to_dict!(TriggerLogsS200Result);

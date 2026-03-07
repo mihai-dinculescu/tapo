@@ -40,16 +40,7 @@ pub struct S200Result {
 }
 
 #[cfg(feature = "python")]
-#[pyo3::pymethods]
-impl S200Result {
-    /// Gets all the properties of this result as a dictionary.
-    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
-        let value = serde_json::to_value(self)
-            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
-
-        crate::python::serde_object_to_py_dict(py, &value)
-    }
-}
+crate::impl_to_dict!(S200Result);
 
 impl TapoResponseExt for S200Result {}
 
@@ -70,16 +61,7 @@ pub struct S200RotationParams {
 }
 
 #[cfg(feature = "python")]
-#[pyo3::pymethods]
-impl S200RotationParams {
-    /// Gets all the properties of this result as a dictionary.
-    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
-        let value = serde_json::to_value(self)
-            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
-
-        crate::python::serde_object_to_py_dict(py, &value)
-    }
-}
+crate::impl_to_dict!(S200RotationParams);
 
 /// S200B and S200D Log.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -107,13 +89,4 @@ pub enum S200Log {
 }
 
 #[cfg(feature = "python")]
-#[pyo3::pymethods]
-impl S200Log {
-    /// Gets all the properties of this result as a dictionary.
-    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
-        let value = serde_json::to_value(self)
-            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
-
-        crate::python::serde_object_to_py_dict(py, &value)
-    }
-}
+crate::impl_to_dict!(S200Log);

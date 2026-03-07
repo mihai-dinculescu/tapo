@@ -4,6 +4,26 @@ use pyo3::types::{PyDict, PyDictMethods, PyList, PyListMethods};
 use pyo3::{IntoPyObjectExt, Py, PyResult, Python};
 use serde_json::Value;
 
+/// Implements `to_dict` for a `#[pyclass]` struct, converting it to a Python dictionary via serde.
+#[macro_export]
+macro_rules! impl_to_dict {
+    ($ty:ty) => {
+        #[pyo3::pymethods]
+        impl $ty {
+            /// Gets all the properties of this result as a dictionary.
+            pub fn to_dict(
+                &self,
+                py: pyo3::Python,
+            ) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
+                let value = serde_json::to_value(self)
+                    .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
+
+                $crate::python::serde_object_to_py_dict(py, &value)
+            }
+        }
+    };
+}
+
 /// Converts a serde object to a Python dictionary.
 pub fn serde_object_to_py_dict(py: Python, value: &Value) -> PyResult<Py<PyDict>> {
     let dict = PyDict::new(py);

@@ -71,16 +71,7 @@ pub struct T31XResult {
 }
 
 #[cfg(feature = "python")]
-#[pyo3::pymethods]
-impl T31XResult {
-    /// Gets all the properties of this result as a dictionary.
-    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
-        let value = serde_json::to_value(self)
-            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
-
-        crate::python::serde_object_to_py_dict(py, &value)
-    }
-}
+crate::impl_to_dict!(T31XResult);
 
 impl TapoResponseExt for T31XResult {}
 
@@ -123,16 +114,7 @@ pub struct TemperatureHumidityRecord {
 }
 
 #[cfg(feature = "python")]
-#[pyo3::pymethods]
-impl TemperatureHumidityRecord {
-    /// Gets all the properties of this result as a dictionary.
-    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
-        let value = serde_json::to_value(self)
-            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
-
-        crate::python::serde_object_to_py_dict(py, &value)
-    }
-}
+crate::impl_to_dict!(TemperatureHumidityRecord);
 
 /// Temperature and Humidity records for the last 24 hours at 15 minute intervals.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -146,16 +128,7 @@ pub struct TemperatureHumidityRecords {
 }
 
 #[cfg(feature = "python")]
-#[pyo3::pymethods]
-impl TemperatureHumidityRecords {
-    /// Gets all the properties of this result as a dictionary.
-    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
-        let value = serde_json::to_value(self)
-            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
-
-        crate::python::serde_object_to_py_dict(py, &value)
-    }
-}
+crate::impl_to_dict!(TemperatureHumidityRecords);
 
 impl TryFrom<TemperatureHumidityRecordsRaw> for TemperatureHumidityRecords {
     type Error = anyhow::Error;

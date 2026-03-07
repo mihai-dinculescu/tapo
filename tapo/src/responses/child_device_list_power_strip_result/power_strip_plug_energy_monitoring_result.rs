@@ -75,16 +75,7 @@ pub struct PowerStripPlugEnergyMonitoringResult {
 }
 
 #[cfg(feature = "python")]
-#[pyo3::pymethods]
-impl PowerStripPlugEnergyMonitoringResult {
-    /// Gets all the properties of this result as a dictionary.
-    pub fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
-        let value = serde_json::to_value(self)
-            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
-
-        crate::python::serde_object_to_py_dict(py, &value)
-    }
-}
+crate::impl_to_dict!(PowerStripPlugEnergyMonitoringResult);
 
 impl TapoResponseExt for PowerStripPlugEnergyMonitoringResult {}
 
