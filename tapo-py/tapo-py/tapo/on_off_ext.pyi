@@ -1,4 +1,6 @@
-class OnOffExt:
+from typing import Protocol
+
+class OnOffExt(Protocol):
     """Extension class for on/off capabilities."""
 
     async def on(self) -> None:

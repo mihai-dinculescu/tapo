@@ -25,3 +25,4 @@ from .t100_handler import *
 from .t110_handler import *
 from .t300_handler import *
 from .t31x_handler import *
+from .to_dict_ext import *

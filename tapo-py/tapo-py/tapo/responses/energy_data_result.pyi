@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
+from tapo.to_dict_ext import ToDictExt
 
-class EnergyDataResult:
+class EnergyDataResult(ToDictExt):
     """Energy data result for the requested `EnergyDataInterval`."""
 
     local_time: datetime
@@ -18,14 +19,7 @@ class EnergyDataResult:
     interval_length: int
     """Interval length in minutes."""
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class EnergyDataIntervalResult:
+class EnergyDataIntervalResult(ToDictExt):
     """Energy data result for a specific interval."""
 
     start_date_time: datetime
@@ -33,10 +27,3 @@ class EnergyDataIntervalResult:
 
     energy: Optional[int]
     """Energy in Watt Hours (Wh)."""
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

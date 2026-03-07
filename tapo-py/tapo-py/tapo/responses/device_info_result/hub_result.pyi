@@ -1,6 +1,7 @@
 from typing import Optional
+from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoHubResult:
+class DeviceInfoHubResult(ToDictExt):
     """Device info of Tapo H100. Superset of `GenericDeviceInfoResult`."""
 
     device_id: str
@@ -30,10 +31,3 @@ class DeviceInfoHubResult:
     in_alarm_source: str
     in_alarm: bool
     overheated: bool
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

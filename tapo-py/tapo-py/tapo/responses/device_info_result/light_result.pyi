@@ -1,8 +1,9 @@
 from typing import Optional
 
 from tapo.responses import DefaultBrightnessState, DefaultPowerType
+from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoLightResult:
+class DeviceInfoLightResult(ToDictExt):
     """Device info of Tapo L510, L520 and L610. Superset of `GenericDeviceInfoResult`."""
 
     device_id: str
@@ -37,22 +38,8 @@ class DeviceInfoLightResult:
     """The default state of a device to be used when internet connectivity is lost after a power cut."""
     overheated: bool
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class DefaultLightState:
+class DefaultLightState(ToDictExt):
     """Light Default State."""
 
     brightness: DefaultBrightnessState
     re_power_type: Optional[DefaultPowerType]
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

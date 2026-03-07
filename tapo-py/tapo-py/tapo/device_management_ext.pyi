@@ -1,4 +1,6 @@
-class DeviceManagementExt:
+from typing import Protocol
+
+class DeviceManagementExt(Protocol):
     """Extension class for device management capabilities like `device_reboot` and `device_reset`."""
 
     async def device_reboot(self, delay_s: int) -> None:

@@ -3,6 +3,7 @@ from typing import List
 
 from tapo.responses import HubResult, TemperatureUnit
 from tapo.responses import TemperatureUnit
+from tapo.to_dict_ext import ToDictExt
 
 class T31XResult(HubResult):
     """Device info of Tapo T310 and T315 temperature and humidity sensors.
@@ -32,7 +33,7 @@ class T31XResult(HubResult):
     status_follow_edge: bool
     temperature_unit: TemperatureUnit
 
-class TemperatureHumidityRecords:
+class TemperatureHumidityRecords(ToDictExt):
     """Temperature and Humidity records for the last 24 hours at 15 minute intervals."""
 
     datetime: datetime
@@ -40,14 +41,7 @@ class TemperatureHumidityRecords:
     records: List[TemperatureHumidityRecord]
     temperature_unit: TemperatureUnit
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class TemperatureHumidityRecord:
+class TemperatureHumidityRecord(ToDictExt):
     """Temperature and Humidity record as an average over a 15 minute interval."""
 
     datetime: datetime
@@ -62,10 +56,3 @@ class TemperatureHumidityRecord:
     When the current temperature value falls outside the comfort zone, this value
     will be the difference between the current temperature and the lower or upper bound of the comfort zone."""
     temperature: float
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

@@ -7,8 +7,9 @@ from tapo.responses.device_info_result.power_status import (
     OverheatStatus,
     PowerProtectionStatus,
 )
+from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoPlugEnergyMonitoringResult:
+class DeviceInfoPlugEnergyMonitoringResult(ToDictExt):
     """Device info of Tapo P110, P110M and P115. Superset of `GenericDeviceInfoResult`."""
 
     device_id: str
@@ -44,10 +45,3 @@ class DeviceInfoPlugEnergyMonitoringResult:
     overcurrent_status: OvercurrentStatus
     overheat_status: Optional[OverheatStatus]
     power_protection_status: PowerProtectionStatus
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

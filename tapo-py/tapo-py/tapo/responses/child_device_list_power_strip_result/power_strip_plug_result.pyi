@@ -3,8 +3,9 @@ from typing import Optional, Union
 from tapo.responses.child_device_list_power_strip_result.auto_off_status import AutoOffStatus
 from tapo.responses.device_info_result.default_plug_state import Custom, LastStates
 from tapo.responses.device_info_result.power_status import OverheatStatus
+from tapo.to_dict_ext import ToDictExt
 
-class PowerStripPlugResult:
+class PowerStripPlugResult(ToDictExt):
     """P300 and P306 power strip child plugs.
 
     Specific properties: `auto_off_remain_time`, `auto_off_status`,
@@ -39,10 +40,3 @@ class PowerStripPlugResult:
     slot_number: int
     status_follow_edge: bool
     type: str
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

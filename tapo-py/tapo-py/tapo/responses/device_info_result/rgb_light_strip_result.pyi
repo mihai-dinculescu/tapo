@@ -1,8 +1,9 @@
 from typing import List, Optional
 
 from tapo.responses.device_info_result.default_state import DefaultStateType
+from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoRgbLightStripResult:
+class DeviceInfoRgbLightStripResult(ToDictExt):
     """Device info of Tapo L900. Superset of `GenericDeviceInfoResult`."""
 
     device_id: str
@@ -41,37 +42,16 @@ class DeviceInfoRgbLightStripResult:
     overheated: bool
     saturation: Optional[int]
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class DefaultRgbLightStripState:
+class DefaultRgbLightStripState(ToDictExt):
     """RGB Light Strip Default State."""
 
     type: DefaultStateType
     state: RgbLightStripState
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class RgbLightStripState:
+class RgbLightStripState(ToDictExt):
     """RGB Light Strip State."""
 
     brightness: Optional[int]
     hue: Optional[int]
     saturation: Optional[int]
     color_temp: Optional[int]
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

@@ -2,8 +2,9 @@ from typing import List, Optional
 
 from tapo.responses.device_info_result.default_state import DefaultStateType
 from tapo.requests.set_device_info.lighting_effect import LightingEffect
+from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoRgbicLightStripResult:
+class DeviceInfoRgbicLightStripResult(ToDictExt):
     """Device info of Tapo L920 and L930. Superset of `GenericDeviceInfoResult`."""
 
     device_id: str
@@ -42,27 +43,13 @@ class DeviceInfoRgbicLightStripResult:
     overheated: bool
     saturation: Optional[int]
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class DefaultRgbicLightStripState:
+class DefaultRgbicLightStripState(ToDictExt):
     """RGB IC Light Strip Default State."""
 
     type: DefaultStateType
     state: RgbicLightStripState
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class RgbicLightStripState:
+class RgbicLightStripState(ToDictExt):
     """RGB IC Light Strip State."""
 
     brightness: Optional[int]
@@ -70,10 +57,3 @@ class RgbicLightStripState:
     saturation: Optional[int]
     color_temp: Optional[int]
     lighting_effect: Optional[LightingEffect]
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

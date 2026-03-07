@@ -1,6 +1,7 @@
 from typing import Optional
+from tapo.to_dict_ext import ToDictExt
 
-class UsageByPeriodResult:
+class UsageByPeriodResult(ToDictExt):
     """Usage by period result for today, the past 7 days, and the past 30 days."""
 
     today: Optional[int]
@@ -10,22 +11,8 @@ class UsageByPeriodResult:
     past30: Optional[int]
     """Past 30 days."""
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class DeviceUsageResult:
+class DeviceUsageResult(ToDictExt):
     """Contains the time usage."""
 
     time_usage: UsageByPeriodResult
     """Time usage in minutes."""
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

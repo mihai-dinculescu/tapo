@@ -2,6 +2,7 @@ from typing import List, Literal
 
 from tapo.debug_ext import DebugExt
 from tapo.responses import T110Result
+from tapo.to_dict_ext import ToDictExt
 
 class T110Handler(DebugExt):
     """Handler for the [T110](https://www.tapo.com/en/search/?q=T110) devices."""
@@ -30,7 +31,7 @@ class T110Handler(DebugExt):
             TriggerLogsT110Result: Trigger logs result.
         """
 
-class TriggerLogsT110Result:
+class TriggerLogsT110Result(ToDictExt):
     """Trigger logs result."""
 
     start_id: int
@@ -40,23 +41,9 @@ class TriggerLogsT110Result:
     logs: List[T110Log]
     """Log items in reverse chronological order (newest first)."""
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class T110Log:
+class T110Log(ToDictExt):
     """T110 Log."""
 
     event: Literal["close", "open", "keepOpen"]
     id: int
     timestamp: int
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

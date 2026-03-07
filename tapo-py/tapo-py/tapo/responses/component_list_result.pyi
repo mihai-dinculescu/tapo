@@ -1,4 +1,6 @@
-class Component:
+from tapo.to_dict_ext import ToDictExt
+
+class Component(ToDictExt):
     """A component (feature/capability) reported by a Tapo device."""
 
     id: str
@@ -6,10 +8,3 @@ class Component:
 
     ver_code: int
     """The version code of the component."""
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

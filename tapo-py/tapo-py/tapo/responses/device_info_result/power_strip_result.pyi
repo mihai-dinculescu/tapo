@@ -1,6 +1,7 @@
 from typing import Optional
+from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoPowerStripResult:
+class DeviceInfoPowerStripResult(ToDictExt):
     """Device info of Tapo P300, P304M, P306 and P316M. Superset of `GenericDeviceInfoResult`."""
 
     avatar: str
@@ -24,10 +25,3 @@ class DeviceInfoPowerStripResult:
     ssid: str
     time_diff: Optional[int]
     type: str
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

@@ -1,6 +1,8 @@
+from typing import Protocol
+
 from .responses import Component
 
-class DebugExt:
+class DebugExt(Protocol):
     """Extension class for debug capabilities like `get_device_info_json`."""
 
     async def get_device_info_json(self) -> dict:

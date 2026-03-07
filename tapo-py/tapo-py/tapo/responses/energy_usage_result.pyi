@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Optional, Tuple
+from tapo.to_dict_ext import ToDictExt
 
-class EnergyUsageResult:
+class EnergyUsageResult(ToDictExt):
     """Contains local time, current power and the energy usage and runtime for today and for the current month."""
 
     current_power: Optional[int]
@@ -20,10 +21,3 @@ class EnergyUsageResult:
     """Today energy usage in Watt Hours (Wh)."""
     today_runtime: int
     """Today runtime in minutes."""
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

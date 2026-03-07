@@ -1,5 +1,6 @@
 from typing import Type
 from dataclasses import dataclass
+from tapo.to_dict_ext import ToDictExt
 
 @dataclass
 class LastStates:
@@ -11,27 +12,13 @@ class Custom:
 
     __match_args__ = ("state",)
 
-class DefaultPlugState:
+class DefaultPlugState(ToDictExt):
     """Plug Default State."""
 
     LastStates: Type[LastStates] = LastStates
     Custom: Type[Custom] = Custom
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class PlugState:
+class PlugState(ToDictExt):
     """Plug State."""
 
     on: bool
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

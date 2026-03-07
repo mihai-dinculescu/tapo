@@ -1,8 +1,9 @@
 from typing import Optional, Union
 
 from tapo.responses.device_info_result.default_plug_state import Custom, LastStates
+from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoPlugResult:
+class DeviceInfoPlugResult(ToDictExt):
     """Device info of Tapo P100 and P105. Superset of `GenericDeviceInfoResult`."""
 
     device_id: str
@@ -33,10 +34,3 @@ class DeviceInfoPlugResult:
 
     # Unique to this device
     default_states: Union[LastStates, Custom]
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

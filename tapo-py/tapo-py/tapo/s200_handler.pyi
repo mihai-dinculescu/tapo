@@ -2,6 +2,7 @@ from typing import List, Literal, Optional
 
 from tapo.debug_ext import DebugExt
 from tapo.responses import S200Result
+from tapo.to_dict_ext import ToDictExt
 
 class S200Handler(DebugExt):
     """Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) and
@@ -31,7 +32,7 @@ class S200Handler(DebugExt):
             TriggerLogsS200Result: Trigger logs result.
         """
 
-class TriggerLogsS200Result:
+class TriggerLogsS200Result(ToDictExt):
     """Trigger logs result."""
 
     start_id: int
@@ -41,14 +42,7 @@ class TriggerLogsS200Result:
     logs: List[S200Log]
     """Log items in reverse chronological order (newest first)."""
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class S200Log:
+class S200Log(ToDictExt):
     """S200B and S200D Log."""
 
     event: Literal["rotation", "singleClick", "doubleClick", "lowBattery"]
@@ -56,21 +50,7 @@ class S200Log:
     timestamp: int
     params: Optional[S200RotationParams]
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class S200RotationParams:
+class S200RotationParams(ToDictExt):
     """S200B and S200D Rotation log params."""
 
     rotation_degrees: int
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

@@ -1,6 +1,7 @@
 from typing import Optional
+from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoGenericResult:
+class DeviceInfoGenericResult(ToDictExt):
     """Device info of a Generic Tapo device."""
 
     device_id: str
@@ -28,10 +29,3 @@ class DeviceInfoGenericResult:
     latitude: Optional[float]
     longitude: Optional[float]
     time_diff: Optional[int]
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

@@ -1,6 +1,7 @@
 from tapo.responses import UsageByPeriodResult
+from tapo.to_dict_ext import ToDictExt
 
-class DeviceUsageEnergyMonitoringResult:
+class DeviceUsageEnergyMonitoringResult(ToDictExt):
     """Contains the time usage, the power consumption, and the energy savings of the device."""
 
     time_usage: UsageByPeriodResult
@@ -9,10 +10,3 @@ class DeviceUsageEnergyMonitoringResult:
     """Power usage in Watt Hours (Wh)."""
     saved_power: UsageByPeriodResult
     """Saved power in Watt Hours (Wh)."""
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

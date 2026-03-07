@@ -2,6 +2,7 @@ from typing import List, Literal
 
 from tapo.debug_ext import DebugExt
 from tapo.responses import T300Result
+from tapo.to_dict_ext import ToDictExt
 
 class T300Handler(DebugExt):
     """Handler for the [T300](https://www.tapo.com/en/search/?q=T300) devices."""
@@ -30,7 +31,7 @@ class T300Handler(DebugExt):
             TriggerLogsT300Result: Trigger logs result.
         """
 
-class TriggerLogsT300Result:
+class TriggerLogsT300Result(ToDictExt):
     """Trigger logs result."""
 
     start_id: int
@@ -40,23 +41,9 @@ class TriggerLogsT300Result:
     logs: List[T300Log]
     """Log items in reverse chronological order (newest first)."""
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class T300Log:
+class T300Log(ToDictExt):
     """T300 Log."""
 
     event: Literal["waterDry", "waterLeak"]
     id: int
     timestamp: int
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """

@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
+from tapo.to_dict_ext import ToDictExt
 
-class PowerDataResult:
+class PowerDataResult(ToDictExt):
     """Power data result for the requested `PowerDataInterval`."""
 
     start_date_time: datetime
@@ -16,14 +17,7 @@ class PowerDataResult:
     interval_length: int
     """Interval length in minutes."""
 
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
-
-class PowerDataIntervalResult:
+class PowerDataIntervalResult(ToDictExt):
     """Power data result for a specific interval."""
 
     start_date_time: datetime
@@ -31,10 +25,3 @@ class PowerDataIntervalResult:
 
     power: Optional[int]
     """Power in Watts (W). `None` if no data is available for this interval."""
-
-    def to_dict(self) -> dict:
-        """Gets all the properties of this result as a dictionary.
-
-        Returns:
-            dict: The result as a dictionary.
-        """
