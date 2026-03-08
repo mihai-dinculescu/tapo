@@ -44,6 +44,16 @@ file. This change log follows the conventions of
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `start_date` and `end_date` parameter types in `get_energy_data()` from `datetime` to `date`.
 - `LightHandler`, `ColorLightHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: corrected `get_device_usage()` return type from `DeviceUsageResult` to `DeviceUsageEnergyMonitoringResult`.
 
+## [MCP Unreleased][Unreleased]
+
+### Added
+
+- Initial release of `tapo-mcp`, an MCP server exposing Tapo devices as AI-callable tools and resources via the Model Context Protocol.
+- Tools: `list_devices`, `check_device`, `set_device_state`.
+- Resources: `tapo://devices` (JSON list of discovered devices).
+- Configuration via `TAPO_MCP_` environment variables.
+- OpenTelemetry tracing support (optional).
+
 ## [Rust v0.8.11][v0.8.11] - 2026-02-27
 
 ### Changed

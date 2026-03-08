@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Workspace Members
 - **`tapo`** — Core Rust library (published to crates.io)
 - **`tapo-py`** — Python bindings via PyO3/maturin (published to PyPI)
+- **`tapo-mcp`** — MCP server exposing Tapo devices as AI tools/resources
 
 ## Cross-Language Bindings
 
