@@ -1,21 +1,39 @@
 # Code Review Checklist
 
+## Checks
+
 Run all checks, fix any issues found, then present a summary table.
 
-## Rust (`tapo/`)
+### Rust checks
 
-- `cargo check` — fix all errors
-- `cargo clippy` — fix all warnings
-- `cargo fmt` — fix all formatting issues
-- `cargo test -p tapo` — fix all test failures
-- `cargo clean --doc && RUSTDOCFLAGS="-D warnings" cargo doc -p tapo --no-deps --all-features` — fix all documentation issues
-- No `unwrap()` in non-test code without a safety comment
+Run the following checks if there are changes in the `tapo/`, `tapo-py/`, or `tapo-mcp/` directories. Fix all issues found. Run independent checks (`cargo check`, `cargo clippy`, `cargo fmt`, `cargo test`) in parallel.
+
+- `cargo check`
+- `cargo clippy`
+- `cargo fmt`
+- `cargo test`
+- `cargo clean --doc && RUSTDOCFLAGS="-D warnings" cargo doc -p tapo --no-deps --all-features`
+- No `unwrap()` in non-test code without a `// safe:` comment
+- No `unsafe` in non-test code without a `// SAFETY:` comment
 - No unnecessary clones
 - No deeply nested `use` (max one level of `{}` nesting)
 
-## Python (`tapo-py/`)
+### Python checks
+
+Run the following checks if there are changes in the `tapo/` or `tapo-py/` directories. Fix all issues found.
 
 - Update `.pyi` stubs if Python-exposed Rust types changed
 - `cd tapo-py` and activate the virtual environment
 - `uv run mypy .` — fix all type errors
 - `uv run black .` — fix all formatting issues
+
+### MCP checks
+
+Run the following checks if there are changes in the `tapo-mcp/` directory. Fix all issues found.
+
+- Verify that `README.md` is up to date with any changes to the MCP API
+
+## Code Review
+
+After fixing all issues found in the checks, review the code changes for correctness, readability, and maintainability and propose improvements.
+Summarize the findings according to severity.
