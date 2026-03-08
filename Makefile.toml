@@ -22,8 +22,9 @@ command = "cargo"
 args = ["clippy", "--all-targets", "--all-features", "--verbose", "--", "-D", "warnings"]
 
 [tasks.test]
+workspace = false
 command = "cargo"
-args = ["test", "--verbose"]
+args = ["test", "--workspace", "--exclude", "tapo-py", "--verbose"]
 
 [tasks.ci-flow]
 dependencies = ["format", "check", "check-doc", "clippy", "test"]
