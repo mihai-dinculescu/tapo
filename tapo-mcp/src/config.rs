@@ -13,6 +13,8 @@ pub struct AppConfig {
     pub discovery_target: String,
     #[serde(default = "AppConfig::default_discovery_timeout")]
     pub discovery_timeout: u64,
+    #[serde(default)]
+    pub api_key: Option<String>,
 }
 
 impl std::fmt::Debug for AppConfig {
@@ -23,6 +25,7 @@ impl std::fmt::Debug for AppConfig {
             .field("password", &"[redacted]")
             .field("discovery_target", &self.discovery_target)
             .field("discovery_timeout", &self.discovery_timeout)
+            .field("api_key", &self.api_key.as_ref().map(|_| "[redacted]"))
             .finish()
     }
 }
@@ -60,10 +63,17 @@ impl AppConfig {
             )));
         }
 
-        config::Config::builder()
+        let mut config: Self = config::Config::builder()
             .add_source(config::Environment::default().prefix(ENV_PREFIX))
             .build()?
-            .try_deserialize()
+            .try_deserialize()?;
+
+        config.api_key = config
+            .api_key
+            .map(|k| k.trim().to_string())
+            .filter(|k| !k.is_empty());
+
+        Ok(config)
     }
 }
 
@@ -85,6 +95,7 @@ mod tests {
             "TAPO_MCP_DISCOVERY_TARGET",
             "TAPO_MCP_HTTP_ADDR",
             "TAPO_MCP_DISCOVERY_TIMEOUT",
+            "TAPO_MCP_API_KEY",
         ] {
             unsafe { std::env::remove_var(key) };
         }
@@ -166,11 +177,39 @@ mod tests {
             password: "super_secret".to_string(),
             discovery_target: "192.168.1.255".to_string(),
             discovery_timeout: 5,
+            api_key: Some("my-api-key".to_string()),
         };
 
         let debug = format!("{config:?}");
         assert!(debug.contains("[redacted]"));
         assert!(!debug.contains("user@example.com"));
         assert!(!debug.contains("super_secret"));
+        assert!(!debug.contains("my-api-key"));
+    }
+
+    #[test]
+    fn api_key_empty_normalizes_to_none() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_API_KEY", "   ");
+        }
+
+        let config = AppConfig::from_env().unwrap();
+        assert!(config.api_key.is_none());
+    }
+
+    #[test]
+    fn api_key_trims_whitespace() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_API_KEY", "  my-key  ");
+        }
+
+        let config = AppConfig::from_env().unwrap();
+        assert_eq!(config.api_key.as_deref(), Some("my-key"));
     }
 }

@@ -1,23 +1,11 @@
-mod config;
-mod errors;
-mod models;
-mod requests;
-mod resources;
-mod server;
-mod telemetry;
-mod tools;
-
 use anyhow::Result;
-use axum::Router;
-use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::oneshot;
 
 const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(10);
 
-use config::AppConfig;
-use server::new_service;
-use telemetry::init_tracing;
+use tapo_mcp::config::AppConfig;
+use tapo_mcp::telemetry::init_tracing;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -26,9 +14,8 @@ async fn main() -> Result<()> {
     let app_config = AppConfig::from_env()?;
     let listener = tokio::net::TcpListener::bind(&app_config.http_addr).await?;
     tracing::info!(addr = %app_config.http_addr, "Tapo MCP server listening");
-    let mcp_service = new_service(Arc::new(app_config));
 
-    let app = Router::new().route_service("/", mcp_service);
+    let app = tapo_mcp::router(app_config);
 
     // Channel to notify when the signal has fired, so we can start the timeout.
     let (signal_tx, signal_rx) = oneshot::channel::<()>();
