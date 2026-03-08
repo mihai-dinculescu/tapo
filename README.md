@@ -23,11 +23,21 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 [pypi_versions_badge]: https://img.shields.io/pypi/pyversions/tapo.svg?logo=python&color=00ADD4
 [pypi_downloads_badge]: https://img.shields.io/pypi/dm/tapo?logo=python&color=00ADD4
 
+## Table of Contents
+
+- [Supported Devices](#supported-devices)
+- [Rust Library](#rust-library)
+- [Python Library](#python-library)
+- [MCP Server](#mcp-server)
+- [Community Projects](#community-projects)
+- [Contributing](#contributing)
+- [Credits](#credits)
+
 ## Supported Devices
 
 See [/SUPPORTED_DEVICES.md][supported_devices] for the supported devices and feature matrix.
 
-## Rust
+## Rust Library
 
 ### Usage
 
@@ -58,10 +68,7 @@ cargo run --example tapo_l530
 
 See all examples in [/tapo/examples][examples].
 
-### Wrapper REST API
-[tapo-rest][tapo_rest] is a REST wrapper of this library that can be deployed as a service or serve as an advanced example.
-
-## Python
+## Python Library
 
 ### Usage
 
@@ -95,6 +102,14 @@ python examples/tapo_p110.py
 
 See all examples in [/tapo-py/examples][examples-py].
 
+## MCP Server
+
+An MCP server that exposes Tapo devices as AI-callable tools and resources via the [Model Context Protocol](https://modelcontextprotocol.io/). See [/tapo-mcp/README.md][tapo_mcp] for setup and usage.
+
+## Community Projects
+
+- [tapo-rest][tapo_rest] — a REST wrapper of this library that can be deployed as a service or serve as an advanced example.
+
 ## Contributing
 
 Contributions are welcome and encouraged! See [/CONTRIBUTING.md][contributing].
@@ -106,6 +121,7 @@ Inspired by [petretiandrea/plugp100][inspired_by].
 [supported_devices]: https://github.com/mihai-dinculescu/tapo/blob/main/SUPPORTED_DEVICES.md
 [examples]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo/examples
 [examples-py]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples
+[tapo_mcp]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp
 [tapo_rest]: https://github.com/ClementNerma/tapo-rest
 [contributing]: https://github.com/mihai-dinculescu/tapo/blob/main/CONTRIBUTING.md
 [inspired_by]: https://github.com/petretiandrea/plugp100
