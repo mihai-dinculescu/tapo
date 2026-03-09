@@ -11,8 +11,8 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 - [Resources](#resources)
 - [Configuration](#configuration)
 - [Authentication](#authentication)
-- [Running](#running)
-- [Testing](#testing)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
 
 ## Capabilities
 
@@ -55,40 +55,55 @@ When `TAPO_MCP_API_KEY` is set, the server requires all HTTP requests to include
 
 When the variable is unset (or empty/whitespace-only), the server runs without authentication.
 
-## Running
+## Deployment
+
+### Docker
 
 ```bash
-export TAPO_MCP_USERNAME="you@example.com"
-export TAPO_MCP_PASSWORD="your-password"
-export TAPO_MCP_DISCOVERY_TARGET="192.168.1.255"
-
-cargo run -p tapo-mcp
+docker run --rm \
+  --network host \
+  -e TAPO_MCP_USERNAME="you@example.com" \
+  -e TAPO_MCP_PASSWORD="your-password" \
+  -e TAPO_MCP_DISCOVERY_TARGET="192.168.1.255" \
+  ghcr.io/mihai-dinculescu/tapo-mcp:latest
 ```
 
-## Testing
+> **Note:** `--network host` is required so the container can reach Tapo devices on your local network via UDP broadcast for discovery. On macOS and Windows, `--network host` is not supported — you can use `-p 3000:3000` instead, but device discovery won't work as Docker Desktop runs containers inside a VM without LAN access.
 
-### MCP Inspector
+### Kubernetes
 
-The quickest way to interactively explore the server:
-
-```bash
-npx @modelcontextprotocol/inspector http://127.0.0.1:3000
-
-# With authentication:
-npx @modelcontextprotocol/inspector --header "Authorization: Bearer $TAPO_MCP_API_KEY" http://127.0.0.1:3000
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tapo-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tapo-mcp
+  template:
+    metadata:
+      labels:
+        app: tapo-mcp
+    spec:
+      hostNetwork: true
+      containers:
+        - name: tapo-mcp
+          image: ghcr.io/mihai-dinculescu/tapo-mcp:latest
+          env:
+            - name: TAPO_MCP_USERNAME
+              value: "you@example.com"
+            - name: TAPO_MCP_PASSWORD
+              value: "your-password"
+            - name: TAPO_MCP_DISCOVERY_TARGET
+              value: "192.168.1.255"
 ```
 
-Opens a browser UI where you can list tools/resources and invoke them manually. Requires Node.js.
+> **Note:** `hostNetwork: true` is required for UDP broadcast discovery, similar to `--network host` in Docker. For production use, consider storing credentials in a [Secret](https://kubernetes.io/docs/concepts/configuration/secret/) instead of plain-text env values.
 
-### Claude Code
+## Contributing
 
-Add the server to your Claude Code MCP config:
+Contributions are welcome and encouraged! See [/tapo-mcp/CONTRIBUTING.md][contributing].
 
-```bash
-claude mcp add --transport http tapo http://127.0.0.1:3000
-
-# With authentication:
-claude mcp add --transport http --header "Authorization: Bearer your-api-key" tapo http://127.0.0.1:3000
-```
-
-Then use `/mcp` in Claude Code to verify the server is connected and its tools appear.
+[contributing]: https://github.com/mihai-dinculescu/tapo/blob/main/tapo-mcp/CONTRIBUTING.md
