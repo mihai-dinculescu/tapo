@@ -46,6 +46,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.1.0][tapo-mcp-v0.1.0] - 2026-03-09
+
 ### Added
 
 - Initial release of `tapo-mcp`, an MCP server exposing Tapo devices as AI-callable tools and resources via the Model Context Protocol.
@@ -854,6 +856,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.1.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.1.0
 [v0.8.11]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.11
 [v0.8.10]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.10
 [v0.8.9]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.9
