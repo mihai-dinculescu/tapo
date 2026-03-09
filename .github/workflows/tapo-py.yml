@@ -3,7 +3,7 @@
 #
 #    maturin generate-ci github
 #
-name: Python
+name: "Tapo Python"
 
 on:
   push:
