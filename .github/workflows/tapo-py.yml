@@ -12,6 +12,12 @@ on:
     tags:
       - "v*"
   pull_request:
+    paths:
+      - "tapo/**"
+      - "tapo-py/**"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - ".github/workflows/tapo-py.yml"
   workflow_dispatch:
 
 permissions:
