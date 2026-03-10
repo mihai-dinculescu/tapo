@@ -13,7 +13,7 @@ exec 1>&2
 # Install gh CLI if not already installed
 if ! command -v gh &>/dev/null; then
   GH_VERSION=$(curl -sL "https://api.github.com/repos/cli/cli/releases/latest" \
-    -H "Authorization: token ${GITHUB_TOKEN:-}" | grep -oP '"tag_name":\s*"v\K[^"]+')
+    -H "Authorization: token ${GITHUB_TOKEN:-}" | grep -oP '"tag_name":\s*"v\K[^"]+' || true)
   if [ -z "$GH_VERSION" ]; then
     echo "Warning: Failed to fetch gh version from GitHub API, using fallback"
     GH_VERSION="2.87.3"
@@ -32,7 +32,7 @@ fi
 # Install cargo-make from pre-built binary if not already installed
 if ! command -v cargo-make &>/dev/null; then
   CM_VERSION=$(curl -sL "https://api.github.com/repos/sagiegurari/cargo-make/releases/latest" \
-    -H "Authorization: token ${GITHUB_TOKEN:-}" | grep -oP '"tag_name":\s*"\K[^"]+')
+    -H "Authorization: token ${GITHUB_TOKEN:-}" | grep -oP '"tag_name":\s*"\K[^"]+' || true)
   if [ -z "$CM_VERSION" ]; then
     echo "Warning: Failed to fetch cargo-make version from GitHub API, using fallback"
     CM_VERSION="0.37.24"
