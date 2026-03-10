@@ -23,16 +23,6 @@ Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with l
 [pypi_versions_badge]: https://img.shields.io/pypi/pyversions/tapo.svg?logo=python&color=00ADD4
 [pypi_downloads_badge]: https://img.shields.io/pypi/dm/tapo?logo=python&color=00ADD4
 
-## Table of Contents
-
-- [Supported Devices](#supported-devices)
-- [Rust Library](#rust-library)
-- [Python Library](#python-library)
-- [MCP Server](#mcp-server)
-- [Community Projects](#community-projects)
-- [Contributing](#contributing)
-- [Credits](#credits)
-
 ## Supported Devices
 
 See [/SUPPORTED_DEVICES.md][supported_devices] for the supported devices and feature matrix.

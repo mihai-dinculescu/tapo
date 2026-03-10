@@ -4,23 +4,13 @@ MCP server that exposes [Tapo](https://www.tapo.com/) smart-home devices as AI-c
 
 Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Runs as an HTTP server (Streamable HTTP transport).
 
-## Table of Contents
+## Example Prompts
 
-- [Capabilities](#capabilities)
-- [Tools](#tools)
-- [Resources](#resources)
-- [Configuration](#configuration)
-- [Authentication](#authentication)
-- [Deployment](#deployment)
-- [Contributing](#contributing)
-
-## Capabilities
-
-Devices and child devices expose a list of capabilities they support. Currently supported:
-
-| Capability | Description               |
-| ---------- | ------------------------- |
-| `OnOff`    | Turn the device on or off |
+> "List all my Tapo devices"
+>
+> "Turn off the office light"
+>
+> "Turn on smart plug 4 on the power strip"
 
 ## Tools
 
@@ -35,6 +25,14 @@ Devices and child devices expose a list of capabilities they support. Currently 
 | URI              | Description                           |
 | ---------------- | ------------------------------------- |
 | `tapo://devices` | JSON list of discovered Tapo devices. |
+
+## Capabilities
+
+Devices and child devices expose a list of capabilities they support. Currently supported:
+
+| Capability | Description               |
+| ---------- | ------------------------- |
+| `OnOff`    | Turn the device on or off |
 
 ## Configuration
 
@@ -72,6 +70,20 @@ docker run --rm \
 
 ### Kubernetes
 
+Create the Secret and ConfigMap first:
+
+```bash
+kubectl create secret generic tapo-mcp-secrets \
+  --from-literal=TAPO_MCP_USERNAME="you@example.com" \
+  --from-literal=TAPO_MCP_PASSWORD="your-password" \
+  --from-literal=TAPO_MCP_API_KEY="your-api-key"
+
+kubectl create configmap tapo-mcp-config \
+  --from-literal=TAPO_MCP_DISCOVERY_TARGET="192.168.1.255"
+```
+
+Then apply the Deployment:
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -93,14 +105,29 @@ spec:
           image: ghcr.io/mihai-dinculescu/tapo-mcp:latest
           env:
             - name: TAPO_MCP_USERNAME
-              value: "you@example.com"
+              valueFrom:
+                secretKeyRef:
+                  name: tapo-mcp-secrets
+                  key: TAPO_MCP_USERNAME
             - name: TAPO_MCP_PASSWORD
-              value: "your-password"
+              valueFrom:
+                secretKeyRef:
+                  name: tapo-mcp-secrets
+                  key: TAPO_MCP_PASSWORD
+            - name: TAPO_MCP_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: tapo-mcp-secrets
+                  key: TAPO_MCP_API_KEY
             - name: TAPO_MCP_DISCOVERY_TARGET
-              value: "192.168.1.255"
+              valueFrom:
+                configMapKeyRef:
+                  name: tapo-mcp-config
+                  key: TAPO_MCP_DISCOVERY_TARGET
+
 ```
 
-> **Note:** `hostNetwork: true` is required for UDP broadcast discovery, similar to `--network host` in Docker. For production use, consider storing credentials in a [Secret](https://kubernetes.io/docs/concepts/configuration/secret/) instead of plain-text env values.
+> **Note:** `hostNetwork: true` is required for UDP broadcast discovery, similar to `--network host` in Docker.
 
 ## Contributing
 

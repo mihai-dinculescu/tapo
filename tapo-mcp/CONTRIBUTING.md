@@ -33,7 +33,7 @@ Add the server to your Claude Code MCP config:
 claude mcp add --transport http tapo http://127.0.0.1:3000
 
 # With authentication:
-claude mcp add --transport http --header "Authorization: Bearer your-api-key" tapo http://127.0.0.1:3000
+claude mcp add --transport http --header "Authorization: Bearer your-api-key" -- tapo http://127.0.0.1:3000
 ```
 
 Then use `/mcp` in Claude Code to verify the server is connected and its tools appear.
