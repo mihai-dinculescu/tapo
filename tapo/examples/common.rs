@@ -9,7 +9,7 @@ pub fn setup_logger() {
         .parse()
         .unwrap_or(LevelFilter::Info);
 
-    pretty_env_logger::formatted_timed_builder()
+    env_logger::Builder::new()
         .filter(Some("tapo"), log_level)
         .init();
 }
