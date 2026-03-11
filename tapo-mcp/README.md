@@ -129,6 +129,16 @@ spec:
 
 > **Note:** `hostNetwork: true` is required for UDP broadcast discovery, similar to `--network host` in Docker.
 
+## OpenClaw
+
+The [tapo skill](https://clawhub.ai/mihai-dinculescu/tapo) for [OpenClaw](https://clawhub.ai) makes it easy to use a deployed tapo MCP server from OpenClaw agents.
+
+Install it with:
+
+```bash
+npx clawhub install tapo
+```
+
 ## Contributing
 
 Contributions are welcome and encouraged! See [/tapo-mcp/CONTRIBUTING.md][contributing].
