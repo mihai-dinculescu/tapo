@@ -26,7 +26,7 @@ The Tapo API is not documented, but it can be discovered by reverse engineering 
 - Push
 
   ```bash
-  git push --follow-tags
+  git push && git push origin vX.X.X
   ```
 
 - Create the [release][release].

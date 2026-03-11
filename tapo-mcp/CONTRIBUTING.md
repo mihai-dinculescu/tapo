@@ -51,7 +51,7 @@ Then use `/mcp` in Claude Code to verify the server is connected and its tools a
 - Push
 
   ```bash
-  git push --follow-tags
+  git push && git push origin tapo-mcp-vX.X.X
   ```
 
 - Create the [release][releases].
