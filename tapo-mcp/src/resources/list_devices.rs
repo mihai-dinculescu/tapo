@@ -10,7 +10,7 @@ const JSON_MIME_TYPE: &str = "application/json";
 pub fn build_devices_resource() -> Resource {
     let mut resource = RawResource::new(DEVICES_RESOURCE_URI, "devices");
     resource.title = Some("Tapo devices".to_string());
-    resource.description = Some("List of configured Tapo devices.".to_string());
+    resource.description = Some("List available Tapo devices.".to_string());
     resource.mime_type = Some(JSON_MIME_TYPE.to_string());
     resource.no_annotation()
 }

@@ -64,7 +64,7 @@ impl TapoMcp {
     }
 
     #[tool(
-        description = "List available Tapo devices.",
+        description = "List available Tapo devices. Prefer reading the `tapo://devices` resource instead if your client supports resources.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
