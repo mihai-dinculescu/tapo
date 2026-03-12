@@ -38,7 +38,9 @@ claude mcp add --transport http --header "Authorization: Bearer your-api-key" --
 
 Then use `/mcp` in Claude Code to verify the server is connected and its tools appear.
 
-## Releasing new versions
+## Releasing
+
+### Tapo MCP
 
 - Update version in `tapo-mcp/Cargo.toml`
 - Commit
@@ -55,5 +57,18 @@ Then use `/mcp` in Claude Code to verify the server is connected and its tools a
   ```
 
 - Create the [release][releases].
+
+### OpenClaw skill
+
+Publish the skill to ClawHub from the `openclaw-skill/` folder:
+
+```bash
+npx clawhub publish tapo-mcp/openclaw-skill \
+  --slug tapo \
+  --name "Tapo" \
+  --version X.X.X \
+  --tags "tapo,smart-home,iot,mcporter" \
+  --changelog "<summary of changes since last publish>"
+```
 
 [releases]: https://github.com/mihai-dinculescu/tapo/releases

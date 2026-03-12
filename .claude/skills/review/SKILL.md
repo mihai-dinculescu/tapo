@@ -31,7 +31,8 @@ Run the following checks if there are changes in the `tapo/` or `tapo-py/` direc
 
 Run the following checks if there are changes in the `tapo-mcp/` directory. Fix all issues found.
 
-- Verify that `README.md` is up to date with any changes to the MCP API
+- Verify that `README.md` reflects any MCP API changes
+- Verify that the OpenClaw skill (`openclaw-skill/`) reflects any MCP API changes
 
 ## Code Review
 
