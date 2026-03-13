@@ -51,6 +51,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     device.nickname, device.device_id, trigger_logs
                 );
             }
+            ChildDeviceHubResult::S210(device) => {
+                let s210 = hub
+                    .s210(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
+                let device_usage = s210.get_device_usage().await?;
+
+                info!(
+                    "Found S210 child device with nickname: {}, id: {}, device_on: {}, device usage: {:?}.",
+                    device.nickname, device.device_id, device.device_on, device_usage
+                );
+            }
             ChildDeviceHubResult::T100(device) => {
                 let t100 = hub
                     .t100(HubDevice::ByDeviceId(device.device_id.clone()))

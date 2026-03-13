@@ -1,6 +1,7 @@
 mod ke100_result;
 mod other_result;
 mod s200_result;
+mod s210_result;
 mod t100_result;
 mod t110_result;
 mod t300_result;
@@ -9,6 +10,7 @@ mod t31x_result;
 pub use ke100_result::*;
 pub use other_result::*;
 pub use s200_result::*;
+pub use s210_result::*;
 pub use t31x_result::*;
 pub use t100_result::*;
 pub use t110_result::*;
@@ -63,6 +65,8 @@ pub enum ChildDeviceHubResult {
     KE100(Box<KE100Result>),
     /// S200B/S200D button switch.
     S200(Box<S200Result>),
+    /// S210 light switch.
+    S210(Box<S210Result>),
     /// T100 motion sensor.
     T100(Box<T100Result>),
     /// T110 contact sensor.
@@ -83,6 +87,7 @@ impl Serialize for ChildDeviceHubResult {
         match self {
             ChildDeviceHubResult::KE100(d) => d.serialize(serializer),
             ChildDeviceHubResult::S200(d) => d.serialize(serializer),
+            ChildDeviceHubResult::S210(d) => d.serialize(serializer),
             ChildDeviceHubResult::T100(d) => d.serialize(serializer),
             ChildDeviceHubResult::T110(d) => d.serialize(serializer),
             ChildDeviceHubResult::T300(d) => d.serialize(serializer),
@@ -106,6 +111,9 @@ impl<'de> Deserialize<'de> for ChildDeviceHubResult {
                 .map_err(serde::de::Error::custom),
             "S200B" | "S200D" => serde_json::from_value(value)
                 .map(|r| ChildDeviceHubResult::S200(Box::new(r)))
+                .map_err(serde::de::Error::custom),
+            "S210" => serde_json::from_value(value)
+                .map(|r| ChildDeviceHubResult::S210(Box::new(r)))
                 .map_err(serde::de::Error::custom),
             "T100" => serde_json::from_value(value)
                 .map(|r| ChildDeviceHubResult::T100(Box::new(r)))
@@ -134,6 +142,9 @@ impl DecodableResultExt for ChildDeviceHubResult {
             }
             ChildDeviceHubResult::S200(device) => {
                 Ok(ChildDeviceHubResult::S200(Box::new(device.decode()?)))
+            }
+            ChildDeviceHubResult::S210(device) => {
+                Ok(ChildDeviceHubResult::S210(Box::new(device.decode()?)))
             }
             ChildDeviceHubResult::T100(device) => {
                 Ok(ChildDeviceHubResult::T100(Box::new(device.decode()?)))

@@ -9,6 +9,7 @@ from tapo.responses import (
     KE100Result,
     OtherResult,
     S200Result,
+    S210Result,
     T100Result,
     T110Result,
     T300Result,
@@ -56,6 +57,18 @@ async def main():
                     child.nickname,
                     child.device_id,
                     [log.to_dict() for log in trigger_logs.logs],
+                )
+            )
+        elif isinstance(child, S210Result):
+            s210 = await hub.s210(device_id=child.device_id)
+            device_usage = await s210.get_device_usage()
+
+            print(
+                "Found S210 child device with nickname: {}, id: {}, device_on: {}, device usage: {}.".format(
+                    child.nickname,
+                    child.device_id,
+                    child.device_on,
+                    device_usage.to_dict(),
                 )
             )
         elif isinstance(child, T100Result):

@@ -7,7 +7,8 @@ use tapo::responses::{ChildDeviceComponentList, ChildDeviceHubResult, DeviceInfo
 use tapo::{Error, HubDevice, HubHandler};
 
 use crate::api::{
-    PyKE100Handler, PyS200Handler, PyT31XHandler, PyT100Handler, PyT110Handler, PyT300Handler,
+    PyKE100Handler, PyS200Handler, PyS210Handler, PyT31XHandler, PyT100Handler, PyT110Handler,
+    PyT300Handler,
 };
 use crate::call_handler_method;
 use crate::requests::PyAlarmDuration;
@@ -53,6 +54,9 @@ impl PyHubHandler {
                         results.append(device.into_pyobject(py)?)?;
                     }
                     ChildDeviceHubResult::S200(device) => {
+                        results.append(device.into_pyobject(py)?)?;
+                    }
+                    ChildDeviceHubResult::S210(device) => {
                         results.append(device.into_pyobject(py)?)?;
                     }
                     ChildDeviceHubResult::T100(device) => {
@@ -172,6 +176,20 @@ impl PyHubHandler {
         let child_handler =
             call_handler_method!(handler.read().await.deref(), HubHandler::s200, identifier)?;
         Ok(PyS200Handler::new(child_handler))
+    }
+
+    #[pyo3(signature = (device_id=None, nickname=None))]
+    pub async fn s210(
+        &self,
+        device_id: Option<String>,
+        nickname: Option<String>,
+    ) -> PyResult<PyS210Handler> {
+        let handler = self.inner.clone();
+        let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
+
+        let child_handler =
+            call_handler_method!(handler.read().await.deref(), HubHandler::s210, identifier)?;
+        Ok(PyS210Handler::new(child_handler))
     }
 
     #[pyo3(signature = (device_id=None, nickname=None))]

@@ -23,8 +23,8 @@ use tapo::responses::{
     EnergyDataResult, EnergyUsageResult, KE100Result, OtherResult, OvercurrentStatus,
     OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
     PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, RgbLightStripState,
-    RgbicLightStripState, S200Log, S200Result, S200RotationParams, Status, T31XResult, T100Log,
-    T100Result, T110Log, T110Result, T300Log, T300Result, TemperatureHumidityRecord,
+    RgbicLightStripState, S200Log, S200Result, S200RotationParams, S210Result, Status, T31XResult,
+    T100Log, T100Result, T110Log, T110Result, T300Log, T300Result, TemperatureHumidityRecord,
     TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, UsageByPeriodResult,
     WaterLeakStatus,
 };
@@ -34,8 +34,8 @@ use api::{
     PyGenericDeviceHandler, PyHubHandler, PyKE100Handler, PyLightHandler, PyMaybeDiscoveryResult,
     PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
     PyPowerStripHandler, PyPowerStripPlugEnergyMonitoringHandler, PyPowerStripPlugHandler,
-    PyRgbLightStripHandler, PyRgbicLightStripHandler, PyS200Handler, PyT31XHandler, PyT100Handler,
-    PyT110Handler, PyT300Handler,
+    PyRgbLightStripHandler, PyRgbicLightStripHandler, PyS200Handler, PyS210Handler, PyT31XHandler,
+    PyT100Handler, PyT110Handler, PyT300Handler,
 };
 use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyLightingEffect,
@@ -110,6 +110,7 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyT110Handler>()?;
     module.add_class::<PyT300Handler>()?;
     module.add_class::<PyS200Handler>()?;
+    module.add_class::<PyS210Handler>()?;
     module.add_class::<PyT31XHandler>()?;
 
     module.add_class::<PyPowerStripHandler>()?;
@@ -182,6 +183,7 @@ fn register_responses_hub(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<KE100Result>()?;
     module.add_class::<OtherResult>()?;
     module.add_class::<S200Result>()?;
+    module.add_class::<S210Result>()?;
     module.add_class::<T100Result>()?;
     module.add_class::<T110Result>()?;
     module.add_class::<T300Result>()?;

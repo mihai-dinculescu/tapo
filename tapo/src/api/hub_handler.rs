@@ -4,7 +4,9 @@ use crate::requests::{AlarmDuration, AlarmRingtone, AlarmVolume, PlayAlarmParams
 use crate::responses::ChildDeviceComponentList;
 use crate::responses::{ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoHubResult};
 
-use super::{KE100Handler, S200Handler, T31XHandler, T100Handler, T110Handler, T300Handler};
+use super::{
+    KE100Handler, S200Handler, S210Handler, T31XHandler, T100Handler, T110Handler, T300Handler,
+};
 
 macro_rules! get_device_id {
     ($self:expr, $identifier:expr, $($value:path),+) => {{
@@ -187,6 +189,35 @@ impl HubHandler {
     pub async fn s200(&self, identifier: HubDevice) -> Result<S200Handler, Error> {
         let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::S200);
         Ok(S200Handler::new(self.client.clone(), device_id))
+    }
+
+    /// Returns a [`S210Handler`] for the given [`HubDevice`].
+    ///
+    /// # Arguments
+    ///
+    /// * `identifier` - a hub device identifier
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::{ApiClient, HubDevice};
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// // Connect to the hub
+    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .h100("192.168.1.100")
+    ///     .await?;
+    /// // Get a handler for the child device
+    /// let device_id = "0000000000000000000000000000000000000000".to_string();
+    /// let device = hub.s210(HubDevice::ByDeviceId(device_id)).await?;
+    /// // Get the device info of the child device
+    /// let device_info = device.get_device_info().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn s210(&self, identifier: HubDevice) -> Result<S210Handler, Error> {
+        let device_id = get_device_id!(self, identifier, ChildDeviceHubResult::S210);
+        Ok(S210Handler::new(self.client.clone(), device_id))
     }
 
     /// Returns a [`T100Handler`] for the given [`HubDevice`].

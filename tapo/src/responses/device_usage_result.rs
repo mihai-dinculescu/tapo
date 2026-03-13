@@ -19,13 +19,13 @@ crate::impl_to_dict!(DeviceUsageResult);
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct UsageByPeriodResult {
-    /// Today.
+    /// Today usage in minutes.
     #[serde(deserialize_with = "ok_or_default")]
     pub today: Option<u64>,
-    /// Past 7 days.
+    /// Past 7 days usage in minutes.
     #[serde(deserialize_with = "ok_or_default")]
     pub past7: Option<u64>,
-    /// Past 30 days.
+    /// Past 30 days usage in minutes.
     #[serde(deserialize_with = "ok_or_default")]
     pub past30: Option<u64>,
 }
