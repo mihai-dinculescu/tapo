@@ -1,5 +1,9 @@
 # Commit
 
+Create a git commit following the project's conventions.
+
+## Steps
+
 - Run `/review` before creating a commit
 - Run `/changelog` if the public API was changed
 - Always sign commits (`git commit -S`)

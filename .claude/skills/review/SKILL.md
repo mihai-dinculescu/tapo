@@ -1,8 +1,8 @@
-# Code Review Checklist
-
-## Checks
+# Code Review
 
 Run all checks, fix any issues found, then present a summary table.
+
+## Checks
 
 ### Rust checks
 
@@ -23,6 +23,8 @@ Run the following checks if there are changes in the `tapo/`, `tapo-py/`, or `ta
 Run the following checks if there are changes in the `tapo/` or `tapo-py/` directories. Fix all issues found.
 
 - Update `.pyi` stubs if Python-exposed Rust types changed
+- Verify new `#[pyclass]` types are imported and registered in `tapo-py/src/lib.rs`
+- Verify Python examples in `tapo-py/examples/` are updated to match corresponding Rust examples in `tapo/examples/`
 - `cd tapo-py` and activate the virtual environment
 - `uv run mypy .` — fix all type errors
 - `uv run black .` — fix all formatting issues
