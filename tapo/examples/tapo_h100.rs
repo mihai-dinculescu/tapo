@@ -104,8 +104,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     temperature_humidity_records.records.first()
                 );
             }
-            _ => {
-                info!("Found unsupported device.")
+            ChildDeviceHubResult::Other(device) => {
+                info!(
+                    "Found unsupported child device with nickname: {}, id: {}, model: {}.",
+                    device.nickname, device.device_id, device.model
+                );
             }
         }
     }

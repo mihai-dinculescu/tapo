@@ -20,8 +20,8 @@ use tapo::responses::{
     DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
     DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataIntervalResult,
-    EnergyDataResult, EnergyUsageResult, KE100Result, OvercurrentStatus, OverheatStatus, PlugState,
-    PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
+    EnergyDataResult, EnergyUsageResult, KE100Result, OtherResult, OvercurrentStatus,
+    OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
     PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, RgbLightStripState,
     RgbicLightStripState, S200Log, S200Result, S200RotationParams, Status, T31XResult, T100Log,
     T100Result, T110Log, T110Result, T300Log, T300Result, TemperatureHumidityRecord,
@@ -180,6 +180,7 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
 fn register_responses_hub(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DeviceInfoHubResult>()?;
     module.add_class::<KE100Result>()?;
+    module.add_class::<OtherResult>()?;
     module.add_class::<S200Result>()?;
     module.add_class::<T100Result>()?;
     module.add_class::<T110Result>()?;

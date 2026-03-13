@@ -1,4 +1,5 @@
 mod ke100_result;
+mod other_result;
 mod s200_result;
 mod t100_result;
 mod t110_result;
@@ -6,12 +7,15 @@ mod t300_result;
 mod t31x_result;
 
 pub use ke100_result::*;
+pub use other_result::*;
 pub use s200_result::*;
 pub use t31x_result::*;
 pub use t100_result::*;
 pub use t110_result::*;
 pub use t300_result::*;
 
+use serde::de::Deserializer;
+use serde::ser::Serializer;
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
@@ -53,13 +57,11 @@ pub enum Status {
 }
 
 /// Hub child device result.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "model")]
+#[derive(Debug, Clone)]
 pub enum ChildDeviceHubResult {
     /// KE100 thermostatic radiator valve (TRV).
     KE100(Box<KE100Result>),
     /// S200B/S200D button switch.
-    #[serde(rename = "S200B", alias = "S200D")]
     S200(Box<S200Result>),
     /// T100 motion sensor.
     T100(Box<T100Result>),
@@ -68,12 +70,60 @@ pub enum ChildDeviceHubResult {
     /// T300 water sensor.
     T300(Box<T300Result>),
     /// T310/T315 temperature and humidity sensor.
-    #[serde(rename = "T310", alias = "T315")]
     T31X(Box<T31XResult>),
-    /// Catch-all for currently unsupported devices.
-    /// Please open an issue if you need support for a new device.
-    #[serde(other)]
-    Other,
+    /// Catch-all for unsupported devices. Open a GitHub issue to request support.
+    Other(Box<OtherResult>),
+}
+
+impl Serialize for ChildDeviceHubResult {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            ChildDeviceHubResult::KE100(d) => d.serialize(serializer),
+            ChildDeviceHubResult::S200(d) => d.serialize(serializer),
+            ChildDeviceHubResult::T100(d) => d.serialize(serializer),
+            ChildDeviceHubResult::T110(d) => d.serialize(serializer),
+            ChildDeviceHubResult::T300(d) => d.serialize(serializer),
+            ChildDeviceHubResult::T31X(d) => d.serialize(serializer),
+            ChildDeviceHubResult::Other(d) => d.serialize(serializer),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for ChildDeviceHubResult {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let value = serde_json::Value::deserialize(deserializer)?;
+        let model = value.get("model").and_then(|m| m.as_str()).unwrap_or("");
+
+        match model {
+            "KE100" => serde_json::from_value(value)
+                .map(|r| ChildDeviceHubResult::KE100(Box::new(r)))
+                .map_err(serde::de::Error::custom),
+            "S200B" | "S200D" => serde_json::from_value(value)
+                .map(|r| ChildDeviceHubResult::S200(Box::new(r)))
+                .map_err(serde::de::Error::custom),
+            "T100" => serde_json::from_value(value)
+                .map(|r| ChildDeviceHubResult::T100(Box::new(r)))
+                .map_err(serde::de::Error::custom),
+            "T110" => serde_json::from_value(value)
+                .map(|r| ChildDeviceHubResult::T110(Box::new(r)))
+                .map_err(serde::de::Error::custom),
+            "T300" => serde_json::from_value(value)
+                .map(|r| ChildDeviceHubResult::T300(Box::new(r)))
+                .map_err(serde::de::Error::custom),
+            "T310" | "T315" => serde_json::from_value(value)
+                .map(|r| ChildDeviceHubResult::T31X(Box::new(r)))
+                .map_err(serde::de::Error::custom),
+            _ => serde_json::from_value(value)
+                .map(|r| ChildDeviceHubResult::Other(Box::new(r)))
+                .map_err(serde::de::Error::custom),
+        }
+    }
 }
 
 impl DecodableResultExt for ChildDeviceHubResult {
@@ -97,7 +147,9 @@ impl DecodableResultExt for ChildDeviceHubResult {
             ChildDeviceHubResult::T31X(device) => {
                 Ok(ChildDeviceHubResult::T31X(Box::new(device.decode()?)))
             }
-            ChildDeviceHubResult::Other => Ok(ChildDeviceHubResult::Other),
+            ChildDeviceHubResult::Other(device) => {
+                Ok(ChildDeviceHubResult::Other(Box::new(device.decode()?)))
+            }
         }
     }
 }

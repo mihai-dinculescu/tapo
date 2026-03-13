@@ -6,7 +6,25 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `OtherResult`: added catch-all result type for unsupported hub child devices, containing `device_id`, `model`, and `nickname`.
+- `KE100Result`, `S200Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`: added `model` field.
+
+### Changed
+
+- `ChildDeviceHubResult::Other`: changed from a unit variant to `Other(Box<OtherResult>)`, exposing device info for unrecognized models.
+
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- `OtherResult`: added catch-all result type for unsupported hub child devices, containing `device_id`, `model`, and `nickname`.
+- `KE100Result`, `S200Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`: added `model` field.
+
+### Changed
+
+- `HubHandler`: changed `get_child_device_list()` to return `OtherResult` instead of `None` for unsupported devices.
 
 ## [Rust v0.8.12][v0.8.12] - 2026-03-11
 

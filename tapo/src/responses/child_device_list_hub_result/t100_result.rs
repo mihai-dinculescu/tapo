@@ -23,6 +23,7 @@ pub struct T100Result {
     pub jamming_rssi: i16,
     pub jamming_signal_level: u8,
     pub mac: String,
+    pub model: String,
     pub nickname: String,
     pub oem_id: String,
     pub parent_device_id: String,

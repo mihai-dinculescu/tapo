@@ -15,6 +15,7 @@ class HubResultBase(ToDictExt):
     jamming_rssi: int
     jamming_signal_level: int
     mac: str
+    model: str
     nickname: str
     oem_id: str
     parent_device_id: str

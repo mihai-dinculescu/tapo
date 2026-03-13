@@ -67,8 +67,8 @@ impl PyHubHandler {
                     ChildDeviceHubResult::T31X(device) => {
                         results.append(device.into_pyobject(py)?)?;
                     }
-                    _ => {
-                        results.append(py.None())?;
+                    ChildDeviceHubResult::Other(device) => {
+                        results.append(device.into_pyobject(py)?)?;
                     }
                 }
             }

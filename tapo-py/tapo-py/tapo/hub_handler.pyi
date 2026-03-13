@@ -9,6 +9,7 @@ from tapo.responses import (
     ChildDeviceComponentList,
     DeviceInfoHubResult,
     KE100Result,
+    OtherResult,
     S200Result,
     T100Result,
     T110Result,
@@ -37,8 +38,10 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
 
     async def get_child_device_list(
         self,
-    ) -> List[Union[KE100Result, S200Result, T100Result, T110Result, T300Result, T31XResult, None]]:
-        """Returns *child device list* as `List[KE100Result | S200Result | T100Result | T110Result | T300Result | T31XResult | None]`.
+    ) -> List[
+        Union[KE100Result, S200Result, T100Result, T110Result, T300Result, T31XResult, OtherResult]
+    ]:
+        """Returns *child device list* as `List[KE100Result | S200Result | T100Result | T110Result | T300Result | T31XResult | OtherResult]`.
         It is not guaranteed to contain all the properties returned from the Tapo API
         or to support all the possible devices connected to the hub.
         If the deserialization fails, or if a property that you care about it's not present,

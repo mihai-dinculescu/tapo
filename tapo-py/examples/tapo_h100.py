@@ -5,7 +5,15 @@ import os
 
 from tapo import ApiClient
 from tapo.requests import AlarmRingtone, AlarmVolume, AlarmDuration
-from tapo.responses import KE100Result, S200Result, T100Result, T110Result, T300Result, T31XResult
+from tapo.responses import (
+    KE100Result,
+    OtherResult,
+    S200Result,
+    T100Result,
+    T110Result,
+    T300Result,
+    T31XResult,
+)
 
 
 async def main():
@@ -22,8 +30,12 @@ async def main():
     child_device_list = await hub.get_child_device_list()
 
     for child in child_device_list:
-        if child is None:
-            print("Found unsupported device.")
+        if isinstance(child, OtherResult):
+            print(
+                "Found unsupported child device with nickname: {}, id: {}, model: {}.".format(
+                    child.nickname, child.device_id, child.model
+                )
+            )
         elif isinstance(child, KE100Result):
             print(
                 "Found KE100 child device with nickname: {}, id: {}, current temperature: {:.2f} {} and target temperature: {:.2f} {}.".format(
