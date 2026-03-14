@@ -2,6 +2,7 @@ use rmcp::schemars;
 use rmcp::schemars::JsonSchema;
 use serde::de;
 use serde::{Deserialize, Serialize};
+use tapo::requests::Color;
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 pub struct DevicesList {
@@ -17,6 +18,8 @@ pub struct DevicesList {
 pub enum SetCapability {
     /// Set the device brightness (1-100).
     Brightness,
+    /// Set the device color using a preset name.
+    Color,
     /// Turn the device on or off.
     OnOff,
 }
@@ -91,6 +94,8 @@ pub enum SetCapabilityRequest {
         #[schemars(range(min = 1, max = 100))]
         value: u8,
     },
+    /// Set the device color using a preset name. Also turns the device on if it's off.
+    Color { value: Color },
     /// Turn the device on or off.
     OnOff { value: bool },
 }

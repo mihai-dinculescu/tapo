@@ -11,6 +11,7 @@ file. This change log follows the conventions of
 - `HubHandler`: added support for S210 light switches with `on`, `off`, and `get_device_usage`. Use `s210` on the hub to create the `S210Handler`.
 - `OtherResult`: added catch-all result type for unsupported hub child devices, containing `device_id`, `model`, and `nickname`.
 - `KE100Result`, `S200Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`: added `model` field.
+- `json-schema` feature: added optional `schemars::JsonSchema` derive on `Color` for use with MCP or other JSON Schema tooling.
 
 ### Changed
 
@@ -74,6 +75,7 @@ file. This change log follows the conventions of
 
 - `get_device_state`: added tool for reading a device's current state (e.g. on/off, brightness, color). Supports a `GetCapabilityRequest` selector, starting with `DeviceInfo`.
 - `Brightness`: added set capability for controlling device brightness (1-100). Available on Light, ColorLight, RgbLightStrip, and RgbicLightStrip devices.
+- `Color`: added set capability for setting device color using preset names. Available on ColorLight, RgbLightStrip, and RgbicLightStrip devices.
 
 ### Changed
 

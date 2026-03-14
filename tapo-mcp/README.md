@@ -15,6 +15,8 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 > "Is the office light on?"
 >
 > "Set the bedroom light to 50% brightness"
+>
+> "Change the living room light to Coral"
 
 ## Tools
 
@@ -37,10 +39,11 @@ Devices and child devices expose separate lists of set and get capabilities they
 
 ### Set Capabilities
 
-| Capability   | Description                         |
-| ------------ | ----------------------------------- |
-| `Brightness` | Set the device brightness (1-100)   |
-| `OnOff`      | Turn the device on or off           |
+| Capability   | Description                                |
+| ------------ | ------------------------------------------ |
+| `Brightness` | Set the device brightness (1-100)          |
+| `Color`      | Set the device color using a preset name   |
+| `OnOff`      | Turn the device on or off                  |
 
 ### Get Capabilities
 

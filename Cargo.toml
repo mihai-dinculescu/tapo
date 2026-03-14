@@ -8,6 +8,7 @@ anyhow = "1.0"
 chrono = { version = "0.4.34", default-features = false }
 log = "0.4"
 pyo3 = { version = "0.28" }
+schemars = { version = "1.2" }
 serde = { version = "1.0" }
 serde_json = { version = "1.0" }
 thiserror = "2.0"

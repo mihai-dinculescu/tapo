@@ -14,6 +14,7 @@ repository = "https://github.com/mihai-dinculescu/tapo"
 [features]
 default = []
 debug = []
+json-schema = ["dep:schemars"]
 python = ["dep:pyo3"]
 
 [dependencies]
@@ -42,6 +43,9 @@ rand = "0.10"
 rsa = { version = "0.10.0-rc.17", features = ["getrandom"] }
 sha1 = "0.10"
 sha2 = "0.10"
+
+# JSON Schema
+schemars = { workspace = true, optional = true }
 
 # FFI
 pyo3 = { workspace = true, features = ["serde", "chrono"], optional = true }

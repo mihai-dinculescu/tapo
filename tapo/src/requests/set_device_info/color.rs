@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 /// List of preset colors as defined in the Google Home app.
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "json-schema", derive(schemars::JsonSchema))]
 #[cfg_attr(
     feature = "python",
     pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)

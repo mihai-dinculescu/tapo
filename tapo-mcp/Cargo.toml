@@ -21,7 +21,7 @@ tracing = "0.1"
 tracing-opentelemetry = "0.32"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "std"] }
 
-tapo = { path = "../tapo" }
+tapo = { path = "../tapo", features = ["json-schema"] }
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }

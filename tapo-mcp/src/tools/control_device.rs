@@ -1,4 +1,5 @@
 use rmcp::model::{CallToolResult, Content};
+use tapo::requests::Color;
 use tapo::{DiscoveryResult, Plug};
 
 use crate::config::AppConfig;
@@ -20,6 +21,9 @@ pub async fn control_device(
     match &params.capability {
         SetCapabilityRequest::Brightness { value } => {
             apply_brightness(&params.id, checked, *value).await?
+        }
+        SetCapabilityRequest::Color { value } => {
+            apply_color(&params.id, checked, value.clone()).await?
         }
         SetCapabilityRequest::OnOff { value } => apply_on_off(&params.id, checked, *value).await?,
     }
@@ -60,6 +64,30 @@ async fn apply_brightness(
             return Err(TapoMcpError::UnsupportedCapability {
                 id: id.to_string(),
                 capability: "Brightness".to_string(),
+            });
+        }
+    }
+
+    Ok(())
+}
+
+async fn apply_color(id: &str, checked: CheckedDevice, color: Color) -> Result<(), TapoMcpError> {
+    match checked {
+        CheckedDevice::Parent(device) => match device {
+            DiscoveryResult::ColorLight { handler, .. } => handler.set_color(color).await?,
+            DiscoveryResult::RgbLightStrip { handler, .. } => handler.set_color(color).await?,
+            DiscoveryResult::RgbicLightStrip { handler, .. } => handler.set_color(color).await?,
+            _ => {
+                return Err(TapoMcpError::UnsupportedCapability {
+                    id: id.to_string(),
+                    capability: "Color".to_string(),
+                });
+            }
+        },
+        CheckedDevice::Child { .. } => {
+            return Err(TapoMcpError::UnsupportedCapability {
+                id: id.to_string(),
+                capability: "Color".to_string(),
             });
         }
     }

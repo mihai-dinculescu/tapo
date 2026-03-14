@@ -83,10 +83,16 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
                 }
 
                 let set_capabilities = match &device {
-                    DiscoveryResult::Light { .. }
-                    | DiscoveryResult::ColorLight { .. }
+                    DiscoveryResult::ColorLight { .. }
                     | DiscoveryResult::RgbLightStrip { .. }
                     | DiscoveryResult::RgbicLightStrip { .. } => {
+                        vec![
+                            SetCapability::Brightness,
+                            SetCapability::Color,
+                            SetCapability::OnOff,
+                        ]
+                    }
+                    DiscoveryResult::Light { .. } => {
                         vec![SetCapability::Brightness, SetCapability::OnOff]
                     }
                     DiscoveryResult::Plug { .. } | DiscoveryResult::PlugEnergyMonitoring { .. } => {

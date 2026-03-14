@@ -87,6 +87,9 @@ mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"type"
 
 # Set brightness (1-100, lights only)
 mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"type": "Brightness", "value": 50}'
+
+# Set color (color lights only)
+mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"type": "Color", "value": "Coral"}'
 ```
 
 ## Usage rules
