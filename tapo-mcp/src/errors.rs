@@ -33,6 +33,9 @@ impl From<TapoMcpError> for McpError {
     fn from(err: TapoMcpError) -> Self {
         let data = Some(serde_json::json!({ "error": format!("{err:?}") }));
         match err {
+            TapoMcpError::Internal(tapo::Error::Validation { .. }) => {
+                McpError::invalid_params(err.to_string(), data)
+            }
             TapoMcpError::Internal(_)
             | TapoMcpError::InternalDiscovery(_)
             | TapoMcpError::Serialization(_) => McpError::internal_error(err.to_string(), data),

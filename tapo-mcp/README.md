@@ -13,6 +13,8 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 > "Turn on smart plug 4 on the power strip"
 >
 > "Is the office light on?"
+>
+> "Set the bedroom light to 50% brightness"
 
 ## Tools
 
@@ -21,7 +23,7 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 | `list_devices`     | List available Tapo devices on the network (includes set and get capabilities).                |
 | `check_device`     | Verify a device ID matches at a given IP.                                                      |
 | `get_device_state` | Get a device's current state (e.g. `DeviceInfo`). Runs `check_device` first.                   |
-| `control_device`   | Control a device by applying a set capability (e.g. `OnOff(true)`). Runs `check_device` first. |
+| `control_device`   | Control a device by applying a set capability (e.g. `{"type": "OnOff", "value": true}`). Runs `check_device` first. |
 
 ## Resources
 
@@ -35,9 +37,10 @@ Devices and child devices expose separate lists of set and get capabilities they
 
 ### Set Capabilities
 
-| Capability | Description               |
-| ---------- | ------------------------- |
-| `OnOff`    | Turn the device on or off |
+| Capability   | Description                         |
+| ------------ | ----------------------------------- |
+| `Brightness` | Set the device brightness (1-100)   |
+| `OnOff`      | Turn the device on or off           |
 
 ### Get Capabilities
 

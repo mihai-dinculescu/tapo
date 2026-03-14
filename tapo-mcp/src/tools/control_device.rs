@@ -18,7 +18,10 @@ pub async fn control_device(
     let checked = requests::check_device(config, check_params).await?;
 
     match &params.capability {
-        SetCapabilityRequest::OnOff(on) => apply_on_off(&params.id, checked, *on).await?,
+        SetCapabilityRequest::Brightness { value } => {
+            apply_brightness(&params.id, checked, *value).await?
+        }
+        SetCapabilityRequest::OnOff { value } => apply_on_off(&params.id, checked, *value).await?,
     }
 
     let content = vec![Content::text(format!(
@@ -27,6 +30,41 @@ pub async fn control_device(
         capability = params.capability,
     ))];
     Ok(CallToolResult::success(content))
+}
+
+async fn apply_brightness(
+    id: &str,
+    checked: CheckedDevice,
+    brightness: u8,
+) -> Result<(), TapoMcpError> {
+    match checked {
+        CheckedDevice::Parent(device) => match device {
+            DiscoveryResult::Light { handler, .. } => handler.set_brightness(brightness).await?,
+            DiscoveryResult::ColorLight { handler, .. } => {
+                handler.set_brightness(brightness).await?
+            }
+            DiscoveryResult::RgbLightStrip { handler, .. } => {
+                handler.set_brightness(brightness).await?
+            }
+            DiscoveryResult::RgbicLightStrip { handler, .. } => {
+                handler.set_brightness(brightness).await?
+            }
+            _ => {
+                return Err(TapoMcpError::UnsupportedCapability {
+                    id: id.to_string(),
+                    capability: "Brightness".to_string(),
+                });
+            }
+        },
+        CheckedDevice::Child { .. } => {
+            return Err(TapoMcpError::UnsupportedCapability {
+                id: id.to_string(),
+                capability: "Brightness".to_string(),
+            });
+        }
+    }
+
+    Ok(())
 }
 
 async fn apply_on_off(id: &str, checked: CheckedDevice, on: bool) -> Result<(), TapoMcpError> {

@@ -74,44 +74,39 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
                     None => vec![],
                 };
 
-                let device = match device {
-                    DiscoveryResult::GenericDevice { .. } | DiscoveryResult::Hub { .. } => {
-                        unsupported.push(UnsupportedDevice { ip, model });
-                        None
+                if matches!(
+                    device,
+                    DiscoveryResult::GenericDevice { .. } | DiscoveryResult::Hub { .. }
+                ) {
+                    unsupported.push(UnsupportedDevice { ip, model });
+                    continue;
+                }
+
+                let set_capabilities = match &device {
+                    DiscoveryResult::Light { .. }
+                    | DiscoveryResult::ColorLight { .. }
+                    | DiscoveryResult::RgbLightStrip { .. }
+                    | DiscoveryResult::RgbicLightStrip { .. } => {
+                        vec![SetCapability::Brightness, SetCapability::OnOff]
                     }
-                    // Power strip parents don't support OnOff directly;
+                    DiscoveryResult::Plug { .. } | DiscoveryResult::PlugEnergyMonitoring { .. } => {
+                        vec![SetCapability::OnOff]
+                    }
+                    // Power strip parents have no set capabilities;
                     // only their children do.
-                    DiscoveryResult::PowerStrip { .. }
-                    | DiscoveryResult::PowerStripEnergyMonitoring { .. } => Some(Device {
-                        id,
-                        name,
-                        model,
-                        ip,
-                        set_capabilities: vec![],
-                        get_capabilities: vec![GetCapability::DeviceInfo],
-                        children,
-                    }),
-                    // All other devices have the OnOff capability.
-                    _ => Some(Device {
-                        id,
-                        name,
-                        model,
-                        ip,
-                        set_capabilities: vec![SetCapability::OnOff],
-                        get_capabilities: vec![GetCapability::DeviceInfo],
-                        children,
-                    }),
+                    _ => vec![],
                 };
 
-                if let Some(device) = device {
-                    tracing::debug!(
-                        name = device.name,
-                        model = device.model,
-                        ip = device.ip,
-                        "Found device"
-                    );
-                    devices.push(device);
-                }
+                tracing::debug!(name, model, ip, "Found device");
+                devices.push(Device {
+                    id,
+                    name,
+                    model,
+                    ip,
+                    set_capabilities,
+                    get_capabilities: vec![GetCapability::DeviceInfo],
+                    children,
+                });
             }
             Err(err) => {
                 tracing::warn!(%err, "Error discovering device");

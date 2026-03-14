@@ -62,7 +62,7 @@ mcporter call tapo.get_device_state \
 mcporter call tapo.control_device \
   id="<DEVICE_ID>" \
   ip="<DEVICE_IP>" \
-  capability='{"OnOff": false}'
+  capability='{"type": "OnOff", "value": false}'
 ```
 
 ## Managing the config

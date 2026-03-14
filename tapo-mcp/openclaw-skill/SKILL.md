@@ -76,14 +76,17 @@ mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='"Devi
 
 ### control_device
 
-Turn a device on or off. Automatically runs `check_device` first.
+Control a device. Automatically runs `check_device` first.
 
 ```bash
 # Turn on
-mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"OnOff": true}'
+mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"type": "OnOff", "value": true}'
 
 # Turn off
-mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"OnOff": false}'
+mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"type": "OnOff", "value": false}'
+
+# Set brightness (1-100, lights only)
+mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"type": "Brightness", "value": 50}'
 ```
 
 ## Usage rules

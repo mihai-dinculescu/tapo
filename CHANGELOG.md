@@ -73,11 +73,13 @@ file. This change log follows the conventions of
 ### Added
 
 - `get_device_state`: added tool for reading a device's current state (e.g. on/off, brightness, color). Supports a `GetCapabilityRequest` selector, starting with `DeviceInfo`.
+- `Brightness`: added set capability for controlling device brightness (1-100). Available on Light, ColorLight, RgbLightStrip, and RgbicLightStrip devices.
 
 ### Changed
 
 - `set_device_state`: renamed to `control_device`.
 - `Device`, `ChildDevice`: replaced `capabilities` field with separate `set_capabilities` and `get_capabilities` fields.
+- `SetCapabilityRequest`: changed from externally tagged (e.g. `{"OnOff": true}`) to internally tagged with explicit fields (e.g. `{"type": "OnOff", "value": true}`).
 
 ## [MCP v0.1.0][tapo-mcp-v0.1.0] - 2026-03-09
 
