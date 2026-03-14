@@ -11,14 +11,17 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 > "Turn off the office light"
 >
 > "Turn on smart plug 4 on the power strip"
+>
+> "Is the office light on?"
 
 ## Tools
 
-| Tool               | Description                                                                     |
-| ------------------ | ------------------------------------------------------------------------------- |
-| `list_devices`     | List available Tapo devices on the network (includes capabilities).             |
-| `check_device`     | Verify a device ID matches at a given IP.                                       |
-| `set_device_state` | Apply a capability to a device (e.g. `OnOff(true)`). Runs `check_device` first. |
+| Tool               | Description                                                                                  |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| `list_devices`     | List available Tapo devices on the network (includes capabilities).                          |
+| `check_device`     | Verify a device ID matches at a given IP.                                                    |
+| `get_device_state` | Get a device's current state (e.g. `DeviceInfo`). Runs `check_device` first.                 |
+| `set_device_state` | Apply a set capability to a device (e.g. `OnOff(true)`). Runs `check_device` first.          |
 
 ## Resources
 
@@ -28,11 +31,19 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 
 ## Capabilities
 
-Devices and child devices expose a list of capabilities they support. Currently supported:
+Devices and child devices expose separate lists of set and get capabilities they support.
+
+### Set Capabilities
 
 | Capability | Description               |
 | ---------- | ------------------------- |
 | `OnOff`    | Turn the device on or off |
+
+### Get Capabilities
+
+| Capability   | Description                   |
+| ------------ | ----------------------------- |
+| `DeviceInfo` | Read the device's current state |
 
 ## Configuration
 

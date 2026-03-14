@@ -10,8 +10,13 @@ pub struct DevicesList {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
-pub enum Capability {
+pub enum SetCapability {
     OnOff,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
+pub enum GetCapability {
+    DeviceInfo,
 }
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
@@ -20,7 +25,8 @@ pub struct Device {
     pub name: String,
     pub model: String,
     pub ip: String,
-    pub capabilities: Vec<Capability>,
+    pub set_capabilities: Vec<SetCapability>,
+    pub get_capabilities: Vec<GetCapability>,
     pub children: Vec<ChildDevice>,
 }
 
@@ -29,7 +35,8 @@ pub struct ChildDevice {
     pub id: String,
     pub name: String,
     pub model: String,
-    pub capabilities: Vec<Capability>,
+    pub set_capabilities: Vec<SetCapability>,
+    pub get_capabilities: Vec<GetCapability>,
 }
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
@@ -51,13 +58,25 @@ pub struct CheckDeviceParams {
 }
 
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
-pub enum SetCapability {
+pub enum SetCapabilityRequest {
     OnOff(bool),
+}
+
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub enum GetCapabilityRequest {
+    DeviceInfo,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct SetDeviceStateParams {
     pub id: String,
     pub ip: String,
-    pub capability: SetCapability,
+    pub capability: SetCapabilityRequest,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct GetDeviceStateParams {
+    pub id: String,
+    pub ip: String,
+    pub capability: GetCapabilityRequest,
 }

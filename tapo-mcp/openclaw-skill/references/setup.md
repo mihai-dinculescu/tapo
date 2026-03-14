@@ -43,6 +43,7 @@ You should see:
 |--------------------|--------------------------------------|-------------------------|
 | `list_devices`     | List all available Tapo devices      | (none)                  |
 | `check_device`     | Verify a device ID matches at an IP  | `id`, `ip`              |
+| `get_device_state` | Get a device's current state         | `id`, `ip`, `capability`|
 | `set_device_state` | Set a device's state (on/off)        | `id`, `ip`, `capability`|
 
 ## Step 3: Test a tool call
@@ -50,6 +51,12 @@ You should see:
 ```bash
 # List all devices on the network
 mcporter call tapo.list_devices
+
+# Get a device's current state
+mcporter call tapo.get_device_state \
+  id="<DEVICE_ID>" \
+  ip="<DEVICE_IP>" \
+  capability='"DeviceInfo"'
 
 # Turn a device off
 mcporter call tapo.set_device_state \

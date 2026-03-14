@@ -41,7 +41,7 @@ You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mc
    ```bash
    mcporter list tapo --schema
    ```
-   You should see `list_devices`, `check_device`, and `set_device_state`.
+   You should see `list_devices`, `check_device`, `get_device_state`, and `set_device_state`.
 
 See [references/setup.md](references/setup.md) for the full walkthrough, config management, and troubleshooting.
 
@@ -55,7 +55,7 @@ List all Tapo devices on the network.
 mcporter call tapo.list_devices
 ```
 
-Returns each device's `id`, `name`, `model`, `ip`, `capabilities`, and `children` (for power strips).
+Returns each device's `id`, `name`, `model`, `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips).
 
 ### check_device
 
@@ -63,6 +63,14 @@ Verify a device ID matches at a given IP.
 
 ```bash
 mcporter call tapo.check_device id="<DEVICE_ID>" ip="<IP>"
+```
+
+### get_device_state
+
+Get a device's current state. Automatically runs `check_device` first.
+
+```bash
+mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='"DeviceInfo"'
 ```
 
 ### set_device_state

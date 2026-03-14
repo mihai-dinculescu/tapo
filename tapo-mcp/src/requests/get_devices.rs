@@ -3,7 +3,8 @@ use tapo::{ApiClient, DiscoveryResult, StreamExt as _};
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
 use crate::models::{
-    Capability, ChildDevice, Device, DevicesList, DiscoveryError, UnsupportedDevice,
+    ChildDevice, Device, DevicesList, DiscoveryError, GetCapability, SetCapability,
+    UnsupportedDevice,
 };
 
 pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError> {
@@ -38,7 +39,8 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
                                     id: c.device_id,
                                     name: c.nickname,
                                     model: c.model,
-                                    capabilities: vec![Capability::OnOff],
+                                    set_capabilities: vec![SetCapability::OnOff],
+                                    get_capabilities: vec![GetCapability::DeviceInfo],
                                 })
                                 .collect()
                         }))
@@ -50,7 +52,8 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
                                     id: c.device_id,
                                     name: c.nickname,
                                     model: c.model,
-                                    capabilities: vec![Capability::OnOff],
+                                    set_capabilities: vec![SetCapability::OnOff],
+                                    get_capabilities: vec![GetCapability::DeviceInfo],
                                 })
                                 .collect()
                         }))
@@ -84,7 +87,8 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
                         name,
                         model,
                         ip,
-                        capabilities: vec![],
+                        set_capabilities: vec![],
+                        get_capabilities: vec![GetCapability::DeviceInfo],
                         children,
                     }),
                     // All other devices have the OnOff capability.
@@ -93,7 +97,8 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
                         name,
                         model,
                         ip,
-                        capabilities: vec![Capability::OnOff],
+                        set_capabilities: vec![SetCapability::OnOff],
+                        get_capabilities: vec![GetCapability::DeviceInfo],
                         children,
                     }),
                 };

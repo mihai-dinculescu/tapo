@@ -70,6 +70,14 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+### Added
+
+- `get_device_state`: added tool for reading a device's current state (e.g. on/off, brightness, color). Supports a `GetCapabilityRequest` selector, starting with `DeviceInfo`.
+
+### Changed
+
+- `Device`, `ChildDevice`: replaced `capabilities` field with separate `set_capabilities` and `get_capabilities` fields.
+
 ## [MCP v0.1.0][tapo-mcp-v0.1.0] - 2026-03-09
 
 ### Added

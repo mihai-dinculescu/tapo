@@ -3,7 +3,7 @@ use tapo::{DiscoveryResult, Plug};
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
-use crate::models::{CheckDeviceParams, SetCapability, SetDeviceStateParams};
+use crate::models::{CheckDeviceParams, SetCapabilityRequest, SetDeviceStateParams};
 use crate::requests;
 use crate::requests::CheckedDevice;
 
@@ -18,7 +18,7 @@ pub async fn set_device_state(
     let checked = requests::check_device(config, check_params).await?;
 
     match &params.capability {
-        SetCapability::OnOff(on) => apply_on_off(&params.id, checked, *on).await?,
+        SetCapabilityRequest::OnOff(on) => apply_on_off(&params.id, checked, *on).await?,
     }
 
     let content = vec![Content::text(format!(
