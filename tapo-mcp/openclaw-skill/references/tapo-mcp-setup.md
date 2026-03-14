@@ -78,6 +78,8 @@ metadata:
   name: tapo-mcp
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: tapo-mcp
