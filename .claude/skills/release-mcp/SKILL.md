@@ -11,7 +11,7 @@ Release a new version of the `tapo-mcp` crate.
 3. **Update changelog.** In `CHANGELOG.md`:
    - Replace the heading `## [MCP Unreleased][Unreleased]` with `## [MCP vX.X.X][tapo-mcp-vX.X.X] - YYYY-MM-DD` (use the current date).
    - Insert a new empty `## [MCP Unreleased][Unreleased]` section immediately above the newly versioned section.
-   - Add a link reference `[tapo-mcp-vX.X.X]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-vX.X.X` to the link definitions at the bottom of the file (after the `[Unreleased]` link).
+   - Add a link reference `[tapo-mcp-vX.X.X]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-vX.X.X` to the link definitions at the bottom of the file (right after the `[Unreleased]` link).
 
 4. **Commit.** Run `/commit` with message `chore(tapo-mcp): release vX.X.X`.
 

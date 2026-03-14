@@ -14,7 +14,7 @@ Release a new version of the `tapo` (Rust) and `tapo-py` (Python) crates. Both l
    - Replace the heading `## [Python Unreleased][Unreleased]` with `## [Python vX.X.X][vX.X.X] - YYYY-MM-DD` (use the current date).
    - Replace the heading `## [Rust Unreleased][Unreleased]` with `## [Rust vX.X.X][vX.X.X] - YYYY-MM-DD` (use the current date).
    - Insert new empty `## [Rust Unreleased][Unreleased]` and `## [Python Unreleased][Unreleased]` sections (in that order) immediately above the newly versioned Rust section.
-   - Add a link reference `[vX.X.X]: https://github.com/mihai-dinculescu/tapo/tree/vX.X.X` to the link definitions at the bottom of the file (after the `[Unreleased]` link).
+   - Add a link reference `[vX.X.X]: https://github.com/mihai-dinculescu/tapo/tree/vX.X.X` to the link definitions at the bottom of the file (right after the `[Unreleased]` link).
 
 4. **Commit.** Run `/commit` with message `chore(tapo): release vX.X.X`.
 
