@@ -82,6 +82,7 @@ file. This change log follows the conventions of
 - `set_device_state`: renamed to `control_device`.
 - `Device`, `ChildDevice`: replaced `capabilities` field with separate `set_capabilities` and `get_capabilities` fields.
 - `SetCapabilityRequest`: changed from externally tagged (e.g. `{"OnOff": true}`) to internally tagged with explicit fields (e.g. `{"type": "OnOff", "value": true}`).
+- `ControlDeviceParams`: changed `capability` field to `capabilities` (array), allowing multiple capabilities in a single call.
 
 ## [MCP v0.1.0][tapo-mcp-v0.1.0] - 2026-03-09
 

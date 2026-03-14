@@ -1,3 +1,5 @@
+use std::fmt;
+
 use rmcp::schemars;
 use rmcp::schemars::JsonSchema;
 use serde::de;
@@ -91,13 +93,32 @@ pub struct CheckDeviceParams {
 pub enum SetCapabilityRequest {
     /// Set the device brightness. Also turns the device on if it's off.
     Brightness {
+        /// Brightness level.
         #[schemars(range(min = 1, max = 100))]
         value: u8,
     },
     /// Set the device color using a preset name. Also turns the device on if it's off.
-    Color { value: Color },
+    Color {
+        /// Preset color name.
+        value: Color,
+    },
     /// Turn the device on or off.
-    OnOff { value: bool },
+    OnOff {
+        /// `true` to turn on, `false` to turn off.
+        value: bool,
+    },
+}
+
+impl fmt::Display for SetCapabilityRequest {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Brightness { value } => write!(f, "Brightness({value})"),
+            Self::Color { value } => write!(f, "Color({value:?})"),
+            Self::OnOff { value } => {
+                write!(f, "{}", if *value { "On" } else { "Off" })
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
@@ -113,9 +134,10 @@ pub struct ControlDeviceParams {
     pub id: String,
     /// Device IP address from `list_devices`.
     pub ip: String,
-    /// The set capability to apply.
+    /// The set capabilities to apply.
     #[serde(deserialize_with = "deserialize_from_stringified_json")]
-    pub capability: SetCapabilityRequest,
+    #[schemars(length(min = 1))]
+    pub capabilities: Vec<SetCapabilityRequest>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]

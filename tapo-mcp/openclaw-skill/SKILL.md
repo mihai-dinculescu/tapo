@@ -80,16 +80,19 @@ Control a device. Automatically runs `check_device` first.
 
 ```bash
 # Turn on
-mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"type": "OnOff", "value": true}'
+mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "OnOff", "value": true}]'
 
 # Turn off
-mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"type": "OnOff", "value": false}'
+mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "OnOff", "value": false}]'
 
 # Set brightness (1-100, lights only)
-mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"type": "Brightness", "value": 50}'
+mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Brightness", "value": 50}]'
 
 # Set color (color lights only)
-mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"type": "Color", "value": "Coral"}'
+mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Color", "value": "Coral"}]'
+
+# Set multiple capabilities at once
+mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Color", "value": "Coral"}, {"type": "Brightness", "value": 50}]'
 ```
 
 ## Usage rules

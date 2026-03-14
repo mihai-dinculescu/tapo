@@ -44,7 +44,7 @@ You should see:
 | `list_devices`     | List all available Tapo devices     | (none)                   |
 | `check_device`     | Verify a device ID matches at an IP | `id`, `ip`               |
 | `get_device_state` | Get a device's current state        | `id`, `ip`, `capability` |
-| `control_device`   | Set a device's state (on/off)       | `id`, `ip`, `capability` |
+| `control_device`   | Control a device                    | `id`, `ip`, `capabilities` |
 
 ## Step 3: Test a tool call
 
@@ -62,7 +62,7 @@ mcporter call tapo.get_device_state \
 mcporter call tapo.control_device \
   id="<DEVICE_ID>" \
   ip="<DEVICE_IP>" \
-  capability='{"type": "OnOff", "value": false}'
+  capabilities='[{"type": "OnOff", "value": false}]'
 ```
 
 ## Managing the config
