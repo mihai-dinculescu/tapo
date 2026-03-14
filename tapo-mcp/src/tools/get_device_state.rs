@@ -1,3 +1,4 @@
+use rmcp::ErrorData as McpError;
 use rmcp::model::{CallToolResult, Content};
 use tapo::{DiscoveryResult, Plug};
 
@@ -10,7 +11,7 @@ use crate::requests::CheckedDevice;
 pub async fn get_device_state(
     config: &AppConfig,
     params: GetDeviceStateParams,
-) -> Result<CallToolResult, TapoMcpError> {
+) -> Result<CallToolResult, McpError> {
     let check_params = CheckDeviceParams {
         id: params.id.clone(),
         ip: params.ip.clone(),
@@ -21,7 +22,7 @@ pub async fn get_device_state(
         GetCapabilityRequest::DeviceInfo => get_device_info(&params.id, checked).await?,
     };
 
-    let content = vec![Content::text(serde_json::to_string_pretty(&value)?)];
+    let content = vec![Content::json(value)?];
     Ok(CallToolResult::success(content))
 }
 

@@ -1,4 +1,5 @@
-use rmcp::model::{CallToolResult, Content};
+use rmcp::ErrorData as McpError;
+use rmcp::model::CallToolResult;
 use tapo::requests::Color;
 use tapo::{DiscoveryResult, Plug};
 
@@ -11,7 +12,7 @@ use crate::requests::CheckedDevice;
 pub async fn control_device(
     config: &AppConfig,
     params: ControlDeviceParams,
-) -> Result<CallToolResult, TapoMcpError> {
+) -> Result<CallToolResult, McpError> {
     let check_params = CheckDeviceParams {
         id: params.id.clone(),
         ip: params.ip.clone(),
@@ -32,17 +33,7 @@ pub async fn control_device(
         }
     }
 
-    let applied: Vec<_> = params
-        .capabilities
-        .iter()
-        .map(ToString::to_string)
-        .collect();
-    let content = vec![Content::text(format!(
-        "Device {} applied: {}.",
-        params.id,
-        applied.join(", "),
-    ))];
-    Ok(CallToolResult::success(content))
+    Ok(CallToolResult::success(vec![]))
 }
 
 async fn apply_brightness(

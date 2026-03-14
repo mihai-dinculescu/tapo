@@ -1,15 +1,14 @@
-use rmcp::model::{CallToolResult, Content};
+use rmcp::ErrorData as McpError;
+use rmcp::model::CallToolResult;
 
 use crate::config::AppConfig;
-use crate::errors::TapoMcpError;
 use crate::models::CheckDeviceParams;
 use crate::requests;
 
 pub async fn check_device(
     config: &AppConfig,
     params: CheckDeviceParams,
-) -> Result<CallToolResult, TapoMcpError> {
+) -> Result<CallToolResult, McpError> {
     requests::check_device(config, params).await?;
-    let content = vec![Content::text("Check OK")];
-    Ok(CallToolResult::success(content))
+    Ok(CallToolResult::success(vec![]))
 }

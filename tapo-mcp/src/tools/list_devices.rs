@@ -1,12 +1,11 @@
+use rmcp::ErrorData as McpError;
 use rmcp::model::{CallToolResult, Content};
 
 use crate::config::AppConfig;
-use crate::errors::TapoMcpError;
 use crate::requests::get_devices;
 
-pub async fn list_devices(config: &AppConfig) -> Result<CallToolResult, TapoMcpError> {
+pub async fn list_devices(config: &AppConfig) -> Result<CallToolResult, McpError> {
     let devices = get_devices(config).await?;
-    let text = serde_json::to_string_pretty(&devices)?;
-    let content = vec![Content::text(text)];
+    let content = vec![Content::json(devices)?];
     Ok(CallToolResult::success(content))
 }

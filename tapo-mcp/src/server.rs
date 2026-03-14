@@ -3,8 +3,8 @@ use std::sync::Arc;
 use anyhow::Result;
 use rmcp::handler::server::{tool::ToolRouter, wrapper::Parameters};
 use rmcp::model::{
-    CallToolResult, ListResourcesResult, PaginatedRequestParams,
-    ReadResourceRequestParams, ReadResourceResult, ServerCapabilities, ServerInfo,
+    CallToolResult, ListResourcesResult, PaginatedRequestParams, ReadResourceRequestParams,
+    ReadResourceResult, ServerCapabilities, ServerInfo,
 };
 use rmcp::service::{RequestContext, RoleServer};
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
@@ -44,7 +44,7 @@ impl TapoMcp {
         &self,
         Parameters(params): Parameters<CheckDeviceParams>,
     ) -> Result<CallToolResult, McpError> {
-        Ok(tools::check_device(&self.config, params).await?)
+        tools::check_device(&self.config, params).await
     }
 
     #[tool(
@@ -60,7 +60,7 @@ impl TapoMcp {
         &self,
         Parameters(params): Parameters<GetDeviceStateParams>,
     ) -> Result<CallToolResult, McpError> {
-        Ok(tools::get_device_state(&self.config, params).await?)
+        tools::get_device_state(&self.config, params).await
     }
 
     #[tool(
@@ -76,7 +76,7 @@ impl TapoMcp {
         &self,
         Parameters(params): Parameters<ControlDeviceParams>,
     ) -> Result<CallToolResult, McpError> {
-        Ok(tools::control_device(&self.config, params).await?)
+        tools::control_device(&self.config, params).await
     }
 
     #[tool(
@@ -89,7 +89,7 @@ impl TapoMcp {
         )
     )]
     async fn list_devices(&self) -> Result<CallToolResult, McpError> {
-        Ok(tools::list_devices(&self.config).await?)
+        tools::list_devices(&self.config).await
     }
 }
 

@@ -1,5 +1,3 @@
-use std::fmt;
-
 use rmcp::schemars;
 use rmcp::schemars::JsonSchema;
 use serde::de;
@@ -107,18 +105,6 @@ pub enum SetCapabilityRequest {
         /// `true` to turn on, `false` to turn off.
         value: bool,
     },
-}
-
-impl fmt::Display for SetCapabilityRequest {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Brightness { value } => write!(f, "Brightness({value})"),
-            Self::Color { value } => write!(f, "Color({value:?})"),
-            Self::OnOff { value } => {
-                write!(f, "{}", if *value { "On" } else { "Off" })
-            }
-        }
-    }
 }
 
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
