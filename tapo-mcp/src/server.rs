@@ -3,8 +3,8 @@ use std::sync::Arc;
 use anyhow::Result;
 use rmcp::handler::server::{tool::ToolRouter, wrapper::Parameters};
 use rmcp::model::{
-    CallToolResult, ListResourcesResult, PaginatedRequestParams, ReadResourceRequestParams,
-    ReadResourceResult, ServerCapabilities, ServerInfo,
+    CallToolResult, ListResourcesResult, PaginatedRequestParams,
+    ReadResourceRequestParams, ReadResourceResult, ServerCapabilities, ServerInfo,
 };
 use rmcp::service::{RequestContext, RoleServer};
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
@@ -96,13 +96,17 @@ impl TapoMcp {
 #[tool_handler]
 impl ServerHandler for TapoMcp {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo::new(
+        let mut info = ServerInfo::new(
             ServerCapabilities::builder()
                 .enable_tools()
                 .enable_resources()
                 .build(),
         )
-        .with_instructions("Tapo MCP server with device control tools and device list resources.")
+        .with_instructions("Control and monitor Tapo smart home devices (plugs, lights, power strips). Use list_devices or the tapo://devices resource to discover available devices before interacting with them.");
+        info.server_info.name = env!("CARGO_PKG_NAME").to_owned();
+        info.server_info.version = env!("CARGO_PKG_VERSION").to_owned();
+        info.server_info.title = Some("Tapo MCP Server".to_owned());
+        info
     }
 
     async fn list_resources(
