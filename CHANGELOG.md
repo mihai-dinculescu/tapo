@@ -71,6 +71,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.2.0][tapo-mcp-v0.2.0] - 2026-03-14
+
 ### Added
 
 - `get_device_state`: added tool for reading a device's current state (e.g. on/off, brightness, color). Supports a `GetCapabilityRequest` selector, starting with `DeviceInfo`.
@@ -894,6 +896,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.2.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.2.0
 [v0.8.12]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.12
 [tapo-mcp-v0.1.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.1.0
 [v0.8.11]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.11
