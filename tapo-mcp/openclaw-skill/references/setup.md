@@ -13,7 +13,7 @@ For deploying the Tapo MCP server itself (Docker, Kubernetes, configuration), se
 ## Step 1: Add the Tapo MCP server
 
 ```bash
-mcporter config add tapo http://<TAPO_MCP_IP> \
+npx mcporter config add tapo http://<TAPO_MCP_IP> \
   --transport http \
   --header "Authorization=Bearer <YOUR_TOKEN>" \
   --scope home
@@ -34,7 +34,7 @@ chmod 600 ~/.mcporter/mcporter.json
 ## Step 2: Verify the connection
 
 ```bash
-mcporter list tapo --schema
+npx mcporter list tapo --schema
 ```
 
 You should see:
@@ -50,16 +50,16 @@ You should see:
 
 ```bash
 # List all devices on the network
-mcporter call tapo.list_devices
+npx mcporter call tapo.list_devices
 
 # Get a device's current state
-mcporter call tapo.get_device_state \
+npx mcporter call tapo.get_device_state \
   id="<DEVICE_ID>" \
   ip="<DEVICE_IP>" \
   capability='{"type": "DeviceInfo"}'
 
 # Turn a device off
-mcporter call tapo.control_device \
+npx mcporter call tapo.control_device \
   id="<DEVICE_ID>" \
   ip="<DEVICE_IP>" \
   capabilities='[{"type": "OnOff", "value": false}]'
@@ -69,21 +69,21 @@ mcporter call tapo.control_device \
 
 ```bash
 # List all configured servers
-mcporter config list
+npx mcporter config list
 
 # Inspect the tapo server config
-mcporter config get tapo
+npx mcporter config get tapo
 
 # Remove the server
-mcporter config remove tapo
+npx mcporter config remove tapo
 
 # Validate config
-mcporter config doctor
+npx mcporter config doctor
 ```
 
 ## Troubleshooting
 
 - **Connection refused**: Verify the Tapo MCP server is running and reachable (`curl http://<IP>/`).
 - **401 Unauthorized**: Check the Bearer token is correct.
-- **Tools not showing**: Run `mcporter list tapo --schema` to verify the server responds. Check `mcporter config doctor` for config issues.
+- **Tools not showing**: Run `npx mcporter list tapo --schema` to verify the server responds. Check `npx mcporter config doctor` for config issues.
 - **Agent can't find tools**: Ensure the mcporter skill is enabled — it's bundled with OpenClaw by default.

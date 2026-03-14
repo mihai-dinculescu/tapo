@@ -6,24 +6,14 @@ metadata:
     "openclaw":
       {
         "emoji": "📦",
-        "requires": { "bins": ["mcporter"] },
-        "install":
-          [
-            {
-              "id": "node",
-              "kind": "node",
-              "package": "mcporter",
-              "bins": ["mcporter"],
-              "label": "Install mcporter (node)",
-            },
-          ],
+        "requires": { "bins": ["npx"] },
       },
   }
 ---
 
 # Tapo
 
-Control Tapo devices using `mcporter call tapo.<tool>`.
+Control Tapo devices using `npx mcporter call tapo.<tool>`.
 
 ## Setup
 
@@ -32,7 +22,7 @@ You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mc
 1. **Add the Tapo server**:
 
    ```bash
-   mcporter config add tapo http://<TAPO_MCP_IP> \
+   npx mcporter config add tapo http://<TAPO_MCP_IP> \
      --transport http \
      --header "Authorization=Bearer <YOUR_TOKEN>" \
      --scope home
@@ -40,7 +30,7 @@ You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mc
 
 2. **Verify**:
    ```bash
-   mcporter list tapo --schema
+   npx mcporter list tapo --schema
    ```
    You should see `list_devices`, `check_device`, `get_device_state`, and `control_device`.
 
@@ -53,7 +43,7 @@ See [references/setup.md](references/setup.md) for the full walkthrough, config 
 List all Tapo devices on the network.
 
 ```bash
-mcporter call tapo.list_devices
+npx mcporter call tapo.list_devices
 ```
 
 Returns each device's `id`, `name`, `model`, `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips).
@@ -63,7 +53,7 @@ Returns each device's `id`, `name`, `model`, `ip`, `set_capabilities`, `get_capa
 Verify a device ID matches at a given IP.
 
 ```bash
-mcporter call tapo.check_device id="<DEVICE_ID>" ip="<IP>"
+npx mcporter call tapo.check_device id="<DEVICE_ID>" ip="<IP>"
 ```
 
 ### get_device_state
@@ -71,7 +61,7 @@ mcporter call tapo.check_device id="<DEVICE_ID>" ip="<IP>"
 Get a device's current state. Automatically runs `check_device` first.
 
 ```bash
-mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "DeviceInfo"}'
+npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "DeviceInfo"}'
 ```
 
 ### control_device
@@ -80,19 +70,19 @@ Control a device. Automatically runs `check_device` first.
 
 ```bash
 # Turn on
-mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "OnOff", "value": true}]'
+npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "OnOff", "value": true}]'
 
 # Turn off
-mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "OnOff", "value": false}]'
+npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "OnOff", "value": false}]'
 
 # Set brightness (1-100, lights only)
-mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Brightness", "value": 50}]'
+npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Brightness", "value": 50}]'
 
 # Set color (color lights only)
-mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Color", "value": "Coral"}]'
+npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Color", "value": "Coral"}]'
 
 # Set multiple capabilities at once
-mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Color", "value": "Coral"}, {"type": "Brightness", "value": 50}]'
+npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Color", "value": "Coral"}, {"type": "Brightness", "value": 50}]'
 ```
 
 ## Usage rules
