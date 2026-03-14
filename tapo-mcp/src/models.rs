@@ -5,64 +5,88 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 pub struct DevicesList {
+    /// Supported devices found on the network.
     pub devices: Vec<Device>,
+    /// Devices that are currently unsupported.
     pub unsupported: Vec<UnsupportedDevice>,
+    /// Errors encountered during discovery.
     pub errors: Vec<DiscoveryError>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub enum SetCapability {
+    /// Set the device brightness (1-100).
     Brightness,
+    /// Turn the device on or off.
     OnOff,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub enum GetCapability {
+    /// Read the device's current state.
     DeviceInfo,
 }
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 pub struct Device {
+    /// Unique device identifier.
     pub id: String,
+    /// User-assigned device name.
     pub name: String,
+    /// Device model (e.g. "L530", "P110").
     pub model: String,
+    /// Device IP address on the local network.
     pub ip: String,
+    /// Capabilities that can be set on this device.
     pub set_capabilities: Vec<SetCapability>,
+    /// Capabilities that can be read from this device.
     pub get_capabilities: Vec<GetCapability>,
+    /// Child devices (e.g. individual plugs on a power strip).
     pub children: Vec<ChildDevice>,
 }
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 pub struct ChildDevice {
+    /// Unique child device identifier.
     pub id: String,
+    /// User-assigned child device name.
     pub name: String,
+    /// Child device model.
     pub model: String,
+    /// Capabilities that can be set on this child device.
     pub set_capabilities: Vec<SetCapability>,
+    /// Capabilities that can be read from this child device.
     pub get_capabilities: Vec<GetCapability>,
 }
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 pub struct UnsupportedDevice {
+    /// Device IP address on the local network.
     pub ip: String,
+    /// Device model string.
     pub model: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 pub struct DiscoveryError {
+    /// IP address of the device that encountered the error.
     pub ip: String,
+    /// Error description.
     pub message: String,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct CheckDeviceParams {
+    /// Device ID from `list_devices`.
     pub id: String,
+    /// Device IP address from `list_devices`.
     pub ip: String,
 }
 
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 #[serde(tag = "type")]
 pub enum SetCapabilityRequest {
-    /// Set the device brightness (turns the device on).
+    /// Set the device brightness. Also turns the device on if it's off.
     Brightness {
         #[schemars(range(min = 1, max = 100))]
         value: u8,
@@ -72,22 +96,30 @@ pub enum SetCapabilityRequest {
 }
 
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[serde(tag = "type")]
 pub enum GetCapabilityRequest {
+    /// Read the device's current state (on/off, brightness, etc.).
     DeviceInfo,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ControlDeviceParams {
+    /// Device ID from `list_devices`.
     pub id: String,
+    /// Device IP address from `list_devices`.
     pub ip: String,
+    /// The set capability to apply.
     #[serde(deserialize_with = "deserialize_from_stringified_json")]
     pub capability: SetCapabilityRequest,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct GetDeviceStateParams {
+    /// Device ID from `list_devices`.
     pub id: String,
+    /// Device IP address from `list_devices`.
     pub ip: String,
+    /// The get capability to read.
     #[serde(deserialize_with = "deserialize_from_stringified_json")]
     pub capability: GetCapabilityRequest,
 }

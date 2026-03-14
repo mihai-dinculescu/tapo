@@ -56,7 +56,7 @@ mcporter call tapo.list_devices
 mcporter call tapo.get_device_state \
   id="<DEVICE_ID>" \
   ip="<DEVICE_IP>" \
-  capability='"DeviceInfo"'
+  capability='{"type": "DeviceInfo"}'
 
 # Turn a device off
 mcporter call tapo.control_device \

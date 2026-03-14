@@ -71,7 +71,7 @@ mcporter call tapo.check_device id="<DEVICE_ID>" ip="<IP>"
 Get a device's current state. Automatically runs `check_device` first.
 
 ```bash
-mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='"DeviceInfo"'
+mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "DeviceInfo"}'
 ```
 
 ### control_device

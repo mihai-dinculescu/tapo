@@ -22,7 +22,7 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 | ------------------ | ---------------------------------------------------------------------------------------------- |
 | `list_devices`     | List available Tapo devices on the network (includes set and get capabilities).                |
 | `check_device`     | Verify a device ID matches at a given IP.                                                      |
-| `get_device_state` | Get a device's current state (e.g. `DeviceInfo`). Runs `check_device` first.                   |
+| `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Runs `check_device` first.       |
 | `control_device`   | Control a device by applying a set capability (e.g. `{"type": "OnOff", "value": true}`). Runs `check_device` first. |
 
 ## Resources

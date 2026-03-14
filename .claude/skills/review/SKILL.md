@@ -33,6 +33,7 @@ Run the following checks if there are changes in the `tapo/` or `tapo-py/` direc
 
 Run the following checks if there are changes in the `tapo-mcp/` directory. Fix all issues found.
 
+- Verify that **all** `#[derive(JsonSchema)]` types have `schemars` annotations — including tool input params, response types, enums, and their fields/variants. Check for descriptions and range constraints where applicable.
 - Verify that `README.md` reflects any MCP API changes
 - Verify that the OpenClaw skill (`openclaw-skill/`) reflects any MCP API changes
 
