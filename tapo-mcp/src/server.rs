@@ -12,7 +12,7 @@ use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, Stream
 use rmcp::{ErrorData as McpError, ServerHandler, tool, tool_handler, tool_router};
 
 use crate::config::AppConfig;
-use crate::models::{CheckDeviceParams, GetDeviceStateParams, SetDeviceStateParams};
+use crate::models::{CheckDeviceParams, ControlDeviceParams, GetDeviceStateParams};
 use crate::resources;
 use crate::tools;
 
@@ -64,7 +64,7 @@ impl TapoMcp {
     }
 
     #[tool(
-        description = "Set a Tapo device's state. Runs check_device first to verify the device ID matches at the given IP.",
+        description = "Control a Tapo device by applying a set capability. Runs check_device first to verify the device ID matches at the given IP.",
         annotations(
             read_only_hint = false,
             destructive_hint = true,
@@ -72,11 +72,11 @@ impl TapoMcp {
             open_world_hint = true
         )
     )]
-    async fn set_device_state(
+    async fn control_device(
         &self,
-        Parameters(params): Parameters<SetDeviceStateParams>,
+        Parameters(params): Parameters<ControlDeviceParams>,
     ) -> Result<CallToolResult, McpError> {
-        Ok(tools::set_device_state(&self.config, params).await?)
+        Ok(tools::control_device(&self.config, params).await?)
     }
 
     #[tool(

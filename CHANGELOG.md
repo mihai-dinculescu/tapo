@@ -76,6 +76,7 @@ file. This change log follows the conventions of
 
 ### Changed
 
+- `set_device_state`: renamed to `control_device`.
 - `Device`, `ChildDevice`: replaced `capabilities` field with separate `set_capabilities` and `get_capabilities` fields.
 
 ## [MCP v0.1.0][tapo-mcp-v0.1.0] - 2026-03-09

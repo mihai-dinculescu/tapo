@@ -3,13 +3,13 @@ use tapo::{DiscoveryResult, Plug};
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
-use crate::models::{CheckDeviceParams, SetCapabilityRequest, SetDeviceStateParams};
+use crate::models::{CheckDeviceParams, ControlDeviceParams, SetCapabilityRequest};
 use crate::requests;
 use crate::requests::CheckedDevice;
 
-pub async fn set_device_state(
+pub async fn control_device(
     config: &AppConfig,
-    params: SetDeviceStateParams,
+    params: ControlDeviceParams,
 ) -> Result<CallToolResult, TapoMcpError> {
     let check_params = CheckDeviceParams {
         id: params.id.clone(),

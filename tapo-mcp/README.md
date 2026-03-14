@@ -16,12 +16,12 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 
 ## Tools
 
-| Tool               | Description                                                                                  |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| `list_devices`     | List available Tapo devices on the network (includes capabilities).                          |
-| `check_device`     | Verify a device ID matches at a given IP.                                                    |
-| `get_device_state` | Get a device's current state (e.g. `DeviceInfo`). Runs `check_device` first.                 |
-| `set_device_state` | Apply a set capability to a device (e.g. `OnOff(true)`). Runs `check_device` first.          |
+| Tool               | Description                                                                                    |
+| ------------------ | ---------------------------------------------------------------------------------------------- |
+| `list_devices`     | List available Tapo devices on the network (includes set and get capabilities).                |
+| `check_device`     | Verify a device ID matches at a given IP.                                                      |
+| `get_device_state` | Get a device's current state (e.g. `DeviceInfo`). Runs `check_device` first.                   |
+| `control_device`   | Control a device by applying a set capability (e.g. `OnOff(true)`). Runs `check_device` first. |
 
 ## Resources
 
@@ -41,8 +41,8 @@ Devices and child devices expose separate lists of set and get capabilities they
 
 ### Get Capabilities
 
-| Capability   | Description                   |
-| ------------ | ----------------------------- |
+| Capability   | Description                     |
+| ------------ | ------------------------------- |
 | `DeviceInfo` | Read the device's current state |
 
 ## Configuration

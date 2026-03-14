@@ -30,6 +30,7 @@ Control Tapo devices using `mcporter call tapo.<tool>`.
 You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp) server running on your network (HTTP transport). Bearer token auth is recommended.
 
 1. **Add the Tapo server**:
+
    ```bash
    mcporter config add tapo http://<TAPO_MCP_IP> \
      --transport http \
@@ -41,7 +42,7 @@ You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mc
    ```bash
    mcporter list tapo --schema
    ```
-   You should see `list_devices`, `check_device`, `get_device_state`, and `set_device_state`.
+   You should see `list_devices`, `check_device`, `get_device_state`, and `control_device`.
 
 See [references/setup.md](references/setup.md) for the full walkthrough, config management, and troubleshooting.
 
@@ -73,16 +74,16 @@ Get a device's current state. Automatically runs `check_device` first.
 mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='"DeviceInfo"'
 ```
 
-### set_device_state
+### control_device
 
 Turn a device on or off. Automatically runs `check_device` first.
 
 ```bash
 # Turn on
-mcporter call tapo.set_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"OnOff": true}'
+mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"OnOff": true}'
 
 # Turn off
-mcporter call tapo.set_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"OnOff": false}'
+mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capability='{"OnOff": false}'
 ```
 
 ## Usage rules

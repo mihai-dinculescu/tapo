@@ -68,7 +68,7 @@ pub enum GetCapabilityRequest {
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
-pub struct SetDeviceStateParams {
+pub struct ControlDeviceParams {
     pub id: String,
     pub ip: String,
     pub capability: SetCapabilityRequest,
