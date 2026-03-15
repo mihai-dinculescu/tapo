@@ -11,7 +11,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Cross-Language Bindings
 
-When modifying Rust code that has Python bindings (tapo-py), always check if corresponding Python type stubs (.pyi files) need updating.
+When modifying Rust code that has Python bindings (tapo-py), always check if corresponding Python type stubs (.pyi files) need updating. The `debug` feature in `tapo` is **user-facing public API** — `tapo-py` enables it (`features = ["python", "debug"]`), so all `debug`-gated types are also exposed to Python. Treat changes behind `cfg(feature = "debug")` as public API changes requiring changelog entries for both Rust and Python.
+
+### Exposing Rust Types to Python
+- **Simple value/result types**: Annotate directly in the `tapo` crate with `#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, ...))]` and `#[cfg(feature = "python")] crate::impl_to_dict!(TypeName);`. Do NOT create a redundant wrapper struct in `tapo-py`.
+- **`serde_json::Value` → Python**: Use `crate::python::serde_object_to_py_dict`. Do NOT write custom conversion functions — pyo3's `serde` feature does not auto-implement `IntoPyObject` for `Value`.
 
 ### Python Stub Conventions
 - `Ext` classes in `.pyi` stubs (e.g. `ToDictExt`, `DebugExt`, `OnOffExt`) must use `typing.Protocol` since they describe capabilities of PyO3 classes without real Python-level inheritance.
