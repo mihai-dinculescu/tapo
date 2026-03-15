@@ -29,7 +29,7 @@ use crate::responses::{
 use super::discovery::DeviceDiscovery;
 #[cfg(feature = "debug")]
 use super::discovery::DeviceDiscoveryRaw;
-use super::protocol::{TapoProtocol, TapoProtocolExt};
+use super::protocol::TapoProtocol;
 use super::{
     ColorLightHandler, GenericDeviceHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler,
     PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,

@@ -1,11 +1,7 @@
 use std::fmt;
 
-use async_trait::async_trait;
 use log::{debug, error, trace};
-use rand::{
-    Rng as _, SeedableRng,
-    rngs::{StdRng, SysRng},
-};
+use rand::RngExt as _;
 use reqwest::header::COOKIE;
 use reqwest::{Client, StatusCode};
 use serde::de::DeserializeOwned;
@@ -15,22 +11,30 @@ use crate::requests::TapoRequest;
 use crate::responses::{TapoResponse, TapoResponseExt, validate_response};
 use crate::{Error, TapoResponseError};
 
-use super::TapoProtocolExt;
-use super::discovery_protocol::DiscoveryProtocol;
 use super::klap_cipher::KlapCipher;
 
 #[derive(Debug)]
-pub(crate) struct KlapProtocol {
-    client: Client,
+struct KlapSession {
+    url: String,
     cookie: String,
-    rng: StdRng,
-    url: Option<String>,
-    cipher: Option<KlapCipher>,
+    cipher: KlapCipher,
 }
 
-#[async_trait]
-impl TapoProtocolExt for KlapProtocol {
-    async fn login(
+#[derive(Debug)]
+pub(super) struct KlapProtocol {
+    client: Client,
+    session: Option<KlapSession>,
+}
+
+impl KlapProtocol {
+    pub fn new(client: Client) -> Self {
+        Self {
+            client,
+            session: None,
+        }
+    }
+
+    pub async fn login(
         &mut self,
         url: String,
         username: String,
@@ -39,12 +43,16 @@ impl TapoProtocolExt for KlapProtocol {
         self.handshake(url, username, password).await
     }
 
-    async fn refresh_session(&mut self, username: String, password: String) -> Result<(), Error> {
-        let url = self.url.as_ref().expect("This should never happen").clone();
+    pub async fn refresh_session(
+        &mut self,
+        username: String,
+        password: String,
+    ) -> Result<(), Error> {
+        let url = self.session_ref()?.url.clone();
         self.handshake(url, username, password).await
     }
 
-    async fn execute_request<R>(
+    pub async fn execute_request<R>(
         &self,
         request: TapoRequest,
         _with_token: bool,
@@ -52,18 +60,17 @@ impl TapoProtocolExt for KlapProtocol {
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
-        let url = self.url.as_ref().expect("This should never happen");
-        let cipher = self.get_cipher_ref();
+        let session = self.session_ref()?;
 
         let request_string = serde_json::to_string(&request)?;
         debug!("Request: {request_string}");
 
-        let (payload, seq) = cipher.encrypt(request_string)?;
+        let (payload, seq) = session.cipher.encrypt(request_string)?;
 
         let response = self
             .client
-            .post(format!("{url}/request?seq={seq}"))
-            .header(COOKIE, self.cookie.clone())
+            .post(format!("{}/request?seq={seq}", session.url))
+            .header(COOKIE, session.cookie.clone())
             .body(payload)
             .send()
             .await?;
@@ -83,7 +90,7 @@ impl TapoProtocolExt for KlapProtocol {
 
         let response_body = response.bytes().await.map_err(anyhow::Error::from)?;
 
-        let response_decrypted = cipher.decrypt(seq, response_body.to_vec())?;
+        let response_decrypted = session.cipher.decrypt(seq, response_body.to_vec())?;
         trace!("Device responded with (raw): {response_decrypted}");
 
         let response: TapoResponse<R> = serde_json::from_str(&response_decrypted)?;
@@ -95,20 +102,10 @@ impl TapoProtocolExt for KlapProtocol {
         Ok(result)
     }
 
-    fn clone_as_discovery(&self) -> DiscoveryProtocol {
-        DiscoveryProtocol::new(self.client.clone())
-    }
-}
-
-impl KlapProtocol {
-    pub fn new(client: Client) -> Self {
-        Self {
-            client,
-            cookie: String::new(),
-            rng: StdRng::try_from_rng(&mut SysRng).expect("Failed to initialize RNG"),
-            url: None,
-            cipher: None,
-        }
+    fn session_ref(&self) -> Result<&KlapSession, Error> {
+        self.session
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("KLAP session not initialized (login first)").into())
     }
 
     async fn handshake(
@@ -126,26 +123,30 @@ impl KlapProtocol {
         )
         .to_vec();
 
-        let local_seed = self.get_local_seed().to_vec();
-        let remote_seed = self.handshake1(&url, &local_seed, &auth_hash).await?;
+        let local_seed: [u8; 16] = rand::rng().random();
 
-        self.handshake2(&url, &local_seed, &remote_seed, &auth_hash)
+        let (remote_seed, cookie) = self.handshake1(&url, &local_seed, &auth_hash).await?;
+
+        self.handshake2(&url, &cookie, &local_seed, &remote_seed, &auth_hash)
             .await?;
 
-        let cipher = KlapCipher::new(local_seed, remote_seed, auth_hash)?;
+        let cipher = KlapCipher::new(local_seed.to_vec(), remote_seed, auth_hash)?;
 
-        self.url.replace(url);
-        self.cipher.replace(cipher);
+        self.session = Some(KlapSession {
+            url,
+            cookie,
+            cipher,
+        });
 
         Ok(())
     }
 
     async fn handshake1(
-        &mut self,
+        &self,
         url: &str,
         local_seed: &[u8],
         auth_hash: &[u8],
-    ) -> Result<Vec<u8>, Error> {
+    ) -> Result<(Vec<u8>, String), Error> {
         debug!("Performing handshake1...");
         let url = format!("{url}/handshake1");
 
@@ -169,7 +170,7 @@ impl KlapProtocol {
             return Err(Error::Tapo(TapoResponseError::InvalidResponse));
         }
 
-        self.cookie = TapoProtocol::get_cookie(response.cookies())?;
+        let cookie = TapoProtocol::get_cookie(response.cookies())?;
 
         let response_body = response.bytes().await.map_err(anyhow::Error::from)?;
 
@@ -186,12 +187,13 @@ impl KlapProtocol {
 
         debug!("Handshake1 OK");
 
-        Ok(remote_seed.to_vec())
+        Ok((remote_seed.to_vec(), cookie))
     }
 
     async fn handshake2(
         &self,
         url: &str,
+        cookie: &str,
         local_seed: &[u8],
         remote_seed: &[u8],
         auth_hash: &[u8],
@@ -204,7 +206,7 @@ impl KlapProtocol {
         let response = self
             .client
             .post(&url)
-            .header(COOKIE, self.cookie.clone())
+            .header(COOKIE, cookie)
             .body(payload.to_vec())
             .send()
             .await?;
@@ -217,15 +219,5 @@ impl KlapProtocol {
         debug!("Handshake2 OK");
 
         Ok(())
-    }
-
-    fn get_local_seed(&mut self) -> [u8; 16] {
-        let mut buffer = [0u8; 16];
-        self.rng.fill_bytes(&mut buffer);
-        buffer
-    }
-
-    fn get_cipher_ref(&self) -> &KlapCipher {
-        self.cipher.as_ref().expect("This should never happen")
     }
 }

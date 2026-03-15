@@ -1,13 +1,7 @@
 use std::fmt;
 
-use anyhow::Context as _;
-use async_trait::async_trait;
 use base64::{Engine as _, engine::general_purpose};
 use log::{debug, trace};
-use rand::{
-    SeedableRng,
-    rngs::{StdRng, SysRng},
-};
 use reqwest::Client;
 use reqwest::header::COOKIE;
 use serde::de::DeserializeOwned;
@@ -22,12 +16,10 @@ use crate::responses::{
 
 use crate::{Error, TapoResponseError};
 
-use super::discovery_protocol::DiscoveryProtocol;
 use super::passthrough_cipher::{PassthroughCipher, PassthroughKeyPair};
-use super::tapo_protocol::TapoProtocolExt;
 
 #[derive(Debug)]
-pub(crate) struct PassthroughProtocol {
+pub(super) struct PassthroughProtocol {
     client: Client,
     key_pair: PassthroughKeyPair,
     session: Option<Session>,
@@ -35,15 +27,22 @@ pub(crate) struct PassthroughProtocol {
 
 #[derive(Debug)]
 struct Session {
-    pub url: String,
-    pub cookie: String,
-    pub cipher: PassthroughCipher,
-    pub token: Option<String>,
+    url: String,
+    cookie: String,
+    cipher: PassthroughCipher,
+    token: Option<String>,
 }
 
-#[async_trait]
-impl TapoProtocolExt for PassthroughProtocol {
-    async fn login(
+impl PassthroughProtocol {
+    pub fn new(client: Client) -> Result<Self, Error> {
+        Ok(Self {
+            client,
+            key_pair: PassthroughKeyPair::new(&mut rand::rng())?,
+            session: None,
+        })
+    }
+
+    pub async fn login(
         &mut self,
         url: String,
         username: String,
@@ -53,12 +52,16 @@ impl TapoProtocolExt for PassthroughProtocol {
         self.login_request(username, password).await
     }
 
-    async fn refresh_session(&mut self, username: String, password: String) -> Result<(), Error> {
-        let url = self.get_session_ref().url.clone();
+    pub async fn refresh_session(
+        &mut self,
+        username: String,
+        password: String,
+    ) -> Result<(), Error> {
+        let url = self.session_ref()?.url.clone();
         self.login(url, username, password).await
     }
 
-    async fn execute_request<R>(
+    pub async fn execute_request<R>(
         &self,
         request: TapoRequest,
         with_token: bool,
@@ -66,7 +69,7 @@ impl TapoProtocolExt for PassthroughProtocol {
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
-        let session = self.get_session_ref();
+        let session = self.session_ref()?;
         let url = if with_token {
             format!(
                 "{}?token={}",
@@ -126,18 +129,15 @@ impl TapoProtocolExt for PassthroughProtocol {
         Ok(result)
     }
 
-    fn clone_as_discovery(&self) -> DiscoveryProtocol {
-        DiscoveryProtocol::new(self.client.clone())
+    fn session_ref(&self) -> Result<&Session, Error> {
+        self.session.as_ref().ok_or_else(|| {
+            anyhow::anyhow!("Passthrough session not initialized (login first)").into()
+        })
     }
-}
 
-impl PassthroughProtocol {
-    pub fn new(client: Client) -> Result<Self, Error> {
-        let mut rng = StdRng::try_from_rng(&mut SysRng).context("Failed to initialize RNG")?;
-        Ok(Self {
-            client,
-            key_pair: PassthroughKeyPair::new(&mut rng)?,
-            session: None,
+    fn session_mut(&mut self) -> Result<&mut Session, Error> {
+        self.session.as_mut().ok_or_else(|| {
+            anyhow::anyhow!("Passthrough session not initialized (login first)").into()
         })
     }
 
@@ -191,17 +191,9 @@ impl PassthroughProtocol {
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
-        let session = self.get_session_mut();
+        let session = self.session_mut()?;
         session.token.replace(result.token);
 
         Ok(())
-    }
-
-    fn get_session_ref(&self) -> &Session {
-        self.session.as_ref().expect("This should never happen")
-    }
-
-    fn get_session_mut(&mut self) -> &mut Session {
-        self.session.as_mut().expect("This should never happen")
     }
 }
