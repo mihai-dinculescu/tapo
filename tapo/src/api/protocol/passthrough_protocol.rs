@@ -50,9 +50,7 @@ impl TapoProtocolExt for PassthroughProtocol {
         password: String,
     ) -> Result<(), Error> {
         self.handshake(url).await?;
-        self.login_request(username, password).await?;
-
-        Ok(())
+        self.login_request(username, password).await
     }
 
     async fn refresh_session(&mut self, username: String, password: String) -> Result<(), Error> {

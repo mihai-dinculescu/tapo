@@ -31,8 +31,7 @@ impl KlapCipher {
     }
 
     pub fn encrypt(&self, data: String) -> anyhow::Result<(Vec<u8>, i32)> {
-        self.seq.fetch_add(1, Ordering::Relaxed);
-        let seq = self.seq.load(Ordering::Relaxed);
+        let seq = self.seq.fetch_add(1, Ordering::Relaxed) + 1;
         let encryptor = Encryptor::<Aes128>::new_from_slices(&self.key, &self.iv_seq(seq))?;
 
         let cipher_bytes =

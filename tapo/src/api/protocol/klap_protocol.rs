@@ -36,14 +36,12 @@ impl TapoProtocolExt for KlapProtocol {
         username: String,
         password: String,
     ) -> Result<(), Error> {
-        self.handshake(url, username, password).await?;
-        Ok(())
+        self.handshake(url, username, password).await
     }
 
     async fn refresh_session(&mut self, username: String, password: String) -> Result<(), Error> {
         let url = self.url.as_ref().expect("This should never happen").clone();
-        self.handshake(url, username, password).await?;
-        Ok(())
+        self.handshake(url, username, password).await
     }
 
     async fn execute_request<R>(
