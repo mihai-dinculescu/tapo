@@ -27,6 +27,8 @@ use crate::responses::{
 };
 
 use super::discovery::DeviceDiscovery;
+#[cfg(feature = "debug")]
+use super::discovery::DeviceDiscoveryRaw;
 use super::protocol::{TapoProtocol, TapoProtocolExt};
 use super::{
     ColorLightHandler, GenericDeviceHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler,
@@ -104,7 +106,10 @@ impl ApiClient {
         self.timeout = Some(timeout);
         self
     }
+}
 
+/// Device discovery.
+impl ApiClient {
     /// Discovers one or more devices located at a specified unicast or broadcast IP address.
     ///
     /// # Arguments
@@ -126,6 +131,38 @@ impl ApiClient {
         }
 
         Ok(DeviceDiscovery::new(self, target, Duration::from_secs(timeout_s)).await?)
+    }
+}
+
+/// Debug API.
+#[cfg(feature = "debug")]
+impl ApiClient {
+    /// Discovers one or more devices located at a specified unicast or broadcast IP address,
+    /// returning the IP address of the devices found and their discovery JSON response.
+    ///
+    /// # Arguments
+    /// * `target` - The IP address at which the discovery will take place.
+    ///   This address can be either a unicast (e.g. `192.168.1.10`) or a
+    ///   broadcast address (e.g. `192.168.1.255`, `255.255.255.255`, etc.).
+    /// * `timeout_s` - The maximum time to wait for a response from the device(s) in seconds.
+    ///   Must be between `1` and `60`.
+    pub async fn discover_devices_raw(
+        target: impl Into<String>,
+        timeout_s: u64,
+    ) -> Result<DeviceDiscoveryRaw, Error> {
+        if !(1..=60).contains(&timeout_s) {
+            return Err(Error::Validation {
+                field: "timeout_s".to_string(),
+                message: "Must be between 1 and 60 seconds".to_string(),
+            });
+        }
+
+        let target_ip = target.into().parse().map_err(|e| Error::Validation {
+            field: "target".to_string(),
+            message: format!("Invalid IP address: {e}"),
+        })?;
+
+        Ok(DeviceDiscoveryRaw::new(target_ip, Duration::from_secs(timeout_s)).await?)
     }
 }
 

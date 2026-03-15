@@ -2,17 +2,19 @@ use std::time::Duration;
 
 use pyo3::prelude::*;
 use tapo::{
-    ApiClient, ColorLightHandler, DeviceDiscovery, Error, GenericDeviceHandler, HubHandler,
-    LightHandler, PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler,
-    PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
+    ApiClient, ColorLightHandler, DeviceDiscovery, DeviceDiscoveryRaw, Error, GenericDeviceHandler,
+    HubHandler, LightHandler, PlugEnergyMonitoringHandler, PlugHandler,
+    PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
+    RgbicLightStripHandler,
 };
 
 use crate::call_handler_constructor;
 
 use super::{
-    PyColorLightHandler, PyDeviceDiscovery, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
-    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
-    PyPowerStripHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler,
+    PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryRaw, PyGenericDeviceHandler,
+    PyHubHandler, PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler,
+    PyPowerStripEnergyMonitoringHandler, PyPowerStripHandler, PyRgbLightStripHandler,
+    PyRgbicLightStripHandler,
 };
 
 #[pyclass(name = "ApiClient")]
@@ -20,6 +22,7 @@ pub struct PyApiClient {
     client: ApiClient,
 }
 
+/// Tapo API Client constructor.
 #[pymethods]
 impl PyApiClient {
     #[new]
@@ -37,7 +40,11 @@ impl PyApiClient {
 
         Ok(Self { client })
     }
+}
 
+/// Device discovery.
+#[pymethods]
+impl PyApiClient {
     #[pyo3(signature = (target, timeout_s=10))]
     pub async fn discover_devices(
         &self,
@@ -48,7 +55,28 @@ impl PyApiClient {
             call_handler_constructor!(self, tapo::ApiClient::discover_devices, target, timeout_s);
         Ok(PyDeviceDiscovery::new(discovery))
     }
+}
 
+/// Debug API.
+#[pymethods]
+impl PyApiClient {
+    #[staticmethod]
+    #[pyo3(signature = (target, timeout_s=10))]
+    pub async fn discover_devices_raw(
+        target: String,
+        timeout_s: u64,
+    ) -> Result<PyDeviceDiscoveryRaw, Error> {
+        let discovery: DeviceDiscoveryRaw = crate::runtime::tokio()
+            .spawn(ApiClient::discover_devices_raw(target, timeout_s))
+            .await
+            .map_err(anyhow::Error::from)??;
+        Ok(PyDeviceDiscoveryRaw::new(discovery))
+    }
+}
+
+/// Device handler builders.
+#[pymethods]
+impl PyApiClient {
     pub async fn generic_device(&self, ip_address: String) -> PyResult<PyGenericDeviceHandler> {
         let handler: GenericDeviceHandler =
             call_handler_constructor!(self, tapo::ApiClient::generic_device, ip_address);

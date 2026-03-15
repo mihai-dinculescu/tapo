@@ -7,7 +7,6 @@ use log::LevelFilter;
 use pyo3::prelude::*;
 use pyo3_log::{Caching, Logger};
 
-use tapo::DeviceType;
 use tapo::requests::{
     AlarmRingtone, AlarmVolume, Color, LightingEffectPreset, LightingEffectType,
     SegmentEffectPreset, SegmentEffectType,
@@ -28,14 +27,17 @@ use tapo::responses::{
     TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, UsageByPeriodResult,
     WaterLeakStatus,
 };
+use tapo::{DeviceType, DiscoveryRawResult};
 
 use api::{
-    PyApiClient, PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryIter, PyDiscoveryResult,
-    PyGenericDeviceHandler, PyHubHandler, PyKE100Handler, PyLightHandler, PyMaybeDiscoveryResult,
-    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
-    PyPowerStripHandler, PyPowerStripPlugEnergyMonitoringHandler, PyPowerStripPlugHandler,
-    PyRgbLightStripHandler, PyRgbicLightStripHandler, PyS200Handler, PyS210Handler, PyT31XHandler,
-    PyT100Handler, PyT110Handler, PyT300Handler,
+    PyApiClient, PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryIter,
+    PyDeviceDiscoveryRaw, PyDeviceDiscoveryRawIter, PyDiscoveryResult, PyGenericDeviceHandler,
+    PyHubHandler, PyKE100Handler, PyLightHandler, PyMaybeDiscoveryRawResult,
+    PyMaybeDiscoveryResult, PyPlugEnergyMonitoringHandler, PyPlugHandler,
+    PyPowerStripEnergyMonitoringHandler, PyPowerStripHandler,
+    PyPowerStripPlugEnergyMonitoringHandler, PyPowerStripPlugHandler, PyRgbLightStripHandler,
+    PyRgbicLightStripHandler, PyS200Handler, PyS210Handler, PyT31XHandler, PyT100Handler,
+    PyT110Handler, PyT300Handler,
 };
 use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyLightingEffect,
@@ -121,6 +123,10 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DeviceType>()?;
     module.add_class::<PyDeviceDiscovery>()?;
     module.add_class::<PyDeviceDiscoveryIter>()?;
+    module.add_class::<PyDeviceDiscoveryRaw>()?;
+    module.add_class::<PyDeviceDiscoveryRawIter>()?;
+    module.add_class::<DiscoveryRawResult>()?;
+    module.add_class::<PyMaybeDiscoveryRawResult>()?;
     module.add_class::<PyDiscoveryResult>()?;
     module.add_class::<PyMaybeDiscoveryResult>()?;
 

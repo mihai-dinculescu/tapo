@@ -1,8 +1,11 @@
 mod aes_discovery_query_generator;
 mod device_discovery;
+mod device_discovery_raw;
 mod device_type;
 mod discovery_result;
 
 pub use device_discovery::*;
+#[cfg(feature = "debug")]
+pub use device_discovery_raw::*;
 pub use device_type::*;
 pub use discovery_result::*;

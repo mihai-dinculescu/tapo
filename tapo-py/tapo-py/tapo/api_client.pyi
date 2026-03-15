@@ -26,6 +26,7 @@ from typing import Optional
 
 from .color_light_handler import ColorLightHandler
 from .device_discovery import DeviceDiscovery
+from .device_discovery_raw import DeviceDiscoveryRaw
 from .generic_device_handler import GenericDeviceHandler
 from .hub_handler import HubHandler
 from .light_handler import LightHandler
@@ -122,6 +123,22 @@ class ApiClient:
                 except Exception as e:
                     print(f"Error discovering device: {e}")
             ```
+        """
+
+    @staticmethod
+    async def discover_devices_raw(target: str, timeout_s: int = 10) -> DeviceDiscoveryRaw:
+        """Discovers one or more devices located at a specified unicast or broadcast IP address,
+        returning the IP address of the devices found and their discovery JSON response.
+
+        Args:
+            target (str): The IP address at which the discovery will take place.
+                This address can be either a unicast (e.g. `192.168.1.10`) or a
+                broadcast address (e.g. `192.168.1.255`, `255.255.255.255`, etc.).
+            timeout_s (int): The maximum time to wait for a response from the device(s) in seconds.
+                Must be between `1` and `60`.
+
+        Returns:
+            AsyncIterator[MaybeDiscoveryRawResult]: An asynchronous iterator that yields `MaybeDiscoveryRawResult` objects.
         """
 
     async def generic_device(self, ip_address: str) -> GenericDeviceHandler:

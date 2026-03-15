@@ -12,6 +12,7 @@ file. This change log follows the conventions of
 - `OtherResult`: added catch-all result type for unsupported hub child devices, containing `device_id`, `model`, and `nickname`.
 - `KE100Result`, `S200Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`: added `model` field.
 - `json-schema` feature: added optional `schemars::JsonSchema` derive on `Color` for use with MCP or other JSON Schema tooling.
+- `ApiClient::discover_devices_raw`: added raw device discovery (behind `debug` feature) that returns the IP address of the devices found and their discovery JSON response.
 
 ### Changed
 
@@ -24,6 +25,7 @@ file. This change log follows the conventions of
 - `HubHandler`: added support for S210 light switches with `on`, `off`, and `get_device_usage`. Use `s210` on the hub to create the `S210Handler`.
 - `OtherResult`: added catch-all result type for unsupported hub child devices, containing `device_id`, `model`, and `nickname`.
 - `KE100Result`, `S200Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`: added `model` field.
+- `ApiClient.discover_devices_raw`: added raw device discovery that returns the IP address of the devices found and their discovery JSON response.
 
 ### Changed
 

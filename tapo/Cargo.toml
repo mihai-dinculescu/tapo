@@ -48,7 +48,7 @@ sha2 = "0.10"
 schemars = { workspace = true, optional = true }
 
 # FFI
-pyo3 = { workspace = true, features = ["serde", "chrono"], optional = true }
+pyo3 = { workspace = true, features = ["serde", "chrono", "multiple-pymethods"], optional = true }
 
 [dev-dependencies]
 once_cell = "1.21"
