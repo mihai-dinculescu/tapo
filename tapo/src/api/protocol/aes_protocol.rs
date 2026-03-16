@@ -16,12 +16,12 @@ use crate::responses::{
 
 use crate::{Error, TapoResponseError};
 
-use super::passthrough_cipher::{PassthroughCipher, PassthroughKeyPair};
+use super::aes_cipher::{AesCipher, AesKeyPair};
 
 #[derive(Debug)]
-pub(super) struct PassthroughProtocol {
+pub(super) struct AesProtocol {
     client: Client,
-    key_pair: PassthroughKeyPair,
+    key_pair: AesKeyPair,
     session: Option<Session>,
 }
 
@@ -29,15 +29,15 @@ pub(super) struct PassthroughProtocol {
 struct Session {
     url: String,
     cookie: String,
-    cipher: PassthroughCipher,
+    cipher: AesCipher,
     token: Option<String>,
 }
 
-impl PassthroughProtocol {
+impl AesProtocol {
     pub fn new(client: Client) -> Result<Self, Error> {
         Ok(Self {
             client,
-            key_pair: PassthroughKeyPair::new(&mut rand::rng())?,
+            key_pair: AesKeyPair::new(&mut rand::rng())?,
             session: None,
         })
     }
@@ -130,15 +130,15 @@ impl PassthroughProtocol {
     }
 
     fn session_ref(&self) -> Result<&Session, Error> {
-        self.session.as_ref().ok_or_else(|| {
-            anyhow::anyhow!("Passthrough session not initialized (login first)").into()
-        })
+        self.session
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Session not initialized (login first)").into())
     }
 
     fn session_mut(&mut self) -> Result<&mut Session, Error> {
-        self.session.as_mut().ok_or_else(|| {
-            anyhow::anyhow!("Passthrough session not initialized (login first)").into()
-        })
+        self.session
+            .as_mut()
+            .ok_or_else(|| anyhow::anyhow!("Session not initialized (login first)").into())
     }
 
     async fn handshake(&mut self, url: String) -> Result<(), Error> {
@@ -161,7 +161,7 @@ impl PassthroughProtocol {
 
         debug!("Handshake OK");
 
-        let cipher = PassthroughCipher::new(&handshake_key, &self.key_pair)?;
+        let cipher = AesCipher::new(&handshake_key, &self.key_pair)?;
 
         self.session.replace(Session {
             url,
@@ -174,7 +174,7 @@ impl PassthroughProtocol {
     }
 
     async fn login_request(&mut self, username: String, password: String) -> Result<(), Error> {
-        let username_digest = PassthroughCipher::sha1_digest_username(username);
+        let username_digest = AesCipher::sha1_digest_username(username);
         debug!("Username digest: {username_digest}");
 
         let username = general_purpose::STANDARD.encode(username_digest);

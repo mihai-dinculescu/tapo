@@ -9,11 +9,11 @@ use rsa::{Pkcs1v15Encrypt, RsaPrivateKey};
 use sha1::{Digest, Sha1};
 
 #[derive(Debug, Clone)]
-pub(crate) struct PassthroughKeyPair {
+pub(crate) struct AesKeyPair {
     rsa: RsaPrivateKey,
 }
 
-impl PassthroughKeyPair {
+impl AesKeyPair {
     pub fn new<R>(rng: &mut R) -> anyhow::Result<Self>
     where
         R: CryptoRng + Rng + ?Sized,
@@ -33,13 +33,13 @@ impl PassthroughKeyPair {
 }
 
 #[derive(Debug)]
-pub(crate) struct PassthroughCipher {
+pub(crate) struct AesCipher {
     key: Vec<u8>,
     iv: Vec<u8>,
 }
 
-impl PassthroughCipher {
-    pub fn new(key: &str, key_pair: &PassthroughKeyPair) -> anyhow::Result<Self> {
+impl AesCipher {
+    pub fn new(key: &str, key_pair: &AesKeyPair) -> anyhow::Result<Self> {
         debug!("Will decode handshake key {:?}...", &key[..5]);
 
         let key_bytes = general_purpose::STANDARD.decode(key)?;
@@ -49,7 +49,7 @@ impl PassthroughCipher {
             return Err(anyhow::anyhow!("Expected 32 bytes, got {}", buf.len()));
         }
 
-        Ok(PassthroughCipher {
+        Ok(AesCipher {
             key: buf[0..16].to_vec(),
             iv: buf[16..32].to_vec(),
         })
@@ -79,7 +79,7 @@ impl PassthroughCipher {
     }
 }
 
-impl PassthroughCipher {
+impl AesCipher {
     pub fn sha1_digest_username(username: String) -> String {
         let mut hasher = Sha1::new();
         hasher.update(username.as_bytes());
@@ -96,10 +96,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_passthrough_cipher() -> anyhow::Result<()> {
+    fn test_aes_cipher() -> anyhow::Result<()> {
         let mut rng = StdRng::from_seed([0u8; 32]);
 
-        let key_pair = PassthroughKeyPair::new(&mut rng)?;
+        let key_pair = AesKeyPair::new(&mut rng)?;
 
         let public_key = key_pair.get_public_key()?;
         assert_eq!(
@@ -133,7 +133,7 @@ mod tests {
 
         let key = general_purpose::STANDARD.encode(key_encrypted_bytes);
 
-        let cipher = PassthroughCipher::new(&key, &key_pair)?;
+        let cipher = AesCipher::new(&key, &key_pair)?;
 
         let message = "hello";
         let message_encrypted = cipher.encrypt(message)?;

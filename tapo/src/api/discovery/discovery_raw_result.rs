@@ -48,7 +48,7 @@ impl From<&DiscoveryRawResult> for crate::api::protocol::AuthProtocol {
 
         match (encrypt_type, http_port) {
             (Some("KLAP"), Some(80)) => AuthProtocol::Klap,
-            (Some("AES"), Some(80)) => AuthProtocol::Passthrough,
+            (Some("AES"), Some(80)) => AuthProtocol::Aes,
             _ => AuthProtocol::Unknown,
         }
     }

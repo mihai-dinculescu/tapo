@@ -10,15 +10,15 @@ use crate::TapoResponseError;
 use crate::requests::{EmptyParams, TapoParams, TapoRequest};
 use crate::responses::{TapoResponse, TapoResponseExt, validate_response};
 
+use super::aes_protocol::AesProtocol;
 use super::klap_protocol::KlapProtocol;
-use super::passthrough_protocol::PassthroughProtocol;
 
 /// The authentication protocol used to communicate with a Tapo device.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum AuthProtocol {
-    /// AES-based passthrough protocol. The client sends encrypted JSON
+    /// AES-based protocol. The client sends encrypted JSON
     /// requests over HTTP and the device returns encrypted JSON responses.
-    Passthrough,
+    Aes,
     /// KLAP (Key-Length-Authentication Protocol). Uses a handshake-derived
     /// symmetric cipher for request/response encryption.
     Klap,
@@ -28,7 +28,7 @@ pub(crate) enum AuthProtocol {
 
 #[derive(Debug)]
 enum ActiveProtocol {
-    Passthrough(PassthroughProtocol),
+    Aes(AesProtocol),
     Klap(KlapProtocol),
 }
 
@@ -65,9 +65,9 @@ impl TapoProtocol {
     ) -> Result<(), Error> {
         if self.active.is_none() {
             self.active = Some(match auth_protocol {
-                AuthProtocol::Passthrough => {
-                    debug!("Using Passthrough protocol (from discovery hint)...");
-                    ActiveProtocol::Passthrough(PassthroughProtocol::new(self.client.clone())?)
+                AuthProtocol::Aes => {
+                    debug!("Using AES protocol (from discovery hint)...");
+                    ActiveProtocol::Aes(AesProtocol::new(self.client.clone())?)
                 }
                 AuthProtocol::Klap => {
                     debug!("Using KLAP protocol (from discovery hint)...");
@@ -78,7 +78,7 @@ impl TapoProtocol {
         }
 
         match &mut self.active {
-            Some(ActiveProtocol::Passthrough(p)) => p.login(url, username, password).await,
+            Some(ActiveProtocol::Aes(p)) => p.login(url, username, password).await,
             Some(ActiveProtocol::Klap(p)) => p.login(url, username, password).await,
             None => unreachable!(),
         }
@@ -90,7 +90,7 @@ impl TapoProtocol {
         password: String,
     ) -> Result<(), Error> {
         match &mut self.active {
-            Some(ActiveProtocol::Passthrough(p)) => p.refresh_session(username, password).await,
+            Some(ActiveProtocol::Aes(p)) => p.refresh_session(username, password).await,
             Some(ActiveProtocol::Klap(p)) => p.refresh_session(username, password).await,
             None => Err(anyhow::anyhow!(
                 "Cannot refresh session: protocol not yet initialized (login first)"
@@ -108,7 +108,7 @@ impl TapoProtocol {
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
         match &self.active {
-            Some(ActiveProtocol::Passthrough(p)) => p.execute_request(request, with_token).await,
+            Some(ActiveProtocol::Aes(p)) => p.execute_request(request, with_token).await,
             Some(ActiveProtocol::Klap(p)) => p.execute_request(request, with_token).await,
             None => Err(anyhow::anyhow!(
                 "Cannot execute request: protocol not yet initialized (login first)"
@@ -127,27 +127,25 @@ impl TapoProtocol {
     }
 
     async fn discover_protocol_type(&self, url: &str) -> Result<ActiveProtocol, Error> {
-        debug!("Testing the Passthrough protocol...");
-        if self.is_passthrough_supported(url).await? {
-            debug!("Supported. Setting up the Passthrough protocol...");
-            Ok(ActiveProtocol::Passthrough(PassthroughProtocol::new(
-                self.client.clone(),
-            )?))
+        debug!("Testing the AES protocol...");
+        if self.is_aes_supported(url).await? {
+            debug!("Supported. Setting up the AES protocol...");
+            Ok(ActiveProtocol::Aes(AesProtocol::new(self.client.clone())?))
         } else {
-            debug!("Not supported. Setting up the Klap protocol...");
+            debug!("Not supported. Setting up the KLAP protocol...");
             Ok(ActiveProtocol::Klap(KlapProtocol::new(self.client.clone())))
         }
     }
 
-    async fn is_passthrough_supported(&self, url: &str) -> Result<bool, Error> {
-        match self.test_passthrough(url).await {
+    async fn is_aes_supported(&self, url: &str) -> Result<bool, Error> {
+        match self.test_aes(url).await {
             Err(Error::Tapo(TapoResponseError::Unknown(code))) => Ok(code != 1003),
             Err(err) => Err(err),
             Ok(_) => Ok(true),
         }
     }
 
-    async fn test_passthrough(&self, url: &str) -> Result<(), Error> {
+    async fn test_aes(&self, url: &str) -> Result<(), Error> {
         let request = TapoRequest::ComponentNegotiation(TapoParams::new(EmptyParams));
         let request_string = serde_json::to_string(&request)?;
         debug!("Component negotiation request: {request_string}");
