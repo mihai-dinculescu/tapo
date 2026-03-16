@@ -13,6 +13,19 @@ use crate::responses::{TapoResponse, TapoResponseExt, validate_response};
 use super::klap_protocol::KlapProtocol;
 use super::passthrough_protocol::PassthroughProtocol;
 
+/// The authentication protocol used to communicate with a Tapo device.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum AuthProtocol {
+    /// AES-based passthrough protocol. The client sends encrypted JSON
+    /// requests over HTTP and the device returns encrypted JSON responses.
+    Passthrough,
+    /// KLAP (Key-Length-Authentication Protocol). Uses a handshake-derived
+    /// symmetric cipher for request/response encryption.
+    Klap,
+    /// Protocol type could not be determined.
+    Unknown,
+}
+
 #[derive(Debug)]
 enum ActiveProtocol {
     Passthrough(PassthroughProtocol),
@@ -48,9 +61,20 @@ impl TapoProtocol {
         url: String,
         username: String,
         password: String,
+        auth_protocol: AuthProtocol,
     ) -> Result<(), Error> {
         if self.active.is_none() {
-            self.active = Some(self.discover_protocol_type(&url).await?);
+            self.active = Some(match auth_protocol {
+                AuthProtocol::Passthrough => {
+                    debug!("Using Passthrough protocol (from discovery hint)...");
+                    ActiveProtocol::Passthrough(PassthroughProtocol::new(self.client.clone())?)
+                }
+                AuthProtocol::Klap => {
+                    debug!("Using KLAP protocol (from discovery hint)...");
+                    ActiveProtocol::Klap(KlapProtocol::new(self.client.clone()))
+                }
+                AuthProtocol::Unknown => self.discover_protocol_type(&url).await?,
+            });
         }
 
         match &mut self.active {

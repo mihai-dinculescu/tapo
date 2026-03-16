@@ -11,39 +11,8 @@ use tokio::time::Duration;
 use tokio_stream::Stream;
 
 use super::aes_discovery_query_generator::AesDiscoveryQueryGenerator;
+use super::discovery_raw_result::DiscoveryRawResult;
 use crate::DiscoveryError;
-
-/// A raw discovery response containing the device's IP address and the
-/// JSON message received through the UDP discovery stream.
-#[derive(Debug, Clone, serde::Serialize)]
-#[cfg_attr(not(feature = "debug"), allow(unreachable_pub))]
-#[cfg_attr(
-    feature = "python",
-    pyo3::prelude::pyclass(from_py_object, name = "DiscoveryRawResult")
-)]
-pub struct DiscoveryRawResult {
-    /// The IP address of the responding device.
-    pub ip: IpAddr,
-    /// The JSON message payload from the discovery response.
-    pub message: Value,
-}
-
-#[cfg(feature = "python")]
-#[pyo3::prelude::pymethods]
-impl DiscoveryRawResult {
-    #[getter]
-    fn get_ip(&self) -> String {
-        self.ip.to_string()
-    }
-
-    #[getter]
-    fn get_message(&self, py: pyo3::Python<'_>) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
-        crate::python::serde_object_to_py_dict(py, &self.message)
-    }
-}
-
-#[cfg(feature = "python")]
-crate::impl_to_dict!(DiscoveryRawResult);
 
 // Attempts discovery every 3 seconds.
 const DISCOVERY_INTERVAL: Duration = Duration::from_secs(3);

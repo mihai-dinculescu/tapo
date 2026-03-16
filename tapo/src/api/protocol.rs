@@ -4,4 +4,4 @@ mod passthrough_cipher;
 mod passthrough_protocol;
 mod tapo_protocol;
 
-pub(crate) use tapo_protocol::TapoProtocol;
+pub(crate) use tapo_protocol::*;

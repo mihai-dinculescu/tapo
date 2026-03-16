@@ -17,6 +17,7 @@ file. This change log follows the conventions of
 ### Changed
 
 - `ChildDeviceHubResult::Other`: changed from a unit variant to `Other(Box<OtherResult>)`, exposing device info for unrecognized models.
+- `ApiClient::discover_devices`: sped up discovery by inferring the authentication protocol (KLAP or AES) from the discovery message instead of probing the device.
 
 ## [Python Unreleased][Unreleased]
 
@@ -30,6 +31,7 @@ file. This change log follows the conventions of
 ### Changed
 
 - `HubHandler`: changed `get_child_device_list()` to return `OtherResult` instead of `None` for unsupported devices.
+- `ApiClient.discover_devices`: sped up discovery by inferring the authentication protocol (KLAP or AES) from the discovery message instead of probing the device.
 
 ## [Rust v0.8.12][v0.8.12] - 2026-03-11
 

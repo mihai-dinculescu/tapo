@@ -1,5 +1,3 @@
-use std::net::IpAddr;
-
 use anyhow::Context;
 
 use crate::responses::{
@@ -13,7 +11,10 @@ use crate::{
     RgbLightStripHandler, RgbicLightStripHandler,
 };
 
+use crate::api::protocol::AuthProtocol;
+
 use super::DeviceType;
+use super::discovery_raw_result::DiscoveryRawResult;
 
 #[derive(Debug)]
 /// Result of the device discovery process.
@@ -124,8 +125,14 @@ macro_rules! map_device_model {
 }
 
 impl DiscoveryResult {
-    pub(crate) async fn new(mut client: ApiClient, ip_addr: IpAddr) -> Result<Self, Error> {
-        client.login(ip_addr.to_string()).await?;
+    pub(crate) async fn new(
+        mut client: ApiClient,
+        raw_result: DiscoveryRawResult,
+    ) -> Result<Self, Error> {
+        let auth_protocol = AuthProtocol::from(&raw_result);
+        client
+            .login(raw_result.ip.to_string(), auth_protocol)
+            .await?;
         let device_info: serde_json::Value = client.get_device_info().await?;
         let handler =
             GenericDeviceHandler::new(std::sync::Arc::new(tokio::sync::RwLock::new(client)));

@@ -9,7 +9,8 @@ use tokio_stream::Stream;
 
 pub use tokio_stream::StreamExt;
 
-use super::device_discovery_raw::{DeviceDiscoveryRaw, DiscoveryRawResult};
+use super::device_discovery_raw::DeviceDiscoveryRaw;
+use super::discovery_raw_result::DiscoveryRawResult;
 use super::discovery_result::DiscoveryResult;
 use crate::{ApiClient, DiscoveryError};
 
@@ -59,7 +60,7 @@ impl DeviceDiscovery {
         let client = client.read().await.clone();
         let ip = raw_result.ip.to_string();
 
-        let result = DiscoveryResult::new(client, raw_result.ip)
+        let result = DiscoveryResult::new(client, raw_result)
             .await
             .map_err(|source| DiscoveryError { ip, source });
 
