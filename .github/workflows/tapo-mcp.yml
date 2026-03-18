@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
   packages: write
 
 env:
@@ -87,8 +88,8 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  merge:
-    name: Merge manifests
+  publish-ghcr:
+    name: Publish to GHCR
     runs-on: ubuntu-24.04
     if: github.event_name != 'pull_request'
     needs: build
@@ -131,3 +132,29 @@ jobs:
       - name: Inspect image
         run: |
           docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+  publish-mcp-registry:
+    name: Publish to MCP Registry
+    runs-on: ubuntu-24.04
+    if: startsWith(github.ref, 'refs/tags/tapo-mcp-v')
+    needs: publish-ghcr
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install mcp-publisher
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Update server.json version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/tapo-mcp-v}
+          jq --arg v "$VERSION" '
+            .version = $v |
+            .packages[0].identifier = "ghcr.io/${{ env.IMAGE_NAME }}:" + $v
+          ' tapo-mcp/server.json > tapo-mcp/server.tmp && mv tapo-mcp/server.tmp tapo-mcp/server.json
+
+      - name: Authenticate to MCP Registry
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        run: ./mcp-publisher publish --file tapo-mcp/server.json

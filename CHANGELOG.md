@@ -75,6 +75,10 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+### Added
+
+- `CI`: added automated publishing to the Official MCP Registry on tagged releases.
+
 ## [MCP v0.2.0][tapo-mcp-v0.2.0] - 2026-03-14
 
 ### Added

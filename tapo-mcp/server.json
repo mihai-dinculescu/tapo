@@ -1,0 +1,62 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.mihai-dinculescu/tapo-mcp",
+  "title": "Tapo MCP",
+  "description": "MCP server for discovering and controlling TP-Link Tapo smart home devices via AI Agents",
+  "repository": {
+    "url": "https://github.com/mihai-dinculescu/tapo",
+    "source": "github",
+    "subfolder": "tapo-mcp"
+  },
+  "version": "0.2.0",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/mihai-dinculescu/tapo-mcp:0.2.0",
+      "transport": {
+        "type": "streamable-http",
+        "url": "http://localhost:3000/"
+      },
+      "environmentVariables": [
+        {
+          "name": "TAPO_MCP_USERNAME",
+          "description": "TP-Link Tapo account email",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "TAPO_MCP_PASSWORD",
+          "description": "TP-Link Tapo account password",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "TAPO_MCP_DISCOVERY_TARGET",
+          "description": "Network target for device discovery (e.g. 192.168.1.255)",
+          "isRequired": true,
+          "isSecret": false
+        },
+        {
+          "name": "TAPO_MCP_API_KEY",
+          "description": "Optional Bearer token for API authentication",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "TAPO_MCP_DISCOVERY_TIMEOUT",
+          "description": "Device discovery timeout in seconds",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "number",
+          "default": "5"
+        },
+        {
+          "name": "OTEL_EXPORTER_OTLP_ENDPOINT",
+          "description": "Optional OpenTelemetry collector endpoint for tracing",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

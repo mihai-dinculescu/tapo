@@ -19,6 +19,7 @@ RUN cargo build --release --package tapo-mcp
 
 # ---- Stage 4: Runtime ----
 FROM gcr.io/distroless/cc-debian13 AS runtime
+LABEL io.modelcontextprotocol.server.name="io.github.mihai-dinculescu/tapo-mcp"
 COPY --from=builder /app/target/release/tapo-mcp /usr/local/bin/tapo-mcp
 
 # Bind to 0.0.0.0 inside container so the port is reachable from outside
