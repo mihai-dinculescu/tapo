@@ -45,6 +45,10 @@ file. This change log follows the conventions of
 - `DeviceType.GenericDevice`: renamed to `DeviceType.Other`.
 - `DeviceInfoGenericResult`: renamed to `DeviceInfoBasicResult`.
 
+### Fixed
+
+- `DeviceInfoRgbLightStripResult`, `DeviceInfoRgbicLightStripResult`: removed incorrect `on_time` field from `.pyi` stubs (not present in Rust type).
+
 ### Removed
 
 - `GenericDeviceHandler`: removed. Use a specific handler type (e.g. `l530`, `p110`) instead.
