@@ -22,6 +22,7 @@ file. This change log follows the conventions of
 - `DeviceType::GenericDevice`: renamed to `DeviceType::Other`.
 - `DeviceInfoGenericResult`: renamed to `DeviceInfoBasicResult`.
 - `DeviceInfoPowerStripResult`: changed `time_diff` from `i64` to `Option<i64>` for consistency with other device info types.
+- `DeviceInfoBasicResult`: removed `device_on` and `on_time` fields, changed `nickname` to `Option<String>`.
 
 ### Removed
 
@@ -44,6 +45,7 @@ file. This change log follows the conventions of
 - `DiscoveryResult.GenericDevice`: renamed to `DiscoveryResult.Other`. Removed `handler` field — the variant now contains only `device_info`.
 - `DeviceType.GenericDevice`: renamed to `DeviceType.Other`.
 - `DeviceInfoGenericResult`: renamed to `DeviceInfoBasicResult`.
+- `DeviceInfoBasicResult`: removed `device_on` and `on_time` fields, changed `nickname` to `Optional[str]`.
 
 ### Fixed
 

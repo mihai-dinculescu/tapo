@@ -1,27 +1,5 @@
-from typing import Optional
+from tapo.responses.device_info_result.device_info_ext import DeviceInfoExt
 from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoPowerStripResult(ToDictExt):
+class DeviceInfoPowerStripResult(DeviceInfoExt, ToDictExt):
     """Device info of Tapo P300, P304M, P306 and P316M."""
-
-    avatar: str
-    device_id: str
-    fw_id: str
-    fw_ver: str
-    has_set_location_info: bool
-    hw_id: str
-    hw_ver: str
-    ip: str
-    lang: str
-    latitude: Optional[float]
-    longitude: Optional[float]
-    mac: str
-    model: str
-    oem_id: str
-    region: Optional[str]
-    rssi: int
-    signal_level: int
-    specs: str
-    ssid: str
-    time_diff: Optional[int]
-    type: str

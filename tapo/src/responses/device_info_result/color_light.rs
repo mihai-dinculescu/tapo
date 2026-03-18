@@ -13,7 +13,6 @@ pub struct DeviceInfoColorLightResult {
     //
     pub avatar: String,
     pub device_id: String,
-    pub device_on: bool,
     pub fw_id: String,
     pub fw_ver: String,
     pub has_set_location_info: bool,
@@ -25,11 +24,7 @@ pub struct DeviceInfoColorLightResult {
     pub longitude: Option<i64>,
     pub mac: String,
     pub model: String,
-    pub nickname: String,
     pub oem_id: String,
-    /// The time in seconds this device has been ON since the last state change (On/Off).
-    /// On v2 hardware this is always None.
-    pub on_time: Option<u64>,
     pub region: Option<String>,
     pub rssi: i16,
     pub signal_level: u8,
@@ -44,9 +39,14 @@ pub struct DeviceInfoColorLightResult {
     pub color_temp: u16,
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
     pub default_states: DefaultColorLightState,
+    pub device_on: bool,
     pub dynamic_light_effect_enable: bool,
     pub dynamic_light_effect_id: Option<String>,
     pub hue: Option<u16>,
+    pub nickname: String,
+    /// The time in seconds this device has been ON since the last state change (On/Off).
+    /// On v2 hardware this is always None.
+    pub on_time: Option<u64>,
     pub overheated: bool,
     pub saturation: Option<u16>,
 }

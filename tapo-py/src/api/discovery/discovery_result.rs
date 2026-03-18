@@ -139,7 +139,10 @@ impl PyDiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring.as_str()
             }
             PyDiscoveryResult::Hub { device_info, .. } => &device_info.nickname,
-            PyDiscoveryResult::Other { device_info, .. } => &device_info.nickname,
+            PyDiscoveryResult::Other { device_info, .. } => device_info
+                .nickname
+                .as_deref()
+                .unwrap_or(DeviceType::Other.as_str()),
         }
     }
 }

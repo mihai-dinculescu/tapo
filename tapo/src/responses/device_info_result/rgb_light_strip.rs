@@ -13,7 +13,6 @@ pub struct DeviceInfoRgbLightStripResult {
     //
     pub avatar: String,
     pub device_id: String,
-    pub device_on: bool,
     pub fw_id: String,
     pub fw_ver: String,
     pub has_set_location_info: bool,
@@ -25,7 +24,6 @@ pub struct DeviceInfoRgbLightStripResult {
     pub longitude: Option<i64>,
     pub mac: String,
     pub model: String,
-    pub nickname: String,
     pub oem_id: String,
     pub region: Option<String>,
     pub rssi: i16,
@@ -42,7 +40,9 @@ pub struct DeviceInfoRgbLightStripResult {
     pub color_temp: u16,
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
     pub default_states: DefaultRgbLightStripState,
+    pub device_on: bool,
     pub hue: Option<u16>,
+    pub nickname: String,
     pub overheated: bool,
     pub saturation: Option<u16>,
 }

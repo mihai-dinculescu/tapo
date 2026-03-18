@@ -305,7 +305,10 @@ impl DiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring.as_str()
             }
             DiscoveryResult::Hub { device_info, .. } => &device_info.nickname,
-            DiscoveryResult::Other { device_info, .. } => &device_info.nickname,
+            DiscoveryResult::Other { device_info, .. } => device_info
+                .nickname
+                .as_deref()
+                .unwrap_or(DeviceType::Other.as_str()),
         }
     }
 }
