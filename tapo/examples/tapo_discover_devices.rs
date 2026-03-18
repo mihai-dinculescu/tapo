@@ -119,12 +119,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         device_info.nickname, device_info.model, device_info.ip
                     );
                 }
-                DiscoveryResult::GenericDevice { device_info } => {
-                    // If you believe this device is already supported, or would like to explore adding support for a currently
+                DiscoveryResult::Other { device_info } => {
+                    // If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
                     // unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
                     // to start the discussion.
                     warn!(
-                        "Found Unsupported Device {:?} of model {:?} at IP address {:?}.",
+                        "Found device without a dedicated handler {:?} of model {:?} at IP address {:?}.",
                         device_info.nickname, device_info.model, device_info.ip
                     );
                 }

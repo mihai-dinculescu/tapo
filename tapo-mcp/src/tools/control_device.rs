@@ -114,7 +114,7 @@ async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(),
             DiscoveryResult::RgbicLightStrip { handler, .. } => on_off!(handler),
             DiscoveryResult::Plug { handler, .. } => on_off!(handler),
             DiscoveryResult::PlugEnergyMonitoring { handler, .. } => on_off!(handler),
-            DiscoveryResult::GenericDevice { .. }
+            DiscoveryResult::Other { .. }
             | DiscoveryResult::PowerStrip { .. }
             | DiscoveryResult::PowerStripEnergyMonitoring { .. }
             | DiscoveryResult::Hub { .. } => {

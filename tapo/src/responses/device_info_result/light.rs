@@ -5,13 +5,13 @@ use crate::responses::{
     DecodableResultExt, DefaultBrightnessState, DefaultPowerType, TapoResponseExt, decode_value,
 };
 
-/// Device info of Tapo L510, L520 and L610. Superset of [`crate::responses::DeviceInfoGenericResult`].
+/// Device info of Tapo L510, L520 and L610.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct DeviceInfoLightResult {
     //
-    // Inherited from DeviceInfoGenericResult
+    // Common properties
     //
     pub device_id: String,
     pub r#type: String,

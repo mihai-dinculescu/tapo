@@ -76,7 +76,7 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
 
                 if matches!(
                     device,
-                    DiscoveryResult::GenericDevice { .. } | DiscoveryResult::Hub { .. }
+                    DiscoveryResult::Other { .. } | DiscoveryResult::Hub { .. }
                 ) {
                     unsupported.push(UnsupportedDevice { ip, model });
                     continue;

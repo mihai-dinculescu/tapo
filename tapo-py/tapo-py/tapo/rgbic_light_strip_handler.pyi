@@ -32,7 +32,6 @@ class RgbicLightStripHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, D
 
         Returns:
             DeviceInfoRgbicLightStripResult: Device info of Tapo L920 and L930.
-            Superset of `GenericDeviceInfoResult`.
         """
 
     async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:

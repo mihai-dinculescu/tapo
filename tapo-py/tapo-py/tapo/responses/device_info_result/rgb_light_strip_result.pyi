@@ -4,7 +4,7 @@ from tapo.responses.device_info_result.default_state import DefaultStateType
 from tapo.to_dict_ext import ToDictExt
 
 class DeviceInfoRgbLightStripResult(ToDictExt):
-    """Device info of Tapo L900. Superset of `GenericDeviceInfoResult`."""
+    """Device info of Tapo L900."""
 
     device_id: str
     type: str

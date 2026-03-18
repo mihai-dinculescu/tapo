@@ -4,13 +4,13 @@ use crate::error::Error;
 use crate::requests::LightingEffect;
 use crate::responses::{DecodableResultExt, DefaultStateType, TapoResponseExt, decode_value};
 
-/// Device info of Tapo L920 and L930. Superset of [`crate::responses::DeviceInfoGenericResult`].
+/// Device info of Tapo L920 and L930.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct DeviceInfoRgbicLightStripResult {
     //
-    // Inherited from DeviceInfoGenericResult
+    // Common properties
     //
     pub device_id: String,
     pub r#type: String,

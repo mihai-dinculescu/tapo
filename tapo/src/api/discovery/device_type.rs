@@ -12,8 +12,8 @@ use serde::{Deserialize, Serialize};
     pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
 )]
 pub enum DeviceType {
-    /// A generic/unknown Tapo device.
-    GenericDevice,
+    /// A Tapo device without a specific handler implementation.
+    Other,
     /// Tapo L510, L520, L610 — dimmable lights.
     Light,
     /// Tapo L530, L535, L630 — color lights.
@@ -37,7 +37,7 @@ pub enum DeviceType {
 impl DeviceType {
     /// Determines the device type from a model string.
     ///
-    /// Unknown models return [`DeviceType::GenericDevice`].
+    /// Unknown models return [`DeviceType::Other`].
     pub fn from_model(model: &str) -> Self {
         match model {
             "L510" | "L520" | "L610" => DeviceType::Light,
@@ -49,7 +49,7 @@ impl DeviceType {
             "P300" | "P306" => DeviceType::PowerStrip,
             "P304M" | "P316M" => DeviceType::PowerStripEnergyMonitoring,
             "H100" => DeviceType::Hub,
-            _ => DeviceType::GenericDevice,
+            _ => DeviceType::Other,
         }
     }
 }
@@ -58,7 +58,6 @@ impl DeviceType {
     /// Returns a human-readable name for this device type as a static string.
     pub fn as_str(&self) -> &'static str {
         match self {
-            DeviceType::GenericDevice => "Generic Device",
             DeviceType::Light => "Light",
             DeviceType::ColorLight => "Color Light",
             DeviceType::RgbLightStrip => "RGB Light Strip",
@@ -68,6 +67,7 @@ impl DeviceType {
             DeviceType::PowerStrip => "Power Strip",
             DeviceType::PowerStripEnergyMonitoring => "Power Strip with Energy Monitoring",
             DeviceType::Hub => "Hub",
+            DeviceType::Other => "Other",
         }
     }
 }
@@ -146,15 +146,15 @@ mod tests {
     }
 
     #[test]
-    fn from_model_unknown_returns_generic() {
-        assert_eq!(DeviceType::from_model("UNKNOWN"), DeviceType::GenericDevice);
-        assert_eq!(DeviceType::from_model(""), DeviceType::GenericDevice);
-        assert_eq!(DeviceType::from_model("X999"), DeviceType::GenericDevice);
+    fn from_model_unknown_returns_other() {
+        assert_eq!(DeviceType::from_model("UNKNOWN"), DeviceType::Other);
+        assert_eq!(DeviceType::from_model(""), DeviceType::Other);
+        assert_eq!(DeviceType::from_model("X999"), DeviceType::Other);
     }
 
     #[test]
     fn display() {
-        assert_eq!(DeviceType::GenericDevice.to_string(), "Generic Device");
+        assert_eq!(DeviceType::Other.to_string(), "Other");
         assert_eq!(DeviceType::Light.to_string(), "Light");
         assert_eq!(DeviceType::PowerStrip.to_string(), "Power Strip");
         assert_eq!(

@@ -15,7 +15,7 @@ from tapo import (
 from tapo.device_type import DeviceType
 from tapo.responses import (
     DeviceInfoColorLightResult,
-    DeviceInfoGenericResult,
+    DeviceInfoBasicResult,
     DeviceInfoHubResult,
     DeviceInfoLightResult,
     DeviceInfoPlugEnergyMonitoringResult,
@@ -52,18 +52,18 @@ class DiscoveryResultExt(Protocol):
         """
 
 @dataclass
-class GenericDevice(DiscoveryResultExt):
-    """A Generic Tapo device.
+class Other(DiscoveryResultExt):
+    """A Tapo device without a specific handler implementation.
 
-    If you believe this device is already supported, or would like to explore adding support for a currently
+    If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
     unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
     to start the discussion.
     """
 
-    device_info: DeviceInfoGenericResult
-    """Device info of a Generic Tapo device.
+    device_info: DeviceInfoBasicResult
+    """Device info of a Tapo device without a specific handler implementation.
 
-    If you believe this device is already supported, or would like to explore adding support for a currently
+    If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
     unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
     to start the discussion.
     """
@@ -223,7 +223,6 @@ class MaybeDiscoveryResult:
     """Potential result of the device discovery process. Using `get` will return the actual result or raise an exception."""
 
     def get(self) -> Union[
-        GenericDevice,
         Light,
         ColorLight,
         RgbLightStrip,
@@ -233,13 +232,13 @@ class MaybeDiscoveryResult:
         PowerStrip,
         PowerStripEnergyMonitoring,
         Hub,
+        Other,
     ]:
         """Retrieves the actual discovery result or raises an exception."""
 
 class DiscoveryResult(DiscoveryResultExt):
     """Result of the device discovery process."""
 
-    GenericDevice: Type[GenericDevice] = GenericDevice
     Light: Type[Light] = Light
     ColorLight: Type[ColorLight] = ColorLight
     RgbLightStrip: Type[RgbLightStrip] = RgbLightStrip
@@ -249,3 +248,4 @@ class DiscoveryResult(DiscoveryResultExt):
     PowerStrip: Type[PowerStrip] = PowerStrip
     PowerStripEnergyMonitoring: Type[PowerStripEnergyMonitoring] = PowerStripEnergyMonitoring
     Hub: Type[Hub] = Hub
+    Other: Type[Other] = Other

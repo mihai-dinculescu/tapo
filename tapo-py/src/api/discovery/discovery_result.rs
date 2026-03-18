@@ -1,8 +1,8 @@
 use pyo3::prelude::*;
 use tapo::responses::{
-    DeviceInfoColorLightResult, DeviceInfoGenericResult, DeviceInfoHubResult,
-    DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
-    DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
+    DeviceInfoBasicResult, DeviceInfoColorLightResult, DeviceInfoHubResult, DeviceInfoLightResult,
+    DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult, DeviceInfoPowerStripResult,
+    DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
 };
 use tapo::{DeviceType, DiscoveryError, DiscoveryResult};
 
@@ -14,8 +14,8 @@ use crate::api::{
 #[pyclass(name = "DiscoveryResult")]
 #[allow(clippy::large_enum_variant)]
 pub enum PyDiscoveryResult {
-    GenericDevice {
-        device_info: DeviceInfoGenericResult,
+    Other {
+        device_info: DeviceInfoBasicResult,
     },
     Light {
         device_info: DeviceInfoLightResult,
@@ -60,7 +60,6 @@ impl PyDiscoveryResult {
     #[getter]
     pub fn device_type(&self) -> DeviceType {
         match self {
-            PyDiscoveryResult::GenericDevice { .. } => DeviceType::GenericDevice,
             PyDiscoveryResult::Light { .. } => DeviceType::Light,
             PyDiscoveryResult::ColorLight { .. } => DeviceType::ColorLight,
             PyDiscoveryResult::RgbLightStrip { .. } => DeviceType::RgbLightStrip,
@@ -72,13 +71,13 @@ impl PyDiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring
             }
             PyDiscoveryResult::Hub { .. } => DeviceType::Hub,
+            PyDiscoveryResult::Other { .. } => DeviceType::Other,
         }
     }
 
     #[getter]
     pub fn model(&self) -> &str {
         match self {
-            PyDiscoveryResult::GenericDevice { device_info, .. } => &device_info.model,
             PyDiscoveryResult::Light { device_info, .. } => &device_info.model,
             PyDiscoveryResult::ColorLight { device_info, .. } => &device_info.model,
             PyDiscoveryResult::RgbLightStrip { device_info, .. } => &device_info.model,
@@ -88,13 +87,13 @@ impl PyDiscoveryResult {
             PyDiscoveryResult::PowerStrip { device_info, .. } => &device_info.model,
             PyDiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.model,
             PyDiscoveryResult::Hub { device_info, .. } => &device_info.model,
+            PyDiscoveryResult::Other { device_info, .. } => &device_info.model,
         }
     }
 
     #[getter]
     pub fn ip(&self) -> &str {
         match self {
-            PyDiscoveryResult::GenericDevice { device_info, .. } => &device_info.ip,
             PyDiscoveryResult::Light { device_info, .. } => &device_info.ip,
             PyDiscoveryResult::ColorLight { device_info, .. } => &device_info.ip,
             PyDiscoveryResult::RgbLightStrip { device_info, .. } => &device_info.ip,
@@ -104,13 +103,13 @@ impl PyDiscoveryResult {
             PyDiscoveryResult::PowerStrip { device_info, .. } => &device_info.ip,
             PyDiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.ip,
             PyDiscoveryResult::Hub { device_info, .. } => &device_info.ip,
+            PyDiscoveryResult::Other { device_info, .. } => &device_info.ip,
         }
     }
 
     #[getter]
     pub fn device_id(&self) -> &str {
         match self {
-            PyDiscoveryResult::GenericDevice { device_info, .. } => &device_info.device_id,
             PyDiscoveryResult::Light { device_info, .. } => &device_info.device_id,
             PyDiscoveryResult::ColorLight { device_info, .. } => &device_info.device_id,
             PyDiscoveryResult::RgbLightStrip { device_info, .. } => &device_info.device_id,
@@ -122,13 +121,13 @@ impl PyDiscoveryResult {
                 &device_info.device_id
             }
             PyDiscoveryResult::Hub { device_info, .. } => &device_info.device_id,
+            PyDiscoveryResult::Other { device_info, .. } => &device_info.device_id,
         }
     }
 
     #[getter]
     pub fn nickname(&self) -> &str {
         match self {
-            PyDiscoveryResult::GenericDevice { device_info, .. } => &device_info.nickname,
             PyDiscoveryResult::Light { device_info, .. } => &device_info.nickname,
             PyDiscoveryResult::ColorLight { device_info, .. } => &device_info.nickname,
             PyDiscoveryResult::RgbLightStrip { device_info, .. } => &device_info.nickname,
@@ -140,6 +139,7 @@ impl PyDiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring.as_str()
             }
             PyDiscoveryResult::Hub { device_info, .. } => &device_info.nickname,
+            PyDiscoveryResult::Other { device_info, .. } => &device_info.nickname,
         }
     }
 }
@@ -182,9 +182,6 @@ pub fn convert_result_to_maybe_py(
 
 fn convert_result_to_py(result: DiscoveryResult) -> PyDiscoveryResult {
     match result {
-        DiscoveryResult::GenericDevice { device_info } => PyDiscoveryResult::GenericDevice {
-            device_info: *device_info,
-        },
         DiscoveryResult::Light {
             device_info,
             handler,
@@ -247,6 +244,9 @@ fn convert_result_to_py(result: DiscoveryResult) -> PyDiscoveryResult {
         } => PyDiscoveryResult::Hub {
             device_info: *device_info,
             handler: PyHubHandler::new(handler),
+        },
+        DiscoveryResult::Other { device_info } => PyDiscoveryResult::Other {
+            device_info: *device_info,
         },
     }
 }

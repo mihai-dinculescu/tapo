@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{DecodableResultExt, DefaultStateType, TapoResponseExt, decode_value};
 
-/// Device info of Tapo L530, L535 and L630. Superset of [`crate::responses::DeviceInfoGenericResult`].
+/// Device info of Tapo L530, L535 and L630.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct DeviceInfoColorLightResult {
     //
-    // Inherited from DeviceInfoGenericResult
+    // Common properties
     //
     pub device_id: String,
     pub r#type: String,

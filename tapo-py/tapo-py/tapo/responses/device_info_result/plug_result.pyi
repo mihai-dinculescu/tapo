@@ -4,7 +4,7 @@ from tapo.responses.device_info_result.default_plug_state import Custom, LastSta
 from tapo.to_dict_ext import ToDictExt
 
 class DeviceInfoPlugResult(ToDictExt):
-    """Device info of Tapo P100 and P105. Superset of `GenericDeviceInfoResult`."""
+    """Device info of Tapo P100 and P105."""
 
     device_id: str
     type: str

@@ -2,7 +2,7 @@ from typing import Optional
 from tapo.to_dict_ext import ToDictExt
 
 class DeviceInfoHubResult(ToDictExt):
-    """Device info of Tapo H100. Superset of `GenericDeviceInfoResult`."""
+    """Device info of Tapo H100."""
 
     device_id: str
     type: str

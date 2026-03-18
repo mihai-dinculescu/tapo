@@ -22,7 +22,6 @@ class LightHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, DebugExt):
 
         Returns:
             DeviceInfoLightResult: Device info of Tapo L510, L520 and L610.
-            Superset of `GenericDeviceInfoResult`.
         """
 
     async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:

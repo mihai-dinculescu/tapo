@@ -10,7 +10,7 @@ from tapo.responses.device_info_result.power_status import (
 from tapo.to_dict_ext import ToDictExt
 
 class DeviceInfoPlugEnergyMonitoringResult(ToDictExt):
-    """Device info of Tapo P110, P110M and P115. Superset of `GenericDeviceInfoResult`."""
+    """Device info of Tapo P110, P110M and P115."""
 
     device_id: str
     type: str

@@ -34,7 +34,6 @@ class PlugEnergyMonitoringHandler(OnOffExt, DeviceManagementExt, RefreshSessionE
 
         Returns:
             DeviceInfoPlugEnergyMonitoringResult: Device info of P110, P110M and P115.
-            Superset of `GenericDeviceInfoResult`.
         """
 
     async def get_current_power(self) -> CurrentPowerResult:

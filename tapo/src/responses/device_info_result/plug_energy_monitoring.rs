@@ -7,13 +7,13 @@ use super::{
     ChargingStatus, DefaultPlugState, OvercurrentStatus, OverheatStatus, PowerProtectionStatus,
 };
 
-/// Device info of Tapo P110, P110M and P115. Superset of [`crate::responses::DeviceInfoGenericResult`].
+/// Device info of Tapo P110, P110M and P115.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs, deprecated)]
 pub struct DeviceInfoPlugEnergyMonitoringResult {
     //
-    // Inherited from DeviceInfoGenericResult
+    // Common properties
     //
     pub device_id: String,
     pub r#type: String,

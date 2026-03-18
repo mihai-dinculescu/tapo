@@ -21,7 +21,6 @@ class RgbLightStripHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, Deb
 
         Returns:
             DeviceInfoRgbLightStripResult: Device info of Tapo L900.
-            Superset of `GenericDeviceInfoResult`.
         """
 
     async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:

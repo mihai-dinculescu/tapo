@@ -5,7 +5,7 @@ from tapo.requests.set_device_info.lighting_effect import LightingEffect
 from tapo.to_dict_ext import ToDictExt
 
 class DeviceInfoRgbicLightStripResult(ToDictExt):
-    """Device info of Tapo L920 and L930. Superset of `GenericDeviceInfoResult`."""
+    """Device info of Tapo L920 and L930."""
 
     device_id: str
     type: str

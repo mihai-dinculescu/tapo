@@ -22,7 +22,6 @@ class PlugHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, DebugExt):
 
         Returns:
             DeviceInfoPlugResult: Device info of Tapo P100 and P105.
-            Superset of `GenericDeviceInfoResult`.
         """
 
     async def get_device_usage(self) -> DeviceUsageResult:

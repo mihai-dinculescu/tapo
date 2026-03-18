@@ -1,8 +1,8 @@
 from typing import Optional
 from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoGenericResult(ToDictExt):
-    """Device info of a Generic Tapo device."""
+class DeviceInfoBasicResult(ToDictExt):
+    """Basic device info of a Tapo device."""
 
     device_id: str
     type: str

@@ -15,9 +15,9 @@ use tapo::responses::{
     AutoOffStatus, ColorLightState, Component, CurrentPowerResult, DefaultBrightnessState,
     DefaultColorLightState, DefaultLightState, DefaultPlugState, DefaultPowerType,
     DefaultRgbLightStripState, DefaultRgbicLightStripState, DefaultStateType,
-    DeviceInfoColorLightResult, DeviceInfoGenericResult, DeviceInfoHubResult,
-    DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
-    DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
+    DeviceInfoBasicResult, DeviceInfoColorLightResult, DeviceInfoHubResult, DeviceInfoLightResult,
+    DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult, DeviceInfoPowerStripResult,
+    DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataIntervalResult,
     EnergyDataResult, EnergyUsageResult, KE100Result, OtherResult, OvercurrentStatus,
     OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
@@ -149,8 +149,8 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PowerProtectionStatus>()?;
     module.add_class::<UsageByPeriodResult>()?;
 
-    // device info: generic
-    module.add_class::<DeviceInfoGenericResult>()?;
+    // device info: other
+    module.add_class::<DeviceInfoBasicResult>()?;
 
     // device info: light
     module.add_class::<DeviceInfoLightResult>()?;

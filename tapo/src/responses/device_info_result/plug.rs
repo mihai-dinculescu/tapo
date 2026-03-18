@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{DecodableResultExt, DefaultPlugState, TapoResponseExt, decode_value};
 
-/// Device info of Tapo P100 and P105. Superset of [`crate::responses::DeviceInfoGenericResult`].
+/// Device info of Tapo P100 and P105.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct DeviceInfoPlugResult {
     //
-    // Inherited from DeviceInfoGenericResult
+    // Common properties
     //
     pub device_id: String,
     pub r#type: String,

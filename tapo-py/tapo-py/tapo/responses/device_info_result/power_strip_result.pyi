@@ -2,7 +2,7 @@ from typing import Optional
 from tapo.to_dict_ext import ToDictExt
 
 class DeviceInfoPowerStripResult(ToDictExt):
-    """Device info of Tapo P300, P304M, P306 and P316M. Superset of `GenericDeviceInfoResult`."""
+    """Device info of Tapo P300, P304M, P306 and P316M."""
 
     avatar: str
     device_id: str

@@ -27,7 +27,7 @@ class PowerStripEnergyMonitoringHandler(DeviceManagementExt, RefreshSessionExt, 
         try `PowerStripEnergyMonitoringHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoPowerStripResult: Device info of Tapo P300, P304M, P306 and P316M. Superset of `DeviceInfoGenericResult`.
+            DeviceInfoPowerStripResult: Device info of Tapo P300, P304M, P306 and P316M.
         """
 
     async def get_child_device_list(

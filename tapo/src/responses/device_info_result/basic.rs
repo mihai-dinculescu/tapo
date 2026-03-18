@@ -3,13 +3,11 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{DecodableResultExt, TapoResponseExt, decode_value};
 
-/// Device info of a Generic Tapo device.
-/// Please open an [issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues) if you'd like to discuss
-/// the possibility of adding support for a specific type of device that is currently unsupported.
+/// Basic device info of a Tapo device.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
-pub struct DeviceInfoGenericResult {
+pub struct DeviceInfoBasicResult {
     pub device_id: String,
     pub r#type: String,
     pub model: String,
@@ -38,11 +36,11 @@ pub struct DeviceInfoGenericResult {
 }
 
 #[cfg(feature = "python")]
-crate::impl_to_dict!(DeviceInfoGenericResult);
+crate::impl_to_dict!(DeviceInfoBasicResult);
 
-impl TapoResponseExt for DeviceInfoGenericResult {}
+impl TapoResponseExt for DeviceInfoBasicResult {}
 
-impl DecodableResultExt for DeviceInfoGenericResult {
+impl DecodableResultExt for DeviceInfoBasicResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.ssid = decode_value(&self.ssid)?;
         self.nickname = decode_value(&self.nickname)?;

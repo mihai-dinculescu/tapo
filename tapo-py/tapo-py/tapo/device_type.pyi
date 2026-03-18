@@ -3,8 +3,8 @@ import enum
 class DeviceType(enum.Enum):
     """Categorizes a Tapo device by its capabilities."""
 
-    GenericDevice = ...
-    """A generic/unknown Tapo device."""
+    Other = ...
+    """A Tapo device without a specific handler implementation."""
 
     Light = ...
     """Tapo L510, L520, L610 — dimmable lights."""

@@ -18,7 +18,9 @@ file. This change log follows the conventions of
 
 - `ChildDeviceHubResult::Other`: changed from a unit variant to `Other(Box<OtherResult>)`, exposing device info for unrecognized models.
 - `ApiClient::discover_devices`: sped up discovery by inferring the authentication protocol (KLAP or AES) from the discovery message instead of probing the device.
-- `DiscoveryResult::GenericDevice`: removed `handler` field. The variant now contains only `device_info`.
+- `DiscoveryResult::GenericDevice`: renamed to `DiscoveryResult::Other`. Removed `handler` field — the variant now contains only `device_info`.
+- `DeviceType::GenericDevice`: renamed to `DeviceType::Other`.
+- `DeviceInfoGenericResult`: renamed to `DeviceInfoBasicResult`.
 
 ### Removed
 
@@ -38,7 +40,9 @@ file. This change log follows the conventions of
 
 - `HubHandler`: changed `get_child_device_list()` to return `OtherResult` instead of `None` for unsupported devices.
 - `ApiClient.discover_devices`: sped up discovery by inferring the authentication protocol (KLAP or AES) from the discovery message instead of probing the device.
-- `DiscoveryResult.GenericDevice`: removed `handler` field. The variant now contains only `device_info`.
+- `DiscoveryResult.GenericDevice`: renamed to `DiscoveryResult.Other`. Removed `handler` field — the variant now contains only `device_info`.
+- `DeviceType.GenericDevice`: renamed to `DeviceType.Other`.
+- `DeviceInfoGenericResult`: renamed to `DeviceInfoBasicResult`.
 
 ### Removed
 

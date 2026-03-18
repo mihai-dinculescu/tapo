@@ -24,7 +24,6 @@ class ColorLightHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, DebugE
 
         Returns:
             DeviceInfoColorLightResult: Device info of Tapo L530, L535 and L630.
-            Superset of `GenericDeviceInfoResult`.
         """
 
     async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:

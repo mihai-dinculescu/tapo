@@ -42,7 +42,6 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
 
         Returns:
             DeviceInfoHubResult: Device info of Tapo H100.
-            Superset of `GenericDeviceInfoResult`.
         """
 
     async def get_child_device_list(

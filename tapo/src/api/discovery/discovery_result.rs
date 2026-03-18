@@ -1,7 +1,7 @@
 use anyhow::Context;
 
 use crate::responses::{
-    DecodableResultExt, DeviceInfoColorLightResult, DeviceInfoGenericResult, DeviceInfoHubResult,
+    DecodableResultExt, DeviceInfoBasicResult, DeviceInfoColorLightResult, DeviceInfoHubResult,
     DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
     DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
 };
@@ -19,18 +19,18 @@ use super::discovery_raw_result::DiscoveryRawResult;
 #[derive(Debug)]
 /// Result of the device discovery process.
 pub enum DiscoveryResult {
-    /// A Generic Tapo device.
+    /// A Tapo device without a specific handler implementation.
     ///
-    /// If you believe this device is already supported, or would like to explore adding support for a currently
+    /// If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
     /// unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
     /// to start the discussion.
-    GenericDevice {
-        /// Device info of a Generic Tapo device.
+    Other {
+        /// Device info of a Tapo device without a specific handler implementation.
         ///
-        /// If you believe this device is already supported, or would like to explore adding support for a currently
+        /// If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
         /// unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
         /// to start the discussion.
-        device_info: Box<DeviceInfoGenericResult>,
+        device_info: Box<DeviceInfoBasicResult>,
     },
     /// Tapo L510, L520 and L610 devices.
     Light {
@@ -211,9 +211,9 @@ impl DiscoveryResult {
             DeviceType::Hub => {
                 map_device_model!(Hub, DeviceInfoHubResult, HubHandler, device_info, client)
             }
-            DeviceType::GenericDevice => DiscoveryResult::GenericDevice {
+            DeviceType::Other => DiscoveryResult::Other {
                 device_info: Box::new(
-                    serde_json::from_value::<DeviceInfoGenericResult>(device_info)?.decode()?,
+                    serde_json::from_value::<DeviceInfoBasicResult>(device_info)?.decode()?,
                 ),
             },
         };
@@ -224,7 +224,6 @@ impl DiscoveryResult {
     /// Returns the [`DeviceType`] category of this discovery result.
     pub fn device_type(&self) -> DeviceType {
         match self {
-            DiscoveryResult::GenericDevice { .. } => DeviceType::GenericDevice,
             DiscoveryResult::Light { .. } => DeviceType::Light,
             DiscoveryResult::ColorLight { .. } => DeviceType::ColorLight,
             DiscoveryResult::RgbLightStrip { .. } => DeviceType::RgbLightStrip,
@@ -236,13 +235,13 @@ impl DiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring
             }
             DiscoveryResult::Hub { .. } => DeviceType::Hub,
+            DiscoveryResult::Other { .. } => DeviceType::Other,
         }
     }
 
     /// Returns the model string (e.g. "L530", "P110").
     pub fn model(&self) -> &str {
         match self {
-            DiscoveryResult::GenericDevice { device_info, .. } => &device_info.model,
             DiscoveryResult::Light { device_info, .. } => &device_info.model,
             DiscoveryResult::ColorLight { device_info, .. } => &device_info.model,
             DiscoveryResult::RgbLightStrip { device_info, .. } => &device_info.model,
@@ -252,13 +251,13 @@ impl DiscoveryResult {
             DiscoveryResult::PowerStrip { device_info, .. } => &device_info.model,
             DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.model,
             DiscoveryResult::Hub { device_info, .. } => &device_info.model,
+            DiscoveryResult::Other { device_info, .. } => &device_info.model,
         }
     }
 
     /// Returns the IP address of the device.
     pub fn ip(&self) -> &str {
         match self {
-            DiscoveryResult::GenericDevice { device_info, .. } => &device_info.ip,
             DiscoveryResult::Light { device_info, .. } => &device_info.ip,
             DiscoveryResult::ColorLight { device_info, .. } => &device_info.ip,
             DiscoveryResult::RgbLightStrip { device_info, .. } => &device_info.ip,
@@ -268,13 +267,13 @@ impl DiscoveryResult {
             DiscoveryResult::PowerStrip { device_info, .. } => &device_info.ip,
             DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.ip,
             DiscoveryResult::Hub { device_info, .. } => &device_info.ip,
+            DiscoveryResult::Other { device_info, .. } => &device_info.ip,
         }
     }
 
     /// Returns the device ID.
     pub fn device_id(&self) -> &str {
         match self {
-            DiscoveryResult::GenericDevice { device_info, .. } => &device_info.device_id,
             DiscoveryResult::Light { device_info, .. } => &device_info.device_id,
             DiscoveryResult::ColorLight { device_info, .. } => &device_info.device_id,
             DiscoveryResult::RgbLightStrip { device_info, .. } => &device_info.device_id,
@@ -286,6 +285,7 @@ impl DiscoveryResult {
                 &device_info.device_id
             }
             DiscoveryResult::Hub { device_info, .. } => &device_info.device_id,
+            DiscoveryResult::Other { device_info, .. } => &device_info.device_id,
         }
     }
 
@@ -294,7 +294,6 @@ impl DiscoveryResult {
     /// PowerStrip variants lack a nickname field, so a descriptive literal is returned instead.
     pub fn nickname(&self) -> &str {
         match self {
-            DiscoveryResult::GenericDevice { device_info, .. } => &device_info.nickname,
             DiscoveryResult::Light { device_info, .. } => &device_info.nickname,
             DiscoveryResult::ColorLight { device_info, .. } => &device_info.nickname,
             DiscoveryResult::RgbLightStrip { device_info, .. } => &device_info.nickname,
@@ -306,6 +305,7 @@ impl DiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring.as_str()
             }
             DiscoveryResult::Hub { device_info, .. } => &device_info.nickname,
+            DiscoveryResult::Other { device_info, .. } => &device_info.nickname,
         }
     }
 }
