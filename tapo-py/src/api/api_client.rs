@@ -2,19 +2,17 @@ use std::time::Duration;
 
 use pyo3::prelude::*;
 use tapo::{
-    ApiClient, ColorLightHandler, DeviceDiscovery, DeviceDiscoveryRaw, Error, GenericDeviceHandler,
-    HubHandler, LightHandler, PlugEnergyMonitoringHandler, PlugHandler,
-    PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
-    RgbicLightStripHandler,
+    ApiClient, ColorLightHandler, DeviceDiscovery, DeviceDiscoveryRaw, Error, HubHandler,
+    LightHandler, PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler,
+    PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
 };
 
 use crate::call_handler_constructor;
 
 use super::{
-    PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryRaw, PyGenericDeviceHandler,
-    PyHubHandler, PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler,
-    PyPowerStripEnergyMonitoringHandler, PyPowerStripHandler, PyRgbLightStripHandler,
-    PyRgbicLightStripHandler,
+    PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryRaw, PyHubHandler, PyLightHandler,
+    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
+    PyPowerStripHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler,
 };
 
 #[pyclass(name = "ApiClient")]
@@ -77,12 +75,6 @@ impl PyApiClient {
 /// Device handler builders.
 #[pymethods]
 impl PyApiClient {
-    pub async fn generic_device(&self, ip_address: String) -> PyResult<PyGenericDeviceHandler> {
-        let handler: GenericDeviceHandler =
-            call_handler_constructor!(self, tapo::ApiClient::generic_device, ip_address);
-        Ok(PyGenericDeviceHandler::new(handler))
-    }
-
     pub async fn l510(&self, ip_address: String) -> PyResult<PyLightHandler> {
         let handler: LightHandler =
             call_handler_constructor!(self, tapo::ApiClient::l510, ip_address);

@@ -32,9 +32,6 @@ async fn get_device_info(
 ) -> Result<serde_json::Value, TapoMcpError> {
     match checked {
         CheckedDevice::Parent(device) => match device {
-            DiscoveryResult::GenericDevice { device_info, .. } => {
-                Ok(serde_json::to_value(&*device_info)?)
-            }
             DiscoveryResult::Light { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
             DiscoveryResult::ColorLight { device_info, .. } => {
                 Ok(serde_json::to_value(&*device_info)?)
@@ -56,6 +53,9 @@ async fn get_device_info(
                 Ok(serde_json::to_value(&*device_info)?)
             }
             DiscoveryResult::Hub { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
+            DiscoveryResult::GenericDevice { device_info } => {
+                Ok(serde_json::to_value(&*device_info)?)
+            }
         },
         CheckedDevice::Child { parent, child_id } => match parent {
             DiscoveryResult::PowerStrip { handler, .. } => {

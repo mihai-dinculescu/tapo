@@ -7,16 +7,15 @@ use tapo::responses::{
 use tapo::{DeviceType, DiscoveryError, DiscoveryResult};
 
 use crate::api::{
-    PyColorLightHandler, PyGenericDeviceHandler, PyHubHandler, PyLightHandler,
-    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
-    PyPowerStripHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler,
+    PyColorLightHandler, PyHubHandler, PyLightHandler, PyPlugEnergyMonitoringHandler,
+    PyPlugHandler, PyPowerStripEnergyMonitoringHandler, PyPowerStripHandler,
+    PyRgbLightStripHandler, PyRgbicLightStripHandler,
 };
 #[pyclass(name = "DiscoveryResult")]
 #[allow(clippy::large_enum_variant)]
 pub enum PyDiscoveryResult {
     GenericDevice {
         device_info: DeviceInfoGenericResult,
-        handler: PyGenericDeviceHandler,
     },
     Light {
         device_info: DeviceInfoLightResult,
@@ -183,12 +182,8 @@ pub fn convert_result_to_maybe_py(
 
 fn convert_result_to_py(result: DiscoveryResult) -> PyDiscoveryResult {
     match result {
-        DiscoveryResult::GenericDevice {
-            device_info,
-            handler,
-        } => PyDiscoveryResult::GenericDevice {
+        DiscoveryResult::GenericDevice { device_info } => PyDiscoveryResult::GenericDevice {
             device_info: *device_info,
-            handler: PyGenericDeviceHandler::new(handler),
         },
         DiscoveryResult::Light {
             device_info,

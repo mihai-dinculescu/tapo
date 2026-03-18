@@ -33,10 +33,6 @@ async def main():
             discovery_result = discovery_result.get()
 
             match discovery_result:
-                case DiscoveryResult.GenericDevice(device_info, _handler):
-                    print(
-                        f"Found Unsupported Device '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."
-                    )
                 case DiscoveryResult.Light(device_info, _handler):
                     print(
                         f"Found '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."
@@ -72,6 +68,10 @@ async def main():
                 case DiscoveryResult.Hub(device_info, _handler):
                     print(
                         f"Found '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."
+                    )
+                case DiscoveryResult.GenericDevice(device_info):
+                    print(
+                        f"Found Unsupported Device '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."
                     )
         except Exception as e:
             print(f"Error discovering device: {e}")

@@ -3,7 +3,6 @@ from typing import Protocol, Type, Union
 
 from tapo import (
     ColorLightHandler,
-    GenericDeviceHandler,
     HubHandler,
     LightHandler,
     PlugEnergyMonitoringHandler,
@@ -69,18 +68,7 @@ class GenericDevice(DiscoveryResultExt):
     to start the discussion.
     """
 
-    handler: GenericDeviceHandler
-    """Handler for generic devices. It provides the functionality common to all Tapo [devices](https://www.tapo.com/en/).
-
-    If you believe this device is already supported, or would like to explore adding support for a currently
-    unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
-    to start the discussion.
-    """
-
-    __match_args__ = (
-        "device_info",
-        "handler",
-    )
+    __match_args__ = ("device_info",)
 
 @dataclass
 class Light(DiscoveryResultExt):

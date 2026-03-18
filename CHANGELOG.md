@@ -18,6 +18,12 @@ file. This change log follows the conventions of
 
 - `ChildDeviceHubResult::Other`: changed from a unit variant to `Other(Box<OtherResult>)`, exposing device info for unrecognized models.
 - `ApiClient::discover_devices`: sped up discovery by inferring the authentication protocol (KLAP or AES) from the discovery message instead of probing the device.
+- `DiscoveryResult::GenericDevice`: removed `handler` field. The variant now contains only `device_info`.
+
+### Removed
+
+- `GenericDeviceHandler`: removed. Use a specific handler type (e.g. `l530`, `p110`) instead.
+- `ApiClient::generic_device`: removed method for creating a `GenericDeviceHandler`.
 
 ## [Python Unreleased][Unreleased]
 
@@ -32,6 +38,12 @@ file. This change log follows the conventions of
 
 - `HubHandler`: changed `get_child_device_list()` to return `OtherResult` instead of `None` for unsupported devices.
 - `ApiClient.discover_devices`: sped up discovery by inferring the authentication protocol (KLAP or AES) from the discovery message instead of probing the device.
+- `DiscoveryResult.GenericDevice`: removed `handler` field. The variant now contains only `device_info`.
+
+### Removed
+
+- `GenericDeviceHandler`: removed. Use a specific handler type (e.g. `l530`, `p110`) instead.
+- `ApiClient.generic_device`: removed method for creating a `GenericDeviceHandler`.
 
 ## [Rust v0.8.12][v0.8.12] - 2026-03-11
 

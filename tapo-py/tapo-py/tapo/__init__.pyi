@@ -5,7 +5,6 @@ from .device_discovery_raw import *
 from .device_type import *
 from .discovery_raw_result import *
 from .discovery_result import *
-from .generic_device_handler import *
 from .hub_handler import *
 from .ke100_handler import *
 from .light_handler import *

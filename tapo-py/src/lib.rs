@@ -31,13 +31,12 @@ use tapo::{DeviceType, DiscoveryRawResult};
 
 use api::{
     PyApiClient, PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryIter,
-    PyDeviceDiscoveryRaw, PyDeviceDiscoveryRawIter, PyDiscoveryResult, PyGenericDeviceHandler,
-    PyHubHandler, PyKE100Handler, PyLightHandler, PyMaybeDiscoveryRawResult,
-    PyMaybeDiscoveryResult, PyPlugEnergyMonitoringHandler, PyPlugHandler,
-    PyPowerStripEnergyMonitoringHandler, PyPowerStripHandler,
-    PyPowerStripPlugEnergyMonitoringHandler, PyPowerStripPlugHandler, PyRgbLightStripHandler,
-    PyRgbicLightStripHandler, PyS200Handler, PyS210Handler, PyT31XHandler, PyT100Handler,
-    PyT110Handler, PyT300Handler,
+    PyDeviceDiscoveryRaw, PyDeviceDiscoveryRawIter, PyDiscoveryResult, PyHubHandler,
+    PyKE100Handler, PyLightHandler, PyMaybeDiscoveryRawResult, PyMaybeDiscoveryResult,
+    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
+    PyPowerStripHandler, PyPowerStripPlugEnergyMonitoringHandler, PyPowerStripPlugHandler,
+    PyRgbLightStripHandler, PyRgbicLightStripHandler, PyS200Handler, PyS210Handler, PyT31XHandler,
+    PyT100Handler, PyT110Handler, PyT300Handler,
 };
 use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyLightingEffect,
@@ -99,7 +98,6 @@ fn register_requests(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
 fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyApiClient>()?;
     module.add_class::<PyColorLightHandler>()?;
-    module.add_class::<PyGenericDeviceHandler>()?;
     module.add_class::<PyLightHandler>()?;
     module.add_class::<PyPlugEnergyMonitoringHandler>()?;
     module.add_class::<PyPlugHandler>()?;

@@ -6,9 +6,9 @@ use crate::responses::{
     DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
 };
 use crate::{
-    ApiClient, ColorLightHandler, Error, GenericDeviceHandler, HubHandler, LightHandler,
-    PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
-    RgbLightStripHandler, RgbicLightStripHandler,
+    ApiClient, ColorLightHandler, Error, HubHandler, LightHandler, PlugEnergyMonitoringHandler,
+    PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
+    RgbicLightStripHandler,
 };
 
 use crate::api::protocol::AuthProtocol;
@@ -31,12 +31,6 @@ pub enum DiscoveryResult {
         /// unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
         /// to start the discussion.
         device_info: Box<DeviceInfoGenericResult>,
-        /// Handler for generic devices. It provides the functionality common to all Tapo [devices](https://www.tapo.com/en/).
-        ///
-        /// If you believe this device is already supported, or would like to explore adding support for a currently
-        /// unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
-        /// to start the discussion.
-        handler: GenericDeviceHandler,
     },
     /// Tapo L510, L520 and L610 devices.
     Light {
@@ -114,12 +108,12 @@ pub enum DiscoveryResult {
 }
 
 macro_rules! map_device_model {
-    ($discovery_result_type:ident, $device_info_type:ident, $device_info:expr, $handler:expr) => {{
+    ($discovery_result_type:ident, $device_info_type:ident, $handler_type:ident, $device_info:expr, $client:expr) => {{
         DiscoveryResult::$discovery_result_type {
             device_info: Box::new(
                 serde_json::from_value::<$device_info_type>($device_info)?.decode()?,
             ),
-            handler: $handler.into(),
+            handler: $handler_type::new($client.clone()),
         }
     }};
 }
@@ -134,8 +128,7 @@ impl DiscoveryResult {
             .login(raw_result.ip.to_string(), auth_protocol)
             .await?;
         let device_info: serde_json::Value = client.get_device_info().await?;
-        let handler =
-            GenericDeviceHandler::new(std::sync::Arc::new(tokio::sync::RwLock::new(client)));
+        let client = std::sync::Arc::new(tokio::sync::RwLock::new(client));
 
         let model = device_info
             .as_object()
@@ -150,55 +143,79 @@ impl DiscoveryResult {
 
         let result = match device_type {
             DeviceType::Light => {
-                map_device_model!(Light, DeviceInfoLightResult, device_info, handler)
+                map_device_model!(
+                    Light,
+                    DeviceInfoLightResult,
+                    LightHandler,
+                    device_info,
+                    client
+                )
             }
             DeviceType::ColorLight => {
-                map_device_model!(ColorLight, DeviceInfoColorLightResult, device_info, handler)
+                map_device_model!(
+                    ColorLight,
+                    DeviceInfoColorLightResult,
+                    ColorLightHandler,
+                    device_info,
+                    client
+                )
             }
             DeviceType::RgbLightStrip => {
                 map_device_model!(
                     RgbLightStrip,
                     DeviceInfoRgbLightStripResult,
+                    RgbLightStripHandler,
                     device_info,
-                    handler
+                    client
                 )
             }
             DeviceType::RgbicLightStrip => {
                 map_device_model!(
                     RgbicLightStrip,
                     DeviceInfoRgbicLightStripResult,
+                    RgbicLightStripHandler,
                     device_info,
-                    handler
+                    client
                 )
             }
             DeviceType::Plug => {
-                map_device_model!(Plug, DeviceInfoPlugResult, device_info, handler)
+                map_device_model!(Plug, DeviceInfoPlugResult, PlugHandler, device_info, client)
             }
             DeviceType::PlugEnergyMonitoring => {
                 map_device_model!(
                     PlugEnergyMonitoring,
                     DeviceInfoPlugEnergyMonitoringResult,
+                    PlugEnergyMonitoringHandler,
                     device_info,
-                    handler
+                    client
                 )
             }
             DeviceType::PowerStrip => {
-                map_device_model!(PowerStrip, DeviceInfoPowerStripResult, device_info, handler)
+                map_device_model!(
+                    PowerStrip,
+                    DeviceInfoPowerStripResult,
+                    PowerStripHandler,
+                    device_info,
+                    client
+                )
             }
             DeviceType::PowerStripEnergyMonitoring => {
                 map_device_model!(
                     PowerStripEnergyMonitoring,
                     DeviceInfoPowerStripResult,
+                    PowerStripEnergyMonitoringHandler,
                     device_info,
-                    handler
+                    client
                 )
             }
             DeviceType::Hub => {
-                map_device_model!(Hub, DeviceInfoHubResult, device_info, handler)
+                map_device_model!(Hub, DeviceInfoHubResult, HubHandler, device_info, client)
             }
-            DeviceType::GenericDevice => {
-                map_device_model!(GenericDevice, DeviceInfoGenericResult, device_info, handler)
-            }
+            DeviceType::GenericDevice => DiscoveryResult::GenericDevice {
+                device_info: Box::new(
+                    serde_json::from_value::<DeviceInfoGenericResult>(device_info)?.decode()?,
+                ),
+            },
         };
 
         Ok(result)

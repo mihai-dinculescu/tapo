@@ -27,7 +27,6 @@ from typing import Optional
 from .color_light_handler import ColorLightHandler
 from .device_discovery import DeviceDiscovery
 from .device_discovery_raw import DeviceDiscoveryRaw
-from .generic_device_handler import GenericDeviceHandler
 from .hub_handler import HubHandler
 from .light_handler import LightHandler
 from .plug_energy_monitoring_handler import PlugEnergyMonitoringHandler
@@ -139,25 +138,6 @@ class ApiClient:
 
         Returns:
             AsyncIterator[MaybeDiscoveryRawResult]: An asynchronous iterator that yields `MaybeDiscoveryRawResult` objects.
-        """
-
-    async def generic_device(self, ip_address: str) -> GenericDeviceHandler:
-        """Specializes the given `ApiClient` into an authenticated `GenericDeviceHandler`.
-
-        Args:
-            ip_address (str): The IP address of the device
-
-        Returns:
-            GenericDeviceHandler: Handler for generic devices. It provides the
-            functionality common to all Tapo [devices](https://www.tapo.com/en/).
-
-        Example:
-            ```python
-            client = ApiClient("tapo-username@example.com", "tapo-password")
-            device = await client.generic_device("192.168.1.100")
-
-            await device.on()
-            ```
         """
 
     async def l510(self, ip_address: str) -> LightHandler:

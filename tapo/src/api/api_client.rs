@@ -31,8 +31,8 @@ use super::discovery::DeviceDiscovery;
 use super::discovery::DeviceDiscoveryRaw;
 use super::protocol::{AuthProtocol, TapoProtocol};
 use super::{
-    ColorLightHandler, GenericDeviceHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler,
-    PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
+    ColorLightHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler, PlugHandler,
+    PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
     RgbicLightStripHandler,
 };
 
@@ -168,34 +168,6 @@ impl ApiClient {
 
 /// Device handler builders.
 impl ApiClient {
-    /// Specializes the given [`ApiClient`] into an authenticated [`GenericDeviceHandler`].
-    ///
-    /// # Arguments
-    ///
-    /// * `ip_address` - the IP address of the device
-    ///
-    /// # Example
-    ///
-    /// ```rust,no_run
-    /// # use tapo::ApiClient;
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
-    ///     .generic_device("192.168.1.100")
-    ///     .await?;
-    /// device.on().await?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    pub async fn generic_device(
-        mut self,
-        ip_address: impl Into<String>,
-    ) -> Result<GenericDeviceHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
-
-        Ok(GenericDeviceHandler::new(Arc::new(RwLock::new(self))))
-    }
-
     /// Specializes the given [`ApiClient`] into an authenticated [`LightHandler`].
     ///
     /// # Arguments

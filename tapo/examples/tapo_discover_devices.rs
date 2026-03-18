@@ -38,18 +38,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     while let Some(discovery_result) = discovery.next().await {
         if let Ok(discovery_result) = discovery_result {
             match discovery_result {
-                DiscoveryResult::GenericDevice {
-                    device_info,
-                    handler: _,
-                } => {
-                    // If you believe this device is already supported, or would like to explore adding support for a currently
-                    // unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
-                    // to start the discussion.
-                    warn!(
-                        "Found Unsupported Device {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, device_info.ip
-                    );
-                }
                 DiscoveryResult::Light {
                     device_info,
                     handler: _,
@@ -128,6 +116,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 } => {
                     info!(
                         "Found {:?} of model {:?} at IP address {:?}.",
+                        device_info.nickname, device_info.model, device_info.ip
+                    );
+                }
+                DiscoveryResult::GenericDevice { device_info } => {
+                    // If you believe this device is already supported, or would like to explore adding support for a currently
+                    // unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
+                    // to start the discussion.
+                    warn!(
+                        "Found Unsupported Device {:?} of model {:?} at IP address {:?}.",
                         device_info.nickname, device_info.model, device_info.ip
                     );
                 }
