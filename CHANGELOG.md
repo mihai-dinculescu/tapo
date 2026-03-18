@@ -75,6 +75,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.2.1][tapo-mcp-v0.2.1] - 2026-03-18
+
 ### Added
 
 - `CI`: added automated publishing to the Official MCP Registry on tagged releases.
@@ -904,6 +906,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.2.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.2.1
 [tapo-mcp-v0.2.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.2.0
 [v0.8.12]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.12
 [tapo-mcp-v0.1.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.1.0
