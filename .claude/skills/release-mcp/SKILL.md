@@ -6,7 +6,7 @@ Release a new version of the `tapo-mcp` crate.
 
 1. **Determine the new version.** Read the current version from `tapo-mcp/Cargo.toml`. Ask the user what the new version should be if not provided.
 
-2. **Bump the version.** Update the `version` field in `tapo-mcp/Cargo.toml`.
+2. **Bump the version.** Update the `version` field in `tapo-mcp/Cargo.toml` and both `version` and `packages[0].identifier` in `tapo-mcp/server.json`.
 
 3. **Update changelog.** In `CHANGELOG.md`:
    - Replace the heading `## [MCP Unreleased][Unreleased]` with `## [MCP vX.X.X][tapo-mcp-vX.X.X] - YYYY-MM-DD` (use the current date).
