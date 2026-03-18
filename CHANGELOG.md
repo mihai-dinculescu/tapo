@@ -21,6 +21,7 @@ file. This change log follows the conventions of
 - `DiscoveryResult::GenericDevice`: renamed to `DiscoveryResult::Other`. Removed `handler` field — the variant now contains only `device_info`.
 - `DeviceType::GenericDevice`: renamed to `DeviceType::Other`.
 - `DeviceInfoGenericResult`: renamed to `DeviceInfoBasicResult`.
+- `DeviceInfoPowerStripResult`: changed `time_diff` from `i64` to `Option<i64>` for consistency with other device info types.
 
 ### Removed
 

@@ -30,7 +30,7 @@ pub struct DeviceInfoPowerStripResult {
     pub signal_level: u8,
     pub specs: String,
     pub ssid: String,
-    pub time_diff: i64,
+    pub time_diff: Option<i64>,
     pub r#type: String,
 }
 
