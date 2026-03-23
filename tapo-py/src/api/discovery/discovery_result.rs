@@ -16,6 +16,7 @@ use crate::api::{
 pub enum PyDiscoveryResult {
     Other {
         device_info: DeviceInfoBasicResult,
+        ip: String,
     },
     Light {
         device_info: DeviceInfoLightResult,
@@ -103,7 +104,7 @@ impl PyDiscoveryResult {
             PyDiscoveryResult::PowerStrip { device_info, .. } => &device_info.ip,
             PyDiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.ip,
             PyDiscoveryResult::Hub { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::Other { device_info, .. } => &device_info.ip,
+            PyDiscoveryResult::Other { ip, .. } => ip,
         }
     }
 
@@ -248,8 +249,9 @@ fn convert_result_to_py(result: DiscoveryResult) -> PyDiscoveryResult {
             device_info: *device_info,
             handler: PyHubHandler::new(handler),
         },
-        DiscoveryResult::Other { device_info } => PyDiscoveryResult::Other {
+        DiscoveryResult::Other { device_info, ip } => PyDiscoveryResult::Other {
             device_info: *device_info,
+            ip,
         },
     }
 }

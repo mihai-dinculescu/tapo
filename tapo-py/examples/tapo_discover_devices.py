@@ -69,9 +69,9 @@ async def main():
                     print(
                         f"Found '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."
                     )
-                case DiscoveryResult.Other(device_info):
+                case DiscoveryResult.Other(device_info, ip):
                     print(
-                        f"Found device without a dedicated handler '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."
+                        f"Found device without a dedicated handler '{device_info.nickname}' of model '{device_info.model}' at IP address '{ip}'."
                     )
         except Exception as e:
             print(f"Error discovering device: {e}")

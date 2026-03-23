@@ -18,11 +18,11 @@ file. This change log follows the conventions of
 
 - `ChildDeviceHubResult::Other`: changed from a unit variant to `Other(Box<OtherResult>)`, exposing device info for unrecognized models.
 - `ApiClient::discover_devices`: sped up discovery by inferring the authentication protocol (KLAP or AES) from the discovery message instead of probing the device.
-- `DiscoveryResult::GenericDevice`: renamed to `DiscoveryResult::Other`. Removed `handler` field — the variant now contains only `device_info`.
+- `DiscoveryResult::GenericDevice`: renamed to `DiscoveryResult::Other`. Removed `handler` field, added `ip` field.
 - `DeviceType::GenericDevice`: renamed to `DeviceType::Other`.
 - `DeviceInfoGenericResult`: renamed to `DeviceInfoBasicResult`.
 - `DeviceInfoPowerStripResult`: changed `time_diff` from `i64` to `Option<i64>` for consistency with other device info types.
-- `DeviceInfoBasicResult`: removed `device_on` and `on_time` fields, changed `nickname` to `Option<String>`.
+- `DeviceInfoBasicResult`: removed `device_on`, `on_time`, `ip`, `fw_id`, `hw_id`, `lang`, `rssi`, `signal_level`, `specs`, `ssid`, and `time_diff` fields. Changed `nickname` to `Option<String>`. Added serde aliases for SmartCam field name compatibility.
 
 ### Removed
 
@@ -42,10 +42,10 @@ file. This change log follows the conventions of
 
 - `HubHandler`: changed `get_child_device_list()` to return `OtherResult` instead of `None` for unsupported devices.
 - `ApiClient.discover_devices`: sped up discovery by inferring the authentication protocol (KLAP or AES) from the discovery message instead of probing the device.
-- `DiscoveryResult.GenericDevice`: renamed to `DiscoveryResult.Other`. Removed `handler` field — the variant now contains only `device_info`.
+- `DiscoveryResult.GenericDevice`: renamed to `DiscoveryResult.Other`. Removed `handler` field, added `ip` field.
 - `DeviceType.GenericDevice`: renamed to `DeviceType.Other`.
 - `DeviceInfoGenericResult`: renamed to `DeviceInfoBasicResult`.
-- `DeviceInfoBasicResult`: removed `device_on` and `on_time` fields, changed `nickname` to `Optional[str]`.
+- `DeviceInfoBasicResult`: removed `device_on`, `on_time`, `ip`, `fw_id`, `hw_id`, `lang`, `rssi`, `signal_level`, `specs`, `ssid`, and `time_diff` fields. Changed `nickname` to `Optional[str]`. No longer inherits from `DeviceInfoSmartExt`; all fields are now declared directly.
 
 ### Fixed
 

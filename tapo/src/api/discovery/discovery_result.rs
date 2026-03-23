@@ -31,6 +31,8 @@ pub enum DiscoveryResult {
         /// unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
         /// to start the discussion.
         device_info: Box<DeviceInfoBasicResult>,
+        /// The IP address of the device.
+        ip: String,
     },
     /// Tapo L510, L520 and L610 devices.
     Light {
@@ -215,6 +217,7 @@ impl DiscoveryResult {
                 device_info: Box::new(
                     serde_json::from_value::<DeviceInfoBasicResult>(device_info)?.decode()?,
                 ),
+                ip: raw_result.ip.to_string(),
             },
         };
 
@@ -267,7 +270,7 @@ impl DiscoveryResult {
             DiscoveryResult::PowerStrip { device_info, .. } => &device_info.ip,
             DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.ip,
             DiscoveryResult::Hub { device_info, .. } => &device_info.ip,
-            DiscoveryResult::Other { device_info, .. } => &device_info.ip,
+            DiscoveryResult::Other { ip, .. } => ip,
         }
     }
 

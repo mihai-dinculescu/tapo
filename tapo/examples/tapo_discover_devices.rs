@@ -119,13 +119,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         device_info.nickname, device_info.model, device_info.ip
                     );
                 }
-                DiscoveryResult::Other { device_info } => {
+                DiscoveryResult::Other { device_info, ip } => {
                     // If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
                     // unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
                     // to start the discussion.
                     warn!(
                         "Found device without a dedicated handler {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, device_info.ip
+                        device_info.nickname, device_info.model, ip
                     );
                 }
             }

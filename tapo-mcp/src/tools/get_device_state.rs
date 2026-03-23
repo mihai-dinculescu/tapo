@@ -53,7 +53,7 @@ async fn get_device_info(
                 Ok(serde_json::to_value(&*device_info)?)
             }
             DiscoveryResult::Hub { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
-            DiscoveryResult::Other { device_info } => Ok(serde_json::to_value(&*device_info)?),
+            DiscoveryResult::Other { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
         },
         CheckedDevice::Child { parent, child_id } => match parent {
             DiscoveryResult::PowerStrip { handler, .. } => {

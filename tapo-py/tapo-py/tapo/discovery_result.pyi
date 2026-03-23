@@ -68,7 +68,10 @@ class Other(DiscoveryResultExt):
     to start the discussion.
     """
 
-    __match_args__ = ("device_info",)
+    ip: str
+    """The IP address of the device."""
+
+    __match_args__ = ("device_info", "ip")
 
 @dataclass
 class Light(DiscoveryResultExt):
