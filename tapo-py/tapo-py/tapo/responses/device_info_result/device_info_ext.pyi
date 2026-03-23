@@ -1,7 +1,7 @@
 from typing import Optional
 
-class DeviceInfoExt:
-    """Common properties shared by all device info result types."""
+class DeviceInfoSmartExt:
+    """Properties common to all device info results in the Smart device family (plugs, lights, power strips, etc.)."""
 
     avatar: str
     device_id: str

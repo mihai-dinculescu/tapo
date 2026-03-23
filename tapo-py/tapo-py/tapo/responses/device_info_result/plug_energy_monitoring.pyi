@@ -1,7 +1,7 @@
 from typing import Optional, Union
 
 from tapo.responses.device_info_result.default_plug_state import Custom, LastStates
-from tapo.responses.device_info_result.device_info_ext import DeviceInfoExt
+from tapo.responses.device_info_result.device_info_ext import DeviceInfoSmartExt
 from tapo.responses.device_info_result.power_status import (
     ChargingStatus,
     OvercurrentStatus,
@@ -10,7 +10,7 @@ from tapo.responses.device_info_result.power_status import (
 )
 from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoPlugEnergyMonitoringResult(DeviceInfoExt, ToDictExt):
+class DeviceInfoPlugEnergyMonitoringResult(DeviceInfoSmartExt, ToDictExt):
     """Device info of Tapo P110, P110M and P115."""
 
     charging_status: ChargingStatus

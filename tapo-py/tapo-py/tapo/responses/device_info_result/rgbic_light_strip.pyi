@@ -1,11 +1,11 @@
 from typing import List, Optional
 
 from tapo.responses.device_info_result.default_state import DefaultStateType
-from tapo.responses.device_info_result.device_info_ext import DeviceInfoExt
+from tapo.responses.device_info_result.device_info_ext import DeviceInfoSmartExt
 from tapo.requests.set_device_info.lighting_effect import LightingEffect
 from tapo.to_dict_ext import ToDictExt
 
-class DeviceInfoRgbicLightStripResult(DeviceInfoExt, ToDictExt):
+class DeviceInfoRgbicLightStripResult(DeviceInfoSmartExt, ToDictExt):
     """Device info of Tapo L920 and L930."""
 
     brightness: int
