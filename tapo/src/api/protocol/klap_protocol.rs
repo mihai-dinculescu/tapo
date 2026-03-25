@@ -52,11 +52,7 @@ impl KlapProtocol {
         self.handshake(url, username, password).await
     }
 
-    pub async fn execute_request<R>(
-        &self,
-        request: TapoRequest,
-        _with_token: bool,
-    ) -> Result<Option<R>, Error>
+    pub async fn execute_request<R>(&self, request: TapoRequest) -> Result<Option<R>, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
@@ -80,9 +76,16 @@ impl KlapProtocol {
 
             let error = match response.status() {
                 StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
-                    TapoResponseError::SessionTimeout
+                    TapoResponseError::Unauthorized {
+                        kind: "SESSION_TIMEOUT",
+                        description: "Session has expired. Re-authentication is required."
+                            .to_string(),
+                    }
                 }
-                _ => TapoResponseError::InvalidResponse,
+                _ => TapoResponseError::HttpError {
+                    status_code: response.status().as_u16(),
+                    description: "Request failed".to_string(),
+                },
             };
 
             return Err(Error::Tapo(error));
@@ -96,7 +99,7 @@ impl KlapProtocol {
         let response: TapoResponse<R> = serde_json::from_str(&response_decrypted)?;
         debug!("Device responded with: {response:?}");
 
-        validate_response(&response)?;
+        validate_response(response.error_code)?;
         let result = response.result;
 
         Ok(result)
@@ -161,13 +164,16 @@ impl KlapProtocol {
             error!("Handshake1 error: {}", response.status());
 
             if response.status() == StatusCode::FORBIDDEN {
-                return Err(Error::Tapo(TapoResponseError::Forbidden {
-                    code: "FORBIDDEN".to_string(),
+                return Err(Error::Tapo(TapoResponseError::Unauthorized {
+                    kind: "FORBIDDEN",
                     description: r"Make sure Third-Party Compatibility is turned on in the Tapo app. If it's already enabled, try switching it off and then back on again. You can find this option by navigating to Me > Third-Party Services in the app."
                         .to_string(),
                 }));
             }
-            return Err(Error::Tapo(TapoResponseError::InvalidResponse));
+            return Err(Error::Tapo(TapoResponseError::HttpError {
+                status_code: response.status().as_u16(),
+                description: "Handshake1 failed".to_string(),
+            }));
         }
 
         let cookie = TapoProtocol::get_cookie(response.cookies())?;
@@ -180,7 +186,7 @@ impl KlapProtocol {
         if local_hash != server_hash {
             error!("Local hash does not match server hash");
             return Err(Error::Tapo(TapoResponseError::Unauthorized {
-                code: "HASH_MISMATCH".to_string(),
+                kind: "HASH_MISMATCH",
                 description: "The device response did not match the challenge issued by the library. Make sure that your email and password are correct -— both are case-sensitive. Before adding a new device, disconnect any existing TP-Link/Tapo devices on the network. The TP-Link Simple Setup (TSS) protocol, which shares credentials from previously configured devices, may interfere with authentication. If the problem continues, perform a factory reset on the new device and add it again with no other TP-Link devices active during setup.".to_string(),
              }));
         }
@@ -213,7 +219,10 @@ impl KlapProtocol {
 
         if !response.status().is_success() {
             error!("Handshake2 error: {}", response.status());
-            return Err(Error::Tapo(TapoResponseError::InvalidResponse));
+            return Err(Error::Tapo(TapoResponseError::HttpError {
+                status_code: response.status().as_u16(),
+                description: "Handshake2 failed".to_string(),
+            }));
         }
 
         debug!("Handshake2 OK");

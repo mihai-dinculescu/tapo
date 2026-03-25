@@ -688,7 +688,7 @@ impl ApiClient {
         let request = TapoRequest::GetSupportedAlarmTypeList(TapoParams::new(EmptyParams));
 
         self.get_protocol()?
-            .execute_request(request, true)
+            .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
@@ -697,7 +697,7 @@ impl ApiClient {
         let request = TapoRequest::PlayAlarm(TapoParams::new(params));
 
         self.get_protocol()?
-            .execute_request::<serde_json::Value>(request, true)
+            .execute_request::<serde_json::Value>(request)
             .await?;
 
         Ok(())
@@ -707,7 +707,7 @@ impl ApiClient {
         let request = TapoRequest::StopAlarm(TapoParams::new(EmptyParams));
 
         self.get_protocol()?
-            .execute_request::<serde_json::Value>(request, true)
+            .execute_request::<serde_json::Value>(request)
             .await?;
 
         Ok(())
@@ -720,7 +720,7 @@ impl ApiClient {
 
         let result: ComponentListResult = self
             .get_protocol()?
-            .execute_request(request, true)
+            .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
@@ -735,7 +735,7 @@ impl ApiClient {
         let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
         self.get_protocol()?
-            .execute_request::<R>(request, true)
+            .execute_request::<R>(request)
             .await?
             .map(|result| result.decode())
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
@@ -749,7 +749,7 @@ impl ApiClient {
         let request = TapoRequest::GetDeviceUsage(TapoParams::new(EmptyParams));
 
         self.get_protocol()?
-            .execute_request(request, true)
+            .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
@@ -766,7 +766,7 @@ impl ApiClient {
         ));
 
         self.get_protocol()?
-            .execute_request::<TapoResult>(request, true)
+            .execute_request::<TapoResult>(request)
             .await?;
 
         Ok(())
@@ -785,7 +785,7 @@ impl ApiClient {
         ));
 
         self.get_protocol()?
-            .execute_request::<TapoResult>(request, true)
+            .execute_request::<TapoResult>(request)
             .await?;
 
         Ok(())
@@ -796,7 +796,7 @@ impl ApiClient {
         let request = TapoRequest::GetEnergyUsage(TapoParams::new(EmptyParams));
 
         self.get_protocol()?
-            .execute_request(request, true)
+            .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
@@ -806,7 +806,7 @@ impl ApiClient {
         let request = TapoRequest::GetCurrentPower(TapoParams::new(EmptyParams));
 
         self.get_protocol()?
-            .execute_request(request, true)
+            .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
@@ -820,7 +820,7 @@ impl ApiClient {
         let request = TapoRequest::GetEnergyData(TapoParams::new(params));
 
         self.get_protocol()?
-            .execute_request::<EnergyDataResultRaw>(request, true)
+            .execute_request::<EnergyDataResultRaw>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
             .map(|result| result.try_into())?
@@ -835,7 +835,7 @@ impl ApiClient {
         let request = TapoRequest::GetPowerData(TapoParams::new(params));
 
         self.get_protocol()?
-            .execute_request::<PowerDataResultRaw>(request, true)
+            .execute_request::<PowerDataResultRaw>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
             .map(|result| result.try_into())?
@@ -851,7 +851,7 @@ impl ApiClient {
         ));
 
         self.get_protocol()?
-            .execute_request::<R>(request, true)
+            .execute_request::<R>(request)
             .await?
             .map(|result| result.decode())
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
@@ -866,7 +866,7 @@ impl ApiClient {
 
         let result: ChildDeviceComponentListResult = self
             .get_protocol()?
-            .execute_request(request, true)
+            .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
@@ -890,7 +890,7 @@ impl ApiClient {
 
         let responses = self
             .get_protocol()?
-            .execute_request::<ControlChildResult<TapoMultipleResponse<R>>>(request, true)
+            .execute_request::<ControlChildResult<TapoMultipleResponse<R>>>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
             .response_data
@@ -902,7 +902,7 @@ impl ApiClient {
             .next()
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
-        validate_response(&response)?;
+        validate_response(response.error_code)?;
 
         Ok(response.result)
     }
@@ -947,7 +947,7 @@ impl ApiClientExt for ApiClient {
         ));
 
         self.get_protocol()?
-            .execute_request::<TapoResult>(set_device_info_request, true)
+            .execute_request::<TapoResult>(set_device_info_request)
             .await?;
 
         Ok(())
@@ -958,7 +958,7 @@ impl ApiClientExt for ApiClient {
         let request = TapoRequest::DeviceReboot(TapoParams::new(DeviceRebootParams::new(delay)));
 
         self.get_protocol()?
-            .execute_request::<serde_json::Value>(request, true)
+            .execute_request::<serde_json::Value>(request)
             .await?;
 
         Ok(())
@@ -969,7 +969,7 @@ impl ApiClientExt for ApiClient {
         let request = TapoRequest::DeviceReset(TapoParams::new(EmptyParams));
 
         self.get_protocol()?
-            .execute_request::<serde_json::Value>(request, true)
+            .execute_request::<serde_json::Value>(request)
             .await?;
 
         Ok(())

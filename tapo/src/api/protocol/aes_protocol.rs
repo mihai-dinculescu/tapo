@@ -61,26 +61,14 @@ impl AesProtocol {
         self.login(url, username, password).await
     }
 
-    pub async fn execute_request<R>(
-        &self,
-        request: TapoRequest,
-        with_token: bool,
-    ) -> Result<Option<R>, Error>
+    pub async fn execute_request<R>(&self, request: TapoRequest) -> Result<Option<R>, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
         let session = self.session_ref()?;
-        let url = if with_token {
-            format!(
-                "{}?token={}",
-                &session.url,
-                session
-                    .token
-                    .as_ref()
-                    .ok_or_else(|| anyhow::anyhow!("Token should not be None"))?
-            )
-        } else {
-            session.url.clone()
+        let url = match &session.token {
+            Some(token) => format!("{}?token={token}", &session.url),
+            None => session.url.clone(),
         };
 
         let request_string = serde_json::to_string(&request)?;
@@ -107,7 +95,7 @@ impl AesProtocol {
 
         debug!("Device responded with: {response:?}");
 
-        validate_response(&response)?;
+        validate_response(response.error_code)?;
 
         let inner_response_encrypted = response
             .result
@@ -122,7 +110,7 @@ impl AesProtocol {
 
         debug!("Device inner response: {inner_response:?}");
 
-        validate_response(&inner_response)?;
+        validate_response(inner_response.error_code)?;
 
         let result = inner_response.result;
 
@@ -152,7 +140,7 @@ impl AesProtocol {
         let cookie = TapoProtocol::get_cookie(response.cookies())?;
         let response_json = response.json::<TapoResponse<HandshakeResult>>().await?;
 
-        validate_response(&response_json)?;
+        validate_response(response_json.error_code)?;
 
         let handshake_key = response_json
             .result
@@ -187,7 +175,7 @@ impl AesProtocol {
         let request = TapoRequest::LoginDevice(params);
 
         let result = self
-            .execute_request::<TokenResult>(request, false)
+            .execute_request::<TokenResult>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 

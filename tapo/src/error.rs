@@ -1,48 +1,24 @@
 /// Response Error from the Tapo API.
 #[derive(thiserror::Error, Debug)]
 #[non_exhaustive]
+#[allow(missing_docs)]
 pub enum TapoResponseError {
-    /// Unexpected empty result.
+    #[error("Device error {code}: {kind}")]
+    DeviceError { code: i64, kind: &'static str },
     #[error("Unexpected empty result")]
     EmptyResult,
-    /// Forbidden access.
-    #[error("Forbidden: code {code}, description {description}")]
-    Forbidden {
-        /// Error code.
-        code: String,
-        /// Error description.
+    #[error("HTTP error {status_code}: {description}")]
+    HttpError {
+        status_code: u16,
         description: String,
     },
-    /// Parameters were invalid.
-    #[error("Invalid parameters")]
-    InvalidParameters,
-    /// Invalid public key.
-    #[error("Invalid public key")]
-    InvalidPublicKey,
-    /// Invalid request.
-    #[error("Invalid request")]
-    InvalidRequest,
-    /// Invalid response.
-    #[error("Invalid response")]
-    InvalidResponse,
-    /// Malformed request.
-    #[error("Malformed request")]
-    MalformedRequest,
-    /// Session timeout.
-    #[error("Session timeout")]
-    SessionTimeout,
-    /// Unauthorized access.
-    #[error("Unauthorized: code {code}, description {description}")]
+    #[error("Response error: {description}")]
+    ResponseError { description: String },
+    #[error("Unauthorized: {kind}: {description}")]
     Unauthorized {
-        /// Error code.
-        code: String,
-        /// Error description.
+        kind: &'static str,
         description: String,
     },
-    /// Unknown Error. This is a catch-all for errors that don't fit into the other categories.
-    /// In time, some of these might be added as their own variants.
-    #[error("Unknown error: {0}")]
-    Unknown(i32),
 }
 
 /// Tapo API Client Error.

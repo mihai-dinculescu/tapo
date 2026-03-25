@@ -99,17 +99,13 @@ impl TapoProtocol {
         }
     }
 
-    pub async fn execute_request<R>(
-        &self,
-        request: TapoRequest,
-        with_token: bool,
-    ) -> Result<Option<R>, Error>
+    pub async fn execute_request<R>(&self, request: TapoRequest) -> Result<Option<R>, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
         match &self.active {
-            Some(ActiveProtocol::Aes(p)) => p.execute_request(request, with_token).await,
-            Some(ActiveProtocol::Klap(p)) => p.execute_request(request, with_token).await,
+            Some(ActiveProtocol::Aes(p)) => p.execute_request(request).await,
+            Some(ActiveProtocol::Klap(p)) => p.execute_request(request).await,
             None => Err(anyhow::anyhow!(
                 "Cannot execute request: protocol not yet initialized (login first)"
             )
@@ -122,7 +118,9 @@ impl TapoProtocol {
 
         match cookie {
             Some(cookie) => Ok(format!("{}={}", cookie.name(), cookie.value())),
-            None => Err(Error::Tapo(TapoResponseError::InvalidResponse)),
+            None => Err(Error::Tapo(TapoResponseError::ResponseError {
+                description: "TP_SESSIONID cookie not found in response".to_string(),
+            })),
         }
     }
 
@@ -139,7 +137,7 @@ impl TapoProtocol {
 
     async fn is_aes_supported(&self, url: &str) -> Result<bool, Error> {
         match self.test_aes(url).await {
-            Err(Error::Tapo(TapoResponseError::Unknown(code))) => Ok(code != 1003),
+            Err(Error::Tapo(TapoResponseError::DeviceError { code, .. })) => Ok(code != 1003),
             Err(err) => Err(err),
             Ok(_) => Ok(true),
         }
@@ -161,7 +159,7 @@ impl TapoProtocol {
 
         debug!("Device responded with: {response:?}");
 
-        validate_response(&response)?;
+        validate_response(response.error_code)?;
 
         Ok(())
     }

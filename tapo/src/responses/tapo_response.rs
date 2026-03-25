@@ -9,7 +9,7 @@ impl TapoResponseExt for serde_json::Value {}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct TapoResponse<T: TapoResponseExt> {
-    pub error_code: i32,
+    pub error_code: i64,
     pub result: Option<T>,
 }
 
@@ -25,22 +25,33 @@ pub(crate) struct TapoMultipleResult<T: TapoResponseExt> {
     pub responses: Vec<TapoResponse<T>>,
 }
 
-pub(crate) fn validate_response<T: TapoResponseExt>(
-    response: &TapoResponse<T>,
-) -> Result<(), Error> {
-    match response.error_code {
+pub(crate) fn validate_response(error_code: i64) -> Result<(), Error> {
+    match error_code {
         0 => Ok(()),
-        -1002 => Err(Error::Tapo(TapoResponseError::InvalidRequest)),
-        -1003 => Err(Error::Tapo(TapoResponseError::MalformedRequest)),
-        -1008 => Err(Error::Tapo(TapoResponseError::InvalidParameters)),
-        -1010 => Err(Error::Tapo(TapoResponseError::InvalidPublicKey)),
         -1501 => Err(Error::Tapo(TapoResponseError::Unauthorized {
-            code: "INVALID_CREDENTIALS".to_string(),
+            kind: "INVALID_CREDENTIALS",
             description:
                 "Please verify that your email and password are correct—both are case-sensitive."
                     .to_string(),
         })),
-        9999 => Err(Error::Tapo(TapoResponseError::SessionTimeout)),
-        code => Err(Error::Tapo(TapoResponseError::Unknown(code))),
+        9999 => Err(Error::Tapo(TapoResponseError::Unauthorized {
+            kind: "SESSION_TIMEOUT",
+            description: "Session has expired. Re-authentication is required.".to_string(),
+        })),
+        code => Err(Error::Tapo(TapoResponseError::DeviceError {
+            code,
+            kind: error_kind(code),
+        })),
+    }
+}
+
+fn error_kind(code: i64) -> &'static str {
+    match code {
+        -1002 => "UNKNOWN_METHOD",
+        -1003 => "JSON_DECODE_FAIL",
+        -1004 => "JSON_ENCODE_FAIL",
+        -1008 => "PARAMS",
+        -1010 => "PUBLIC_KEY",
+        _ => "UNKNOWN",
     }
 }
