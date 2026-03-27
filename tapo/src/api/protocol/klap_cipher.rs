@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicI32, Ordering};
 
 use aes::Aes128;
-use aes::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, block_padding};
+use aes::cipher::{BlockModeDecrypt, BlockModeEncrypt, KeyIvInit, block_padding};
 use cbc::{Decryptor, Encryptor};
 
 use super::crypto;
@@ -36,8 +36,7 @@ impl KlapCipher {
         let seq = self.seq.fetch_add(1, Ordering::Relaxed) + 1;
         let encryptor = Encryptor::<Aes128>::new_from_slices(&self.key, &self.iv_seq(seq))?;
 
-        let cipher_bytes =
-            encryptor.encrypt_padded_vec_mut::<block_padding::Pkcs7>(data.as_bytes());
+        let cipher_bytes = encryptor.encrypt_padded_vec::<block_padding::Pkcs7>(data.as_bytes());
 
         let signature = crypto::sha256(
             &[
@@ -57,7 +56,7 @@ impl KlapCipher {
         let decryptor = Decryptor::<Aes128>::new_from_slices(&self.key, &self.iv_seq(seq))?;
 
         let decrypted_bytes = decryptor
-            .decrypt_padded_vec_mut::<block_padding::Pkcs7>(&cipher_bytes[32..])
+            .decrypt_padded_vec::<block_padding::Pkcs7>(&cipher_bytes[32..])
             .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?;
         let decrypted = std::str::from_utf8(&decrypted_bytes)?.to_string();
 

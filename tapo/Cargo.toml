@@ -28,22 +28,22 @@ log = { workspace = true }
 reqwest = { version = "0.13", default-features = false, features = ["cookies", "json", "rustls"] }
 serde = { workspace = true, features = ["derive", "serde_derive"] }
 serde_json = { workspace = true }
-serde_with = "3.17"
+serde_with = "3.18"
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["sync"] }
 tokio-stream = "0.1"
 uuid = { version = "1.22", features = ["serde", "v4"] }
 
 # security
-aes = "0.8"
+aes = "0.9.0-rc.4"
 base16ct = { version = "1.0", features = ["alloc"] }
 base64 = "0.22"
-cbc = { version = "0.1", features = ["alloc"] }
+cbc = { version = "0.2.0-rc.4", features = ["alloc"] }
 rand = "0.10"
 rsa = { version = "0.10.0-rc.17", features = ["getrandom"] }
-sha1 = "0.10"
-md-5 = "0.10"
-sha2 = "0.10"
+sha1 = "0.11"
+md-5 = "0.11"
+sha2 = "0.11"
 
 # JSON Schema
 schemars = { workspace = true, optional = true }
