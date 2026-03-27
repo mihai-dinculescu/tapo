@@ -43,7 +43,7 @@ rand = "0.10"
 rsa = { version = "0.10.0-rc.17", features = ["getrandom"] }
 sha1 = "0.10"
 md-5 = "0.10"
-sha2 = "0.10"
+sha2 = "0.11"
 
 # JSON Schema
 schemars = { workspace = true, optional = true }
