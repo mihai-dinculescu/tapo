@@ -6,6 +6,7 @@ use super::{
     ControlChildParams, DeviceRebootParams, GetChildDeviceListParams, GetEnergyDataParams,
     GetPowerDataParams, GetTriggerLogsParams, HandshakeParams, LightingEffect, LoginDeviceParams,
     MultipleRequestParams, PlayAlarmParams, SecurePassthroughParams, SegmentEffect,
+    SmartCamGetParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -44,6 +45,9 @@ pub(crate) enum TapoRequest {
     #[cfg(feature = "debug")]
     #[serde(rename = "get_support_alarm_type_list")]
     GetSupportedAlarmTypeList(TapoParams<EmptyParams>),
+    // Smart Camera requests
+    #[serde(rename = "get")]
+    SmartCamGet(SmartCamGetParams),
 }
 
 #[derive(Debug, Serialize)]

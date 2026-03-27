@@ -14,7 +14,6 @@ mod device_usage_energy_monitoring_result;
 mod device_usage_result;
 mod energy_data_result;
 mod energy_usage_result;
-mod handshake_result;
 mod power_data_result;
 mod supported_alarm_type_list_result;
 mod tapo_response;
@@ -41,7 +40,6 @@ pub use trigger_logs_result::*;
 
 pub(crate) use control_child_result::*;
 pub(crate) use decodable_result_ext::*;
-pub(crate) use handshake_result::*;
 #[cfg(feature = "debug")]
 pub(crate) use supported_alarm_type_list_result::*;
 pub(crate) use tapo_response::*;

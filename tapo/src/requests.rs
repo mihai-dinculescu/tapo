@@ -14,6 +14,7 @@ mod play_alarm;
 mod power_data_interval;
 mod secure_passthrough;
 mod set_device_info;
+mod smart_cam;
 mod tapo_request;
 
 pub use crate::responses::TemperatureUnitKE100;
@@ -32,4 +33,5 @@ pub(crate) use handshake::*;
 pub(crate) use login_device::*;
 pub(crate) use multiple_request::*;
 pub(crate) use secure_passthrough::*;
+pub(crate) use smart_cam::*;
 pub(crate) use tapo_request::*;

@@ -1,12 +1,10 @@
-use aes::Aes128;
-use aes::cipher::{BlockDecryptMut, BlockEncryptMut, KeyIvInit, block_padding};
 use base64::{Engine as _, engine::general_purpose};
-use cbc::{Decryptor, Encryptor};
 use log::debug;
 use rand::{CryptoRng, Rng};
 use rsa::pkcs8::{EncodePublicKey, LineEnding};
 use rsa::{Pkcs1v15Encrypt, RsaPrivateKey};
-use sha1::{Digest, Sha1};
+
+use super::crypto;
 
 #[derive(Debug, Clone)]
 pub(crate) struct AesKeyPair {
@@ -56,36 +54,15 @@ impl AesCipher {
     }
 
     pub fn encrypt(&self, data: &str) -> anyhow::Result<String> {
-        let encryptor = Encryptor::<Aes128>::new_from_slices(&self.key, &self.iv)?;
-
-        let cipher_bytes =
-            encryptor.encrypt_padded_vec_mut::<block_padding::Pkcs7>(data.as_bytes());
-        let cipher_base64 = general_purpose::STANDARD.encode(cipher_bytes);
-
-        Ok(cipher_base64)
+        crypto::aes128_cbc_encrypt(&self.key, &self.iv, data)
     }
 
     pub fn decrypt(&self, cipher_base64: &str) -> anyhow::Result<String> {
-        let decryptor = Decryptor::<Aes128>::new_from_slices(&self.key, &self.iv)?;
-
-        let cipher_bytes = general_purpose::STANDARD.decode(cipher_base64)?;
-        let decrypted_bytes = decryptor
-            .decrypt_padded_vec_mut::<block_padding::Pkcs7>(&cipher_bytes)
-            .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?;
-
-        let decrypted = std::str::from_utf8(&decrypted_bytes)?.to_string();
-
-        Ok(decrypted)
+        crypto::aes128_cbc_decrypt(&self.key, &self.iv, cipher_base64)
     }
-}
 
-impl AesCipher {
     pub fn sha1_digest_username(username: String) -> String {
-        let mut hasher = Sha1::new();
-        hasher.update(username.as_bytes());
-        let hash = hasher.finalize();
-
-        base16ct::lower::encode_string(&hash)
+        base16ct::lower::encode_string(&crypto::sha1(username.as_bytes()))
     }
 }
 

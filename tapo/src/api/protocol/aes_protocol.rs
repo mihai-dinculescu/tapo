@@ -5,14 +5,13 @@ use log::{debug, trace};
 use reqwest::Client;
 use reqwest::header::COOKIE;
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 
 use crate::api::protocol::TapoProtocol;
 use crate::requests::{
     HandshakeParams, LoginDeviceParams, SecurePassthroughParams, TapoParams, TapoRequest,
 };
-use crate::responses::{
-    HandshakeResult, TapoResponse, TapoResponseExt, TapoResult, TokenResult, validate_response,
-};
+use crate::responses::{TapoResponse, TapoResponseExt, TapoResult, TokenResult, validate_response};
 
 use crate::{Error, TapoResponseError};
 
@@ -57,7 +56,7 @@ impl AesProtocol {
         username: String,
         password: String,
     ) -> Result<(), Error> {
-        let url = self.session_ref()?.url.clone();
+        let url = self.session()?.url.clone();
         self.login(url, username, password).await
     }
 
@@ -65,7 +64,7 @@ impl AesProtocol {
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
-        let session = self.session_ref()?;
+        let session = self.session()?;
         let url = match &session.token {
             Some(token) => format!("{}?token={token}", &session.url),
             None => session.url.clone(),
@@ -117,7 +116,7 @@ impl AesProtocol {
         Ok(result)
     }
 
-    fn session_ref(&self) -> Result<&Session, Error> {
+    fn session(&self) -> Result<&Session, Error> {
         self.session
             .as_ref()
             .ok_or_else(|| anyhow::anyhow!("Session not initialized (login first)").into())
@@ -185,3 +184,10 @@ impl AesProtocol {
         Ok(())
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+struct HandshakeResult {
+    key: String,
+}
+
+impl TapoResponseExt for HandshakeResult {}

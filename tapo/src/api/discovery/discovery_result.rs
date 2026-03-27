@@ -11,7 +11,7 @@ use crate::{
     RgbicLightStripHandler,
 };
 
-use crate::api::protocol::AuthProtocol;
+use crate::api::protocol::DeviceFamily;
 
 use super::DeviceType;
 use super::discovery_raw_result::DiscoveryRawResult;
@@ -125,21 +125,25 @@ impl DiscoveryResult {
         mut client: ApiClient,
         raw_result: DiscoveryRawResult,
     ) -> Result<Self, Error> {
-        let auth_protocol = AuthProtocol::from(&raw_result);
+        let device_family = raw_result.device_family();
+        let auth_protocol = raw_result.auth_protocol();
+
         client
-            .login(raw_result.ip.to_string(), auth_protocol)
+            .login(raw_result.ip.to_string(), device_family, auth_protocol)
             .await?;
         let device_info: serde_json::Value = client.get_device_info().await?;
+
         let client = std::sync::Arc::new(tokio::sync::RwLock::new(client));
 
-        let model = device_info
+        let obj = device_info
             .as_object()
-            .context("Expected device_info result to be an object")?
-            .get_key_value("model")
-            .context("Expected device_info to contain the model field")?
-            .1
-            .as_str()
-            .context("Expected device_info model field to have a string value")?;
+            .context("Expected device_info result to be an object")?;
+
+        let model = obj
+            .get("model")
+            .or_else(|| obj.get("device_model"))
+            .and_then(|v| v.as_str())
+            .context("Expected device_info to contain the model field")?;
 
         let device_type = DeviceType::from_model(model);
 
@@ -213,12 +217,17 @@ impl DiscoveryResult {
             DeviceType::Hub => {
                 map_device_model!(Hub, DeviceInfoHubResult, HubHandler, device_info, client)
             }
-            DeviceType::Other => DiscoveryResult::Other {
-                device_info: Box::new(
-                    serde_json::from_value::<DeviceInfoBasicResult>(device_info)?.decode()?,
-                ),
-                ip: raw_result.ip.to_string(),
-            },
+            DeviceType::Other => {
+                let info: DeviceInfoBasicResult = serde_json::from_value(device_info)?;
+                let info = match device_family {
+                    DeviceFamily::SmartCam => info,
+                    _ => info.decode()?,
+                };
+                DiscoveryResult::Other {
+                    device_info: Box::new(info),
+                    ip: raw_result.ip.to_string(),
+                }
+            }
         };
 
         Ok(result)

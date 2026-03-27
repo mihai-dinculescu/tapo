@@ -2,6 +2,8 @@ use std::net::IpAddr;
 
 use serde_json::Value;
 
+use crate::api::protocol::{AuthProtocol, DeviceFamily};
+
 /// A raw discovery response containing the device's IP address and the
 /// JSON message received through the UDP discovery stream.
 #[derive(Debug, Clone, serde::Serialize)]
@@ -34,21 +36,32 @@ impl DiscoveryRawResult {
 #[cfg(feature = "python")]
 crate::impl_to_dict!(DiscoveryRawResult);
 
-impl From<&DiscoveryRawResult> for crate::api::protocol::AuthProtocol {
-    fn from(raw: &DiscoveryRawResult) -> Self {
-        use crate::api::protocol::AuthProtocol;
+impl DiscoveryRawResult {
+    pub(crate) fn device_family(&self) -> DeviceFamily {
+        match self
+            .message
+            .get("result")
+            .and_then(|r| r.get("device_type"))
+            .and_then(|v| v.as_str())
+        {
+            Some("SMART.IPCAMERA") => DeviceFamily::SmartCam,
+            _ => DeviceFamily::Smart,
+        }
+    }
 
-        let scheme = raw
+    pub(crate) fn auth_protocol(&self) -> AuthProtocol {
+        let scheme = self
             .message
             .get("result")
             .and_then(|r| r.get("mgt_encrypt_schm"));
 
-        let encrypt_type = scheme.and_then(|s| s["encrypt_type"].as_str());
-        let http_port = scheme.and_then(|s| s["http_port"].as_u64());
+        if scheme.and_then(|s| s["is_support_https"].as_bool()) == Some(true) {
+            return AuthProtocol::AesSsl;
+        }
 
-        match (encrypt_type, http_port) {
-            (Some("KLAP"), Some(80)) => AuthProtocol::Klap,
-            (Some("AES"), Some(80)) => AuthProtocol::Aes,
+        match scheme.and_then(|s| s["encrypt_type"].as_str()) {
+            Some("KLAP") => AuthProtocol::Klap,
+            Some("AES") => AuthProtocol::Aes,
             _ => AuthProtocol::Unknown,
         }
     }

@@ -11,6 +11,7 @@ use crate::requests::TapoRequest;
 use crate::responses::{TapoResponse, TapoResponseExt, validate_response};
 use crate::{Error, TapoResponseError};
 
+use super::crypto;
 use super::klap_cipher::KlapCipher;
 
 #[derive(Debug)]
@@ -48,7 +49,7 @@ impl KlapProtocol {
         username: String,
         password: String,
     ) -> Result<(), Error> {
-        let url = self.session_ref()?.url.clone();
+        let url = self.session()?.url.clone();
         self.handshake(url, username, password).await
     }
 
@@ -56,7 +57,7 @@ impl KlapProtocol {
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
-        let session = self.session_ref()?;
+        let session = self.session()?;
 
         let request_string = serde_json::to_string(&request)?;
         debug!("Request: {request_string}");
@@ -76,11 +77,7 @@ impl KlapProtocol {
 
             let error = match response.status() {
                 StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
-                    TapoResponseError::Unauthorized {
-                        kind: "SESSION_TIMEOUT",
-                        description: "Session has expired. Re-authentication is required."
-                            .to_string(),
-                    }
+                    TapoResponseError::session_expired("SESSION_TIMEOUT")
                 }
                 _ => TapoResponseError::HttpError {
                     status_code: response.status().as_u16(),
@@ -105,7 +102,7 @@ impl KlapProtocol {
         Ok(result)
     }
 
-    fn session_ref(&self) -> Result<&KlapSession, Error> {
+    fn session(&self) -> Result<&KlapSession, Error> {
         self.session
             .as_ref()
             .ok_or_else(|| anyhow::anyhow!("KLAP session not initialized (login first)").into())
@@ -117,10 +114,10 @@ impl KlapProtocol {
         username: String,
         password: String,
     ) -> Result<(), Error> {
-        let auth_hash = KlapCipher::sha256(
+        let auth_hash = crypto::sha256(
             &[
-                KlapCipher::sha1(username.as_bytes()),
-                KlapCipher::sha1(password.as_bytes()),
+                crypto::sha1(username.as_bytes()),
+                crypto::sha1(password.as_bytes()),
             ]
             .concat(),
         )
@@ -181,14 +178,11 @@ impl KlapProtocol {
         let response_body = response.bytes().await.map_err(anyhow::Error::from)?;
 
         let (remote_seed, server_hash) = response_body.split_at(16);
-        let local_hash = KlapCipher::sha256(&[local_seed, remote_seed, auth_hash].concat());
+        let local_hash = crypto::sha256(&[local_seed, remote_seed, auth_hash].concat());
 
         if local_hash != server_hash {
             error!("Local hash does not match server hash");
-            return Err(Error::Tapo(TapoResponseError::Unauthorized {
-                kind: "HASH_MISMATCH",
-                description: "The device response did not match the challenge issued by the library. Make sure that your email and password are correct -— both are case-sensitive. Before adding a new device, disconnect any existing TP-Link/Tapo devices on the network. The TP-Link Simple Setup (TSS) protocol, which shares credentials from previously configured devices, may interfere with authentication. If the problem continues, perform a factory reset on the new device and add it again with no other TP-Link devices active during setup.".to_string(),
-             }));
+            return Err(Error::Tapo(TapoResponseError::hash_mismatch()));
         }
 
         debug!("Handshake1 OK");
@@ -207,7 +201,7 @@ impl KlapProtocol {
         debug!("Performing handshake2...");
         let url = format!("{url}/handshake2");
 
-        let payload = KlapCipher::sha256(&[remote_seed, local_seed, auth_hash].concat());
+        let payload = crypto::sha256(&[remote_seed, local_seed, auth_hash].concat());
 
         let response = self
             .client

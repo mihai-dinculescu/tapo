@@ -12,8 +12,8 @@ use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     ControlChildParams, DeviceRebootParams, EmptyParams, EnergyDataInterval,
     GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams, LightingEffect,
-    MultipleRequestParams, PlayAlarmParams, PowerDataInterval, SegmentEffect, TapoParams,
-    TapoRequest,
+    MultipleRequestParams, PlayAlarmParams, PowerDataInterval, SegmentEffect, SmartCamGetParams,
+    TapoParams, TapoRequest,
 };
 #[cfg(feature = "debug")]
 use crate::responses::{
@@ -29,7 +29,7 @@ use crate::responses::{
 use super::discovery::DeviceDiscovery;
 #[cfg(feature = "debug")]
 use super::discovery::DeviceDiscoveryRaw;
-use super::protocol::{AuthProtocol, TapoProtocol};
+use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
 use super::{
     ColorLightHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler, PlugHandler,
     PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
@@ -188,7 +188,8 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l510(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(LightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -213,7 +214,8 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l520(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(LightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -238,7 +240,8 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l530(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(ColorLightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -263,7 +266,8 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l535(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(ColorLightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -288,7 +292,8 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l610(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(LightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -313,7 +318,8 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l630(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(ColorLightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -341,7 +347,8 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<RgbLightStripHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(RgbLightStripHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -369,7 +376,8 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<RgbicLightStripHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(RgbicLightStripHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -397,7 +405,8 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<RgbicLightStripHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(RgbicLightStripHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -422,7 +431,8 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn p100(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(PlugHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -447,7 +457,8 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn p105(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(PlugHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -475,7 +486,8 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<PlugEnergyMonitoringHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(PlugEnergyMonitoringHandler::new(Arc::new(RwLock::new(
             self,
@@ -505,7 +517,8 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<PlugEnergyMonitoringHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(PlugEnergyMonitoringHandler::new(Arc::new(RwLock::new(
             self,
@@ -533,7 +546,8 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn p300(mut self, ip_address: impl Into<String>) -> Result<PowerStripHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(PowerStripHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -562,7 +576,8 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<PowerStripEnergyMonitoringHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(PowerStripEnergyMonitoringHandler::new(Arc::new(
             RwLock::new(self),
@@ -590,7 +605,8 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn p306(mut self, ip_address: impl Into<String>) -> Result<PowerStripHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(PowerStripHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -619,7 +635,8 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<PowerStripEnergyMonitoringHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(PowerStripEnergyMonitoringHandler::new(Arc::new(
             RwLock::new(self),
@@ -648,7 +665,8 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn h100(mut self, ip_address: impl Into<String>) -> Result<HubHandler, Error> {
-        self.login(ip_address, AuthProtocol::Unknown).await?;
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
 
         Ok(HubHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -659,16 +677,20 @@ impl ApiClient {
     pub(crate) async fn login(
         &mut self,
         ip_address: impl Into<String>,
+        device_family: DeviceFamily,
         auth_protocol: AuthProtocol,
     ) -> Result<(), Error> {
-        let url = format!("http://{}/app", ip_address.into());
-        debug!("Device url: {url}");
-
         let tapo_username = self.tapo_username.clone();
         let tapo_password = self.tapo_password.clone();
 
-        self.get_protocol_mut()?
-            .login(url, tapo_username, tapo_password, auth_protocol)
+        self.protocol_mut()?
+            .login(
+                ip_address,
+                tapo_username,
+                tapo_password,
+                device_family,
+                auth_protocol,
+            )
             .await
     }
 
@@ -676,7 +698,7 @@ impl ApiClient {
         let tapo_username = self.tapo_username.clone();
         let tapo_password = self.tapo_password.clone();
 
-        self.get_protocol_mut()?
+        self.protocol_mut()?
             .refresh_session(tapo_username, tapo_password)
             .await
     }
@@ -687,7 +709,7 @@ impl ApiClient {
     ) -> Result<SupportedAlarmTypeListResult, Error> {
         let request = TapoRequest::GetSupportedAlarmTypeList(TapoParams::new(EmptyParams));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -696,7 +718,7 @@ impl ApiClient {
     pub(crate) async fn play_alarm(&self, params: PlayAlarmParams) -> Result<(), Error> {
         let request = TapoRequest::PlayAlarm(TapoParams::new(params));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request::<serde_json::Value>(request)
             .await?;
 
@@ -706,7 +728,7 @@ impl ApiClient {
     pub(crate) async fn stop_alarm(&self) -> Result<(), Error> {
         let request = TapoRequest::StopAlarm(TapoParams::new(EmptyParams));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request::<serde_json::Value>(request)
             .await?;
 
@@ -719,7 +741,7 @@ impl ApiClient {
         let request = TapoRequest::ComponentNegotiation(TapoParams::new(EmptyParams));
 
         let result: ComponentListResult = self
-            .get_protocol()?
+            .protocol()?
             .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
@@ -732,13 +754,23 @@ impl ApiClient {
         R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
     {
         debug!("Get Device info...");
-        let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
 
-        self.get_protocol()?
+        let protocol = self.protocol()?;
+
+        let request = match protocol.device_family() {
+            DeviceFamily::SmartCam => TapoRequest::SmartCamGet(SmartCamGetParams::device_info()),
+            DeviceFamily::Smart => TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams)),
+        };
+
+        let result = protocol
             .execute_request::<R>(request)
             .await?
-            .map(|result| result.decode())
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        match protocol.device_family() {
+            DeviceFamily::SmartCam => Ok(result),
+            DeviceFamily::Smart => result.decode(),
+        }
     }
 
     pub(crate) async fn get_device_usage<R>(&self) -> Result<R, Error>
@@ -748,7 +780,7 @@ impl ApiClient {
         debug!("Get Device usage...");
         let request = TapoRequest::GetDeviceUsage(TapoParams::new(EmptyParams));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -765,7 +797,7 @@ impl ApiClient {
                 .set_terminal_uuid(TERMINAL_UUID),
         ));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request::<TapoResult>(request)
             .await?;
 
@@ -784,7 +816,7 @@ impl ApiClient {
                 .set_terminal_uuid(TERMINAL_UUID),
         ));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request::<TapoResult>(request)
             .await?;
 
@@ -795,7 +827,7 @@ impl ApiClient {
         debug!("Get Energy usage...");
         let request = TapoRequest::GetEnergyUsage(TapoParams::new(EmptyParams));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -805,7 +837,7 @@ impl ApiClient {
         debug!("Get Current power...");
         let request = TapoRequest::GetCurrentPower(TapoParams::new(EmptyParams));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -819,7 +851,7 @@ impl ApiClient {
         let params = GetEnergyDataParams::new(interval);
         let request = TapoRequest::GetEnergyData(TapoParams::new(params));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request::<EnergyDataResultRaw>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -834,7 +866,7 @@ impl ApiClient {
         let params = GetPowerDataParams::new(interval);
         let request = TapoRequest::GetPowerData(TapoParams::new(params));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request::<PowerDataResultRaw>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
@@ -850,7 +882,7 @@ impl ApiClient {
             GetChildDeviceListParams::new(start_index),
         ));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request::<R>(request)
             .await?
             .map(|result| result.decode())
@@ -865,7 +897,7 @@ impl ApiClient {
         let request = TapoRequest::GetChildDeviceComponentList(TapoParams::new(EmptyParams));
 
         let result: ChildDeviceComponentListResult = self
-            .get_protocol()?
+            .protocol()?
             .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
@@ -889,7 +921,7 @@ impl ApiClient {
         let request = TapoRequest::ControlChild(Box::new(TapoParams::new(params)));
 
         let responses = self
-            .get_protocol()?
+            .protocol()?
             .execute_request::<ControlChildResult<TapoMultipleResponse<R>>>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
@@ -907,26 +939,23 @@ impl ApiClient {
         Ok(response.result)
     }
 
-    fn get_protocol_mut(&mut self) -> Result<&mut TapoProtocol, Error> {
+    fn protocol_mut(&mut self) -> Result<&mut TapoProtocol, Error> {
         if self.protocol.is_none() {
             let timeout = self.timeout.unwrap_or_else(|| Duration::from_secs(30));
 
             let client = Client::builder()
                 .http1_title_case_headers()
                 .timeout(timeout)
+                .danger_accept_invalid_certs(true)
                 .build()?;
-            let protocol = TapoProtocol::new(client);
-            self.protocol.replace(protocol);
+            self.protocol = Some(TapoProtocol::new(client));
         }
 
-        self.protocol.as_mut().ok_or_else(|| {
-            Error::Other(anyhow::anyhow!(
-                "The protocol should have been initialized already"
-            ))
-        })
+        // safe: protocol is always Some after the block above
+        Ok(self.protocol.as_mut().unwrap())
     }
 
-    fn get_protocol(&self) -> Result<&TapoProtocol, Error> {
+    fn protocol(&self) -> Result<&TapoProtocol, Error> {
         self.protocol.as_ref().ok_or_else(|| {
             Error::Other(anyhow::anyhow!(
                 "The protocol should have been initialized already"
@@ -946,7 +975,7 @@ impl ApiClientExt for ApiClient {
                 .set_terminal_uuid(TERMINAL_UUID),
         ));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request::<TapoResult>(set_device_info_request)
             .await?;
 
@@ -957,7 +986,7 @@ impl ApiClientExt for ApiClient {
         debug!("Device reboot...");
         let request = TapoRequest::DeviceReboot(TapoParams::new(DeviceRebootParams::new(delay)));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request::<serde_json::Value>(request)
             .await?;
 
@@ -968,7 +997,7 @@ impl ApiClientExt for ApiClient {
         debug!("Device reset...");
         let request = TapoRequest::DeviceReset(TapoParams::new(EmptyParams));
 
-        self.get_protocol()?
+        self.protocol()?
             .execute_request::<serde_json::Value>(request)
             .await?;
 
