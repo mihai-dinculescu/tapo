@@ -28,7 +28,7 @@ log = { workspace = true }
 reqwest = { version = "0.13", default-features = false, features = ["cookies", "json", "rustls"] }
 serde = { workspace = true, features = ["derive", "serde_derive"] }
 serde_json = { workspace = true }
-serde_with = "3.17"
+serde_with = "3.18"
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["sync"] }
 tokio-stream = "0.1"
