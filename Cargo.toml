@@ -12,4 +12,4 @@ schemars = { version = "1.2" }
 serde = { version = "1.0" }
 serde_json = { version = "1.0" }
 thiserror = "2.0"
-tokio = { version = "1.50", default-features = false }
+tokio = { version = "1.51", default-features = false }
