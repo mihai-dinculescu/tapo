@@ -87,7 +87,7 @@ export IP_ADDRESS=
 ```
 
 ```bash
-python examples/tapo_p110.py
+uv run python examples/tapo_p110.py
 ```
 
 See all examples in [/tapo-py/examples][examples-py].
