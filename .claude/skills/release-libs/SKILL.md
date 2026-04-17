@@ -1,3 +1,8 @@
+---
+name: release-libs
+description: Release a new version of the tapo (Rust) and tapo-py (Python) crates together, sharing the same version number
+---
+
 # Release tapo & tapo-py
 
 Release a new version of the `tapo` (Rust) and `tapo-py` (Python) crates. Both libraries are released simultaneously and share the same version number.

@@ -1,3 +1,8 @@
+---
+name: release-mcp
+description: Release a new version of the tapo-mcp crate (MCP server), versioned independently from the tapo libraries
+---
+
 # Release tapo-mcp
 
 Release a new version of the `tapo-mcp` crate.

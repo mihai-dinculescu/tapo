@@ -1,6 +1,11 @@
-# Code Review
+---
+name: pre-commit
+description: Kick off a Codex review in the background, run Rust/Python/MCP checks, fix issues, then summarize findings before committing
+---
 
-Run all checks, fix any issues found, then present a summary table.
+# Pre-Commit
+
+Start by triggering `/codex:review --background` so the Codex review runs in parallel, then run all checks, fix any issues found, and present a summary table. Collect the Codex review output with `/codex:result` once the local checks are done and fold its findings into the summary.
 
 ## Checks
 

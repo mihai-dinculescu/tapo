@@ -1,3 +1,8 @@
+---
+name: changelog
+description: Update CHANGELOG.md when the public API of the tapo (Rust), tapo-py (Python), or tapo-mcp (MCP) crates changes
+---
+
 # Changelog
 
 Update `CHANGELOG.md` when the public API of the Rust or Python libraries or the MCP server is changed. The file follows [Keep a Changelog](https://keepachangelog.com/) with separate `[Rust Unreleased]`, `[Python Unreleased]`, and `[MCP Unreleased]` sections.
