@@ -15,22 +15,22 @@ use tapo::responses::{
     AutoOffStatus, ColorLightState, Component, CurrentPowerResult, DefaultBrightnessState,
     DefaultColorLightState, DefaultLightState, DefaultPlugState, DefaultPowerType,
     DefaultRgbLightStripState, DefaultRgbicLightStripState, DefaultStateType,
-    DeviceInfoBasicResult, DeviceInfoColorLightResult, DeviceInfoHubResult, DeviceInfoLightResult,
-    DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult, DeviceInfoPowerStripResult,
-    DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
+    DeviceInfoBasicResult, DeviceInfoCameraResult, DeviceInfoColorLightResult, DeviceInfoHubResult,
+    DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
+    DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataIntervalResult,
     EnergyDataResult, EnergyUsageResult, KE100Result, OtherResult, OvercurrentStatus,
     OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
-    PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, RgbLightStripState,
-    RgbicLightStripState, S200Log, S200Result, S200RotationParams, S210Result, Status, T31XResult,
-    T100Log, T100Result, T110Log, T110Result, T300Log, T300Result, TemperatureHumidityRecord,
-    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, UsageByPeriodResult,
-    WaterLeakStatus,
+    PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset, RgbLightStripState,
+    RgbicLightStripState, RtspStreamUrl, S200Log, S200Result, S200RotationParams, S210Result,
+    Status, T31XResult, T100Log, T100Result, T110Log, T110Result, T300Log, T300Result,
+    TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100,
+    UsageByPeriodResult, WaterLeakStatus,
 };
 use tapo::{DeviceType, DiscoveryRawResult};
 
 use api::{
-    PyApiClient, PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryIter,
+    PyApiClient, PyCameraPtzHandler, PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryIter,
     PyDeviceDiscoveryRaw, PyDeviceDiscoveryRawIter, PyDiscoveryResult, PyHubHandler,
     PyKE100Handler, PyLightHandler, PyMaybeDiscoveryRawResult, PyMaybeDiscoveryResult,
     PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
@@ -103,6 +103,8 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyPlugHandler>()?;
     module.add_class::<PyRgbLightStripHandler>()?;
     module.add_class::<PyRgbicLightStripHandler>()?;
+
+    module.add_class::<PyCameraPtzHandler>()?;
 
     module.add_class::<PyHubHandler>()?;
     module.add_class::<PyKE100Handler>()?;
@@ -178,6 +180,11 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DeviceInfoPlugEnergyMonitoringResult>()?;
     module.add_class::<DeviceInfoPlugResult>()?;
     module.add_class::<PlugState>()?;
+
+    // device info: camera
+    module.add_class::<DeviceInfoCameraResult>()?;
+    module.add_class::<Preset>()?;
+    module.add_class::<RtspStreamUrl>()?;
 
     Ok(())
 }

@@ -1,14 +1,15 @@
 use anyhow::Context;
 
 use crate::responses::{
-    DecodableResultExt, DeviceInfoBasicResult, DeviceInfoColorLightResult, DeviceInfoHubResult,
-    DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
-    DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
+    DecodableResultExt, DeviceInfoBasicResult, DeviceInfoCameraResult, DeviceInfoColorLightResult,
+    DeviceInfoHubResult, DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult,
+    DeviceInfoPlugResult, DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult,
+    DeviceInfoRgbicLightStripResult,
 };
 use crate::{
-    ApiClient, ColorLightHandler, Error, HubHandler, LightHandler, PlugEnergyMonitoringHandler,
-    PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
-    RgbicLightStripHandler,
+    ApiClient, CameraPtzHandler, ColorLightHandler, Error, HubHandler, LightHandler,
+    PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
+    RgbLightStripHandler, RgbicLightStripHandler,
 };
 
 use crate::api::protocol::DeviceFamily;
@@ -19,21 +20,6 @@ use super::discovery_raw_result::DiscoveryRawResult;
 #[derive(Debug)]
 /// Result of the device discovery process.
 pub enum DiscoveryResult {
-    /// A Tapo device without a specific handler implementation.
-    ///
-    /// If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
-    /// unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
-    /// to start the discussion.
-    Other {
-        /// Device info of a Tapo device without a specific handler implementation.
-        ///
-        /// If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
-        /// unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
-        /// to start the discussion.
-        device_info: Box<DeviceInfoBasicResult>,
-        /// The IP address of the device.
-        ip: String,
-    },
     /// Tapo L510, L520 and L610 devices.
     Light {
         /// Device info of Tapo L510, L520 and L610.
@@ -106,6 +92,37 @@ pub enum DiscoveryResult {
         device_info: Box<DeviceInfoHubResult>,
         /// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) devices.
         handler: HubHandler,
+    },
+    /// Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70).
+    CameraPtz {
+        /// Device info of Tapo cameras (C100, C110, C210, C220, C225, C325WB, C520WS, C720, TC40, TC65, TC70, etc.).
+        device_info: Box<DeviceInfoCameraResult>,
+        /// Handler for Tapo cameras with PTZ, such as the
+        /// [C210](https://www.tapo.com/en/search/?q=C210),
+        /// [C220](https://www.tapo.com/en/search/?q=C220),
+        /// [C225](https://www.tapo.com/en/search/?q=C225),
+        /// [C325WB](https://www.tapo.com/en/search/?q=C325WB),
+        /// [C520WS](https://www.tapo.com/en/search/?q=C520WS),
+        /// [TC40](https://www.tapo.com/en/search/?q=TC40),
+        /// and [TC70](https://www.tapo.com/en/search/?q=TC70).
+        handler: CameraPtzHandler,
+        /// The IP address of the device.
+        ip: String,
+    },
+    /// A Tapo device without a specific handler implementation.
+    ///
+    /// If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
+    /// unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
+    /// to start the discussion.
+    Other {
+        /// Device info of a Tapo device without a specific handler implementation.
+        ///
+        /// If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
+        /// unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
+        /// to start the discussion.
+        device_info: Box<DeviceInfoBasicResult>,
+        /// The IP address of the device.
+        ip: String,
     },
 }
 
@@ -217,6 +234,13 @@ impl DiscoveryResult {
             DeviceType::Hub => {
                 map_device_model!(Hub, DeviceInfoHubResult, HubHandler, device_info, client)
             }
+            DeviceType::CameraPtz => DiscoveryResult::CameraPtz {
+                device_info: Box::new(serde_json::from_value::<DeviceInfoCameraResult>(
+                    device_info,
+                )?),
+                handler: CameraPtzHandler::new(client.clone(), raw_result.ip.to_string()),
+                ip: raw_result.ip.to_string(),
+            },
             DeviceType::Other => {
                 let info: DeviceInfoBasicResult = serde_json::from_value(device_info)?;
                 let info = match device_family {
@@ -247,6 +271,7 @@ impl DiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring
             }
             DiscoveryResult::Hub { .. } => DeviceType::Hub,
+            DiscoveryResult::CameraPtz { .. } => DeviceType::CameraPtz,
             DiscoveryResult::Other { .. } => DeviceType::Other,
         }
     }
@@ -263,6 +288,7 @@ impl DiscoveryResult {
             DiscoveryResult::PowerStrip { device_info, .. } => &device_info.model,
             DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.model,
             DiscoveryResult::Hub { device_info, .. } => &device_info.model,
+            DiscoveryResult::CameraPtz { device_info, .. } => &device_info.model,
             DiscoveryResult::Other { device_info, .. } => &device_info.model,
         }
     }
@@ -279,6 +305,7 @@ impl DiscoveryResult {
             DiscoveryResult::PowerStrip { device_info, .. } => &device_info.ip,
             DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.ip,
             DiscoveryResult::Hub { device_info, .. } => &device_info.ip,
+            DiscoveryResult::CameraPtz { ip, .. } => ip,
             DiscoveryResult::Other { ip, .. } => ip,
         }
     }
@@ -297,6 +324,7 @@ impl DiscoveryResult {
                 &device_info.device_id
             }
             DiscoveryResult::Hub { device_info, .. } => &device_info.device_id,
+            DiscoveryResult::CameraPtz { device_info, .. } => &device_info.device_id,
             DiscoveryResult::Other { device_info, .. } => &device_info.device_id,
         }
     }
@@ -317,6 +345,7 @@ impl DiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring.as_str()
             }
             DiscoveryResult::Hub { device_info, .. } => &device_info.nickname,
+            DiscoveryResult::CameraPtz { device_info, .. } => &device_info.nickname,
             DiscoveryResult::Other { device_info, .. } => device_info
                 .nickname
                 .as_deref()

@@ -6,7 +6,7 @@ use super::{
     ControlChildParams, DeviceRebootParams, GetChildDeviceListParams, GetEnergyDataParams,
     GetPowerDataParams, GetTriggerLogsParams, HandshakeParams, LightingEffect, LoginDeviceParams,
     MultipleRequestParams, PlayAlarmParams, SecurePassthroughParams, SegmentEffect,
-    SmartCamGetParams,
+    SmartCamDoParams, SmartCamGetParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -48,6 +48,8 @@ pub(crate) enum TapoRequest {
     // Smart Camera requests
     #[serde(rename = "get")]
     SmartCamGet(SmartCamGetParams),
+    #[serde(rename = "do")]
+    SmartCamDo(SmartCamDoParams),
 }
 
 #[derive(Debug, Serialize)]

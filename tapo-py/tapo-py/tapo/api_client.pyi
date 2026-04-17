@@ -24,6 +24,7 @@ See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/e
 
 from typing import Optional
 
+from .camera_ptz_handler import CameraPtzHandler
 from .color_light_handler import ColorLightHandler
 from .device_discovery import DeviceDiscovery
 from .device_discovery_raw import DeviceDiscoveryRaw
@@ -485,4 +486,123 @@ class ApiClient:
             child_device_list = await hub.get_child_device_list()
             print(f"Child device list: {child_device_list.to_dict()}")
             ```
+        """
+
+    async def c210(self, ip_address: str) -> CameraPtzHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraPtzHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C210](https://www.tapo.com/en/search/?q=C210),
+            [C220](https://www.tapo.com/en/search/?q=C220),
+            [C225](https://www.tapo.com/en/search/?q=C225),
+            [C325WB](https://www.tapo.com/en/search/?q=C325WB),
+            [C520WS](https://www.tapo.com/en/search/?q=C520WS),
+            [TC40](https://www.tapo.com/en/search/?q=TC40),
+            and [TC70](https://www.tapo.com/en/search/?q=TC70).
+        """
+
+    async def c220(self, ip_address: str) -> CameraPtzHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraPtzHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C210](https://www.tapo.com/en/search/?q=C210),
+            [C220](https://www.tapo.com/en/search/?q=C220),
+            [C225](https://www.tapo.com/en/search/?q=C225),
+            [C325WB](https://www.tapo.com/en/search/?q=C325WB),
+            [C520WS](https://www.tapo.com/en/search/?q=C520WS),
+            [TC40](https://www.tapo.com/en/search/?q=TC40),
+            and [TC70](https://www.tapo.com/en/search/?q=TC70).
+        """
+
+    async def c225(self, ip_address: str) -> CameraPtzHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraPtzHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C210](https://www.tapo.com/en/search/?q=C210),
+            [C220](https://www.tapo.com/en/search/?q=C220),
+            [C225](https://www.tapo.com/en/search/?q=C225),
+            [C325WB](https://www.tapo.com/en/search/?q=C325WB),
+            [C520WS](https://www.tapo.com/en/search/?q=C520WS),
+            [TC40](https://www.tapo.com/en/search/?q=TC40),
+            and [TC70](https://www.tapo.com/en/search/?q=TC70).
+        """
+
+    async def c325wb(self, ip_address: str) -> CameraPtzHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraPtzHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C210](https://www.tapo.com/en/search/?q=C210),
+            [C220](https://www.tapo.com/en/search/?q=C220),
+            [C225](https://www.tapo.com/en/search/?q=C225),
+            [C325WB](https://www.tapo.com/en/search/?q=C325WB),
+            [C520WS](https://www.tapo.com/en/search/?q=C520WS),
+            [TC40](https://www.tapo.com/en/search/?q=TC40),
+            and [TC70](https://www.tapo.com/en/search/?q=TC70).
+        """
+
+    async def c520ws(self, ip_address: str) -> CameraPtzHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraPtzHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C210](https://www.tapo.com/en/search/?q=C210),
+            [C220](https://www.tapo.com/en/search/?q=C220),
+            [C225](https://www.tapo.com/en/search/?q=C225),
+            [C325WB](https://www.tapo.com/en/search/?q=C325WB),
+            [C520WS](https://www.tapo.com/en/search/?q=C520WS),
+            [TC40](https://www.tapo.com/en/search/?q=TC40),
+            and [TC70](https://www.tapo.com/en/search/?q=TC70).
+        """
+
+    async def tc40(self, ip_address: str) -> CameraPtzHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraPtzHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C210](https://www.tapo.com/en/search/?q=C210),
+            [C220](https://www.tapo.com/en/search/?q=C220),
+            [C225](https://www.tapo.com/en/search/?q=C225),
+            [C325WB](https://www.tapo.com/en/search/?q=C325WB),
+            [C520WS](https://www.tapo.com/en/search/?q=C520WS),
+            [TC40](https://www.tapo.com/en/search/?q=TC40),
+            and [TC70](https://www.tapo.com/en/search/?q=TC70).
+        """
+
+    async def tc70(self, ip_address: str) -> CameraPtzHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraPtzHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C210](https://www.tapo.com/en/search/?q=C210),
+            [C220](https://www.tapo.com/en/search/?q=C220),
+            [C225](https://www.tapo.com/en/search/?q=C225),
+            [C325WB](https://www.tapo.com/en/search/?q=C325WB),
+            [C520WS](https://www.tapo.com/en/search/?q=C520WS),
+            [TC40](https://www.tapo.com/en/search/?q=TC40),
+            and [TC70](https://www.tapo.com/en/search/?q=TC70).
         """

@@ -2,17 +2,19 @@ use std::time::Duration;
 
 use pyo3::prelude::*;
 use tapo::{
-    ApiClient, ColorLightHandler, DeviceDiscovery, DeviceDiscoveryRaw, Error, HubHandler,
-    LightHandler, PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler,
-    PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
+    ApiClient, CameraPtzHandler, ColorLightHandler, DeviceDiscovery, DeviceDiscoveryRaw, Error,
+    HubHandler, LightHandler, PlugEnergyMonitoringHandler, PlugHandler,
+    PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
+    RgbicLightStripHandler,
 };
 
 use crate::call_handler_constructor;
 
 use super::{
-    PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryRaw, PyHubHandler, PyLightHandler,
-    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
-    PyPowerStripHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler,
+    PyCameraPtzHandler, PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryRaw, PyHubHandler,
+    PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler,
+    PyPowerStripEnergyMonitoringHandler, PyPowerStripHandler, PyRgbLightStripHandler,
+    PyRgbicLightStripHandler,
 };
 
 #[pyclass(name = "ApiClient")]
@@ -181,5 +183,47 @@ impl PyApiClient {
         let handler: HubHandler =
             call_handler_constructor!(self, tapo::ApiClient::h100, ip_address);
         Ok(PyHubHandler::new(handler))
+    }
+
+    pub async fn c210(&self, ip_address: String) -> PyResult<PyCameraPtzHandler> {
+        let handler: CameraPtzHandler =
+            call_handler_constructor!(self, tapo::ApiClient::c210, ip_address);
+        Ok(PyCameraPtzHandler::new(handler))
+    }
+
+    pub async fn c220(&self, ip_address: String) -> PyResult<PyCameraPtzHandler> {
+        let handler: CameraPtzHandler =
+            call_handler_constructor!(self, tapo::ApiClient::c220, ip_address);
+        Ok(PyCameraPtzHandler::new(handler))
+    }
+
+    pub async fn c225(&self, ip_address: String) -> PyResult<PyCameraPtzHandler> {
+        let handler: CameraPtzHandler =
+            call_handler_constructor!(self, tapo::ApiClient::c225, ip_address);
+        Ok(PyCameraPtzHandler::new(handler))
+    }
+
+    pub async fn c325wb(&self, ip_address: String) -> PyResult<PyCameraPtzHandler> {
+        let handler: CameraPtzHandler =
+            call_handler_constructor!(self, tapo::ApiClient::c325wb, ip_address);
+        Ok(PyCameraPtzHandler::new(handler))
+    }
+
+    pub async fn c520ws(&self, ip_address: String) -> PyResult<PyCameraPtzHandler> {
+        let handler: CameraPtzHandler =
+            call_handler_constructor!(self, tapo::ApiClient::c520ws, ip_address);
+        Ok(PyCameraPtzHandler::new(handler))
+    }
+
+    pub async fn tc40(&self, ip_address: String) -> PyResult<PyCameraPtzHandler> {
+        let handler: CameraPtzHandler =
+            call_handler_constructor!(self, tapo::ApiClient::tc40, ip_address);
+        Ok(PyCameraPtzHandler::new(handler))
+    }
+
+    pub async fn tc70(&self, ip_address: String) -> PyResult<PyCameraPtzHandler> {
+        let handler: CameraPtzHandler =
+            call_handler_constructor!(self, tapo::ApiClient::tc70, ip_address);
+        Ok(PyCameraPtzHandler::new(handler))
     }
 }

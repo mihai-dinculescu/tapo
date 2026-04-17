@@ -1,7 +1,8 @@
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::responses::{DecodableResultExt, TapoResponseExt, decode_value};
+use crate::utils::bool_from_int_or_bool;
 
 /// Basic device info of a Tapo device.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -42,19 +43,5 @@ impl DecodableResultExt for DeviceInfoBasicResult {
         }
 
         Ok(self)
-    }
-}
-
-/// Deserialize a boolean from either a JSON bool or an integer (0/1).
-/// Camera devices return some boolean fields as integers.
-fn bool_from_int_or_bool<'de, D>(deserializer: D) -> Result<bool, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let value = serde_json::Value::deserialize(deserializer)?;
-    match value {
-        serde_json::Value::Bool(b) => Ok(b),
-        serde_json::Value::Number(n) => Ok(n.as_i64().unwrap_or(0) != 0),
-        _ => Err(serde::de::Error::custom("expected bool or integer")),
     }
 }

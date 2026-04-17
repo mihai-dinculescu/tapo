@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Protocol, Type, Union
 
 from tapo import (
+    CameraPtzHandler,
     ColorLightHandler,
     HubHandler,
     LightHandler,
@@ -14,8 +15,9 @@ from tapo import (
 )
 from tapo.device_type import DeviceType
 from tapo.responses import (
-    DeviceInfoColorLightResult,
     DeviceInfoBasicResult,
+    DeviceInfoCameraResult,
+    DeviceInfoColorLightResult,
     DeviceInfoHubResult,
     DeviceInfoLightResult,
     DeviceInfoPlugEnergyMonitoringResult,
@@ -222,6 +224,33 @@ class Hub(DiscoveryResultExt):
         "handler",
     )
 
+@dataclass
+class CameraPtz(DiscoveryResultExt):
+    """Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70)."""
+
+    device_info: DeviceInfoCameraResult
+    """Device info of Tapo PTZ cameras."""
+
+    handler: CameraPtzHandler
+    """Handler for Tapo cameras with PTZ, such as the
+    [C210](https://www.tapo.com/en/search/?q=C210),
+    [C220](https://www.tapo.com/en/search/?q=C220),
+    [C225](https://www.tapo.com/en/search/?q=C225),
+    [C325WB](https://www.tapo.com/en/search/?q=C325WB),
+    [C520WS](https://www.tapo.com/en/search/?q=C520WS),
+    [TC40](https://www.tapo.com/en/search/?q=TC40),
+    and [TC70](https://www.tapo.com/en/search/?q=TC70).
+    """
+
+    ip: str
+    """The IP address of the device."""
+
+    __match_args__ = (
+        "device_info",
+        "handler",
+        "ip",
+    )
+
 class MaybeDiscoveryResult:
     """Potential result of the device discovery process. Using `get` will return the actual result or raise an exception."""
 
@@ -235,6 +264,7 @@ class MaybeDiscoveryResult:
         PowerStrip,
         PowerStripEnergyMonitoring,
         Hub,
+        CameraPtz,
         Other,
     ]:
         """Retrieves the actual discovery result or raises an exception."""
@@ -251,4 +281,5 @@ class DiscoveryResult(DiscoveryResultExt):
     PowerStrip: Type[PowerStrip] = PowerStrip
     PowerStripEnergyMonitoring: Type[PowerStripEnergyMonitoring] = PowerStripEnergyMonitoring
     Hub: Type[Hub] = Hub
+    CameraPtz: Type[CameraPtz] = CameraPtz
     Other: Type[Other] = Other

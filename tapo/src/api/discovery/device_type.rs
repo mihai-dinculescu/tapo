@@ -12,8 +12,6 @@ use serde::{Deserialize, Serialize};
     pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
 )]
 pub enum DeviceType {
-    /// A Tapo device without a specific handler implementation.
-    Other,
     /// Tapo L510, L520, L610 — dimmable lights.
     Light,
     /// Tapo L530, L535, L630 — color lights.
@@ -32,6 +30,10 @@ pub enum DeviceType {
     PowerStripEnergyMonitoring,
     /// Tapo H100 — smart hub.
     Hub,
+    /// Tapo C210, C220, C225, C325WB, C520WS, TC40, TC70 — smart cameras with PTZ.
+    CameraPtz,
+    /// A Tapo device without a specific handler implementation.
+    Other,
 }
 
 impl DeviceType {
@@ -49,6 +51,9 @@ impl DeviceType {
             "P300" | "P306" => DeviceType::PowerStrip,
             "P304M" | "P316M" => DeviceType::PowerStripEnergyMonitoring,
             "H100" => DeviceType::Hub,
+            "C210" | "C220" | "C225" | "C325WB" | "C520WS" | "TC40" | "TC70" => {
+                DeviceType::CameraPtz
+            }
             _ => DeviceType::Other,
         }
     }
@@ -67,6 +72,7 @@ impl DeviceType {
             DeviceType::PowerStrip => "Power Strip",
             DeviceType::PowerStripEnergyMonitoring => "Power Strip with Energy Monitoring",
             DeviceType::Hub => "Hub",
+            DeviceType::CameraPtz => "Smart Camera with PTZ",
             DeviceType::Other => "Other",
         }
     }
@@ -143,6 +149,17 @@ mod tests {
     #[test]
     fn from_model_hub() {
         assert_eq!(DeviceType::from_model("H100"), DeviceType::Hub);
+    }
+
+    #[test]
+    fn from_model_smart_cam_ptz() {
+        assert_eq!(DeviceType::from_model("C210"), DeviceType::CameraPtz);
+        assert_eq!(DeviceType::from_model("C220"), DeviceType::CameraPtz);
+        assert_eq!(DeviceType::from_model("C225"), DeviceType::CameraPtz);
+        assert_eq!(DeviceType::from_model("C325WB"), DeviceType::CameraPtz);
+        assert_eq!(DeviceType::from_model("C520WS"), DeviceType::CameraPtz);
+        assert_eq!(DeviceType::from_model("TC40"), DeviceType::CameraPtz);
+        assert_eq!(DeviceType::from_model("TC70"), DeviceType::CameraPtz);
     }
 
     #[test]

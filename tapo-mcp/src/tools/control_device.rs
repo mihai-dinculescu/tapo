@@ -117,7 +117,8 @@ async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(),
             DiscoveryResult::Other { .. }
             | DiscoveryResult::PowerStrip { .. }
             | DiscoveryResult::PowerStripEnergyMonitoring { .. }
-            | DiscoveryResult::Hub { .. } => {
+            | DiscoveryResult::Hub { .. }
+            | DiscoveryResult::CameraPtz { .. } => {
                 return Err(TapoMcpError::UnsupportedCapability {
                     id: id.to_string(),
                     capability: "OnOff".to_string(),

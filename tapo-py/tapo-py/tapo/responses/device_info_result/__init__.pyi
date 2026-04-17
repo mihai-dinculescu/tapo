@@ -1,4 +1,5 @@
 from .basic import *
+from .camera import *
 from .color_light import *
 from .device_info_ext import *
 from .default_plug_state import *

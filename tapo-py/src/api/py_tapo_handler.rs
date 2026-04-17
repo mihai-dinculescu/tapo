@@ -59,6 +59,14 @@ macro_rules! py_handler {
         py_handler!(@device_management $py_name, $handler);
     };
 
+    // No options
+    (
+        $py_name:ident($handler:ident, $device_info:ty),
+        py_name = $pyname:literal,
+    ) => {
+        py_handler!(@base $py_name($handler, $device_info), $pyname);
+    };
+
     // Internal: base struct + core methods + PyHandlerExt
     (@base $py_name:ident($handler:ident, $device_info:ty), $pyname:literal) => {
         #[derive(Clone)]

@@ -4,12 +4,22 @@ use serde::Serialize;
 pub(crate) struct SmartCamGetParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub device_info: Option<SectionNames>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub preset: Option<SectionNames>,
 }
 
 impl SmartCamGetParams {
     pub fn device_info() -> Self {
         Self {
             device_info: Some(SectionNames::new(&["basic_info"])),
+            ..Default::default()
+        }
+    }
+
+    pub fn preset() -> Self {
+        Self {
+            preset: Some(SectionNames::new(&["preset"])),
+            ..Default::default()
         }
     }
 }

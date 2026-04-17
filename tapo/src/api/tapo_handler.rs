@@ -12,12 +12,13 @@
 /// }
 /// ```
 ///
-/// All options (`on_off`, `device_usage`, `device_management`) are independently optional.
+/// All options (`ip_address`, `on_off`, `device_usage`, `device_management`) are independently optional.
 ///
 /// # Generated code
 ///
 /// * `#[derive(Debug)]` struct with `client: Arc<RwLock<ApiClient>>` field
-/// * `new(client)` constructor
+///   (and `ip_address: String` if `ip_address` specified)
+/// * `new(client)` constructor (`new(client, ip_address)` if `ip_address` specified)
 /// * `refresh_session()` method
 /// * `get_device_info()` method (typed)
 /// * `get_device_info_json()` method
@@ -106,12 +107,54 @@ macro_rules! tapo_handler {
         tapo_handler!(@device_management $name);
     };
 
+    // With ip_address + device_management
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        ip_address,
+        device_management,
+    ) => {
+        tapo_handler!(@base_with_ip $(#[$meta])* $name($device_info));
+        tapo_handler!(@device_management $name);
+    };
+
+    // With ip_address only
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        ip_address,
+    ) => {
+        tapo_handler!(@base_with_ip $(#[$meta])* $name($device_info));
+    };
+
     // No options
     (
         $(#[$meta:meta])*
         $name:ident($device_info:ty),
     ) => {
         tapo_handler!(@base $(#[$meta])* $name($device_info));
+    };
+
+    // Internal: base struct + core methods + HandlerExt (with ip)
+    (@base_with_ip $(#[$meta:meta])* $name:ident($device_info:ty)) => {
+        $(#[$meta])*
+        #[derive(Debug)]
+        pub struct $name {
+            client: std::sync::Arc<tokio::sync::RwLock<crate::api::ApiClient>>,
+            ip_address: String,
+        }
+
+        impl $name {
+            pub(crate) fn new(
+                client: std::sync::Arc<tokio::sync::RwLock<crate::api::ApiClient>>,
+                ip_address: String,
+            ) -> Self {
+                Self { client, ip_address }
+            }
+        }
+
+        tapo_handler!(@methods $name($device_info));
+        tapo_handler!(@handler_ext $name);
     };
 
     // Internal: base struct + core methods + HandlerExt
@@ -128,7 +171,15 @@ macro_rules! tapo_handler {
             ) -> Self {
                 Self { client }
             }
+        }
 
+        tapo_handler!(@methods $name($device_info));
+        tapo_handler!(@handler_ext $name);
+    };
+
+    // Internal: shared methods (refresh_session, get_device_info, etc.)
+    (@methods $name:ident($device_info:ty)) => {
+        impl $name {
             /// Refreshes the authentication session.
             pub async fn refresh_session(&mut self) -> Result<&mut Self, crate::error::Error> {
                 self.client.write().await.refresh_session().await?;
@@ -162,7 +213,10 @@ macro_rules! tapo_handler {
                 self.client.read().await.get_component_list().await
             }
         }
+    };
 
+    // Internal: HandlerExt impl
+    (@handler_ext $name:ident) => {
         #[async_trait::async_trait]
         impl crate::api::HandlerExt for $name {
             async fn get_client(
