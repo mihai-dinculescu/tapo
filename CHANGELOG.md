@@ -104,9 +104,9 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
-### Changed
+### Added
 
-- `get_device_state`: PTZ cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70) now return `DeviceInfoCameraResult` with camera-specific fields instead of the generic `DeviceInfoBasicResult`.
+- `list_devices`, `check_device`, `get_device_state`: added support for SmartCam devices (e.g. IP cameras) via the AES SSL protocol. PTZ cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70) return `DeviceInfoCameraResult` with camera-specific fields; other SmartCam devices return `DeviceInfoBasicResult`.
 
 ## [MCP v0.2.1][tapo-mcp-v0.2.1] - 2026-03-18
 
