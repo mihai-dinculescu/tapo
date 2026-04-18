@@ -31,6 +31,13 @@ Bump the `maturin` build tool to the latest version and regenerate `.github/work
    - **`--manifest-path ./tapo-py/Cargo.toml`**: append this flag to every `args:` line in each `PyO3/maturin-action@v1` step (linux, musllinux, windows, macos, and sdist jobs).
    - **`manylinux: 2_28`**: in the `linux` job (baseline: `auto`).
    - **GitHub Actions versions**: never downgrade. For each `uses: <action>@vN` line, keep the higher of the two versions between the current file and the baseline (e.g. if the file pins `actions/upload-artifact@v7` but the baseline emits `@v6`, keep `@v7`). To make this mechanical, compare with `diff <(grep 'uses: actions/' .github/workflows/tapo-py.yml) <(grep 'uses: actions/' <baseline-file>)` and reconcile each differing line by picking the higher `@vN`.
+   - **Job display names**: each job has a `name:` using the `Python / ...` prefix convention. The baseline emits no `name:` on the matrix jobs and `name: Release` on the release job — re-add these after regeneration:
+     - `linux`: `name: Python / Build wheel (linux, ${{ matrix.platform.target }})`
+     - `musllinux`: `name: Python / Build wheel (musllinux, ${{ matrix.platform.target }})`
+     - `windows`: `name: Python / Build wheel (windows, ${{ matrix.platform.target }}, ${{ matrix.platform.python_arch }})`
+     - `macos`: `name: Python / Build wheel (macos, ${{ matrix.platform.target }})`
+     - `sdist`: `name: Python / Build sdist`
+     - `release`: `name: Python / Publish to PyPI` (baseline: `Release`)
    - **`Test sdist` step**: keep this step between `Build sdist` and `Upload sdist` in the `sdist` job:
 
      ```yaml
