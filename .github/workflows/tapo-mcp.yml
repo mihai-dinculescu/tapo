@@ -23,9 +23,12 @@ env:
   IMAGE_NAME: ${{ github.repository_owner }}/tapo-mcp
 
 jobs:
+  rust-checks:
+    uses: ./.github/workflows/tapo-rs-checks.yml
   build:
     name: Build (${{ matrix.platform }})
     runs-on: ${{ matrix.runner }}
+    needs: rust-checks
     strategy:
       fail-fast: false
       matrix:

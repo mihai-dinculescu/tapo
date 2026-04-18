@@ -1,0 +1,39 @@
+name: "Tapo Rust Checks"
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Rust checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: davidB/rust-cargo-make@v1
+      - uses: actions/checkout@v6
+      - name: Run format
+        run: cargo make format
+      - name: Run check
+        run: cargo make check
+      - name: Run check doc
+        run: cargo make check-doc
+      - name: Run clippy
+        run: cargo make clippy
+      - name: Run test
+        run: cargo make test
+  checks_min_ver:
+    name: Rust checks on the minimum supported version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.88.0
+      - uses: davidB/rust-cargo-make@v1
+      - uses: actions/checkout@v6
+      - name: Run check on the minimum supported version
+        run: cargo +1.88.0 make check
