@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   linux:
-    name: Python / Build wheel (linux, ${{ matrix.platform.target }})
+    name: Python / Linux wheel (${{ matrix.platform.target }})
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -61,7 +61,7 @@ jobs:
           path: dist
 
   musllinux:
-    name: Python / Build wheel (musllinux, ${{ matrix.platform.target }})
+    name: Python / Musllinux wheel (${{ matrix.platform.target }})
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -93,7 +93,7 @@ jobs:
           path: dist
 
   windows:
-    name: Python / Build wheel (windows, ${{ matrix.platform.target }}, ${{ matrix.platform.python_arch }})
+    name: Python / Windows wheel (${{ matrix.platform.target }})
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -126,7 +126,7 @@ jobs:
           path: dist
 
   macos:
-    name: Python / Build wheel (macos, ${{ matrix.platform.target }})
+    name: Python / macOS wheel (${{ matrix.platform.target }})
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -153,7 +153,7 @@ jobs:
           path: dist
 
   sdist:
-    name: Python / Build sdist
+    name: Python / Sdist
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
