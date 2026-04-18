@@ -23,7 +23,7 @@ classifiers = [
 requires-python = ">=3.11"
 
 [dependency-groups]
-dev = ["maturin>=1.0,<2.0", "black>=25.0,<27.0", "mypy>=1.19"]
+dev = ["maturin>=1.0,<2.0", "black>=25.0,<27.0", "mypy>=1.20.1"]
 
 [project.urls]
 Changelog = "https://github.com/mihai-dinculescu/tapo/blob/main/CHANGELOG.md"
