@@ -23,7 +23,7 @@ classifiers = [
 requires-python = ">=3.11"
 
 [dependency-groups]
-dev = ["maturin>=1.0,<2.0", "black>=25.0,<27.0", "mypy>=1.20.1"]
+dev = ["maturin>=1.13.1,<2.0", "black>=25.0,<27.0", "mypy>=1.20.1"]
 
 [project.urls]
 Changelog = "https://github.com/mihai-dinculescu/tapo/blob/main/CHANGELOG.md"
@@ -32,7 +32,7 @@ Homepage = "https://github.com/mihai-dinculescu/tapo"
 Source = "https://github.com/mihai-dinculescu/tapo"
 
 [build-system]
-requires = ["maturin>=1.0,<2.0"]
+requires = ["maturin>=1.13.1,<2.0"]
 build-backend = "maturin"
 
 [tool.maturin]
