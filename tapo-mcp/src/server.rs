@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use rmcp::handler::server::{tool::ToolRouter, wrapper::Parameters};
+use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
     CallToolResult, ListResourcesResult, PaginatedRequestParams, ReadResourceRequestParams,
     ReadResourceResult, ServerCapabilities, ServerInfo,
@@ -18,17 +18,13 @@ use crate::tools;
 
 #[derive(Clone)]
 pub struct TapoMcp {
-    pub(crate) tool_router: ToolRouter<Self>,
     config: Arc<AppConfig>,
 }
 
 #[tool_router]
 impl TapoMcp {
     pub(crate) fn new(config: Arc<AppConfig>) -> Self {
-        Self {
-            tool_router: Self::tool_router(),
-            config,
-        }
+        Self { config }
     }
 
     #[tool(

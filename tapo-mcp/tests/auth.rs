@@ -21,6 +21,7 @@ fn mcp_request(authorization: Option<&str>) -> Request {
     let mut builder = Request::builder()
         .method("POST")
         .uri("/")
+        .header("Host", "localhost")
         .header("Content-Type", "application/json")
         .header("Accept", "application/json, text/event-stream");
 
