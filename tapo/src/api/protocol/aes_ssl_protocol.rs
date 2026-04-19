@@ -1,6 +1,6 @@
 use std::fmt;
 
-use log::{debug, error, trace};
+use log::{debug, trace};
 use reqwest::Client;
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
@@ -84,7 +84,7 @@ impl AesSslProtocol {
             .await?;
 
         if !response.status().is_success() {
-            error!("Response error: {}", response.status());
+            debug!("Response error: {}", response.status());
             return Err(Error::Tapo(TapoResponseError::HttpError {
                 status_code: response.status().as_u16(),
                 description: "Request failed".to_string(),
@@ -188,7 +188,7 @@ impl AesSslProtocol {
         let response = self.client.post(url).json(&body).send().await?;
 
         if !response.status().is_success() {
-            error!("Handshake1 error: {}", response.status());
+            debug!("Handshake1 error: {}", response.status());
             return Err(Error::Tapo(TapoResponseError::HttpError {
                 status_code: response.status().as_u16(),
                 description: "Handshake1 failed".to_string(),
@@ -205,7 +205,7 @@ impl AesSslProtocol {
                 "Expected INVALID_NONCE (-40413) during handshake1, got {}",
                 response_body.error_code
             );
-            error!("{description}");
+            debug!("{description}");
             return Err(Error::Tapo(TapoResponseError::Unauthorized {
                 kind: "EXPECTED_INVALID_NONCE",
                 description,
@@ -246,7 +246,7 @@ impl AesSslProtocol {
             });
         }
 
-        error!("Device confirm hash mismatch in handshake1");
+        debug!("Device confirm hash mismatch in handshake1");
         Err(Error::Tapo(TapoResponseError::hash_mismatch()))
     }
 
@@ -275,7 +275,7 @@ impl AesSslProtocol {
         let response = self.client.post(url).json(&body).send().await?;
 
         if !response.status().is_success() {
-            error!("Handshake2 error: {}", response.status());
+            debug!("Handshake2 error: {}", response.status());
             return Err(Error::Tapo(TapoResponseError::HttpError {
                 status_code: response.status().as_u16(),
                 description: "Handshake2 failed".to_string(),

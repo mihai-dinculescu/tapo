@@ -27,6 +27,10 @@ file. This change log follows the conventions of
 - `DeviceInfoPowerStripResult`: changed `time_diff` from `i64` to `Option<i64>` for consistency with other device info types.
 - `DeviceInfoBasicResult`: removed `device_on`, `on_time`, `ip`, `fw_id`, `hw_id`, `lang`, `rssi`, `signal_level`, `specs`, `ssid`, and `time_diff` fields. Changed `nickname` to `Option<String>`. Added serde aliases for SmartCam field name compatibility.
 
+### Fixed
+
+- `AesSslProtocol`, `KlapProtocol`: downgraded `error!` log calls to `debug!` on request, handshake, and authentication failures. The same information is already returned as an `Err` value, so the `error!` logs were duplicate reporting.
+
 ### Removed
 
 - `GenericDeviceHandler`: removed. Use a specific handler type (e.g. `l530`, `p110`) instead.
@@ -56,6 +60,7 @@ file. This change log follows the conventions of
 ### Fixed
 
 - `DeviceInfoRgbLightStripResult`, `DeviceInfoRgbicLightStripResult`: removed incorrect `on_time` field from `.pyi` stubs (not present in Rust type).
+- `Logging`: stopped emitting `error`-level Rust logs on stderr for request failures, handshake errors, and session expiry. The same information is already raised as a Python exception; these messages are now emitted at `debug` level instead.
 
 ### Removed
 

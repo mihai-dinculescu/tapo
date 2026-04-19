@@ -1,6 +1,6 @@
 use std::fmt;
 
-use log::{debug, error, trace};
+use log::{debug, trace};
 use rand::RngExt as _;
 use reqwest::header::COOKIE;
 use reqwest::{Client, StatusCode};
@@ -73,7 +73,7 @@ impl KlapProtocol {
             .await?;
 
         if !response.status().is_success() {
-            error!("Response error: {}", response.status());
+            debug!("Response error: {}", response.status());
 
             let error = match response.status() {
                 StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
@@ -158,7 +158,7 @@ impl KlapProtocol {
             .await?;
 
         if !response.status().is_success() {
-            error!("Handshake1 error: {}", response.status());
+            debug!("Handshake1 error: {}", response.status());
 
             if response.status() == StatusCode::FORBIDDEN {
                 return Err(Error::Tapo(TapoResponseError::Unauthorized {
@@ -181,7 +181,7 @@ impl KlapProtocol {
         let local_hash = crypto::sha256(&[local_seed, remote_seed, auth_hash].concat());
 
         if local_hash != server_hash {
-            error!("Local hash does not match server hash");
+            debug!("Local hash does not match server hash");
             return Err(Error::Tapo(TapoResponseError::hash_mismatch()));
         }
 
@@ -212,7 +212,7 @@ impl KlapProtocol {
             .await?;
 
         if !response.status().is_success() {
-            error!("Handshake2 error: {}", response.status());
+            debug!("Handshake2 error: {}", response.status());
             return Err(Error::Tapo(TapoResponseError::HttpError {
                 status_code: response.status().as_u16(),
                 description: "Handshake2 failed".to_string(),
