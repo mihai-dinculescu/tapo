@@ -1,11 +1,11 @@
 ---
 name: pre-commit
-description: Kick off a Codex review in the background, run Rust/Python/MCP checks, fix issues, then summarize findings before committing
+description: Run Rust/Python/MCP checks, fix issues, then summarize findings before committing
 ---
 
 # Pre-Commit
 
-Start by triggering `/codex:review --background` so the Codex review runs in parallel, then run all checks, fix any issues found, and present a summary table. Collect the Codex review output with `/codex:result` once the local checks are done and fold its findings into the summary.
+Run all checks, fix any issues found, then present a summary table.
 
 ## Checks
 
@@ -42,6 +42,12 @@ Run the following checks if there are changes in the `tapo-mcp/` directory. Fix 
 - Verify that **all** `#[derive(JsonSchema)]` types have `schemars` annotations — including tool input params, response types, enums, and their fields/variants. Check for descriptions and range constraints where applicable.
 - Verify that `README.md` reflects any MCP API changes
 - Verify that the OpenClaw skill (`openclaw-skill/`) reflects any MCP API changes
+
+### Documentation checks
+
+Run the following checks if there are changes in the `tapo/` or `tapo-py/` directories. Fix all issues found.
+
+- Verify that `SUPPORTED_DEVICES.md` is up to date: add, remove, or regroup rows/columns when a handler's public method list changed, a device model was added/removed, or a method's `#[cfg(feature = "debug")]` gating changed
 
 ## Code Review
 
