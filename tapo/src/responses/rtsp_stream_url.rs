@@ -4,10 +4,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct RtspStreamUrl {
-    /// High-definition stream URL (stream1).
+    /// High-definition H.264 stream URL (stream1).
     pub hd: String,
-    /// Standard-definition stream URL (stream2).
+    /// Standard-definition H.264 stream URL (stream2).
     pub sd: String,
+    /// Motion JPEG stream URL (stream8). Suitable for frame-by-frame capture
+    /// without an H.264 decoder; each frame is a self-contained JPEG.
+    pub mjpeg: String,
 }
 
 #[cfg(feature = "python")]

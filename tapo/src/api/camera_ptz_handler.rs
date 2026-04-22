@@ -22,18 +22,19 @@ impl CameraPtzHandler {
     /// (Camera Settings > Advanced Settings > Camera Account), not the TP-Link cloud account credentials.
     /// They will be URL-encoded automatically.
     pub fn get_rtsp_stream_url(&self, username: &str, password: &str) -> RtspStreamUrl {
-        let make_url = |stream: &str| -> String {
-            let mut url = reqwest::Url::parse(&format!("rtsp://{}:554/{stream}", self.ip_address))
-                .expect("valid RTSP base URL");
-            url.set_username(username).expect("valid username");
-            url.set_password(Some(password)).expect("valid password");
-            url.to_string()
-        };
-
         RtspStreamUrl {
-            hd: make_url("stream1"),
-            sd: make_url("stream2"),
+            hd: self.rtsp_url("stream1", username, password),
+            sd: self.rtsp_url("stream2", username, password),
+            mjpeg: self.rtsp_url("stream8", username, password),
         }
+    }
+
+    fn rtsp_url(&self, stream: &str, username: &str, password: &str) -> String {
+        let mut url = reqwest::Url::parse(&format!("rtsp://{}:554/{stream}", self.ip_address))
+            .expect("valid RTSP base URL");
+        url.set_username(username).expect("valid username");
+        url.set_password(Some(password)).expect("valid password");
+        url.to_string()
     }
 
     /// Moves the camera by the given pan and tilt values.
