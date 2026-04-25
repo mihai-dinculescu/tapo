@@ -10,6 +10,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.3.0][tapo-mcp-v0.3.0] - 2026-04-25
+
 ### Added
 
 - `list_devices`, `check_device`, `get_device_state`: added support for SmartCam devices (e.g. IP cameras) via the AES SSL protocol. PTZ cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70) return `DeviceInfoCameraResult` with camera-specific fields; other SmartCam devices return `DeviceInfoBasicResult`.
@@ -949,6 +951,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.3.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.3.0
 [v0.9.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.9.0
 [tapo-mcp-v0.2.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.2.1
 [tapo-mcp-v0.2.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.2.0
