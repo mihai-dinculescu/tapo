@@ -47,7 +47,7 @@ impl CameraPtzHandler {
     /// Captures a JPEG snapshot from the camera's dedicated MJPEG stream.
     ///
     /// The output resolution is fixed by the camera's jpegStream profile
-    /// (approximately 640×360 on current PTZ models — not user-configurable).
+    /// (approximately 640x360 on current PTZ models — not user-configurable).
     /// Typical latency is well under a second on a local network: each frame
     /// arrives already JPEG-encoded, so no decoder is involved.
     ///

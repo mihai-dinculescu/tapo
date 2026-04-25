@@ -1,6 +1,6 @@
 from tapo.debug_ext import DebugExt
 from tapo.refresh_session_ext import RefreshSessionExt
-from tapo.responses import DeviceInfoCameraResult, Preset, RtspStreamUrl
+from tapo.responses import DeviceInfoCameraResult, Preset, RtspStreamUrl, Snapshot
 
 class CameraPtzHandler(RefreshSessionExt, DebugExt):
     """Handler for Tapo cameras with PTZ, such as the
@@ -41,6 +41,26 @@ class CameraPtzHandler(RefreshSessionExt, DebugExt):
 
         Returns:
             RtspStreamUrl: The HD and SD RTSP stream URLs.
+        """
+
+    async def get_snapshot(self, username: str, password: str) -> Snapshot:
+        """Captures a JPEG snapshot from the camera's dedicated MJPEG stream.
+
+        The output resolution is fixed by the camera's jpegStream profile
+        (approximately 640x360 on current PTZ models — not user-configurable).
+        Typical latency is well under a second on a local network: each frame
+        arrives already JPEG-encoded, so no decoder is involved.
+
+        The credentials are the **camera account** credentials set in the Tapo app
+        (Camera Settings > Advanced Settings > Camera Account), not the TP-Link cloud
+        account credentials. They are the same credentials accepted by `get_rtsp_stream_url`.
+
+        Args:
+            username (str): The camera account username.
+            password (str): The camera account password.
+
+        Returns:
+            Snapshot: The captured JPEG frame and its MIME content type.
         """
 
     async def pan_tilt(self, pan: int, tilt: int) -> None:

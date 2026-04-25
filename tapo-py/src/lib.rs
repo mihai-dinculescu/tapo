@@ -23,7 +23,7 @@ use tapo::responses::{
     OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
     PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset, RgbLightStripState,
     RgbicLightStripState, RtspStreamUrl, S200Log, S200Result, S200RotationParams, S210Result,
-    Status, T31XResult, T100Log, T100Result, T110Log, T110Result, T300Log, T300Result,
+    Snapshot, Status, T31XResult, T100Log, T100Result, T110Log, T110Result, T300Log, T300Result,
     TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100,
     UsageByPeriodResult, WaterLeakStatus,
 };
@@ -185,6 +185,7 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DeviceInfoCameraResult>()?;
     module.add_class::<Preset>()?;
     module.add_class::<RtspStreamUrl>()?;
+    module.add_class::<Snapshot>()?;
 
     Ok(())
 }
