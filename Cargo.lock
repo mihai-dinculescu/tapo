@@ -282,9 +282,9 @@ checksum = "1e748733b7cbc798e1434b6ac524f0c1ff2ab456fe201501e6497c8417a4fc33"
 
 [[package]]
 name = "cbc"
-version = "0.2.0-rc.4"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab1412b9ae2463ede01f1e591412dfbcfeacecf40e8c4c3e0655814c19065c38"
+checksum = "98db6aeaef0eeef2c1e3ce9a27b739218825dae116076352ac3777076aa22225"
 dependencies = [
  "cipher",
 ]
