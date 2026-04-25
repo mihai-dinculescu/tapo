@@ -8,11 +8,11 @@
     "source": "github",
     "subfolder": "tapo-mcp"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/mihai-dinculescu/tapo-mcp:0.3.0",
+      "identifier": "ghcr.io/mihai-dinculescu/tapo-mcp:0.3.1",
       "transport": {
         "type": "streamable-http",
         "url": "http://localhost:3000/"
