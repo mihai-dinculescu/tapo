@@ -6,6 +6,17 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [MCP Unreleased][Unreleased]
+
+### Added
+
+- `list_devices`, `check_device`, `get_device_state`: added support for SmartCam devices (e.g. IP cameras) via the AES SSL protocol. PTZ cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70) return `DeviceInfoCameraResult` with camera-specific fields; other SmartCam devices return `DeviceInfoBasicResult`.
+- `take_snapshot`: added tool that captures a still JPEG snapshot from a Tapo camera (approximately 640x360). Supported cameras now advertise a `Snapshot` capability in `list_devices`. Requires camera-account credentials configured via `TAPO_MCP_CAMERA_USERNAME` and `TAPO_MCP_CAMERA_PASSWORD` (Camera Settings > Advanced Settings > Camera Account in the Tapo app).
+
+## [Rust v0.9.0][v0.9.0] - 2026-04-25
+
 ### Added
 
 - `ApiClient::discover_devices`: added support for SmartCam devices (e.g. IP cameras) via the AES SSL protocol. They are now discovered and listed as `DiscoveryResult::CameraPtz` (for PTZ models) or `DiscoveryResult::Other` instead of failing with an error.
@@ -36,7 +47,7 @@ file. This change log follows the conventions of
 - `GenericDeviceHandler`: removed. Use a specific handler type (e.g. `l530`, `p110`) instead.
 - `ApiClient::generic_device`: removed method for creating a `GenericDeviceHandler`.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.9.0][v0.9.0] - 2026-04-25
 
 ### Added
 
@@ -106,13 +117,6 @@ file. This change log follows the conventions of
 - `ColorLightSetDeviceInfoParams`: added `RgbicLightStripHandler` to the `send()` method's accepted handler types.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `start_date` and `end_date` parameter types in `get_energy_data()` from `datetime` to `date`.
 - `LightHandler`, `ColorLightHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: corrected `get_device_usage()` return type from `DeviceUsageResult` to `DeviceUsageEnergyMonitoringResult`.
-
-## [MCP Unreleased][Unreleased]
-
-### Added
-
-- `list_devices`, `check_device`, `get_device_state`: added support for SmartCam devices (e.g. IP cameras) via the AES SSL protocol. PTZ cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70) return `DeviceInfoCameraResult` with camera-specific fields; other SmartCam devices return `DeviceInfoBasicResult`.
-- `take_snapshot`: added tool that captures a still JPEG snapshot from a Tapo camera (approximately 640x360). Supported cameras now advertise a `Snapshot` capability in `list_devices`. Requires camera-account credentials configured via `TAPO_MCP_CAMERA_USERNAME` and `TAPO_MCP_CAMERA_PASSWORD` (Camera Settings > Advanced Settings > Camera Account in the Tapo app).
 
 ## [MCP v0.2.1][tapo-mcp-v0.2.1] - 2026-03-18
 
@@ -945,6 +949,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.9.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.9.0
 [tapo-mcp-v0.2.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.2.1
 [tapo-mcp-v0.2.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.2.0
 [v0.8.12]: https://github.com/mihai-dinculescu/tapo/tree/v0.8.12
