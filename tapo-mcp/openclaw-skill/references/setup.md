@@ -41,10 +41,11 @@ You should see:
 
 | Tool               | Description                         | Parameters               |
 | ------------------ | ----------------------------------- | ------------------------ |
-| `list_devices`     | List all available Tapo devices     | (none)                   |
-| `check_device`     | Verify a device ID matches at an IP | `id`, `ip`               |
-| `get_device_state` | Get a device's current state        | `id`, `ip`, `capability` |
-| `control_device`   | Control a device                    | `id`, `ip`, `capabilities` |
+| `list_devices`     | List all available Tapo devices       | (none)                     |
+| `check_device`     | Verify a device ID matches at an IP   | `id`, `ip`                 |
+| `get_device_state` | Get a device's current state          | `id`, `ip`, `capability`   |
+| `control_device`   | Control a device                      | `id`, `ip`, `capabilities` |
+| `take_snapshot`    | Capture a JPEG snapshot from a camera | `id`, `ip`                 |
 
 ## Step 3: Test a tool call
 
