@@ -57,6 +57,7 @@
 | get_device_info_json (d) | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | get_presets              | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | get_rtsp_stream_url      | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| get_snapshot             | &check;                     | &check;                     | &check;                 |
 | goto_preset              | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | pan_tilt                 | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | refresh_session          | &#x2705;                    | &#x2705;                    | &#x2705;                |

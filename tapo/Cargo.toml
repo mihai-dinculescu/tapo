@@ -26,6 +26,7 @@ itertools = "0.14"
 lazy_static = "1.5"
 log = { workspace = true }
 reqwest = { version = "0.13", default-features = false, features = ["cookies", "json", "rustls"] }
+retina = "0.4"
 serde = { workspace = true, features = ["derive", "serde_derive"] }
 serde_json = { workspace = true }
 serde_with = "3.18"

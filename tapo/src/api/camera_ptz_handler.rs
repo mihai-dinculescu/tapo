@@ -1,6 +1,9 @@
+use std::time::Duration;
+
+use crate::api::rtsp_snapshot::grab_mjpeg_frame;
 use crate::error::Error;
 use crate::requests::{SmartCamDoParams, SmartCamGetParams};
-use crate::responses::{DeviceInfoCameraResult, Preset, PresetRaw, RtspStreamUrl};
+use crate::responses::{DeviceInfoCameraResult, Preset, PresetRaw, RtspStreamUrl, Snapshot};
 
 tapo_handler! {
     /// Handler for Tapo cameras with PTZ, such as the
@@ -29,12 +32,42 @@ impl CameraPtzHandler {
         }
     }
 
+    fn rtsp_url_base(&self, stream: &str) -> String {
+        format!("rtsp://{}:554/{stream}", self.ip_address)
+    }
+
     fn rtsp_url(&self, stream: &str, username: &str, password: &str) -> String {
-        let mut url = reqwest::Url::parse(&format!("rtsp://{}:554/{stream}", self.ip_address))
-            .expect("valid RTSP base URL");
+        let mut url =
+            reqwest::Url::parse(&self.rtsp_url_base(stream)).expect("valid RTSP base URL");
         url.set_username(username).expect("valid username");
         url.set_password(Some(password)).expect("valid password");
         url.to_string()
+    }
+
+    /// Captures a JPEG snapshot from the camera's dedicated MJPEG stream.
+    ///
+    /// The output resolution is fixed by the camera's jpegStream profile
+    /// (approximately 640×360 on current PTZ models — not user-configurable).
+    /// Typical latency is well under a second on a local network: each frame
+    /// arrives already JPEG-encoded, so no decoder is involved.
+    ///
+    /// The credentials are the **camera account** credentials set in the Tapo app
+    /// (Camera Settings > Advanced Settings > Camera Account), not the TP-Link cloud
+    /// account credentials. They are the same credentials accepted by `get_rtsp_stream_url`.
+    pub async fn get_snapshot(&self, username: &str, password: &str) -> Result<Snapshot, Error> {
+        // retina rejects URLs with embedded credentials when creds are also
+        // passed via SessionOptions, so use the bare base URL here.
+        let url = self.rtsp_url_base("stream8");
+        let creds = retina::client::Credentials {
+            username: username.into(),
+            password: password.into(),
+        };
+        let data = grab_mjpeg_frame(&url, creds, Duration::from_secs(5)).await?;
+
+        Ok(Snapshot {
+            data,
+            content_type: "image/jpeg".into(),
+        })
     }
 
     /// Moves the camera by the given pan and tilt values.

@@ -9,7 +9,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `ApiClient::discover_devices`: added support for SmartCam devices (e.g. IP cameras) via the AES SSL protocol. They are now discovered and listed as `DiscoveryResult::CameraPtz` (for PTZ models) or `DiscoveryResult::Other` instead of failing with an error.
-- `CameraPtzHandler`: added handler for Tapo PTZ cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70) with `get_device_info`, `get_rtsp_stream_url`, `pan_tilt`, `save_preset`, `goto_preset`, `delete_preset`, and `get_presets` methods. Use `c210`, `c220`, `c225`, `c325wb`, `c520ws`, `tc40`, or `tc70` on the `ApiClient` to create it.
+- `CameraPtzHandler`: added handler for Tapo PTZ cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70) with `get_device_info`, `get_rtsp_stream_url`, `get_snapshot`, `pan_tilt`, `save_preset`, `goto_preset`, `delete_preset`, and `get_presets` methods. Use `c210`, `c220`, `c225`, `c325wb`, `c520ws`, `tc40`, or `tc70` on the `ApiClient` to create it.
 - `DiscoveryResult::CameraPtz`: added variant exposing `device_info`, `handler`, and `ip` when a supported PTZ camera is discovered.
 - `HubHandler`: added support for S210 light switches with `on`, `off`, and `get_device_usage`. Use `s210` on the hub to create the `S210Handler`.
 - `OtherResult`: added catch-all result type for unsupported hub child devices, containing `device_id`, `model`, and `nickname`.

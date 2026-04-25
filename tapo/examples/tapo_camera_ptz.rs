@@ -27,6 +27,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let rtsp_url = device.get_rtsp_stream_url(&camera_username, &camera_password);
     info!("RTSP HD: {}", rtsp_url.hd);
     info!("RTSP SD: {}", rtsp_url.sd);
+    info!("RTSP MJPEG: {}", rtsp_url.mjpeg);
+
+    info!("Capturing snapshot...");
+    let snapshot = device
+        .get_snapshot(&camera_username, &camera_password)
+        .await?;
+    let snapshot_path = format!("snapshot_{}.jpg", std::process::id());
+    std::fs::write(&snapshot_path, &snapshot.data)?;
+    info!(
+        "Saved snapshot ({} bytes, {}) to {snapshot_path}",
+        snapshot.data.len(),
+        snapshot.content_type,
+    );
 
     let preset_name = format!("example_{}", std::process::id());
 
