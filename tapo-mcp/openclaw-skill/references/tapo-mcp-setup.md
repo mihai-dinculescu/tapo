@@ -54,6 +54,8 @@ docker run --rm \
   --network host \
   -e TAPO_MCP_USERNAME="you@example.com" \
   -e TAPO_MCP_PASSWORD="your-password" \
+  -e TAPO_MCP_CAMERA_USERNAME="camera-account-username" \
+  -e TAPO_MCP_CAMERA_PASSWORD="camera-account-password" \
   -e TAPO_MCP_DISCOVERY_TARGET="192.168.1.255" \
   ghcr.io/mihai-dinculescu/tapo-mcp:latest
 ```
@@ -68,6 +70,8 @@ Create the Secret and ConfigMap first:
 kubectl create secret generic tapo-mcp-secrets \
   --from-literal=TAPO_MCP_USERNAME="you@example.com" \
   --from-literal=TAPO_MCP_PASSWORD="your-password" \
+  --from-literal=TAPO_MCP_CAMERA_USERNAME="camera-account-username" \
+  --from-literal=TAPO_MCP_CAMERA_PASSWORD="camera-account-password" \
   --from-literal=TAPO_MCP_API_KEY="your-api-key"
 
 kubectl create configmap tapo-mcp-config \
@@ -108,6 +112,16 @@ spec:
                 secretKeyRef:
                   name: tapo-mcp-secrets
                   key: TAPO_MCP_PASSWORD
+            - name: TAPO_MCP_CAMERA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: tapo-mcp-secrets
+                  key: TAPO_MCP_CAMERA_USERNAME
+            - name: TAPO_MCP_CAMERA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tapo-mcp-secrets
+                  key: TAPO_MCP_CAMERA_PASSWORD
             - name: TAPO_MCP_API_KEY
               valueFrom:
                 secretKeyRef:
