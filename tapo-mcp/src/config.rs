@@ -10,6 +10,10 @@ pub struct AppConfig {
     pub http_addr: String,
     pub username: String,
     pub password: String,
+    #[serde(default)]
+    pub camera_username: Option<String>,
+    #[serde(default)]
+    pub camera_password: Option<String>,
     pub discovery_target: String,
     #[serde(default = "AppConfig::default_discovery_timeout")]
     pub discovery_timeout: u64,
@@ -23,6 +27,14 @@ impl std::fmt::Debug for AppConfig {
             .field("http_addr", &self.http_addr)
             .field("username", &"[redacted]")
             .field("password", &"[redacted]")
+            .field(
+                "camera_username",
+                &self.camera_username.as_ref().map(|_| "[redacted]"),
+            )
+            .field(
+                "camera_password",
+                &self.camera_password.as_ref().map(|_| "[redacted]"),
+            )
             .field("discovery_target", &self.discovery_target)
             .field("discovery_timeout", &self.discovery_timeout)
             .field("api_key", &self.api_key.as_ref().map(|_| "[redacted]"))
@@ -73,6 +85,16 @@ impl AppConfig {
             .map(|k| k.trim().to_string())
             .filter(|k| !k.is_empty());
 
+        config.camera_username = config
+            .camera_username
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty());
+
+        config.camera_password = config
+            .camera_password
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty());
+
         Ok(config)
     }
 }
@@ -92,6 +114,8 @@ mod tests {
         for key in [
             "TAPO_MCP_USERNAME",
             "TAPO_MCP_PASSWORD",
+            "TAPO_MCP_CAMERA_USERNAME",
+            "TAPO_MCP_CAMERA_PASSWORD",
             "TAPO_MCP_DISCOVERY_TARGET",
             "TAPO_MCP_HTTP_ADDR",
             "TAPO_MCP_DISCOVERY_TIMEOUT",
@@ -174,7 +198,9 @@ mod tests {
         let config = AppConfig {
             http_addr: "127.0.0.1:3000".to_string(),
             username: "user@example.com".to_string(),
-            password: "super_secret".to_string(),
+            password: "super-secret".to_string(),
+            camera_username: Some("alice@cam".to_string()),
+            camera_password: Some("cam-very-secret".to_string()),
             discovery_target: "192.168.1.255".to_string(),
             discovery_timeout: 5,
             api_key: Some("my-api-key".to_string()),
@@ -183,7 +209,9 @@ mod tests {
         let debug = format!("{config:?}");
         assert!(debug.contains("[redacted]"));
         assert!(!debug.contains("user@example.com"));
-        assert!(!debug.contains("super_secret"));
+        assert!(!debug.contains("super-secret"));
+        assert!(!debug.contains("alice@cam"));
+        assert!(!debug.contains("cam-very-secret"));
         assert!(!debug.contains("my-api-key"));
     }
 
@@ -211,5 +239,35 @@ mod tests {
 
         let config = AppConfig::from_env().unwrap();
         assert_eq!(config.api_key.as_deref(), Some("my-key"));
+    }
+
+    #[test]
+    fn camera_credentials_empty_normalize_to_none() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_CAMERA_USERNAME", "  ");
+            std::env::set_var("TAPO_MCP_CAMERA_PASSWORD", "");
+        }
+
+        let config = AppConfig::from_env().unwrap();
+        assert!(config.camera_username.is_none());
+        assert!(config.camera_password.is_none());
+    }
+
+    #[test]
+    fn camera_credentials_trim_whitespace() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_CAMERA_USERNAME", "  cam_user  ");
+            std::env::set_var("TAPO_MCP_CAMERA_PASSWORD", "  cam_pass  ");
+        }
+
+        let config = AppConfig::from_env().unwrap();
+        assert_eq!(config.camera_username.as_deref(), Some("cam_user"));
+        assert_eq!(config.camera_password.as_deref(), Some("cam_pass"));
     }
 }

@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 anyhow = { workspace = true }
 axum = "0.8"
+base64 = { workspace = true }
 config = "0.15"
 rmcp = { version = "1.5", features = ["server", "macros", "transport-streamable-http-server"] }
 serde = { workspace = true }

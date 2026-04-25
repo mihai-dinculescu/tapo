@@ -103,6 +103,11 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
                     _ => vec![],
                 };
 
+                let mut get_capabilities = vec![GetCapability::DeviceInfo];
+                if matches!(device, DiscoveryResult::CameraPtz { .. }) {
+                    get_capabilities.push(GetCapability::Snapshot);
+                }
+
                 tracing::debug!(name, model, ip, "Found device");
                 devices.push(Device {
                     id,
@@ -110,7 +115,7 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
                     model,
                     ip,
                     set_capabilities,
-                    get_capabilities: vec![GetCapability::DeviceInfo],
+                    get_capabilities,
                     children,
                 });
             }

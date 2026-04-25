@@ -20,6 +20,13 @@ pub async fn get_device_state(
 
     let value = match &params.capability {
         GetCapabilityRequest::DeviceInfo => get_device_info(&params.id, checked).await?,
+        GetCapabilityRequest::Snapshot => {
+            return Err(TapoMcpError::WrongTool {
+                capability: "Snapshot".to_string(),
+                tool: "take_snapshot".to_string(),
+            }
+            .into());
+        }
     };
 
     let content = vec![Content::json(value)?];

@@ -28,6 +28,8 @@ pub enum SetCapability {
 pub enum GetCapability {
     /// Read the device's current state.
     DeviceInfo,
+    /// Capture a still JPEG snapshot via the `take_snapshot` tool.
+    Snapshot,
 }
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
@@ -112,6 +114,10 @@ pub enum SetCapabilityRequest {
 pub enum GetCapabilityRequest {
     /// Read the device's current state (on/off, brightness, etc.).
     DeviceInfo,
+    /// Not callable via `get_device_state` — returns an error pointing to the
+    /// dedicated `take_snapshot` tool. Listed here so the schema can give a
+    /// helpful error rather than `unknown variant 'Snapshot'`.
+    Snapshot,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -135,6 +141,14 @@ pub struct GetDeviceStateParams {
     /// The get capability to read.
     #[serde(deserialize_with = "deserialize_from_stringified_json")]
     pub capability: GetCapabilityRequest,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct TakeSnapshotParams {
+    /// Device ID from `list_devices`. Must identify a camera.
+    pub id: String,
+    /// Device IP address from `list_devices`.
+    pub ip: String,
 }
 
 /// Deserializes a value that may have been stringified by the MCP client.

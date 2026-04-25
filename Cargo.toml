@@ -5,6 +5,7 @@ members = ["tapo", "tapo-py", "tapo-mcp"]
 
 [workspace.dependencies]
 anyhow = "1.0"
+base64 = "0.22"
 chrono = { version = "0.4.34", default-features = false }
 log = "0.4"
 pyo3 = { version = "0.28" }

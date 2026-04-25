@@ -17,6 +17,8 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 > "Set the bedroom light to 50% brightness"
 >
 > "Change the living room light to Coral"
+>
+> "Take a snapshot from the baby monitor"
 
 ## Tools
 
@@ -26,6 +28,7 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 | `check_device`     | Verify a device ID matches at a given IP.                                                      |
 | `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Runs `check_device` first.       |
 | `control_device`   | Control a device by applying one or more set capabilities. Runs `check_device` first.          |
+| `take_snapshot`    | Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs `check_device` first.        |
 
 ## Resources
 
@@ -47,9 +50,10 @@ Devices and child devices expose separate lists of set and get capabilities they
 
 ### Get Capabilities
 
-| Capability   | Description                     |
-| ------------ | ------------------------------- |
-| `DeviceInfo` | Read the device's current state |
+| Capability   | Description                                                                                          |
+| ------------ | ---------------------------------------------------------------------------------------------------- |
+| `DeviceInfo` | Read the device's current state                                                                      |
+| `Snapshot`   | Capture a still JPEG snapshot. Served by the dedicated `take_snapshot` tool (binary, not JSON state) |
 
 ## Configuration
 
@@ -59,10 +63,14 @@ All configuration is via environment variables prefixed with `TAPO_MCP_`:
 | ---------------------------- | -------- | ---------------- | ---------------------------------------------------------- |
 | `TAPO_MCP_USERNAME`          | Yes      | —                | Tapo account email                                         |
 | `TAPO_MCP_PASSWORD`          | Yes      | —                | Tapo account password                                      |
+| `TAPO_MCP_CAMERA_USERNAME`   | No       | —                | Camera account username[^camera]. Required by `take_snapshot`. |
+| `TAPO_MCP_CAMERA_PASSWORD`   | No       | —                | Camera account password[^camera]. Required by `take_snapshot`. |
 | `TAPO_MCP_DISCOVERY_TARGET`  | Yes      | —                | Network target for device discovery (e.g. `192.168.1.255`) |
 | `TAPO_MCP_HTTP_ADDR`         | No       | `127.0.0.1:3000` | Address the server listens on                              |
 | `TAPO_MCP_DISCOVERY_TIMEOUT` | No       | `5`              | Discovery timeout in seconds                               |
 | `TAPO_MCP_API_KEY`           | No       | —                | Bearer token for HTTP authentication (see below)           |
+
+[^camera]: Set on each camera in the Tapo app under Camera Settings > Advanced Settings > Camera Account. Distinct from your TP-Link cloud account.
 
 ## Authentication
 

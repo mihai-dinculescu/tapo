@@ -27,6 +27,14 @@ pub enum TapoMcpError {
 
     #[error("Unsupported capability '{capability}' for device id '{id}'")]
     UnsupportedCapability { id: String, capability: String },
+
+    #[error(
+        "Camera account credentials not configured: set TAPO_MCP_CAMERA_USERNAME and TAPO_MCP_CAMERA_PASSWORD (Camera Settings > Advanced Settings > Camera Account in the Tapo app)"
+    )]
+    CameraCredentialsMissing,
+
+    #[error("Capability '{capability}' must be invoked via the dedicated `{tool}` tool")]
+    WrongTool { capability: String, tool: String },
 }
 
 impl From<TapoMcpError> for McpError {
@@ -46,6 +54,10 @@ impl From<TapoMcpError> for McpError {
             TapoMcpError::UnsupportedCapability { .. } => {
                 McpError::invalid_params(err.to_string(), data)
             }
+            TapoMcpError::CameraCredentialsMissing => {
+                McpError::invalid_params(err.to_string(), data)
+            }
+            TapoMcpError::WrongTool { .. } => McpError::invalid_params(err.to_string(), data),
         }
     }
 }

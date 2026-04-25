@@ -12,7 +12,9 @@ use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, Stream
 use rmcp::{ErrorData as McpError, ServerHandler, tool, tool_handler, tool_router};
 
 use crate::config::AppConfig;
-use crate::models::{CheckDeviceParams, ControlDeviceParams, GetDeviceStateParams};
+use crate::models::{
+    CheckDeviceParams, ControlDeviceParams, GetDeviceStateParams, TakeSnapshotParams,
+};
 use crate::resources;
 use crate::tools;
 
@@ -86,6 +88,22 @@ impl TapoMcp {
     )]
     async fn list_devices(&self) -> Result<CallToolResult, McpError> {
         tools::list_devices(&self.config).await
+    }
+
+    #[tool(
+        description = "Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs check_device first to verify the device ID matches at the given IP.",
+        annotations(
+            read_only_hint = true,
+            destructive_hint = false,
+            idempotent_hint = true,
+            open_world_hint = true
+        )
+    )]
+    async fn take_snapshot(
+        &self,
+        Parameters(params): Parameters<TakeSnapshotParams>,
+    ) -> Result<CallToolResult, McpError> {
+        tools::take_snapshot(&self.config, params).await
     }
 }
 

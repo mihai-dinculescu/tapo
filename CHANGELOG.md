@@ -112,6 +112,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `list_devices`, `check_device`, `get_device_state`: added support for SmartCam devices (e.g. IP cameras) via the AES SSL protocol. PTZ cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70) return `DeviceInfoCameraResult` with camera-specific fields; other SmartCam devices return `DeviceInfoBasicResult`.
+- `take_snapshot`: added tool that captures a still JPEG snapshot from a Tapo camera (approximately 640x360). Supported cameras now advertise a `Snapshot` capability in `list_devices`. Requires camera-account credentials configured via `TAPO_MCP_CAMERA_USERNAME` and `TAPO_MCP_CAMERA_PASSWORD` (Camera Settings > Advanced Settings > Camera Account in the Tapo app).
 
 ## [MCP v0.2.1][tapo-mcp-v0.2.1] - 2026-03-18
 

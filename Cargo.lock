@@ -3025,6 +3025,7 @@ version = "0.2.1"
 dependencies = [
  "anyhow",
  "axum",
+ "base64",
  "config",
  "opentelemetry",
  "opentelemetry-otlp",

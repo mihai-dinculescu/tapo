@@ -11,6 +11,8 @@ fn test_config(api_key: Option<&str>) -> AppConfig {
         http_addr: "127.0.0.1:0".to_string(),
         username: "test@example.com".to_string(),
         password: "test-password".to_string(),
+        camera_username: None,
+        camera_password: None,
         discovery_target: "192.168.1.255".to_string(),
         discovery_timeout: 1,
         api_key: api_key.map(String::from),

@@ -1,6 +1,6 @@
 ---
 name: tapo
-description: Control TP-Link Tapo smart home devices (lights, plugs, strips) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp).
+description: Control TP-Link Tapo smart home devices (lights, plugs, strips, cameras) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp).
 metadata:
   {
     "openclaw":
@@ -32,7 +32,7 @@ You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mc
    ```bash
    npx mcporter list tapo --schema
    ```
-   You should see `list_devices`, `check_device`, `get_device_state`, and `control_device`.
+   You should see `list_devices`, `check_device`, `get_device_state`, `control_device`, and `take_snapshot`.
 
 See [references/setup.md](references/setup.md) for the full walkthrough, config management, and troubleshooting.
 
@@ -83,6 +83,14 @@ npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[
 
 # Set multiple capabilities at once
 npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Color", "value": "Coral"}, {"type": "Brightness", "value": 50}]'
+```
+
+### take_snapshot
+
+Capture a still JPEG snapshot from a Tapo camera (~640x360). Automatically runs `check_device` first. Requires `TAPO_MCP_CAMERA_USERNAME` and `TAPO_MCP_CAMERA_PASSWORD` configured on the server (Camera Settings > Advanced Settings > Camera Account in the Tapo app).
+
+```bash
+npx mcporter call tapo.take_snapshot id="<DEVICE_ID>" ip="<IP>"
 ```
 
 ## Usage rules
