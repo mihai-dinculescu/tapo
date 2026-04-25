@@ -10,6 +10,10 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+### Fixed
+
+- `Server`: corrected LAN reachability broken by rmcp's default Host-header allowlist (loopback-only). Bearer auth, when configured, remains the access control.
+
 ## [MCP v0.3.0][tapo-mcp-v0.3.0] - 2026-04-25
 
 ### Added
