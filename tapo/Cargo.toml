@@ -41,7 +41,7 @@ base16ct = { version = "1.0", features = ["alloc"] }
 base64 = { workspace = true }
 cbc = { version = "0.2", features = ["alloc"] }
 rand = "0.10"
-rsa = { version = "0.10.0-rc.17", features = ["getrandom"] }
+rsa = { version = "0.10.0-rc.18", features = ["getrandom"] }
 sha1 = "0.11"
 md-5 = "0.11"
 sha2 = "0.11"
