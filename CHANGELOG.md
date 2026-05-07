@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Changed
+
+- `TriggerLogsResult`: now derives `Serialize` so the type can be re-serialized by downstream consumers.
+
 ## [Python Unreleased][Unreleased]
 
 ## [MCP Unreleased][Unreleased]

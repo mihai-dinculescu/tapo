@@ -1,9 +1,9 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::TapoResponseExt;
 
 /// Trigger logs result.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct TriggerLogsResult<T> {
     /// The `id` of the most recent log item that is returned.
     pub start_id: u64,
