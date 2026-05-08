@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `ChildDeviceHubResult`: added `device_id()`, `nickname()`, and `model()` accessors so callers can read these common fields without matching on every variant.
+
 ### Changed
 
 - `TriggerLogsResult`: now derives `Serialize` so the type can be re-serialized by downstream consumers.

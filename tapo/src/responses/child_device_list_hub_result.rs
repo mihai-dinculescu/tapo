@@ -79,6 +79,50 @@ pub enum ChildDeviceHubResult {
     Other(Box<OtherResult>),
 }
 
+impl ChildDeviceHubResult {
+    /// Returns the device ID.
+    pub fn device_id(&self) -> &str {
+        match self {
+            ChildDeviceHubResult::KE100(d) => &d.device_id,
+            ChildDeviceHubResult::S200(d) => &d.device_id,
+            ChildDeviceHubResult::S210(d) => &d.device_id,
+            ChildDeviceHubResult::T100(d) => &d.device_id,
+            ChildDeviceHubResult::T110(d) => &d.device_id,
+            ChildDeviceHubResult::T300(d) => &d.device_id,
+            ChildDeviceHubResult::T31X(d) => &d.device_id,
+            ChildDeviceHubResult::Other(d) => &d.device_id,
+        }
+    }
+
+    /// Returns the device nickname.
+    pub fn nickname(&self) -> &str {
+        match self {
+            ChildDeviceHubResult::KE100(d) => &d.nickname,
+            ChildDeviceHubResult::S200(d) => &d.nickname,
+            ChildDeviceHubResult::S210(d) => &d.nickname,
+            ChildDeviceHubResult::T100(d) => &d.nickname,
+            ChildDeviceHubResult::T110(d) => &d.nickname,
+            ChildDeviceHubResult::T300(d) => &d.nickname,
+            ChildDeviceHubResult::T31X(d) => &d.nickname,
+            ChildDeviceHubResult::Other(d) => &d.nickname,
+        }
+    }
+
+    /// Returns the model string (e.g. "S200B", "T310").
+    pub fn model(&self) -> &str {
+        match self {
+            ChildDeviceHubResult::KE100(d) => &d.model,
+            ChildDeviceHubResult::S200(d) => &d.model,
+            ChildDeviceHubResult::S210(d) => &d.model,
+            ChildDeviceHubResult::T100(d) => &d.model,
+            ChildDeviceHubResult::T110(d) => &d.model,
+            ChildDeviceHubResult::T300(d) => &d.model,
+            ChildDeviceHubResult::T31X(d) => &d.model,
+            ChildDeviceHubResult::Other(d) => &d.model,
+        }
+    }
+}
+
 impl Serialize for ChildDeviceHubResult {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
