@@ -16,7 +16,7 @@ thiserror = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "signal", "macros"] }
 
 opentelemetry = "0.31"
-opentelemetry_sdk = { version = "0.31", features = ["rt-tokio"] }
+opentelemetry_sdk = { version = "0.32", features = ["rt-tokio"] }
 opentelemetry-otlp = "0.31"
 tracing = "0.1"
 tracing-opentelemetry = "0.32"
