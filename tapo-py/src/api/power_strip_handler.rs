@@ -87,4 +87,10 @@ impl PyPowerStripHandler {
         )?;
         Ok(PyPowerStripPlugHandler::new(child_handler))
     }
+
+    pub async fn plug_unchecked(&self, device_id: String) -> PyResult<PyPowerStripPlugHandler> {
+        let handler = self.inner.clone();
+        let child = handler.read().await.plug_unchecked(device_id);
+        Ok(PyPowerStripPlugHandler::new(child))
+    }
 }

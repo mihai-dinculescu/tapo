@@ -88,4 +88,13 @@ impl PyPowerStripEnergyMonitoringHandler {
         )?;
         Ok(PyPowerStripPlugEnergyMonitoringHandler::new(child_handler))
     }
+
+    pub async fn plug_unchecked(
+        &self,
+        device_id: String,
+    ) -> PyResult<PyPowerStripPlugEnergyMonitoringHandler> {
+        let handler = self.inner.clone();
+        let child = handler.read().await.plug_unchecked(device_id);
+        Ok(PyPowerStripPlugEnergyMonitoringHandler::new(child))
+    }
 }

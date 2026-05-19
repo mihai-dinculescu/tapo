@@ -89,3 +89,12 @@ class PowerStripHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
             print(f"Device info: {device_info.to_dict()}")
             ```
         """
+
+    async def plug_unchecked(self, device_id: str) -> PowerStripPlugHandler:
+        """Returns a `PowerStripPlugHandler` for the given `device_id` without first listing
+        the power strip's plugs to verify the device exists. The device id is trusted; if
+        it is wrong, subsequent operations on the returned handler will fail at request
+        time. Use this when you already have a valid device id (e.g. from a prior
+        `PowerStripHandler.get_child_device_list` call) to avoid the extra validation
+        round-trip performed by `PowerStripHandler.plug`.
+        """

@@ -304,3 +304,66 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
             print(f"Device info: {device_info.to_dict()}")
             ```
         """
+
+    async def ke100_unchecked(self, device_id: str) -> KE100Handler:
+        """Returns a `KE100Handler` for the given `device_id` without first listing the hub's
+        children to verify the device exists or matches the requested model. The device id
+        is trusted; if it is wrong or refers to a different model, subsequent operations on
+        the returned handler will fail at request time. Use this when you already have a
+        valid device id (e.g. from a prior `HubHandler.get_child_device_list` call) to avoid
+        the extra validation round-trip performed by `HubHandler.ke100`.
+        """
+
+    async def s200_unchecked(self, device_id: str) -> S200Handler:
+        """Returns a `S200Handler` for the given `device_id` without first listing the hub's
+        children to verify the device exists or matches the requested model. The device id
+        is trusted; if it is wrong or refers to a different model, subsequent operations on
+        the returned handler will fail at request time. Use this when you already have a
+        valid device id (e.g. from a prior `HubHandler.get_child_device_list` call) to avoid
+        the extra validation round-trip performed by `HubHandler.s200`.
+        """
+
+    async def s210_unchecked(self, device_id: str) -> S210Handler:
+        """Returns a `S210Handler` for the given `device_id` without first listing the hub's
+        children to verify the device exists or matches the requested model. The device id
+        is trusted; if it is wrong or refers to a different model, subsequent operations on
+        the returned handler will fail at request time. Use this when you already have a
+        valid device id (e.g. from a prior `HubHandler.get_child_device_list` call) to avoid
+        the extra validation round-trip performed by `HubHandler.s210`.
+        """
+
+    async def t100_unchecked(self, device_id: str) -> T100Handler:
+        """Returns a `T100Handler` for the given `device_id` without first listing the hub's
+        children to verify the device exists or matches the requested model. The device id
+        is trusted; if it is wrong or refers to a different model, subsequent operations on
+        the returned handler will fail at request time. Use this when you already have a
+        valid device id (e.g. from a prior `HubHandler.get_child_device_list` call) to avoid
+        the extra validation round-trip performed by `HubHandler.t100`.
+        """
+
+    async def t110_unchecked(self, device_id: str) -> T110Handler:
+        """Returns a `T110Handler` for the given `device_id` without first listing the hub's
+        children to verify the device exists or matches the requested model. The device id
+        is trusted; if it is wrong or refers to a different model, subsequent operations on
+        the returned handler will fail at request time. Use this when you already have a
+        valid device id (e.g. from a prior `HubHandler.get_child_device_list` call) to avoid
+        the extra validation round-trip performed by `HubHandler.t110`.
+        """
+
+    async def t300_unchecked(self, device_id: str) -> T300Handler:
+        """Returns a `T300Handler` for the given `device_id` without first listing the hub's
+        children to verify the device exists or matches the requested model. The device id
+        is trusted; if it is wrong or refers to a different model, subsequent operations on
+        the returned handler will fail at request time. Use this when you already have a
+        valid device id (e.g. from a prior `HubHandler.get_child_device_list` call) to avoid
+        the extra validation round-trip performed by `HubHandler.t300`.
+        """
+
+    async def t31x_unchecked(self, device_id: str) -> T31XHandler:
+        """Returns a `T31XHandler` for the given `device_id` without first listing the hub's
+        children to verify the device exists or matches the requested model. The device id
+        is trusted; if it is wrong or refers to a different model, subsequent operations on
+        the returned handler will fail at request time. Use this when you already have a
+        valid device id (e.g. from a prior `HubHandler.get_child_device_list` call) to avoid
+        the extra validation round-trip performed by `HubHandler.t31x`.
+        """

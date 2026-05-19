@@ -337,6 +337,86 @@ impl HubHandler {
     }
 }
 
+/// Unchecked child device handler builders.
+impl HubHandler {
+    /// Returns a [`KE100Handler`] for the given `device_id` without first
+    /// listing the hub's children to verify the device exists or matches the
+    /// requested model. The device id is trusted; if it is wrong or refers to
+    /// a different model, subsequent operations on the returned handler will
+    /// fail at request time. Use this when you already have a valid device id
+    /// (e.g. from a prior [`HubHandler::get_child_device_list`] call) to avoid
+    /// the extra validation round-trip performed by [`HubHandler::ke100`].
+    pub fn ke100_unchecked(&self, device_id: String) -> KE100Handler {
+        KE100Handler::new(self.client.clone(), device_id)
+    }
+
+    /// Returns a [`S200Handler`] for the given `device_id` without first
+    /// listing the hub's children to verify the device exists or matches the
+    /// requested model. The device id is trusted; if it is wrong or refers to
+    /// a different model, subsequent operations on the returned handler will
+    /// fail at request time. Use this when you already have a valid device id
+    /// (e.g. from a prior [`HubHandler::get_child_device_list`] call) to avoid
+    /// the extra validation round-trip performed by [`HubHandler::s200`].
+    pub fn s200_unchecked(&self, device_id: String) -> S200Handler {
+        S200Handler::new(self.client.clone(), device_id)
+    }
+
+    /// Returns a [`S210Handler`] for the given `device_id` without first
+    /// listing the hub's children to verify the device exists or matches the
+    /// requested model. The device id is trusted; if it is wrong or refers to
+    /// a different model, subsequent operations on the returned handler will
+    /// fail at request time. Use this when you already have a valid device id
+    /// (e.g. from a prior [`HubHandler::get_child_device_list`] call) to avoid
+    /// the extra validation round-trip performed by [`HubHandler::s210`].
+    pub fn s210_unchecked(&self, device_id: String) -> S210Handler {
+        S210Handler::new(self.client.clone(), device_id)
+    }
+
+    /// Returns a [`T100Handler`] for the given `device_id` without first
+    /// listing the hub's children to verify the device exists or matches the
+    /// requested model. The device id is trusted; if it is wrong or refers to
+    /// a different model, subsequent operations on the returned handler will
+    /// fail at request time. Use this when you already have a valid device id
+    /// (e.g. from a prior [`HubHandler::get_child_device_list`] call) to avoid
+    /// the extra validation round-trip performed by [`HubHandler::t100`].
+    pub fn t100_unchecked(&self, device_id: String) -> T100Handler {
+        T100Handler::new(self.client.clone(), device_id)
+    }
+
+    /// Returns a [`T110Handler`] for the given `device_id` without first
+    /// listing the hub's children to verify the device exists or matches the
+    /// requested model. The device id is trusted; if it is wrong or refers to
+    /// a different model, subsequent operations on the returned handler will
+    /// fail at request time. Use this when you already have a valid device id
+    /// (e.g. from a prior [`HubHandler::get_child_device_list`] call) to avoid
+    /// the extra validation round-trip performed by [`HubHandler::t110`].
+    pub fn t110_unchecked(&self, device_id: String) -> T110Handler {
+        T110Handler::new(self.client.clone(), device_id)
+    }
+
+    /// Returns a [`T300Handler`] for the given `device_id` without first
+    /// listing the hub's children to verify the device exists or matches the
+    /// requested model. The device id is trusted; if it is wrong or refers to
+    /// a different model, subsequent operations on the returned handler will
+    /// fail at request time. Use this when you already have a valid device id
+    /// (e.g. from a prior [`HubHandler::get_child_device_list`] call) to avoid
+    /// the extra validation round-trip performed by [`HubHandler::t300`].
+    pub fn t300_unchecked(&self, device_id: String) -> T300Handler {
+        T300Handler::new(self.client.clone(), device_id)
+    }
+
+    /// Returns a [`T31XHandler`] for the given `device_id` without first
+    /// listing the hub's children to verify the device exists or matches the
+    /// requested model. The device id is trusted; if it is wrong or refers to
+    /// a different model, subsequent operations on the returned handler will
+    /// fail at request time. Use this when you already have a valid device id
+    /// (e.g. from a prior [`HubHandler::get_child_device_list`] call) to avoid
+    /// the extra validation round-trip performed by [`HubHandler::t31x`].
+    pub fn t31x_unchecked(&self, device_id: String) -> T31XHandler {
+        T31XHandler::new(self.client.clone(), device_id)
+    }
+}
+
 /// Hub Device.
 pub enum HubDevice {
     /// By Device ID.

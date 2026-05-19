@@ -247,4 +247,46 @@ impl PyHubHandler {
             call_handler_method!(handler.read().await.deref(), HubHandler::t31x, identifier)?;
         Ok(PyT31XHandler::new(child_handler))
     }
+
+    pub async fn ke100_unchecked(&self, device_id: String) -> PyResult<PyKE100Handler> {
+        let handler = self.inner.clone();
+        let child = handler.read().await.ke100_unchecked(device_id);
+        Ok(PyKE100Handler::new(child))
+    }
+
+    pub async fn s200_unchecked(&self, device_id: String) -> PyResult<PyS200Handler> {
+        let handler = self.inner.clone();
+        let child = handler.read().await.s200_unchecked(device_id);
+        Ok(PyS200Handler::new(child))
+    }
+
+    pub async fn s210_unchecked(&self, device_id: String) -> PyResult<PyS210Handler> {
+        let handler = self.inner.clone();
+        let child = handler.read().await.s210_unchecked(device_id);
+        Ok(PyS210Handler::new(child))
+    }
+
+    pub async fn t100_unchecked(&self, device_id: String) -> PyResult<PyT100Handler> {
+        let handler = self.inner.clone();
+        let child = handler.read().await.t100_unchecked(device_id);
+        Ok(PyT100Handler::new(child))
+    }
+
+    pub async fn t110_unchecked(&self, device_id: String) -> PyResult<PyT110Handler> {
+        let handler = self.inner.clone();
+        let child = handler.read().await.t110_unchecked(device_id);
+        Ok(PyT110Handler::new(child))
+    }
+
+    pub async fn t300_unchecked(&self, device_id: String) -> PyResult<PyT300Handler> {
+        let handler = self.inner.clone();
+        let child = handler.read().await.t300_unchecked(device_id);
+        Ok(PyT300Handler::new(child))
+    }
+
+    pub async fn t31x_unchecked(&self, device_id: String) -> PyResult<PyT31XHandler> {
+        let handler = self.inner.clone();
+        let child = handler.read().await.t31x_unchecked(device_id);
+        Ok(PyT31XHandler::new(child))
+    }
 }
