@@ -119,7 +119,10 @@ impl PowerStripEnergyMonitoringHandler {
     /// prior [`PowerStripEnergyMonitoringHandler::get_child_device_list`]
     /// call) to avoid the extra validation round-trip performed by
     /// [`PowerStripEnergyMonitoringHandler::plug`].
-    pub fn plug_unchecked(&self, device_id: String) -> PowerStripPlugEnergyMonitoringHandler {
-        PowerStripPlugEnergyMonitoringHandler::new(self.client.clone(), device_id)
+    pub fn plug_unchecked(
+        &self,
+        device_id: impl Into<String>,
+    ) -> PowerStripPlugEnergyMonitoringHandler {
+        PowerStripPlugEnergyMonitoringHandler::new(self.client.clone(), device_id.into())
     }
 }

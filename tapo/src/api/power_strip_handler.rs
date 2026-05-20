@@ -109,7 +109,7 @@ impl PowerStripHandler {
     /// have a valid device id (e.g. from a prior
     /// [`PowerStripHandler::get_child_device_list`] call) to avoid the extra
     /// validation round-trip performed by [`PowerStripHandler::plug`].
-    pub fn plug_unchecked(&self, device_id: String) -> PowerStripPlugHandler {
-        PowerStripPlugHandler::new(self.client.clone(), device_id)
+    pub fn plug_unchecked(&self, device_id: impl Into<String>) -> PowerStripPlugHandler {
+        PowerStripPlugHandler::new(self.client.clone(), device_id.into())
     }
 }

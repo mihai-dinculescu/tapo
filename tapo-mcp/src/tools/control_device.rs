@@ -129,11 +129,11 @@ async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(),
             parent, child_id, ..
         } => match parent {
             DiscoveryResult::PowerStrip { handler, .. } => {
-                let plug = handler.plug_unchecked(child_id.clone());
+                let plug = handler.plug_unchecked(child_id);
                 on_off!(plug);
             }
             DiscoveryResult::PowerStripEnergyMonitoring { handler, .. } => {
-                let plug = handler.plug_unchecked(child_id.clone());
+                let plug = handler.plug_unchecked(child_id);
                 on_off!(plug);
             }
             _ => {
