@@ -1,3 +1,4 @@
+use tapo::responses::ChildDeviceHubResult;
 use tapo::{ApiClient, DiscoveryResult, StreamExt as _};
 
 use crate::config::AppConfig;
@@ -9,7 +10,14 @@ pub enum CheckedDevice {
     Child {
         parent: DiscoveryResult,
         child_id: String,
+        /// The matched hub child variant, populated when `parent` is `DiscoveryResult::Hub`.
+        hub_child: Option<ChildDeviceHubResult>,
     },
+}
+
+struct MatchedChild {
+    id: String,
+    hub_child: Option<ChildDeviceHubResult>,
 }
 
 pub async fn check_device(
@@ -33,11 +41,12 @@ pub async fn check_device(
         }
 
         if device_ip == params.ip
-            && let Some(child_id) = find_child_id(&device, &params.id).await?
+            && let Some(matched) = find_child(&device, &params.id).await?
         {
             return Ok(CheckedDevice::Child {
                 parent: device,
-                child_id,
+                child_id: matched.id,
+                hub_child: matched.hub_child,
             });
         }
 
@@ -60,29 +69,38 @@ pub async fn check_device(
     }
 }
 
-async fn find_child_id(
+async fn find_child(
     device: &DiscoveryResult,
     target_id: &str,
-) -> Result<Option<String>, TapoMcpError> {
-    let child_ids = match device {
-        DiscoveryResult::PowerStrip { handler, .. } => Some(
-            handler
-                .get_child_device_list()
-                .await?
-                .into_iter()
-                .map(|c| c.device_id)
-                .collect::<Vec<_>>(),
-        ),
-        DiscoveryResult::PowerStripEnergyMonitoring { handler, .. } => Some(
-            handler
-                .get_child_device_list()
-                .await?
-                .into_iter()
-                .map(|c| c.device_id)
-                .collect::<Vec<_>>(),
-        ),
-        _ => None,
-    };
-
-    Ok(child_ids.and_then(|ids| ids.into_iter().find(|id| id == target_id)))
+) -> Result<Option<MatchedChild>, TapoMcpError> {
+    match device {
+        DiscoveryResult::PowerStrip { handler, .. } => Ok(handler
+            .get_child_device_list()
+            .await?
+            .into_iter()
+            .find(|c| c.device_id == target_id)
+            .map(|c| MatchedChild {
+                id: c.device_id,
+                hub_child: None,
+            })),
+        DiscoveryResult::PowerStripEnergyMonitoring { handler, .. } => Ok(handler
+            .get_child_device_list()
+            .await?
+            .into_iter()
+            .find(|c| c.device_id == target_id)
+            .map(|c| MatchedChild {
+                id: c.device_id,
+                hub_child: None,
+            })),
+        DiscoveryResult::Hub { handler, .. } => Ok(handler
+            .get_child_device_list()
+            .await?
+            .into_iter()
+            .find(|c| c.device_id() == target_id)
+            .map(|c| MatchedChild {
+                id: c.device_id().to_string(),
+                hub_child: Some(c),
+            })),
+        _ => Ok(None),
+    }
 }

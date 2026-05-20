@@ -30,6 +30,10 @@ pub enum GetCapability {
     DeviceInfo,
     /// Capture a still JPEG snapshot via the `take_snapshot` tool.
     Snapshot,
+    /// Read the last 24 hours of temperature and humidity records (T310, T315) at 15 minute intervals.
+    TemperatureHumidityRecords,
+    /// Read paginated trigger logs from a hub child sensor (S200, T100, T110, T300).
+    TriggerLogs,
 }
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
@@ -118,6 +122,20 @@ pub enum GetCapabilityRequest {
     /// dedicated `take_snapshot` tool. Listed here so the schema can give a
     /// helpful error rather than `unknown variant 'Snapshot'`.
     Snapshot,
+    /// Read the last 24 hours of temperature and humidity records (T310, T315)
+    /// at 15 minute intervals.
+    TemperatureHumidityRecords,
+    /// Read paginated trigger logs from a hub child sensor
+    /// (S200, T100, T110, T300). Logs are returned newest-first.
+    TriggerLogs {
+        /// The maximum number of log items to return.
+        #[schemars(range(min = 1))]
+        page_size: u64,
+        /// The log item `id` from which to start returning results in reverse
+        /// chronological order (newest first). Use `0` to get the most recent
+        /// `page_size` logs.
+        start_id: u64,
+    },
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]

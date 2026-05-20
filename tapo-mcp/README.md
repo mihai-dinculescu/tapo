@@ -19,16 +19,22 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 > "Change the living room light to Coral"
 >
 > "Take a snapshot from the baby monitor"
+>
+> "What's the temperature in the kitchen?"
+>
+> "Show me the last 24 hours of temperature from the living room temperature and humidity sensor"
+>
+> "List the 5 most recent events on the smart button"
 
 ## Tools
 
-| Tool               | Description                                                                                    |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| `list_devices`     | List available Tapo devices on the network (includes set and get capabilities).                |
-| `check_device`     | Verify a device ID matches at a given IP.                                                      |
-| `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Runs `check_device` first.       |
-| `control_device`   | Control a device by applying one or more set capabilities. Runs `check_device` first.          |
-| `take_snapshot`    | Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs `check_device` first.        |
+| Tool               | Description                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| `list_devices`     | List available Tapo devices on the network (includes set and get capabilities).          |
+| `check_device`     | Verify a device ID matches at a given IP.                                                |
+| `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Runs `check_device` first. |
+| `control_device`   | Control a device by applying one or more set capabilities. Runs `check_device` first.    |
+| `take_snapshot`    | Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs `check_device` first.  |
 
 ## Resources
 
@@ -42,33 +48,35 @@ Devices and child devices expose separate lists of set and get capabilities they
 
 ### Set Capabilities
 
-| Capability   | Description                                |
-| ------------ | ------------------------------------------ |
-| `Brightness` | Set the device brightness (1-100)          |
-| `Color`      | Set the device color using a preset name   |
-| `OnOff`      | Turn the device on or off                  |
+| Capability   | Description                              |
+| ------------ | ---------------------------------------- |
+| `Brightness` | Set the device brightness (1-100)        |
+| `Color`      | Set the device color using a preset name |
+| `OnOff`      | Turn the device on or off                |
 
 ### Get Capabilities
 
-| Capability   | Description                                                                                          |
-| ------------ | ---------------------------------------------------------------------------------------------------- |
-| `DeviceInfo` | Read the device's current state                                                                      |
-| `Snapshot`   | Capture a still JPEG snapshot. Served by the dedicated `take_snapshot` tool (binary, not JSON state) |
+| Capability                   | Description                                                                                          |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `DeviceInfo`                 | Read the device's current state                                                                      |
+| `Snapshot`                   | Capture a still JPEG snapshot. Served by the dedicated `take_snapshot` tool (binary, not JSON state) |
+| `TemperatureHumidityRecords` | Read the last 24 hours of temperature and humidity records (T310, T315) at 15 minute intervals       |
+| `TriggerLogs`                | Read paginated trigger logs from a hub child sensor (S200, T100, T110, T300)                         |
 
 ## Configuration
 
 All configuration is via environment variables prefixed with `TAPO_MCP_`:
 
-| Variable                     | Required | Default          | Description                                                |
-| ---------------------------- | -------- | ---------------- | ---------------------------------------------------------- |
-| `TAPO_MCP_USERNAME`          | Yes      | —                | Tapo account email                                         |
-| `TAPO_MCP_PASSWORD`          | Yes      | —                | Tapo account password                                      |
+| Variable                     | Required | Default          | Description                                                    |
+| ---------------------------- | -------- | ---------------- | -------------------------------------------------------------- |
+| `TAPO_MCP_USERNAME`          | Yes      | —                | Tapo account email                                             |
+| `TAPO_MCP_PASSWORD`          | Yes      | —                | Tapo account password                                          |
 | `TAPO_MCP_CAMERA_USERNAME`   | No       | —                | Camera account username[^camera]. Required by `take_snapshot`. |
 | `TAPO_MCP_CAMERA_PASSWORD`   | No       | —                | Camera account password[^camera]. Required by `take_snapshot`. |
-| `TAPO_MCP_DISCOVERY_TARGET`  | Yes      | —                | Network target for device discovery (e.g. `192.168.1.255`) |
-| `TAPO_MCP_HTTP_ADDR`         | No       | `127.0.0.1:3000` | Address the server listens on                              |
-| `TAPO_MCP_DISCOVERY_TIMEOUT` | No       | `5`              | Discovery timeout in seconds                               |
-| `TAPO_MCP_API_KEY`           | No       | —                | Bearer token for HTTP authentication (see below)           |
+| `TAPO_MCP_DISCOVERY_TARGET`  | Yes      | —                | Network target for device discovery (e.g. `192.168.1.255`)     |
+| `TAPO_MCP_HTTP_ADDR`         | No       | `127.0.0.1:3000` | Address the server listens on                                  |
+| `TAPO_MCP_DISCOVERY_TIMEOUT` | No       | `5`              | Discovery timeout in seconds                                   |
+| `TAPO_MCP_API_KEY`           | No       | —                | Bearer token for HTTP authentication (see below)               |
 
 [^camera]: Set on each camera in the Tapo app under Camera Settings > Advanced Settings > Camera Account. Distinct from your TP-Link cloud account.
 

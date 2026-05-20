@@ -1,7 +1,7 @@
 use rmcp::ErrorData as McpError;
 use rmcp::model::CallToolResult;
+use tapo::DiscoveryResult;
 use tapo::requests::Color;
-use tapo::{DiscoveryResult, Plug};
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
@@ -125,13 +125,15 @@ async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(),
                 });
             }
         },
-        CheckedDevice::Child { parent, child_id } => match parent {
+        CheckedDevice::Child {
+            parent, child_id, ..
+        } => match parent {
             DiscoveryResult::PowerStrip { handler, .. } => {
-                let plug = handler.plug(Plug::ByDeviceId(child_id.clone())).await?;
+                let plug = handler.plug_unchecked(child_id.clone());
                 on_off!(plug);
             }
             DiscoveryResult::PowerStripEnergyMonitoring { handler, .. } => {
-                let plug = handler.plug(Plug::ByDeviceId(child_id.clone())).await?;
+                let plug = handler.plug_unchecked(child_id.clone());
                 on_off!(plug);
             }
             _ => {

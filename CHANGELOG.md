@@ -25,6 +25,13 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+### Added
+
+- `list_devices`, `check_device`, `get_device_state`: added support for the H100 hub. The hub is now listed as a supported device with each connected child sensor or switch surfaced under `children`.
+- `get_device_state`: hub children (KE100, S200B/D, S210, T100, T110, T300, T310/T315) advertise and serve `DeviceInfo`.
+- `get_device_state`: added `TriggerLogs` capability with `page_size` and `start_id` pagination (use `start_id = 0` to start from the most recent entry). Available on S200B/D, T100, T110, and T300 sensors.
+- `get_device_state`: added `TemperatureHumidityRecords` capability returning the last 24 hours at 15 minute intervals. Available on T310 and T315 sensors.
+
 ## [MCP v0.3.1][tapo-mcp-v0.3.1] - 2026-04-25
 
 ### Fixed

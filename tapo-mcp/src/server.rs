@@ -116,7 +116,7 @@ impl ServerHandler for TapoMcp {
                 .enable_resources()
                 .build(),
         )
-        .with_instructions("Control and monitor Tapo smart home devices (plugs, lights, power strips). Use list_devices or the tapo://devices resource to discover available devices before interacting with them.");
+        .with_instructions("Control and monitor Tapo smart home devices (plugs, lights, power strips, hubs and their child sensors, cameras). Use list_devices or the tapo://devices resource to discover available devices before interacting with them.");
         info.server_info.name = env!("CARGO_PKG_NAME").to_owned();
         info.server_info.version = env!("CARGO_PKG_VERSION").to_owned();
         info.server_info.title = Some("Tapo MCP Server".to_owned());

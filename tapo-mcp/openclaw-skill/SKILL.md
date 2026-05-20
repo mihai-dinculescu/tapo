@@ -47,7 +47,7 @@ List all Tapo devices on the network.
 npx mcporter call tapo.list_devices
 ```
 
-Returns each device's `id`, `name`, `model`, `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips).
+Returns each device's `id`, `name`, `model`, `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips and the H100 hub).
 
 ### check_device
 
@@ -62,7 +62,14 @@ npx mcporter call tapo.check_device id="<DEVICE_ID>" ip="<IP>"
 Get a device's current state. Automatically runs `check_device` first.
 
 ```bash
+# Device info
 npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "DeviceInfo"}'
+
+# Trigger logs (S200, T100, T110, T300 hub children) — newest first
+npx mcporter call tapo.get_device_state id="<CHILD_ID>" ip="<HUB_IP>" capability='{"type": "TriggerLogs", "page_size": 20, "start_id": 0}'
+
+# Last 24h temperature/humidity records (T310, T315 hub children)
+npx mcporter call tapo.get_device_state id="<CHILD_ID>" ip="<HUB_IP>" capability='{"type": "TemperatureHumidityRecords"}'
 ```
 
 ### control_device
@@ -98,4 +105,4 @@ npx mcporter call tapo.take_snapshot id="<DEVICE_ID>" ip="<IP>"
 
 1. Always run `list_devices` first if you don't have a recent device list. Cache results for up to 30 minutes.
 2. Use the device `id` and `ip` from the list — never guess or hardcopy these values.
-3. For power strips (e.g. P304M), children have their own `id`. Use the child `id` with the parent's `ip`.
+3. For power strips (e.g. P304M) and the H100 hub, children have their own `id`. Use the child `id` with the parent's `ip`.

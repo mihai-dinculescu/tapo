@@ -1,3 +1,4 @@
+use tapo::responses::ChildDeviceHubResult;
 use tapo::{ApiClient, DiscoveryResult, StreamExt as _};
 
 use crate::config::AppConfig;
@@ -58,6 +59,12 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
                                 .collect()
                         }))
                     }
+                    DiscoveryResult::Hub { handler, .. } => Some(
+                        handler
+                            .get_child_device_list()
+                            .await
+                            .map(|list| list.into_iter().map(hub_child_to_child_device).collect()),
+                    ),
                     _ => None,
                 };
 
@@ -74,10 +81,7 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
                     None => vec![],
                 };
 
-                if matches!(
-                    device,
-                    DiscoveryResult::Other { .. } | DiscoveryResult::Hub { .. }
-                ) {
+                if matches!(device, DiscoveryResult::Other { .. }) {
                     unsupported.push(UnsupportedDevice { ip, model });
                     continue;
                 }
@@ -136,4 +140,25 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
         unsupported,
         errors,
     })
+}
+
+fn hub_child_to_child_device(child: ChildDeviceHubResult) -> ChildDevice {
+    let mut get_capabilities = vec![GetCapability::DeviceInfo];
+    match &child {
+        ChildDeviceHubResult::S200(_)
+        | ChildDeviceHubResult::T100(_)
+        | ChildDeviceHubResult::T110(_)
+        | ChildDeviceHubResult::T300(_) => get_capabilities.push(GetCapability::TriggerLogs),
+        ChildDeviceHubResult::T31X(_) => {
+            get_capabilities.push(GetCapability::TemperatureHumidityRecords)
+        }
+        _ => {}
+    }
+    ChildDevice {
+        id: child.device_id().to_string(),
+        name: child.nickname().to_string(),
+        model: child.model().to_string(),
+        set_capabilities: vec![],
+        get_capabilities,
+    }
 }
