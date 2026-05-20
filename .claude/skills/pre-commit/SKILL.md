@@ -42,9 +42,12 @@ Run the following checks if there are changes in the `tapo-mcp/` directory. Fix 
 - Verify that **all** `#[derive(JsonSchema)]` types have `schemars` annotations — including tool input params, response types, enums, and their fields/variants. Check for descriptions and range constraints where applicable.
 - Verify that `tapo-mcp/README.md` reflects any MCP API changes (tools, resources, capabilities, env vars, auth)
 - Verify that the OpenClaw skill reflects any MCP API changes. The skill spans three files — check each:
-  - `tapo-mcp/openclaw-skill/SKILL.md` — frontmatter (`version`, `requires`), Setup, Tools section with example `npx mcporter call` invocations
+  - `tapo-mcp/openclaw-skill/SKILL.md` — frontmatter (`description`, `version`, `requires`), Setup, Tools section with example `npx mcporter call` invocations
   - `tapo-mcp/openclaw-skill/references/setup.md` — verification table (tool, description, parameters)
   - `tapo-mcp/openclaw-skill/references/tapo-mcp-setup.md` — Tools table, Resources table, Configuration env vars, Authentication, Deployment (kept in sync with `tapo-mcp/README.md`)
+- When device-support categories change (e.g. adding a new family like the H100 hub), verify the device-type enumeration is in sync across both surfaces that list it:
+  - `tapo-mcp/src/server.rs` `with_instructions(...)` (e.g. `"plugs, lights, power strips, hubs and their child sensors, cameras"`)
+  - `tapo-mcp/openclaw-skill/SKILL.md` frontmatter `description:` (e.g. `(lights, plugs, power strips, hubs and sensors, cameras)`)
 
 ### Documentation checks
 
