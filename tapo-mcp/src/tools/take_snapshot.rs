@@ -35,9 +35,10 @@ pub async fn take_snapshot(
             .await
             .map_err(TapoMcpError::Internal)?,
         _ => {
-            return Err(TapoMcpError::UnsupportedCapability {
+            return Err(TapoMcpError::WrongDeviceType {
                 id: params.id,
                 capability: "Snapshot".to_string(),
+                expected: "a camera".to_string(),
             }
             .into());
         }

@@ -54,18 +54,20 @@ async fn apply_brightness(
                 handler.set_brightness(brightness).await?
             }
             _ => {
-                return Err(TapoMcpError::UnsupportedCapability {
+                return Err(TapoMcpError::WrongDeviceType {
                     id: id.to_string(),
                     capability: "Brightness".to_string(),
+                    expected: "a light device".to_string(),
                 });
             }
         },
         CheckedDevice::PowerStripChild { .. }
         | CheckedDevice::PowerStripEnergyMonitoringChild { .. }
         | CheckedDevice::HubChild { .. } => {
-            return Err(TapoMcpError::UnsupportedCapability {
+            return Err(TapoMcpError::WrongDeviceType {
                 id: id.to_string(),
                 capability: "Brightness".to_string(),
+                expected: "a light device".to_string(),
             });
         }
     }
@@ -80,18 +82,20 @@ async fn apply_color(id: &str, checked: &CheckedDevice, color: Color) -> Result<
             DiscoveryResult::RgbLightStrip { handler, .. } => handler.set_color(color).await?,
             DiscoveryResult::RgbicLightStrip { handler, .. } => handler.set_color(color).await?,
             _ => {
-                return Err(TapoMcpError::UnsupportedCapability {
+                return Err(TapoMcpError::WrongDeviceType {
                     id: id.to_string(),
                     capability: "Color".to_string(),
+                    expected: "a color light device".to_string(),
                 });
             }
         },
         CheckedDevice::PowerStripChild { .. }
         | CheckedDevice::PowerStripEnergyMonitoringChild { .. }
         | CheckedDevice::HubChild { .. } => {
-            return Err(TapoMcpError::UnsupportedCapability {
+            return Err(TapoMcpError::WrongDeviceType {
                 id: id.to_string(),
                 capability: "Color".to_string(),
+                expected: "a color light device".to_string(),
             });
         }
     }
@@ -123,9 +127,10 @@ async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(),
             | DiscoveryResult::PowerStripEnergyMonitoring { .. }
             | DiscoveryResult::Hub { .. }
             | DiscoveryResult::CameraPtz { .. } => {
-                return Err(TapoMcpError::UnsupportedCapability {
+                return Err(TapoMcpError::WrongDeviceType {
                     id: id.to_string(),
                     capability: "OnOff".to_string(),
+                    expected: "an on/off-capable device".to_string(),
                 });
             }
         },
@@ -138,9 +143,10 @@ async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(),
             on_off!(plug);
         }
         CheckedDevice::HubChild { .. } => {
-            return Err(TapoMcpError::UnsupportedCapability {
+            return Err(TapoMcpError::WrongDeviceType {
                 id: id.to_string(),
                 capability: "OnOff".to_string(),
+                expected: "a power strip child".to_string(),
             });
         }
     }

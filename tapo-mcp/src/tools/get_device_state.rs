@@ -96,9 +96,10 @@ async fn get_trigger_logs(
         child,
     } = checked
     else {
-        return Err(TapoMcpError::UnsupportedCapability {
+        return Err(TapoMcpError::WrongDeviceType {
             id: id.to_string(),
             capability: "TriggerLogs".to_string(),
+            expected: "a hub child device".to_string(),
         });
     };
 
@@ -116,9 +117,10 @@ async fn get_trigger_logs(
         ChildDeviceHubResult::T100(_) => trigger_logs!(t100_unchecked),
         ChildDeviceHubResult::T110(_) => trigger_logs!(t110_unchecked),
         ChildDeviceHubResult::T300(_) => trigger_logs!(t300_unchecked),
-        _ => Err(TapoMcpError::UnsupportedCapability {
+        _ => Err(TapoMcpError::WrongDeviceType {
             id: id.to_string(),
             capability: "TriggerLogs".to_string(),
+            expected: "a trigger-based sensor (S200B/D, T100, T110, T300)".to_string(),
         }),
     }
 }
@@ -133,9 +135,10 @@ async fn get_temperature_humidity_records(
         child,
     } = checked
     else {
-        return Err(TapoMcpError::UnsupportedCapability {
+        return Err(TapoMcpError::WrongDeviceType {
             id: id.to_string(),
             capability: "TemperatureHumidityRecords".to_string(),
+            expected: "a hub child device".to_string(),
         });
     };
 
@@ -146,9 +149,10 @@ async fn get_temperature_humidity_records(
                 &h.get_temperature_humidity_records().await?,
             )?)
         }
-        _ => Err(TapoMcpError::UnsupportedCapability {
+        _ => Err(TapoMcpError::WrongDeviceType {
             id: id.to_string(),
             capability: "TemperatureHumidityRecords".to_string(),
+            expected: "a T310 or T315 sensor".to_string(),
         }),
     }
 }

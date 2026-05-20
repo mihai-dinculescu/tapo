@@ -32,6 +32,10 @@ file. This change log follows the conventions of
 - `get_device_state`: added `TriggerLogs` capability with `page_size` and `start_id` pagination (use `start_id = 0` to start from the most recent entry). Available on S200B/D, T100, T110, and T300 sensors.
 - `get_device_state`: added `TemperatureHumidityRecords` capability returning the last 24 hours at 15 minute intervals. Available on T310 and T315 sensors.
 
+### Changed
+
+- `control_device`, `get_device_state`: replaced the `UnsupportedCapability` error with `WrongDeviceType { id, capability, expected }`, where `expected` is a human-readable description of the device required for the capability (e.g. `"a light device"`, `"a trigger-based sensor (S200B/D, T100, T110, T300)"`). Clients matching on `UnsupportedCapability` will need to handle the new variant.
+
 ## [MCP v0.3.1][tapo-mcp-v0.3.1] - 2026-04-25
 
 ### Fixed

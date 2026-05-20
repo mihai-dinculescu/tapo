@@ -25,8 +25,13 @@ pub enum TapoMcpError {
     #[error("Device not found: id '{id}' at ip '{ip}'")]
     DeviceNotFound { id: String, ip: String },
 
-    #[error("Unsupported capability '{capability}' for device id '{id}'")]
-    UnsupportedCapability { id: String, capability: String },
+    #[error("Capability '{capability}' requires {expected}; device id '{id}' is not eligible")]
+    WrongDeviceType {
+        id: String,
+        capability: String,
+        /// Human-readable description of the device type the capability needs.
+        expected: String,
+    },
 
     #[error(
         "Camera account credentials not configured: set TAPO_MCP_CAMERA_USERNAME and TAPO_MCP_CAMERA_PASSWORD (Camera Settings > Advanced Settings > Camera Account in the Tapo app)"
@@ -51,9 +56,7 @@ impl From<TapoMcpError> for McpError {
             TapoMcpError::DeviceNotFound { .. } => {
                 McpError::resource_not_found(err.to_string(), data)
             }
-            TapoMcpError::UnsupportedCapability { .. } => {
-                McpError::invalid_params(err.to_string(), data)
-            }
+            TapoMcpError::WrongDeviceType { .. } => McpError::invalid_params(err.to_string(), data),
             TapoMcpError::CameraCredentialsMissing => {
                 McpError::invalid_params(err.to_string(), data)
             }
