@@ -1,6 +1,6 @@
 ---
 name: tapo
-description: Control TP-Link Tapo smart home devices (lights, plugs, strips, cameras) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp).
+description: Control TP-Link Tapo smart home devices (lights, plugs, power strips, hubs and sensors, cameras) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp).
 version: 0.3.0
 metadata:
   {
