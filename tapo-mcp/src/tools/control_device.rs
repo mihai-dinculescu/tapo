@@ -60,7 +60,9 @@ async fn apply_brightness(
                 });
             }
         },
-        CheckedDevice::Child { .. } => {
+        CheckedDevice::PowerStripChild { .. }
+        | CheckedDevice::PowerStripEnergyMonitoringChild { .. }
+        | CheckedDevice::HubChild { .. } => {
             return Err(TapoMcpError::UnsupportedCapability {
                 id: id.to_string(),
                 capability: "Brightness".to_string(),
@@ -84,7 +86,9 @@ async fn apply_color(id: &str, checked: &CheckedDevice, color: Color) -> Result<
                 });
             }
         },
-        CheckedDevice::Child { .. } => {
+        CheckedDevice::PowerStripChild { .. }
+        | CheckedDevice::PowerStripEnergyMonitoringChild { .. }
+        | CheckedDevice::HubChild { .. } => {
             return Err(TapoMcpError::UnsupportedCapability {
                 id: id.to_string(),
                 capability: "Color".to_string(),
@@ -125,24 +129,20 @@ async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(),
                 });
             }
         },
-        CheckedDevice::Child {
-            parent, child_id, ..
-        } => match parent {
-            DiscoveryResult::PowerStrip { handler, .. } => {
-                let plug = handler.plug_unchecked(child_id);
-                on_off!(plug);
-            }
-            DiscoveryResult::PowerStripEnergyMonitoring { handler, .. } => {
-                let plug = handler.plug_unchecked(child_id);
-                on_off!(plug);
-            }
-            _ => {
-                return Err(TapoMcpError::UnsupportedCapability {
-                    id: id.to_string(),
-                    capability: "OnOff".to_string(),
-                });
-            }
-        },
+        CheckedDevice::PowerStripChild { handler, child_id } => {
+            let plug = handler.plug_unchecked(child_id);
+            on_off!(plug);
+        }
+        CheckedDevice::PowerStripEnergyMonitoringChild { handler, child_id } => {
+            let plug = handler.plug_unchecked(child_id);
+            on_off!(plug);
+        }
+        CheckedDevice::HubChild { .. } => {
+            return Err(TapoMcpError::UnsupportedCapability {
+                id: id.to_string(),
+                capability: "OnOff".to_string(),
+            });
+        }
     }
 
     Ok(())
