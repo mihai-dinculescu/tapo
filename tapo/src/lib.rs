@@ -7,6 +7,14 @@
 //! switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
 //! and cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
 //!
+//! # Features
+//!
+//! All features are off by default.
+//!
+//! - `debug` — exposes additional methods that are valuable in debug scenarios or when investigating new device functionality.
+//! - `json-schema` — derives [`schemars::JsonSchema`](https://docs.rs/schemars) on public types so they can be serialized into a JSON Schema.
+//! - `python` — enables [PyO3](https://pyo3.rs) bindings used by the `tapo-py` crate. Not intended for direct use from Rust.
+//!
 //! # Example with L530
 //! ```rust,no_run
 //! use std::{env, thread, time::Duration};
