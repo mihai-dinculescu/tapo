@@ -15,7 +15,9 @@ Release a new version of the OpenClaw skill in `tapo-mcp/openclaw-skill/` to Cla
 
    Suggest matching the `tapo-mcp` version. Ask the user to confirm or supply a different version. ClawHub validates version uniqueness on publish (not monotonic ordering) — any semver string that hasn't been published before for this skill is accepted.
 
-2. **Bump the version.** If the new version differs from the existing `version:` in `tapo-mcp/openclaw-skill/SKILL.md`, update the frontmatter.
+2. **Bump the version.**
+   - If the new version differs from the existing `version:` in `tapo-mcp/openclaw-skill/SKILL.md`, update the frontmatter.
+   - Update the "v0.X.X or later" minimum-server pin in the Setup section of `tapo-mcp/openclaw-skill/SKILL.md` to match the current `tapo-mcp` server version from step 1. This is a separate field from the skill's own `version:` — the pin tracks the MCP server version, not the skill version.
 
 3. **Determine the changelog summary.** Look at recent commits affecting the skill directory:
 
