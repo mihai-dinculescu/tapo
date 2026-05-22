@@ -53,9 +53,9 @@ When the variable is unset (or empty/whitespace-only), the server runs without a
 docker run --rm \
   --network host \
   -e TAPO_MCP_USERNAME="you@example.com" \
-  -e TAPO_MCP_PASSWORD="your-password" \
-  -e TAPO_MCP_CAMERA_USERNAME="camera-account-username" \
-  -e TAPO_MCP_CAMERA_PASSWORD="camera-account-password" \
+  -e TAPO_MCP_PASSWORD="<YOUR_TAPO_PASSWORD>" \
+  -e TAPO_MCP_CAMERA_USERNAME="<YOUR_CAMERA_ACCOUNT_USERNAME>" \
+  -e TAPO_MCP_CAMERA_PASSWORD="<YOUR_CAMERA_ACCOUNT_PASSWORD>" \
   -e TAPO_MCP_DISCOVERY_TARGET="192.168.1.255" \
   ghcr.io/mihai-dinculescu/tapo-mcp:latest
 ```
@@ -69,10 +69,10 @@ Create the Secret and ConfigMap first:
 ```bash
 kubectl create secret generic tapo-mcp-secrets \
   --from-literal=TAPO_MCP_USERNAME="you@example.com" \
-  --from-literal=TAPO_MCP_PASSWORD="your-password" \
-  --from-literal=TAPO_MCP_CAMERA_USERNAME="camera-account-username" \
-  --from-literal=TAPO_MCP_CAMERA_PASSWORD="camera-account-password" \
-  --from-literal=TAPO_MCP_API_KEY="your-api-key"
+  --from-literal=TAPO_MCP_PASSWORD="<YOUR_TAPO_PASSWORD>" \
+  --from-literal=TAPO_MCP_CAMERA_USERNAME="<YOUR_CAMERA_ACCOUNT_USERNAME>" \
+  --from-literal=TAPO_MCP_CAMERA_PASSWORD="<YOUR_CAMERA_ACCOUNT_PASSWORD>" \
+  --from-literal=TAPO_MCP_API_KEY="<YOUR_TAPO_MCP_API_KEY>"
 
 kubectl create configmap tapo-mcp-config \
   --from-literal=TAPO_MCP_DISCOVERY_TARGET="192.168.1.255"
@@ -158,7 +158,7 @@ claude mcp add --transport http tapo http://127.0.0.1:3000
 
 # With authentication:
 claude mcp add --transport http \
-  --header "Authorization: Bearer your-api-key" \
+  --header "Authorization: Bearer <YOUR_TAPO_MCP_API_KEY>" \
   -- tapo http://127.0.0.1:3000
 ```
 
