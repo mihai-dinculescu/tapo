@@ -3,10 +3,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Serialize;
 
 use super::{
-    ControlChildParams, DeviceRebootParams, GetChildDeviceListParams, GetEnergyDataParams,
-    GetPowerDataParams, GetTriggerLogsParams, HandshakeParams, LightingEffect, LoginDeviceParams,
-    MultipleRequestParams, PlayAlarmParams, SecurePassthroughParams, SegmentEffect,
-    SmartCamDoParams, SmartCamGetParams,
+    AddTimerParams, ControlChildParams, DeviceRebootParams, GetChildDeviceListParams,
+    GetEnergyDataParams, GetPowerDataParams, GetTriggerLogsParams, HandshakeParams, LightingEffect,
+    LoginDeviceParams, MultipleRequestParams, PlayAlarmParams, RemoveTimersParams,
+    SecurePassthroughParams, SegmentEffect, SmartCamDoParams, SmartCamGetParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -50,10 +50,19 @@ pub(crate) enum TapoRequest {
     SmartCamGet(SmartCamGetParams),
     #[serde(rename = "do")]
     SmartCamDo(SmartCamDoParams),
+    // Plug "Timer" (countdown) requests
+    AddCountdownRule(TapoParams<AddTimerParams>),
+    GetCountdownRules(TapoParams<EmptyMap>),
+    RemoveCountdownRules(TapoParams<RemoveTimersParams>),
 }
 
 #[derive(Debug, Serialize)]
 pub(crate) struct EmptyParams;
+
+/// Serializes as `{}` instead of `null`. The P110 rejects
+/// `params: null` for `get_countdown_rules` with `-1008 PARAMS`.
+#[derive(Debug, Serialize)]
+pub(crate) struct EmptyMap {}
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]

@@ -8,6 +8,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- `PlugHandler` and `PlugEnergyMonitoringHandler`: added `set_timer`, `get_timer`, and `clear_timer` for the plug's countdown timer (the "Timer" feature in the Tapo app). The plug supports a single armed timer at a time, so `set_timer` replaces any timer currently armed.
 - `ChildDeviceHubResult`: added `device_id()`, `nickname()`, and `model()` accessors so callers can read these common fields without matching on every variant.
 - `HubHandler`: added `ke100_unchecked`, `s200_unchecked`, `s210_unchecked`, `t100_unchecked`, `t110_unchecked`, `t300_unchecked`, and `t31x_unchecked` for constructing typed child handlers without the validation round-trip. Use when the caller already has a valid device id.
 - `PowerStripHandler` and `PowerStripEnergyMonitoringHandler`: added `plug_unchecked(device_id)` for constructing the typed plug handler without the validation round-trip.
@@ -20,6 +21,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- `PlugHandler` and `PlugEnergyMonitoringHandler`: added `set_timer`, `get_timer`, and `clear_timer` for the plug's countdown timer (the "Timer" feature in the Tapo app). The plug supports a single armed timer at a time, so `set_timer` replaces any timer currently armed.
 - `HubHandler`: added `ke100_unchecked`, `s200_unchecked`, `s210_unchecked`, `t100_unchecked`, `t110_unchecked`, `t300_unchecked`, and `t31x_unchecked` for constructing typed child handlers without the validation round-trip. Use when the caller already has a valid device id.
 - `PowerStripHandler` and `PowerStripEnergyMonitoringHandler`: added `plug_unchecked(device_id)` for constructing the typed plug handler without the validation round-trip.
 
