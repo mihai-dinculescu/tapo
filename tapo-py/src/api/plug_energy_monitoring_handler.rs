@@ -4,7 +4,7 @@ use std::time::Duration;
 use chrono::{DateTime, NaiveDate, Utc};
 use pyo3::prelude::*;
 use tapo::PlugEnergyMonitoringHandler;
-use tapo::requests::{EnergyDataInterval, PowerDataInterval};
+use tapo::requests::{EnergyDataInterval, PowerDataInterval, ScheduleRule};
 use tapo::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
     EnergyDataResult, EnergyUsageResult, PowerDataResult, Timer,
@@ -114,6 +114,49 @@ impl PyPlugEnergyMonitoringHandler {
         call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::clear_timer
+        )
+    }
+
+    pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> PyResult<ScheduleRule> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::add_schedule_rule,
+            rule
+        )
+    }
+
+    pub async fn edit_schedule_rule(&self, rule: ScheduleRule) -> PyResult<()> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::edit_schedule_rule,
+            rule
+        )
+    }
+
+    pub async fn get_schedule_rules(&self) -> PyResult<Vec<ScheduleRule>> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_schedule_rules
+        )
+    }
+
+    pub async fn remove_schedule_rule(&self, id: String) -> PyResult<()> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::remove_schedule_rule,
+            id
+        )
+    }
+
+    pub async fn remove_all_schedule_rules(&self) -> PyResult<()> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::remove_all_schedule_rules
         )
     }
 }

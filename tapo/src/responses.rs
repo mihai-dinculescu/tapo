@@ -17,6 +17,7 @@ mod energy_usage_result;
 mod power_data_result;
 mod preset;
 mod rtsp_stream_url;
+mod schedule_rule_result;
 mod snapshot_result;
 mod supported_alarm_type_list_result;
 mod tapo_response;
@@ -48,6 +49,7 @@ pub use trigger_logs_result::*;
 
 pub(crate) use control_child_result::*;
 pub(crate) use decodable_result_ext::*;
+pub(crate) use schedule_rule_result::*;
 #[cfg(feature = "debug")]
 pub(crate) use supported_alarm_type_list_result::*;
 pub(crate) use tapo_response::*;

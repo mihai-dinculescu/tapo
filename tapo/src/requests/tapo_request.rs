@@ -4,9 +4,10 @@ use serde::Serialize;
 
 use super::{
     AddTimerParams, ControlChildParams, DeviceRebootParams, GetChildDeviceListParams,
-    GetEnergyDataParams, GetPowerDataParams, GetTriggerLogsParams, HandshakeParams, LightingEffect,
-    LoginDeviceParams, MultipleRequestParams, PlayAlarmParams, RemoveTimersParams,
-    SecurePassthroughParams, SegmentEffect, SmartCamDoParams, SmartCamGetParams,
+    GetEnergyDataParams, GetPowerDataParams, GetScheduleRulesParams, GetTriggerLogsParams,
+    HandshakeParams, LightingEffect, LoginDeviceParams, MultipleRequestParams, PlayAlarmParams,
+    RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRule, SecurePassthroughParams,
+    SegmentEffect, SmartCamDoParams, SmartCamGetParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -54,6 +55,11 @@ pub(crate) enum TapoRequest {
     AddCountdownRule(TapoParams<AddTimerParams>),
     GetCountdownRules(TapoParams<EmptyMap>),
     RemoveCountdownRules(TapoParams<RemoveTimersParams>),
+    // Plug "Schedule" requests
+    AddScheduleRule(TapoParams<ScheduleRule>),
+    EditScheduleRule(TapoParams<ScheduleRule>),
+    GetScheduleRules(TapoParams<GetScheduleRulesParams>),
+    RemoveScheduleRules(TapoParams<RemoveScheduleRulesParams>),
 }
 
 #[derive(Debug, Serialize)]

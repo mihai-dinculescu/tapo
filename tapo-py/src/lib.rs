@@ -8,8 +8,8 @@ use pyo3::prelude::*;
 use pyo3_log::{Caching, Logger};
 
 use tapo::requests::{
-    AlarmRingtone, AlarmVolume, Color, LightingEffectPreset, LightingEffectType,
-    SegmentEffectPreset, SegmentEffectType,
+    AlarmRingtone, AlarmVolume, Color, LightingEffectPreset, LightingEffectType, ScheduleFrequency,
+    ScheduleRule, ScheduleTimeKind, SegmentEffectPreset, SegmentEffectType,
 };
 use tapo::responses::{
     AutoOffStatus, ColorLightState, Component, CurrentPowerResult, DefaultBrightnessState,
@@ -85,6 +85,22 @@ fn register_requests(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyColorLightSetDeviceInfoParams>()?;
     module.add_class::<PyEnergyDataInterval>()?;
     module.add_class::<PyPowerDataInterval>()?;
+
+    // plug schedule rules
+    module.add_class::<ScheduleRule>()?;
+    module.add_class::<ScheduleTimeKind>()?;
+    module.add_class::<ScheduleFrequency>()?;
+    // week_day bitmask constants (mirror tapo::requests::week_day::*)
+    module.add("SUN", tapo::requests::week_day::SUN)?;
+    module.add("MON", tapo::requests::week_day::MON)?;
+    module.add("TUE", tapo::requests::week_day::TUE)?;
+    module.add("WED", tapo::requests::week_day::WED)?;
+    module.add("THU", tapo::requests::week_day::THU)?;
+    module.add("FRI", tapo::requests::week_day::FRI)?;
+    module.add("SAT", tapo::requests::week_day::SAT)?;
+    module.add("WEEKDAYS", tapo::requests::week_day::WEEKDAYS)?;
+    module.add("WEEKEND", tapo::requests::week_day::WEEKEND)?;
+    module.add("EVERY_DAY", tapo::requests::week_day::EVERY_DAY)?;
 
     // hub requests
     module.add_class::<AlarmRingtone>()?;

@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::error::Error;
-use crate::requests::{EnergyDataInterval, PowerDataInterval};
+use crate::requests::{EnergyDataInterval, PowerDataInterval, ScheduleRule};
 use crate::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
     EnergyDataResult, EnergyUsageResult, PowerDataResult, Timer,
@@ -60,5 +60,37 @@ impl PlugEnergyMonitoringHandler {
     /// or returns successfully if no timer was armed.
     pub async fn clear_timer(&self) -> Result<(), Error> {
         self.client.read().await.clear_timer().await
+    }
+
+    /// Adds a new schedule rule to the device.  Returns the same rule
+    /// with its device-assigned `id` filled in.  Schedule rules fire
+    /// on the device itself, so they keep working even if the phone /
+    /// Wi-Fi router / Tapo cloud is offline.
+    pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> Result<ScheduleRule, Error> {
+        self.client.read().await.add_schedule_rule(rule).await
+    }
+
+    /// Edits an existing schedule rule.  `rule.id` must be set.
+    pub async fn edit_schedule_rule(&self, rule: ScheduleRule) -> Result<(), Error> {
+        self.client.read().await.edit_schedule_rule(rule).await
+    }
+
+    /// Returns every schedule rule currently stored on the device.
+    pub async fn get_schedule_rules(&self) -> Result<Vec<ScheduleRule>, Error> {
+        self.client.read().await.get_schedule_rules().await
+    }
+
+    /// Removes the schedule rule with the given id.
+    pub async fn remove_schedule_rule(&self, id: impl Into<String>) -> Result<(), Error> {
+        self.client
+            .read()
+            .await
+            .remove_schedule_rule(id.into())
+            .await
+    }
+
+    /// Removes every schedule rule from the device.
+    pub async fn remove_all_schedule_rules(&self) -> Result<(), Error> {
+        self.client.read().await.remove_all_schedule_rules().await
     }
 }
