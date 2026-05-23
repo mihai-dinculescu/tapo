@@ -12,3 +12,4 @@ from .power_data_result import *
 from .preset import *
 from .rtsp_stream_url import *
 from .snapshot import *
+from .timer import *
