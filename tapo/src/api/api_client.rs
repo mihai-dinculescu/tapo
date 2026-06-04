@@ -671,6 +671,34 @@ impl ApiClient {
         Ok(HubHandler::new(Arc::new(RwLock::new(self))))
     }
 
+    /// Specializes the given [`ApiClient`] into an authenticated [`HubHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .h200("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let child_device_list = device.get_child_device_list().await?;
+    /// println!("Child device list: {child_device_list:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn h200(mut self, ip_address: impl Into<String>) -> Result<HubHandler, Error> {
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::AesSsl)
+            .await?;
+
+        Ok(HubHandler::new(Arc::new(RwLock::new(self))))
+    }
+
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraPtzHandler`].
     ///
     /// # Arguments
