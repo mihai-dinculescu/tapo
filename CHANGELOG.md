@@ -8,6 +8,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- `ApiClient`: added `h200` to support the H200 hub. It reuses the H100 hub logic but authenticates over the AES SSL protocol.
 - `PlugHandler` and `PlugEnergyMonitoringHandler`: added `add_schedule_rule`, `edit_schedule_rule`, `get_schedule_rules`, `get_max_schedule_rules`, `remove_schedule_rule`, and `remove_all_schedule_rules` for plug schedule rules (the "Schedule" feature in the Tapo app). Construct rules with the `ScheduleRule::clock_weekly` / `clock_once` / `sunrise_weekly` / `sunrise_once` / `sunset_weekly` / `sunset_once` builders, which take a `DaysOfWeek` set for the days a repeating rule fires on and a `ScheduleTime` for when it fires. Rules read back from the device are `ScheduleRuleResult`, which `to_editable` converts into a `ScheduleRule` for editing. `get_max_schedule_rules` reports how many rules the device can store in total. (thanks to @Hueburtsonly)
 - `PlugHandler` and `PlugEnergyMonitoringHandler`: added `set_timer`, `get_timer`, and `clear_timer` for the plug's countdown timer (the "Timer" feature in the Tapo app). The plug supports a single armed timer at a time, so `set_timer` replaces any timer currently armed. (thanks to @Hueburtsonly)
 - `ChildDeviceHubResult`: added `device_id()`, `nickname()`, and `model()` accessors so callers can read these common fields without matching on every variant.
