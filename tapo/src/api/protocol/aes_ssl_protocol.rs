@@ -195,7 +195,13 @@ impl AesSslProtocol {
             }));
         }
 
-        let response_body = response.json::<TapoResponse<Handshake1Response>>().await?;
+        // Read the raw body first so the payload is visible in trace logs even
+        // when deserialization fails (e.g. an unexpected handshake1 shape).
+        let response_text = response.text().await?;
+        trace!("Handshake1 response (raw): {response_text}");
+
+        let response_body =
+            serde_json::from_str::<TapoResponse<Handshake1Response>>(&response_text)?;
         debug!("Handshake1 response: {response_body:?}");
 
         // -40413 (INVALID_NONCE) is the expected response indicating the device
