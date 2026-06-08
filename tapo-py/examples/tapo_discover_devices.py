@@ -5,10 +5,11 @@ import os
 
 from tapo import ApiClient, DiscoveryResult
 
+from common import require_env_vars
+
 
 async def main():
-    tapo_username = os.getenv("TAPO_USERNAME")
-    tapo_password = os.getenv("TAPO_PASSWORD")
+    tapo_username, tapo_password = require_env_vars("TAPO_USERNAME", "TAPO_PASSWORD")
     target = os.getenv("TARGET", "192.168.1.255")
     timeout_s = int(os.getenv("TIMEOUT", 10))
 

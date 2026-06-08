@@ -1,15 +1,16 @@
 """P300 and P306 Example"""
 
 import asyncio
-import os
 
 from tapo import ApiClient
 
+from common import require_env_vars
+
 
 async def main():
-    tapo_username = os.getenv("TAPO_USERNAME")
-    tapo_password = os.getenv("TAPO_PASSWORD")
-    ip_address = os.getenv("IP_ADDRESS")
+    tapo_username, tapo_password, ip_address = require_env_vars(
+        "TAPO_USERNAME", "TAPO_PASSWORD", "IP_ADDRESS"
+    )
 
     client = ApiClient(tapo_username, tapo_password)
     power_strip = await client.p300(ip_address)

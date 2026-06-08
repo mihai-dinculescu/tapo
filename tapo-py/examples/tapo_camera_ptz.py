@@ -5,13 +5,17 @@ import os
 
 from tapo import ApiClient
 
+from common import require_env_vars
+
 
 async def main():
-    tapo_username = os.getenv("TAPO_USERNAME")
-    tapo_password = os.getenv("TAPO_PASSWORD")
-    ip_address = os.getenv("IP_ADDRESS")
-    camera_username = os.getenv("TAPO_CAMERA_USERNAME")
-    camera_password = os.getenv("TAPO_CAMERA_PASSWORD")
+    tapo_username, tapo_password, ip_address, camera_username, camera_password = require_env_vars(
+        "TAPO_USERNAME",
+        "TAPO_PASSWORD",
+        "IP_ADDRESS",
+        "TAPO_CAMERA_USERNAME",
+        "TAPO_CAMERA_PASSWORD",
+    )
 
     client = ApiClient(tapo_username, tapo_password)
     device = await client.c220(ip_address)

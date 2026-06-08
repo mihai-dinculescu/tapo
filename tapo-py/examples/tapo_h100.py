@@ -1,7 +1,6 @@
 """H100 Example"""
 
 import asyncio
-import os
 
 from tapo import ApiClient
 from tapo.requests import AlarmRingtone, AlarmVolume, AlarmDuration
@@ -16,11 +15,13 @@ from tapo.responses import (
     T31XResult,
 )
 
+from common import require_env_vars
+
 
 async def main():
-    tapo_username = os.getenv("TAPO_USERNAME")
-    tapo_password = os.getenv("TAPO_PASSWORD")
-    ip_address = os.getenv("IP_ADDRESS")
+    tapo_username, tapo_password, ip_address = require_env_vars(
+        "TAPO_USERNAME", "TAPO_PASSWORD", "IP_ADDRESS"
+    )
 
     client = ApiClient(tapo_username, tapo_password)
     hub = await client.h100(ip_address)

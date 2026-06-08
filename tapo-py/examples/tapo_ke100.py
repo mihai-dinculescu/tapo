@@ -1,20 +1,26 @@
 """KE100 TRV Example"""
 
 import asyncio
-import os
 
 from tapo import ApiClient
 from tapo.requests import TemperatureUnitKE100
 
+from common import require_env_vars
+
 
 async def main():
-    tapo_username = os.getenv("TAPO_USERNAME")
-    tapo_password = os.getenv("TAPO_PASSWORD")
-    ip_address = os.getenv("IP_ADDRESS")
-    # Name of the KE100 device.
-    # Can be obtained from the Tapo App or by executing `get_child_device_component_list()` on the hub device.
-    device_name = os.getenv("DEVICE_NAME")
-    target_temperature = int(os.getenv("TARGET_TEMPERATURE"))
+    # `DEVICE_NAME` is the name of the KE100 device.
+    # It can be obtained from the Tapo App or by executing `get_child_device_component_list()` on the hub device.
+    tapo_username, tapo_password, ip_address, device_name, target_temperature_str = (
+        require_env_vars(
+            "TAPO_USERNAME",
+            "TAPO_PASSWORD",
+            "IP_ADDRESS",
+            "DEVICE_NAME",
+            "TARGET_TEMPERATURE",
+        )
+    )
+    target_temperature = int(target_temperature_str)
 
     client = ApiClient(tapo_username, tapo_password)
     hub = await client.h100(ip_address)
