@@ -1,5 +1,4 @@
 //! H200 Example
-use std::env;
 use std::time::Duration;
 
 use log::info;
@@ -13,9 +12,8 @@ mod common;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     common::setup_logger();
 
-    let tapo_username = env::var("TAPO_USERNAME")?;
-    let tapo_password = env::var("TAPO_PASSWORD")?;
-    let ip_address = env::var("IP_ADDRESS")?;
+    let [tapo_username, tapo_password, ip_address] =
+        common::require_env_vars(["TAPO_USERNAME", "TAPO_PASSWORD", "IP_ADDRESS"])?;
 
     let hub = ApiClient::new(tapo_username, tapo_password)
         .h200(ip_address)
