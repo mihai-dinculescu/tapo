@@ -1,6 +1,4 @@
 /// KE100 TRV Example
-use std::env;
-
 use log::info;
 use tapo::requests::TemperatureUnitKE100;
 use tapo::{ApiClient, HubDevice};
@@ -11,13 +9,22 @@ mod common;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     common::setup_logger();
 
-    let tapo_username = env::var("TAPO_USERNAME")?;
-    let tapo_password = env::var("TAPO_PASSWORD")?;
-    let ip_address = env::var("IP_ADDRESS")?;
-    // Name of the KE100 device.
-    // Can be obtained from the Tapo App or by executing `get_child_device_component_list()` on the hub device.
-    let device_name = env::var("DEVICE_NAME")?;
-    let target_temperature: u8 = env::var("TARGET_TEMPERATURE")?.parse()?;
+    // `DEVICE_NAME` is the name of the KE100 device.
+    // It can be obtained from the Tapo App or by executing `get_child_device_component_list()` on the hub device.
+    let [
+        tapo_username,
+        tapo_password,
+        ip_address,
+        device_name,
+        target_temperature,
+    ] = common::require_env_vars([
+        "TAPO_USERNAME",
+        "TAPO_PASSWORD",
+        "IP_ADDRESS",
+        "DEVICE_NAME",
+        "TARGET_TEMPERATURE",
+    ])?;
+    let target_temperature: u8 = target_temperature.parse()?;
 
     let hub = ApiClient::new(tapo_username, tapo_password)
         .h100(ip_address)

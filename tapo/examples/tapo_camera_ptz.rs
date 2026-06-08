@@ -1,5 +1,4 @@
 /// Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70) Example
-use std::env;
 use std::time::Duration;
 
 use log::info;
@@ -11,11 +10,19 @@ mod common;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     common::setup_logger();
 
-    let tapo_username = env::var("TAPO_USERNAME")?;
-    let tapo_password = env::var("TAPO_PASSWORD")?;
-    let ip_address = env::var("IP_ADDRESS")?;
-    let camera_username = env::var("TAPO_CAMERA_USERNAME")?;
-    let camera_password = env::var("TAPO_CAMERA_PASSWORD")?;
+    let [
+        tapo_username,
+        tapo_password,
+        ip_address,
+        camera_username,
+        camera_password,
+    ] = common::require_env_vars([
+        "TAPO_USERNAME",
+        "TAPO_PASSWORD",
+        "IP_ADDRESS",
+        "TAPO_CAMERA_USERNAME",
+        "TAPO_CAMERA_PASSWORD",
+    ])?;
 
     let device = ApiClient::new(&tapo_username, &tapo_password)
         .c220(ip_address)

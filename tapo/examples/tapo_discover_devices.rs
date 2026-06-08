@@ -11,8 +11,8 @@ mod common;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     common::setup_logger();
 
-    let tapo_username = env::var("TAPO_USERNAME")?;
-    let tapo_password = env::var("TAPO_PASSWORD")?;
+    let [tapo_username, tapo_password] =
+        common::require_env_vars(["TAPO_USERNAME", "TAPO_PASSWORD"])?;
     let target = env::var("TAPO_DISCOVERY_TARGET").unwrap_or_else(|_| "192.168.1.255".to_string());
     let timeout_s = env::var("TAPO_DISCOVERY_TIMEOUT")
         .unwrap_or_else(|_| "10".to_string())
