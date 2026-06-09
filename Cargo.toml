@@ -2,6 +2,12 @@
 resolver = "3"
 
 members = ["tapo", "tapo-py", "tapo-mcp"]
+# Exclude `tapo-py` from bare workspace-level commands (`cargo run --example ...`,
+# `cargo test`, etc.). It enables `pyo3/extension-module`, which leaves the Python
+# C API symbols undefined; feature unification would propagate that into `tapo`
+# and break linking of binaries and examples. Build it explicitly with `-p tapo-py`
+# or via maturin.
+default-members = ["tapo", "tapo-mcp"]
 
 [workspace.dependencies]
 anyhow = "1.0"

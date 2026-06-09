@@ -13,9 +13,10 @@ Run all checks, fix any issues found, then present a summary table.
 
 Run the following checks if there are changes in the `tapo/`, `tapo-py/`, or `tapo-mcp/` directories. Fix all issues found. Run independent checks (`cargo check`, `cargo clippy`, `cargo fmt`, `cargo test`) in parallel.
 Unless otherwise specified, run checks at the workspace level (no `-p` flags) with `--all-features` to ensure cross-crate issues are caught.
+Link-free checks (`check`, `clippy`) take `--workspace` so they cover `tapo-py` too; `cargo test` must NOT — it links test binaries and examples, which fails with `tapo-py`'s `pyo3/extension-module`, so it relies on `default-members` excluding `tapo-py`.
 
-- `cargo check --all-features`
-- `cargo clippy --all-features`
+- `cargo check --workspace --all-features`
+- `cargo clippy --workspace --all-features`
 - `cargo fmt --all`
 - `cargo test --all-features`
 - `cargo clean --doc && RUSTDOCFLAGS="-D warnings" cargo doc -p tapo --no-deps --all-features`
