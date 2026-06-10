@@ -12,6 +12,7 @@ import logging
 import os
 
 from tapo import ApiClient
+from tapo.responses import PowerState
 
 
 async def main():
@@ -31,19 +32,19 @@ async def main():
     assert await device.get_timer() is None
 
     log.info("Arming a 10-second 'turn ON' timer...")
-    armed = await device.set_timer(10, True)
-    log.info("Armed: id=%s delay=%ds", armed.id, armed.delay_seconds)
+    armed = await device.set_timer(10, PowerState.On)
+    log.info("Armed: id=%s delay=%ds", armed.id, armed.delay_s)
 
     read_back = await device.get_timer()
     assert read_back is not None
     log.info(
-        "Read back: id=%s remain=%ds turn_on=%s",
+        "Read back: id=%s remain=%ds desired_state=%s",
         read_back.id,
-        read_back.remaining_seconds,
-        read_back.turn_on,
+        read_back.remaining_s,
+        read_back.desired_state,
     )
     assert read_back.id == armed.id
-    assert read_back.turn_on is True
+    assert read_back.desired_state == PowerState.On
 
     log.info("Waiting 15 seconds for the timer to fire (10s delay + slack)...")
     await asyncio.sleep(15)
@@ -51,7 +52,7 @@ async def main():
     log.info("Timer fired — plug is ON.")
 
     log.info("Arming a 5-second 'turn OFF' timer and clearing it before it fires...")
-    await device.set_timer(5, False)
+    await device.set_timer(5, PowerState.Off)
     await device.clear_timer()
     assert await device.get_timer() is None
 

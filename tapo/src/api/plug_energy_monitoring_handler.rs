@@ -4,7 +4,7 @@ use crate::error::Error;
 use crate::requests::{EnergyDataInterval, PowerDataInterval};
 use crate::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
-    EnergyDataResult, EnergyUsageResult, PowerDataResult, Timer,
+    EnergyDataResult, EnergyUsageResult, PowerDataResult, PowerState, Timer,
 };
 
 tapo_handler! {
@@ -46,9 +46,17 @@ impl PlugEnergyMonitoringHandler {
 
     /// Arms the plug's countdown timer (the "Timer" feature in the
     /// Tapo app), replacing any timer that is currently armed.
-    /// After `delay`, the plug transitions to `turn_on`.
-    pub async fn set_timer(&self, delay: Duration, turn_on: bool) -> Result<Timer, Error> {
-        self.client.read().await.set_timer(delay, turn_on).await
+    /// After `delay`, the plug transitions to `desired_state`.
+    pub async fn set_timer(
+        &self,
+        delay: Duration,
+        desired_state: PowerState,
+    ) -> Result<Timer, Error> {
+        self.client
+            .read()
+            .await
+            .set_timer(delay, desired_state)
+            .await
     }
 
     /// Returns the armed timer, or `None` if no timer is armed.

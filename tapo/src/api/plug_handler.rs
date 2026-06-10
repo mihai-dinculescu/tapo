@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::error::Error;
-use crate::responses::{DeviceInfoPlugResult, DeviceUsageResult, Timer};
+use crate::responses::{DeviceInfoPlugResult, DeviceUsageResult, PowerState, Timer};
 
 tapo_handler! {
     /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
@@ -15,9 +15,17 @@ tapo_handler! {
 impl PlugHandler {
     /// Arms the plug's countdown timer (the "Timer" feature in the
     /// Tapo app), replacing any timer that is currently armed.
-    /// After `delay`, the plug transitions to `turn_on`.
-    pub async fn set_timer(&self, delay: Duration, turn_on: bool) -> Result<Timer, Error> {
-        self.client.read().await.set_timer(delay, turn_on).await
+    /// After `delay`, the plug transitions to `desired_state`.
+    pub async fn set_timer(
+        &self,
+        delay: Duration,
+        desired_state: PowerState,
+    ) -> Result<Timer, Error> {
+        self.client
+            .read()
+            .await
+            .set_timer(delay, desired_state)
+            .await
     }
 
     /// Returns the armed timer, or `None` if no timer is armed.

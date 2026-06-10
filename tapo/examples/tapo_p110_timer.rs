@@ -9,6 +9,7 @@ use std::time::Duration;
 
 use log::info;
 use tapo::ApiClient;
+use tapo::responses::PowerState;
 
 mod common;
 
@@ -30,16 +31,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     assert!(device.get_timer().await?.is_none());
 
     info!("Arming a 10-second 'turn ON' timer...");
-    let armed = device.set_timer(Duration::from_secs(10), true).await?;
-    info!("Armed: id={} delay={}s", armed.id, armed.delay_seconds);
+    let armed = device
+        .set_timer(Duration::from_secs(10), PowerState::On)
+        .await?;
+    info!("Armed: id={} delay={}s", armed.id, armed.delay_s);
 
     let read_back = device.get_timer().await?.expect("a timer should be armed");
     info!(
-        "Read back: id={} remain={}s turn_on={}",
-        read_back.id, read_back.remaining_seconds, read_back.turn_on
+        "Read back: id={} remain={}s desired_state={:?}",
+        read_back.id, read_back.remaining_s, read_back.desired_state
     );
     assert_eq!(read_back.id, armed.id);
-    assert!(read_back.turn_on);
+    assert_eq!(read_back.desired_state, PowerState::On);
 
     info!("Waiting 15 seconds for the timer to fire (10s delay + slack)...");
     tokio::time::sleep(Duration::from_secs(15)).await;
@@ -50,7 +53,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Timer fired — plug is ON.");
 
     info!("Arming a 5-second 'turn OFF' timer and clearing it before it fires...");
-    device.set_timer(Duration::from_secs(5), false).await?;
+    device
+        .set_timer(Duration::from_secs(5), PowerState::Off)
+        .await?;
     device.clear_timer().await?;
     assert!(device.get_timer().await?.is_none());
 
