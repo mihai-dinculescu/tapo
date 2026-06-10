@@ -10,7 +10,7 @@ use tokio::sync::RwLock;
 
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
-    AddTimerParams, ControlChildParams, DeviceRebootParams, EmptyMap, EmptyParams,
+    AddTimerParams, ControlChildParams, DeviceRebootParams, EmptyObjectParams, EmptyParams,
     EnergyDataInterval, GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams,
     LightingEffect, MultipleRequestParams, PlayAlarmParams, PowerDataInterval, RemoveTimersParams,
     SegmentEffect, SmartCamDoParams, SmartCamGetParams, TapoParams, TapoRequest,
@@ -23,8 +23,9 @@ use crate::responses::{
 
 use crate::responses::{
     AddTimerResult, ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
-    EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw,
-    TapoMultipleResponse, TapoResponseExt, TapoResult, Timer, TimerListResult, validate_response,
+    EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw, PowerState,
+    TapoMultipleResponse, TapoResponseExt, TapoResult, Timer, TimerListResultRaw,
+    validate_response,
 };
 
 use super::discovery::DeviceDiscovery;
@@ -1222,15 +1223,20 @@ impl ApiClient {
         Ok(())
     }
 
-    pub(crate) async fn set_timer(&self, delay: Duration, turn_on: bool) -> Result<Timer, Error> {
-        let delay_seconds: u32 = delay.as_secs().try_into().map_err(|_| Error::Validation {
-            field: "delay".into(),
-            message: "Must fit in u32 seconds (0..=4_294_967_295)".into(),
-        })?;
-        if delay_seconds == 0 {
+    pub(crate) async fn set_timer(
+        &self,
+        delay: Duration,
+        desired_state: PowerState,
+    ) -> Result<Timer, Error> {
+        // 24h is the maximum the Tapo app allows, and matches what the
+        // device accepts in practice.
+        const MAX_DELAY_S: u32 = 24 * 60 * 60;
+
+        let delay_s: u32 = delay.as_secs().try_into().unwrap_or(u32::MAX);
+        if delay_s == 0 || delay_s > MAX_DELAY_S {
             return Err(Error::Validation {
                 field: "delay".into(),
-                message: "Must be at least 1 second".into(),
+                message: format!("Must be between 1 second and 24 hours ({MAX_DELAY_S} seconds)"),
             });
         }
 
@@ -1239,7 +1245,7 @@ impl ApiClient {
         // Wipe first to make `set_timer` a true replace.
         self.clear_timer().await?;
 
-        let params = AddTimerParams::new(delay_seconds, turn_on);
+        let params = AddTimerParams::new(delay_s, desired_state == PowerState::On);
         let request = TapoRequest::AddCountdownRule(TapoParams::new(params));
 
         let result = self
@@ -1250,17 +1256,17 @@ impl ApiClient {
 
         Ok(Timer {
             id: result.id,
-            delay_seconds,
-            remaining_seconds: delay_seconds,
-            turn_on,
+            delay_s,
+            remaining_s: delay_s,
+            desired_state,
         })
     }
 
     pub(crate) async fn get_timer(&self) -> Result<Option<Timer>, Error> {
-        let request = TapoRequest::GetCountdownRules(TapoParams::new(EmptyMap {}));
+        let request = TapoRequest::GetCountdownRules(TapoParams::new(EmptyObjectParams {}));
         let list = self
             .protocol()?
-            .execute_request::<TimerListResult>(request)
+            .execute_request::<TimerListResultRaw>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
         Ok(list

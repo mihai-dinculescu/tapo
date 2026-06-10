@@ -52,7 +52,7 @@ pub(crate) enum TapoRequest {
     SmartCamDo(SmartCamDoParams),
     // Plug "Timer" (countdown) requests
     AddCountdownRule(TapoParams<AddTimerParams>),
-    GetCountdownRules(TapoParams<EmptyMap>),
+    GetCountdownRules(TapoParams<EmptyObjectParams>),
     RemoveCountdownRules(TapoParams<RemoveTimersParams>),
 }
 
@@ -62,7 +62,7 @@ pub(crate) struct EmptyParams;
 /// Serializes as `{}` instead of `null`. The P110 rejects
 /// `params: null` for `get_countdown_rules` with `-1008 PARAMS`.
 #[derive(Debug, Serialize)]
-pub(crate) struct EmptyMap {}
+pub(crate) struct EmptyObjectParams {}
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]

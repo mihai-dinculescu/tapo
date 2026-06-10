@@ -21,11 +21,11 @@ use tapo::responses::{
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataIntervalResult,
     EnergyDataResult, EnergyUsageResult, KE100Result, OtherResult, OvercurrentStatus,
     OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
-    PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset, RgbLightStripState,
-    RgbicLightStripState, RtspStreamUrl, S200Log, S200Result, S200RotationParams, S210Result,
-    Snapshot, Status, T31XResult, T100Log, T100Result, T110Log, T110Result, T300Log, T300Result,
-    TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100,
-    Timer, UsageByPeriodResult, WaterLeakStatus,
+    PowerState, PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset,
+    RgbLightStripState, RgbicLightStripState, RtspStreamUrl, S200Log, S200Result,
+    S200RotationParams, S210Result, Snapshot, Status, T31XResult, T100Log, T100Result, T110Log,
+    T110Result, T300Log, T300Result, TemperatureHumidityRecord, TemperatureHumidityRecords,
+    TemperatureUnit, TemperatureUnitKE100, Timer, UsageByPeriodResult, WaterLeakStatus,
 };
 use tapo::{DeviceType, DiscoveryRawResult};
 
@@ -180,6 +180,7 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DeviceInfoPlugEnergyMonitoringResult>()?;
     module.add_class::<DeviceInfoPlugResult>()?;
     module.add_class::<PlugState>()?;
+    module.add_class::<PowerState>()?;
     module.add_class::<Timer>()?;
 
     // device info: camera
