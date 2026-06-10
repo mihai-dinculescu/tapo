@@ -1,8 +1,6 @@
 /// Common utilities for examples.
 use std::env;
 
-use log::LevelFilter;
-
 /// Reads the given required environment variables, returning their values in
 /// order. If any are missing, the returned error lists *all* of them so the
 /// user can set everything at once instead of discovering them one at a time.
@@ -26,14 +24,9 @@ pub fn require_env_vars<const N: usize>(names: [&str; N]) -> Result<[String; N],
 }
 
 pub fn setup_logger() {
-    let log_level = env::var("RUST_LOG")
-        .unwrap_or_else(|_| "info".to_string())
-        .parse()
-        .unwrap_or(LevelFilter::Info);
+    let filters = env::var("RUST_LOG").unwrap_or_else(|_| "tapo=info".to_string());
 
-    env_logger::Builder::new()
-        .filter(Some("tapo"), log_level)
-        .init();
+    env_logger::Builder::new().parse_filters(&filters).init();
 }
 
 #[allow(dead_code)]
