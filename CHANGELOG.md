@@ -16,12 +16,20 @@ file. This change log follows the conventions of
 
 - `TriggerLogsResult`: now derives `Serialize` so the type can be re-serialized by downstream consumers.
 
+### Fixed
+
+- AES SSL protocol (cameras): an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an `Unauthorized` error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
+
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
 - `HubHandler`: added `ke100_unchecked`, `s200_unchecked`, `s210_unchecked`, `t100_unchecked`, `t110_unchecked`, `t300_unchecked`, and `t31x_unchecked` for constructing typed child handlers without the validation round-trip. Use when the caller already has a valid device id.
 - `PowerStripHandler` and `PowerStripEnergyMonitoringHandler`: added `plug_unchecked(device_id)` for constructing the typed plug handler without the validation round-trip.
+
+### Fixed
+
+- AES SSL protocol (cameras): an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an authentication error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
 
 ## [MCP Unreleased][Unreleased]
 

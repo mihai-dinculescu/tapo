@@ -200,8 +200,11 @@ impl AesSslProtocol {
         let response_text = response.text().await?;
         trace!("Handshake1 response (raw): {response_text}");
 
+        // The nonce and device_confirm fields accompany only the expected
+        // -40413 error code, so the error code must be checked before
+        // deserializing the payload.
         let response_body =
-            serde_json::from_str::<TapoResponse<Handshake1Response>>(&response_text)?;
+            serde_json::from_str::<TapoResponse<serde_json::Value>>(&response_text)?;
         debug!("Handshake1 response: {response_body:?}");
 
         // -40413 (INVALID_NONCE) is the expected response indicating the device
@@ -218,10 +221,10 @@ impl AesSslProtocol {
             }));
         }
 
-        let data = response_body
+        let result = response_body
             .result
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
-            .data;
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+        let data = serde_json::from_value::<Handshake1Response>(result)?.data;
 
         // Try SHA256 password hash first, then MD5 fallback.
         let password_hash_sha256 = crypto::sha256_hex(password.as_bytes());
@@ -307,8 +310,6 @@ impl AesSslProtocol {
 struct Handshake1Response {
     data: Handshake1ResponseData,
 }
-
-impl TapoResponseExt for Handshake1Response {}
 
 #[derive(Debug, Deserialize)]
 struct Handshake1ResponseData {
