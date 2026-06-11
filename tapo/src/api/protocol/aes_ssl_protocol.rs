@@ -94,10 +94,13 @@ impl AesSslProtocol {
         let response_body: serde_json::Value = response.json().await?;
         trace!("Device responded with (raw): {response_body}");
 
+        // Successful responses may omit the error code entirely (e.g. the H200
+        // hub). Errors are reported under either "error_code" or "err_code".
         let error_code = response_body
             .get("error_code")
+            .or_else(|| response_body.get("err_code"))
             .and_then(|v| v.as_i64())
-            .unwrap_or(-1);
+            .unwrap_or(0);
 
         validate_response(error_code)?;
 

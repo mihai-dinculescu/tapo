@@ -63,7 +63,9 @@ fn error_kind(code: i64) -> &'static str {
         -40106 => "UNSUPPORTED_METHOD",
         -40109 => "ONE_SECOND_REPEAT_REQUEST",
         -40203 => "BIND_SENSOR_EXISTS",
-        -40210 => "PROTOCOL_FORMAT_ERROR",
+        // The positive variant has been observed from a H200 hub rejecting a
+        // Smart-format request under "err_code".
+        -40210 | 40210 => "PROTOCOL_FORMAT_ERROR",
         -40321 => "IP_CONFLICT",
         -40401 => "SESSION_EXPIRED",
         -40404 => "DEVICE_BLOCKED",
