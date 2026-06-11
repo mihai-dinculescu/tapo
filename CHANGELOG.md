@@ -8,7 +8,6 @@ file. This change log follows the conventions of
 
 ### Added
 
-- `ApiClient`: added `h200` to support the H200 hub. It reuses the H100 hub logic but authenticates over the AES SSL protocol.
 - `ChildDeviceHubResult`: added `device_id()`, `nickname()`, and `model()` accessors so callers can read these common fields without matching on every variant.
 - `HubHandler`: added `ke100_unchecked`, `s200_unchecked`, `s210_unchecked`, `t100_unchecked`, `t110_unchecked`, `t300_unchecked`, and `t31x_unchecked` for constructing typed child handlers without the validation round-trip. Use when the caller already has a valid device id.
 - `PowerStripHandler` and `PowerStripEnergyMonitoringHandler`: added `plug_unchecked(device_id)` for constructing the typed plug handler without the validation round-trip.
@@ -19,7 +18,8 @@ file. This change log follows the conventions of
 
 ### Fixed
 
-- AES SSL protocol (cameras): an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an `Unauthorized` error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
+- AES SSL protocol: an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an `Unauthorized` error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
+- AES SSL protocol: successful responses that omit the error code are no longer treated as failures, and errors reported under `err_code` (e.g. `40210`) now surface their real code instead of `-1` UNKNOWN.
 
 ## [Python Unreleased][Unreleased]
 
@@ -30,7 +30,7 @@ file. This change log follows the conventions of
 
 ### Fixed
 
-- AES SSL protocol (cameras): an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an authentication error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
+- AES SSL protocol: an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an authentication error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
 
 ## [MCP Unreleased][Unreleased]
 

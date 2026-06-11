@@ -31,9 +31,9 @@ use super::discovery::DeviceDiscovery;
 use super::discovery::DeviceDiscoveryRaw;
 use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
 use super::{
-    CameraPtzHandler, ColorLightHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler,
-    PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
-    RgbicLightStripHandler,
+    CameraPtzHandler, ColorLightHandler, H200Handler, HubHandler, LightHandler,
+    PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
+    RgbLightStripHandler, RgbicLightStripHandler,
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
@@ -671,7 +671,7 @@ impl ApiClient {
         Ok(HubHandler::new(Arc::new(RwLock::new(self))))
     }
 
-    /// Specializes the given [`ApiClient`] into an authenticated [`HubHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`H200Handler`].
     ///
     /// # Arguments
     ///
@@ -687,16 +687,16 @@ impl ApiClient {
     ///     .h200("192.168.1.100")
     ///     .await?;
     ///
-    /// let child_device_list = device.get_child_device_list().await?;
-    /// println!("Child device list: {child_device_list:?}");
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn h200(mut self, ip_address: impl Into<String>) -> Result<HubHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::AesSsl)
+    pub async fn h200(mut self, ip_address: impl Into<String>) -> Result<H200Handler, Error> {
+        self.login(ip_address, DeviceFamily::SmartCam, AuthProtocol::AesSsl)
             .await?;
 
-        Ok(HubHandler::new(Arc::new(RwLock::new(self))))
+        Ok(H200Handler::new(Arc::new(RwLock::new(self))))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraPtzHandler`].
