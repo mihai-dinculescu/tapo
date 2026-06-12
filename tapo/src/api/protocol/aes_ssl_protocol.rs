@@ -94,15 +94,26 @@ impl AesSslProtocol {
         let response_body: serde_json::Value = response.json().await?;
         trace!("Device responded with (raw): {response_body}");
 
-        // Successful responses may omit the error code entirely (e.g. the H200
-        // hub). Errors are reported under either "error_code" or "err_code".
-        let error_code = response_body
-            .get("error_code")
-            .or_else(|| response_body.get("err_code"))
-            .and_then(|v| v.as_i64())
-            .unwrap_or(0);
+        validate_response(extract_error_code(&response_body))?;
 
-        validate_response(error_code)?;
+        // SmartCam hubs (e.g. H500) encrypt the reply inside the
+        // securePassthrough envelope; cameras respond to single requests in
+        // plain text.
+        let response_body = match response_body
+            .pointer("/result/response")
+            .and_then(|v| v.as_str())
+        {
+            Some(response_encrypted) => {
+                let response_decrypted = session.cipher.decrypt(response_encrypted)?;
+                let response_body: serde_json::Value = serde_json::from_str(&response_decrypted)?;
+                trace!("Device responded with (decrypted): {response_body}");
+
+                validate_response(extract_error_code(&response_body))?;
+
+                response_body
+            }
+            None => response_body,
+        };
 
         // SmartCam responses place data under a single section key
         // (e.g. "device_info": {"basic_info": {...}}).
@@ -307,6 +318,16 @@ impl AesSslProtocol {
 
         Ok(result)
     }
+}
+
+fn extract_error_code(response_body: &serde_json::Value) -> i64 {
+    // Successful responses may omit the error code entirely (e.g. the H200
+    // hub). Errors are reported under either "error_code" or "err_code".
+    response_body
+        .get("error_code")
+        .or_else(|| response_body.get("err_code"))
+        .and_then(|v| v.as_i64())
+        .unwrap_or(0)
 }
 
 #[derive(Debug, Deserialize)]

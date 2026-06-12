@@ -20,6 +20,7 @@ file. This change log follows the conventions of
 
 - AES SSL protocol: an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an `Unauthorized` error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
 - AES SSL protocol: successful responses that omit the error code are no longer treated as failures, and errors reported under `err_code` (e.g. `40210`) now surface their real code instead of `-1` UNKNOWN.
+- AES SSL protocol: responses that arrive encrypted inside the `securePassthrough` envelope (`result.response`) are now decrypted with the session cipher; previously they failed with `EmptyResult`.
 
 ## [Python Unreleased][Unreleased]
 
@@ -31,6 +32,7 @@ file. This change log follows the conventions of
 ### Fixed
 
 - AES SSL protocol: an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an authentication error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
+- AES SSL protocol: responses that arrive encrypted inside the `securePassthrough` envelope (`result.response`) are now decrypted with the session cipher; previously they failed with `EmptyResult`.
 
 ## [MCP Unreleased][Unreleased]
 

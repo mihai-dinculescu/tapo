@@ -37,6 +37,10 @@ impl AesSslCipher {
         crypto::aes128_cbc_encrypt(&self.key, &self.iv, data)
     }
 
+    pub fn decrypt(&self, cipher_base64: &str) -> anyhow::Result<String> {
+        crypto::aes128_cbc_decrypt(&self.key, &self.iv, cipher_base64)
+    }
+
     pub fn generate_tag(&self, request_body: &str, sequence: i32) -> String {
         crypto::sha256_hex(format!("{}{request_body}{sequence}", self.tag_prefix).as_bytes())
     }
@@ -77,12 +81,6 @@ pub(super) fn compute_password_digest(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    impl AesSslCipher {
-        fn decrypt(&self, cipher_base64: &str) -> anyhow::Result<String> {
-            crypto::aes128_cbc_decrypt(&self.key, &self.iv, cipher_base64)
-        }
-    }
 
     #[test]
     fn test_nonce_generation() {
