@@ -2,4 +2,14 @@
 ignore = [
     # The Marvin Attack poses minimal risk to the use cases of this library
     "RUSTSEC-2023-0071",
+    # Out-of-bounds read in `nth`/`nth_back` for `PyList`/`PyTuple` iterators.
+    # This codebase never calls `nth`/`nth_back` on those iterators. Fixed in
+    # pyo3 0.29, which is blocked until pyo3-async-runtimes and pyo3-log
+    # publish releases compatible with it.
+    "RUSTSEC-2026-0176",
+    # Missing `Sync` bound on `PyCFunction::new_closure` closures. This
+    # codebase never uses `PyCFunction::new_closure`. Fixed in pyo3 0.29,
+    # which is blocked until pyo3-async-runtimes and pyo3-log publish
+    # releases compatible with it.
+    "RUSTSEC-2026-0177",
 ]
