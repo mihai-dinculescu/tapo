@@ -21,5 +21,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let device_info = hub.get_device_info().await?;
     info!("Device info: {device_info:?}");
 
+    let child_device_list_json = hub.get_child_device_list_json(0).await?;
+    info!("Child device list (JSON): {child_device_list_json}");
+
     Ok(())
 }

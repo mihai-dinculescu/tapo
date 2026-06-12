@@ -10,9 +10,9 @@ use tokio::sync::RwLock;
 
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
-    ControlChildParams, DeviceRebootParams, EmptyParams, EnergyDataInterval,
-    GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams, LightingEffect,
-    MultipleRequestParams, PlayAlarmParams, PowerDataInterval, SegmentEffect, SmartCamDoParams,
+    ChildControlListParams, ControlChildParams, DeviceRebootParams, EmptyParams,
+    EnergyDataInterval, GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams,
+    LightingEffect, MultipleRequestParams, PlayAlarmParams, PowerDataInterval, SegmentEffect,
     SmartCamGetParams, TapoParams, TapoRequest,
 };
 #[cfg(feature = "debug")]
@@ -1043,8 +1043,11 @@ impl ApiClient {
 
         match self.protocol()?.device_family() {
             DeviceFamily::SmartCam => {
-                self.execute_smart_cam_get(SmartCamGetParams::device_info())
-                    .await
+                let request = TapoRequest::SmartCamGet(SmartCamGetParams::device_info());
+
+                self.execute_smart_cam_request::<R>(request)
+                    .await?
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
             }
             DeviceFamily::Smart => {
                 let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
@@ -1163,15 +1166,30 @@ impl ApiClient {
         R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
     {
         debug!("Get Child device list starting with index {start_index}...");
-        let request = TapoRequest::GetChildDeviceList(TapoParams::new(
-            GetChildDeviceListParams::new(start_index),
-        ));
 
-        self.protocol()?
-            .execute_request::<R>(request)
-            .await?
-            .map(|result| result.decode())
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+        match self.protocol()?.device_family() {
+            DeviceFamily::SmartCam => {
+                let request = TapoRequest::SmartCamGetChildDeviceList(TapoParams::new(
+                    ChildControlListParams::new(start_index),
+                ));
+
+                self.execute_smart_cam_multiple_request::<R>(request)
+                    .await?
+                    .map(|result| result.decode())
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            }
+            DeviceFamily::Smart => {
+                let request = TapoRequest::GetChildDeviceList(TapoParams::new(
+                    GetChildDeviceListParams::new(start_index),
+                ));
+
+                self.protocol()?
+                    .execute_request::<R>(request)
+                    .await?
+                    .map(|result| result.decode())
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            }
+        }
     }
 
     #[cfg(feature = "debug")]
@@ -1224,29 +1242,46 @@ impl ApiClient {
         Ok(response.result)
     }
 
-    pub(crate) async fn execute_smart_cam_get<R>(
+    /// Executes a single SmartCam request.
+    pub(crate) async fn execute_smart_cam_request<R>(
         &self,
-        params: SmartCamGetParams,
-    ) -> Result<R, Error>
+        request: TapoRequest,
+    ) -> Result<Option<R>, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
-        let request = TapoRequest::SmartCamGet(params);
-
-        self.protocol()?
-            .execute_request(request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+        self.protocol()?.execute_request(request).await
     }
 
-    pub(crate) async fn execute_smart_cam_do(&self, params: SmartCamDoParams) -> Result<(), Error> {
-        let request = TapoRequest::SmartCamDo(params);
+    /// Executes a single SmartCam request wrapped in a `multipleRequest`
+    /// envelope, returning the result of its sole response.
+    pub(crate) async fn execute_smart_cam_multiple_request<R>(
+        &self,
+        request: TapoRequest,
+    ) -> Result<Option<R>, Error>
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
+    {
+        let request = TapoRequest::MultipleRequest(Box::new(TapoParams::new(
+            MultipleRequestParams::new(vec![request]),
+        )));
 
-        self.protocol()?
-            .execute_request::<serde_json::Value>(request)
-            .await?;
+        let responses = self
+            .protocol()?
+            .execute_request::<TapoMultipleResponse<R>>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            .result
+            .responses;
 
-        Ok(())
+        let response = responses
+            .into_iter()
+            .next()
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        validate_response(response.error_code)?;
+
+        Ok(response.result)
     }
 
     fn protocol_mut(&mut self) -> Result<&mut TapoProtocol, Error> {
