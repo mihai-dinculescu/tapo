@@ -3,11 +3,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::Serialize;
 
 use super::{
-    AddTimerParams, ControlChildParams, DeviceRebootParams, GetChildDeviceListParams,
-    GetEnergyDataParams, GetPowerDataParams, GetScheduleRulesParams, GetTriggerLogsParams,
-    HandshakeParams, LightingEffect, LoginDeviceParams, MultipleRequestParams, PlayAlarmParams,
-    RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams,
-    SegmentEffect, SmartCamDoParams, SmartCamGetParams,
+    AddTimerParams, ChildControlListParams, ControlChildParams, DeviceRebootParams,
+    GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams, GetScheduleRulesParams,
+    GetTriggerLogsParams, HandshakeParams, LightingEffect, LoginDeviceParams,
+    MultipleRequestParams, PlayAlarmParams, RemoveScheduleRulesParams, RemoveTimersParams,
+    ScheduleRuleRaw, SecurePassthroughParams, SegmentEffect, SmartCamDoParams, SmartCamGetParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -51,6 +51,8 @@ pub(crate) enum TapoRequest {
     SmartCamGet(SmartCamGetParams),
     #[serde(rename = "do")]
     SmartCamDo(SmartCamDoParams),
+    #[serde(rename = "getChildDeviceList")]
+    SmartCamGetChildDeviceList(TapoParams<ChildControlListParams>),
     // Plug "Timer" (countdown) requests
     AddCountdownRule(TapoParams<AddTimerParams>),
     GetCountdownRules(TapoParams<EmptyObjectParams>),
