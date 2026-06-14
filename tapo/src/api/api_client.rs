@@ -33,7 +33,7 @@ use super::discovery::DeviceDiscovery;
 use super::discovery::DeviceDiscoveryRaw;
 use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
 use super::{
-    CameraPtzHandler, ColorLightHandler, H200Handler, HubHandler, LightHandler,
+    CameraHubHandler, CameraPtzHandler, ColorLightHandler, HubHandler, LightHandler,
     PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
     RgbLightStripHandler, RgbicLightStripHandler,
 };
@@ -673,7 +673,7 @@ impl ApiClient {
         Ok(HubHandler::new(Arc::new(RwLock::new(self))))
     }
 
-    /// Specializes the given [`ApiClient`] into an authenticated [`H200Handler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraHubHandler`].
     ///
     /// # Arguments
     ///
@@ -694,11 +694,39 @@ impl ApiClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn h200(mut self, ip_address: impl Into<String>) -> Result<H200Handler, Error> {
+    pub async fn h200(mut self, ip_address: impl Into<String>) -> Result<CameraHubHandler, Error> {
         self.login(ip_address, DeviceFamily::SmartCam, AuthProtocol::AesSsl)
             .await?;
 
-        Ok(H200Handler::new(Arc::new(RwLock::new(self))))
+        Ok(CameraHubHandler::new(Arc::new(RwLock::new(self))))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraHubHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .h500("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn h500(mut self, ip_address: impl Into<String>) -> Result<CameraHubHandler, Error> {
+        self.login(ip_address, DeviceFamily::SmartCam, AuthProtocol::AesSsl)
+            .await?;
+
+        Ok(CameraHubHandler::new(Arc::new(RwLock::new(self))))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraPtzHandler`].
