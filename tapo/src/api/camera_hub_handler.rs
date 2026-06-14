@@ -54,6 +54,19 @@ impl CameraHubHandler {
             .get_child_device_list(start_index)
             .await
     }
+
+    /// Returns *child device component list* as [`Vec<ChildDeviceComponentList>`].
+    /// This information is useful in debugging or when investigating new functionality to add.
+    #[cfg(feature = "debug")]
+    pub async fn get_child_device_component_list(
+        &self,
+    ) -> Result<Vec<crate::responses::ChildDeviceComponentList>, Error> {
+        self.client
+            .read()
+            .await
+            .get_child_device_component_list()
+            .await
+    }
 }
 
 hub_child_handlers!(CameraHubHandler, "h200");

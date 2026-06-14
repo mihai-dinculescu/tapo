@@ -20,6 +20,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let device_info = hub.get_device_info().await?;
     info!("Device info: {device_info:?}");
 
+    let child_device_component_list = hub.get_child_device_component_list().await?;
+    info!("Child device component list: {child_device_component_list:?}");
+
     info!("Getting child devices...");
     let child_device_list = hub.get_child_device_list().await?;
 
