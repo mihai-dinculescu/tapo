@@ -1,17 +1,19 @@
 use crate::error::Error;
-use crate::responses::{ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoH200Result};
+use crate::responses::{ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoCameraHubResult};
 
 tapo_handler! {
-    /// Handler for the [H200](https://www.tapo.com/en/search/?q=H200) devices.
-    H200Handler(DeviceInfoH200Result),
+    /// Handler for camera hubs, such as the
+    /// [H200](https://www.tapo.com/en/search/?q=H200) and
+    /// [H500](https://www.tapo.com/en/search/?q=H500).
+    CameraHubHandler(DeviceInfoCameraHubResult),
 }
 
 /// Hub handler methods.
-impl H200Handler {
+impl CameraHubHandler {
     /// Returns *child device list* as [`ChildDeviceHubResult`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API
     /// or to support all the possible devices connected to the hub.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`H200Handler::get_child_device_list_json`].
+    /// If the deserialization fails, or if a property that you care about it's not present, try [`CameraHubHandler::get_child_device_list_json`].
     pub async fn get_child_device_list(&self) -> Result<Vec<ChildDeviceHubResult>, Error> {
         let mut results = Vec::new();
         let mut start_index = 0;
@@ -54,4 +56,4 @@ impl H200Handler {
     }
 }
 
-hub_child_handlers!(H200Handler, "h200");
+hub_child_handlers!(CameraHubHandler, "h200");
