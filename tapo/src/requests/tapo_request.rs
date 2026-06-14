@@ -53,6 +53,10 @@ pub(crate) enum TapoRequest {
     SmartCamDo(SmartCamDoParams),
     #[serde(rename = "getChildDeviceList")]
     SmartCamGetChildDeviceList(TapoParams<SmartCamGetChildDeviceListParams>),
+    // Shares the `childControl` pagination payload with `getChildDeviceList`.
+    #[cfg(feature = "debug")]
+    #[serde(rename = "getChildDeviceComponentList")]
+    SmartCamGetChildDeviceComponentList(TapoParams<SmartCamGetChildDeviceListParams>),
     #[serde(rename = "controlChild")]
     SmartCamControlChild(Box<TapoParams<SmartCamControlChildParams>>),
 }

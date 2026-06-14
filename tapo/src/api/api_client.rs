@@ -1227,13 +1227,27 @@ impl ApiClient {
         &self,
     ) -> Result<Vec<ChildDeviceComponentList>, Error> {
         debug!("Get Child device component list...");
-        let request = TapoRequest::GetChildDeviceComponentList(TapoParams::new(EmptyParams));
 
-        let result: ChildDeviceComponentListResult = self
-            .protocol()?
-            .execute_request(request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+        let result: ChildDeviceComponentListResult = match self.protocol()?.device_family() {
+            DeviceFamily::SmartCam => {
+                let request = TapoRequest::SmartCamGetChildDeviceComponentList(TapoParams::new(
+                    SmartCamGetChildDeviceListParams::new(0),
+                ));
+
+                self.execute_smart_cam_multiple_request(request)
+                    .await?
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            }
+            DeviceFamily::Smart => {
+                let request =
+                    TapoRequest::GetChildDeviceComponentList(TapoParams::new(EmptyParams));
+
+                self.protocol()?
+                    .execute_request(request)
+                    .await?
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            }
+        };
 
         Ok(result.child_component_list)
     }
