@@ -53,3 +53,5 @@ impl H200Handler {
             .await
     }
 }
+
+hub_child_handlers!(H200Handler, "h200");
