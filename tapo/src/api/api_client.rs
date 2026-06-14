@@ -40,6 +40,9 @@ use super::{
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
+/// Camera hubs (H200, H500) authenticate the local session with this username
+/// and the TP-Link cloud password, rather than the cloud account username.
+const CAMERA_HUB_USERNAME: &str = "admin";
 
 /// Implemented by all ApiClient implementations.
 #[async_trait]
@@ -676,6 +679,9 @@ impl ApiClient {
 
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraHubHandler`].
     ///
+    /// The hub authenticates with the TP-Link cloud password; the configured
+    /// username is ignored (the local `admin` account is used internally).
+    ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device
@@ -696,6 +702,7 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn h200(mut self, ip_address: impl Into<String>) -> Result<CameraHubHandler, Error> {
+        self.tapo_username = CAMERA_HUB_USERNAME.to_string();
         self.login(ip_address, DeviceFamily::SmartCam, AuthProtocol::AesSsl)
             .await?;
 
@@ -703,6 +710,9 @@ impl ApiClient {
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraHubHandler`].
+    ///
+    /// The hub authenticates with the TP-Link cloud password; the configured
+    /// username is ignored (the local `admin` account is used internally).
     ///
     /// # Arguments
     ///
@@ -724,6 +734,7 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn h500(mut self, ip_address: impl Into<String>) -> Result<CameraHubHandler, Error> {
+        self.tapo_username = CAMERA_HUB_USERNAME.to_string();
         self.login(ip_address, DeviceFamily::SmartCam, AuthProtocol::AesSsl)
             .await?;
 
