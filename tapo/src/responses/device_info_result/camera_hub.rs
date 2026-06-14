@@ -4,10 +4,10 @@ use crate::error::Error;
 use crate::responses::{DecodableResultExt, TapoResponseExt};
 use crate::utils::bool_from_int_or_bool;
 
-/// Device info of Tapo H200 (hub).
+/// Device info of Tapo camera hubs (H200, H500).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
-pub struct DeviceInfoH200Result {
+pub struct DeviceInfoCameraHubResult {
     pub avatar: String,
     pub bind_status: bool,
     pub child_num: u32,
@@ -39,9 +39,9 @@ pub struct DeviceInfoH200Result {
     pub r#type: String,
 }
 
-impl TapoResponseExt for DeviceInfoH200Result {}
+impl TapoResponseExt for DeviceInfoCameraHubResult {}
 
-impl DecodableResultExt for DeviceInfoH200Result {
+impl DecodableResultExt for DeviceInfoCameraHubResult {
     fn decode(self) -> Result<Self, Error> {
         // SmartCam devices don't base64-encode fields.
         Ok(self)

@@ -1,9 +1,9 @@
 mod basic;
 mod camera;
+mod camera_hub;
 mod color_light;
 mod default_plug_state;
 mod default_state;
-mod h200;
 mod hub;
 mod light;
 mod plug;
@@ -15,10 +15,10 @@ mod rgbic_light_strip;
 
 pub use basic::*;
 pub use camera::*;
+pub use camera_hub::*;
 pub use color_light::*;
 pub use default_plug_state::*;
 pub use default_state::*;
-pub use h200::*;
 pub use hub::*;
 pub use light::*;
 pub use plug::*;
