@@ -10,11 +10,11 @@ use tokio::sync::RwLock;
 
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
-    AddTimerParams, ChildControlListParams, ControlChildParams, DeviceRebootParams,
-    EmptyObjectParams, EmptyParams, EnergyDataInterval, GetChildDeviceListParams,
-    GetEnergyDataParams, GetPowerDataParams, LightingEffect, MultipleRequestParams, PlayAlarmParams,
-    PowerDataInterval, RemoveTimersParams, SegmentEffect, SmartCamGetParams, TapoParams,
-    TapoRequest,
+    AddTimerParams, ControlChildParams, DeviceRebootParams, EmptyObjectParams, EmptyParams,
+    EnergyDataInterval, GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams,
+    LightingEffect, MultipleRequestParams, PlayAlarmParams, PowerDataInterval, RemoveTimersParams,
+    SegmentEffect, SmartCamControlChildParams, SmartCamGetChildDeviceListParams, SmartCamGetParams,
+    TapoParams, TapoRequest,
 };
 #[cfg(feature = "debug")]
 use crate::responses::{
@@ -25,8 +25,8 @@ use crate::responses::{
 use crate::responses::{
     AddTimerResult, ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
     EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw, PowerState,
-    TapoMultipleResponse, TapoResponseExt, TapoResult, Timer, TimerListResultRaw,
-    validate_response,
+    SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt, TapoResult, Timer,
+    TimerListResultRaw, validate_response,
 };
 
 use super::discovery::DeviceDiscovery;
@@ -1173,7 +1173,7 @@ impl ApiClient {
         match self.protocol()?.device_family() {
             DeviceFamily::SmartCam => {
                 let request = TapoRequest::SmartCamGetChildDeviceList(TapoParams::new(
-                    ChildControlListParams::new(start_index),
+                    SmartCamGetChildDeviceListParams::new(start_index),
                 ));
 
                 self.execute_smart_cam_multiple_request::<R>(request)
@@ -1220,29 +1220,51 @@ impl ApiClient {
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
         debug!("Control child...");
-        let params = MultipleRequestParams::new(vec![child_request]);
-        let request = TapoRequest::MultipleRequest(Box::new(TapoParams::new(params)));
 
-        let params = ControlChildParams::new(device_id, request);
-        let request = TapoRequest::ControlChild(Box::new(TapoParams::new(params)));
+        match self.protocol()?.device_family() {
+            DeviceFamily::SmartCam => {
+                // The H200 wraps the child request directly in a controlChild
+                // envelope (no inner multipleRequest), and the reply nests the
+                // child's response under a snake_case `response_data` field.
+                let params = SmartCamControlChildParams::new(device_id, child_request);
+                let request = TapoRequest::SmartCamControlChild(Box::new(TapoParams::new(params)));
 
-        let responses = self
-            .protocol()?
-            .execute_request::<ControlChildResult<TapoMultipleResponse<R>>>(request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
-            .response_data
-            .result
-            .responses;
+                let response = self
+                    .execute_smart_cam_multiple_request::<SmartCamControlChildResult<R>>(request)
+                    .await?
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+                    .response_data;
 
-        let response = responses
-            .into_iter()
-            .next()
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+                validate_response(response.error_code)?;
 
-        validate_response(response.error_code)?;
+                Ok(response.result)
+            }
+            DeviceFamily::Smart => {
+                let params = MultipleRequestParams::new(vec![child_request]);
+                let request = TapoRequest::MultipleRequest(Box::new(TapoParams::new(params)));
 
-        Ok(response.result)
+                let params = ControlChildParams::new(device_id, request);
+                let request = TapoRequest::ControlChild(Box::new(TapoParams::new(params)));
+
+                let responses = self
+                    .protocol()?
+                    .execute_request::<ControlChildResult<TapoMultipleResponse<R>>>(request)
+                    .await?
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+                    .response_data
+                    .result
+                    .responses;
+
+                let response = responses
+                    .into_iter()
+                    .next()
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+                validate_response(response.error_code)?;
+
+                Ok(response.result)
+            }
+        }
     }
 
     /// Executes a single SmartCam request.
