@@ -1,11 +1,11 @@
 mod api_client;
 #[macro_use]
 mod tapo_handler;
+mod camera_hub_handler;
 mod camera_ptz_handler;
 mod child_devices;
 mod color_light_handler;
 mod discovery;
-mod h200_handler;
 mod handler_ext;
 mod hub_handler;
 mod light_handler;
@@ -20,11 +20,11 @@ mod rgbic_light_strip_handler;
 mod rtsp_snapshot;
 
 pub use api_client::*;
+pub use camera_hub_handler::*;
 pub use camera_ptz_handler::*;
 pub use child_devices::*;
 pub use color_light_handler::*;
 pub use discovery::*;
-pub use h200_handler::*;
 pub use handler_ext::*;
 pub use hub_handler::*;
 pub use light_handler::*;
