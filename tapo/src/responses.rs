@@ -15,12 +15,14 @@ mod device_usage_result;
 mod energy_data_result;
 mod energy_usage_result;
 mod power_data_result;
+mod power_state;
 mod preset;
 mod rtsp_stream_url;
 mod snapshot_result;
 mod supported_alarm_type_list_result;
 mod tapo_response;
 mod tapo_result;
+mod timer_result;
 mod token_result;
 mod trigger_logs_result;
 
@@ -39,9 +41,11 @@ pub use device_usage_result::*;
 pub use energy_data_result::*;
 pub use energy_usage_result::*;
 pub use power_data_result::*;
+pub use power_state::*;
 pub use preset::*;
 pub use rtsp_stream_url::*;
 pub use snapshot_result::*;
+pub use timer_result::*;
 pub use trigger_logs_result::*;
 
 pub(crate) use control_child_result::*;
