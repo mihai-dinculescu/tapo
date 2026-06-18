@@ -10,20 +10,23 @@ use tokio::sync::RwLock;
 
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
-    ControlChildParams, DeviceRebootParams, EmptyParams, EnergyDataInterval,
-    GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams, LightingEffect,
-    MultipleRequestParams, PlayAlarmParams, PowerDataInterval, SegmentEffect, SmartCamDoParams,
-    SmartCamGetParams, TapoParams, TapoRequest,
+    AddTimerParams, ControlChildParams, DeviceRebootParams, EmptyMap, EmptyParams,
+    EnergyDataInterval, GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams,
+    GetScheduleRulesParams, LightingEffect, MultipleRequestParams, PlayAlarmParams,
+    PowerDataInterval, RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRule, SegmentEffect,
+    SmartCamDoParams, SmartCamGetParams, TapoParams, TapoRequest,
 };
 #[cfg(feature = "debug")]
 use crate::responses::{
     ChildDeviceComponentList, ChildDeviceComponentListResult, Component, ComponentListResult,
     SupportedAlarmTypeListResult,
 };
+
 use crate::responses::{
-    ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
+    AddTimerResult, ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
     EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw,
-    TapoMultipleResponse, TapoResponseExt, TapoResult, validate_response,
+    ScheduleRuleAddResult, ScheduleRuleListResult, TapoMultipleResponse, TapoResponseExt,
+    TapoResult, Timer, TimerListResult, validate_response,
 };
 
 use super::discovery::DeviceDiscovery;
@@ -1218,6 +1221,144 @@ impl ApiClient {
             .execute_request::<serde_json::Value>(request)
             .await?;
 
+        Ok(())
+    }
+
+    pub(crate) async fn set_timer(&self, delay: Duration, turn_on: bool) -> Result<Timer, Error> {
+        let delay_seconds: u32 = delay.as_secs().try_into().map_err(|_| Error::Validation {
+            field: "delay".into(),
+            message: "Must fit in u32 seconds (0..=4_294_967_295)".into(),
+        })?;
+        if delay_seconds == 0 {
+            return Err(Error::Validation {
+                field: "delay".into(),
+                message: "Must be at least 1 second".into(),
+            });
+        }
+
+        // The P110 supports at most one armed timer at a time, and
+        // rejects a second `add_countdown_rule` while one is armed.
+        // Wipe first to make `set_timer` a true replace.
+        self.clear_timer().await?;
+
+        let params = AddTimerParams::new(delay_seconds, turn_on);
+        let request = TapoRequest::AddCountdownRule(TapoParams::new(params));
+
+        let result = self
+            .protocol()?
+            .execute_request::<AddTimerResult>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        Ok(Timer {
+            id: result.id,
+            delay_seconds,
+            remaining_seconds: delay_seconds,
+            turn_on,
+        })
+    }
+
+    pub(crate) async fn get_timer(&self) -> Result<Option<Timer>, Error> {
+        let request = TapoRequest::GetCountdownRules(TapoParams::new(EmptyMap {}));
+        let list = self
+            .protocol()?
+            .execute_request::<TimerListResult>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+        Ok(list
+            .rule_list
+            .into_iter()
+            .next()
+            .and_then(|r| r.into_timer()))
+    }
+
+    pub(crate) async fn clear_timer(&self) -> Result<(), Error> {
+        let request =
+            TapoRequest::RemoveCountdownRules(TapoParams::new(RemoveTimersParams::remove_all()));
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
+            .await?;
+        Ok(())
+    }
+
+    pub(crate) async fn add_schedule_rule(
+        &self,
+        mut rule: ScheduleRule,
+    ) -> Result<ScheduleRule, Error> {
+        rule.id = None;
+        let request = TapoRequest::AddScheduleRule(TapoParams::new(rule.clone()));
+        let added = self
+            .protocol()?
+            .execute_request::<ScheduleRuleAddResult>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+        rule.id = Some(added.id);
+        Ok(rule)
+    }
+
+    pub(crate) async fn edit_schedule_rule(&self, rule: ScheduleRule) -> Result<(), Error> {
+        if rule.id.is_none() {
+            return Err(Error::Validation {
+                field: "rule.id".into(),
+                message: "edit_schedule_rule requires rule.id to be set".into(),
+            });
+        }
+        let request = TapoRequest::EditScheduleRule(TapoParams::new(rule));
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
+            .await?;
+        Ok(())
+    }
+
+    pub(crate) async fn get_schedule_rules(&self) -> Result<Vec<ScheduleRule>, Error> {
+        // Bound pagination defensively in case the device misreports
+        // `sum` or never returns an empty page.  The P-series limit
+        // is well under this.
+        const MAX_PAGES: u32 = 64;
+        let mut all = Vec::new();
+        let mut start_index = 0u32;
+        for _ in 0..MAX_PAGES {
+            let request = TapoRequest::GetScheduleRules(TapoParams::new(GetScheduleRulesParams {
+                start_index,
+            }));
+            let page = self
+                .protocol()?
+                .execute_request::<ScheduleRuleListResult>(request)
+                .await?
+                .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+            let returned = page.rule_list.len() as u32;
+            if returned == 0 {
+                break;
+            }
+            all.extend(page.rule_list);
+            // Trust `sum` only when the device reports a positive value;
+            // some firmwares omit it (deserializes to 0 via `default`),
+            // which would silently truncate to a single page otherwise.
+            if page.sum > 0 && all.len() as u32 >= page.sum {
+                break;
+            }
+            start_index += returned;
+        }
+        Ok(all)
+    }
+
+    pub(crate) async fn remove_schedule_rule(&self, id: String) -> Result<(), Error> {
+        let request = TapoRequest::RemoveScheduleRules(TapoParams::new(
+            RemoveScheduleRulesParams::specific(vec![id]),
+        ));
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
+            .await?;
+        Ok(())
+    }
+
+    pub(crate) async fn remove_all_schedule_rules(&self) -> Result<(), Error> {
+        let request = TapoRequest::RemoveScheduleRules(TapoParams::new(
+            RemoveScheduleRulesParams::remove_all(),
+        ));
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
+            .await?;
         Ok(())
     }
 

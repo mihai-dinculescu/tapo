@@ -3,8 +3,12 @@ from tapo.device_management_ext import DeviceManagementExt
 from tapo.on_off_ext import OnOffExt
 from tapo.refresh_session_ext import RefreshSessionExt
 from tapo.responses import DeviceInfoPlugResult, DeviceUsageResult
+from tapo.schedule_ext import ScheduleExt
+from tapo.timer_ext import TimerExt
 
-class PlugHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, DebugExt):
+class PlugHandler(
+    OnOffExt, DeviceManagementExt, RefreshSessionExt, TimerExt, ScheduleExt, DebugExt
+):
     """Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
     [P105](https://www.tapo.com/en/search/?q=P105) devices.
     """
