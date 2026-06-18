@@ -12,8 +12,9 @@ use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     ControlChildParams, DeviceRebootParams, EmptyParams, EnergyDataInterval,
     GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams, LightingEffect,
-    MultipleRequestParams, PlayAlarmParams, PowerDataInterval, SegmentEffect, SmartCamDoParams,
-    SmartCamGetParams, TapoParams, TapoRequest,
+    MultipleRequestParams, PlayAlarmParams, PowerDataInterval, SegmentEffect,
+    SmartCamControlChildParams, SmartCamGetChildDeviceListParams, SmartCamGetParams, TapoParams,
+    TapoRequest,
 };
 #[cfg(feature = "debug")]
 use crate::responses::{
@@ -23,7 +24,8 @@ use crate::responses::{
 use crate::responses::{
     ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
     EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw,
-    TapoMultipleResponse, TapoResponseExt, TapoResult, validate_response,
+    SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt, TapoResult,
+    validate_response,
 };
 
 use super::discovery::DeviceDiscovery;
@@ -31,12 +33,15 @@ use super::discovery::DeviceDiscovery;
 use super::discovery::DeviceDiscoveryRaw;
 use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
 use super::{
-    CameraPtzHandler, ColorLightHandler, HubHandler, LightHandler, PlugEnergyMonitoringHandler,
-    PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
-    RgbicLightStripHandler,
+    CameraHubHandler, CameraPtzHandler, ColorLightHandler, HubHandler, LightHandler,
+    PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
+    RgbLightStripHandler, RgbicLightStripHandler,
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
+/// Camera hubs (H200, H500) authenticate the local session with this username
+/// and the TP-Link cloud password, rather than the cloud account username.
+const CAMERA_HUB_USERNAME: &str = "admin";
 
 /// Implemented by all ApiClient implementations.
 #[async_trait]
@@ -671,6 +676,70 @@ impl ApiClient {
         Ok(HubHandler::new(Arc::new(RwLock::new(self))))
     }
 
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraHubHandler`].
+    ///
+    /// The hub authenticates with the TP-Link cloud password; the configured
+    /// username is ignored (the local `admin` account is used internally).
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .h200("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn h200(mut self, ip_address: impl Into<String>) -> Result<CameraHubHandler, Error> {
+        self.tapo_username = CAMERA_HUB_USERNAME.to_string();
+        self.login(ip_address, DeviceFamily::SmartCam, AuthProtocol::AesSsl)
+            .await?;
+
+        Ok(CameraHubHandler::new(Arc::new(RwLock::new(self))))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraHubHandler`].
+    ///
+    /// The hub authenticates with the TP-Link cloud password; the configured
+    /// username is ignored (the local `admin` account is used internally).
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .h500("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn h500(mut self, ip_address: impl Into<String>) -> Result<CameraHubHandler, Error> {
+        self.tapo_username = CAMERA_HUB_USERNAME.to_string();
+        self.login(ip_address, DeviceFamily::SmartCam, AuthProtocol::AesSsl)
+            .await?;
+
+        Ok(CameraHubHandler::new(Arc::new(RwLock::new(self))))
+    }
+
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraPtzHandler`].
     ///
     /// # Arguments
@@ -1015,8 +1084,11 @@ impl ApiClient {
 
         match self.protocol()?.device_family() {
             DeviceFamily::SmartCam => {
-                self.execute_smart_cam_get(SmartCamGetParams::device_info())
-                    .await
+                let request = TapoRequest::SmartCamGet(SmartCamGetParams::device_info());
+
+                self.execute_smart_cam_request::<R>(request)
+                    .await?
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
             }
             DeviceFamily::Smart => {
                 let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
@@ -1135,15 +1207,30 @@ impl ApiClient {
         R: fmt::Debug + DeserializeOwned + TapoResponseExt + DecodableResultExt,
     {
         debug!("Get Child device list starting with index {start_index}...");
-        let request = TapoRequest::GetChildDeviceList(TapoParams::new(
-            GetChildDeviceListParams::new(start_index),
-        ));
 
-        self.protocol()?
-            .execute_request::<R>(request)
-            .await?
-            .map(|result| result.decode())
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+        match self.protocol()?.device_family() {
+            DeviceFamily::SmartCam => {
+                let request = TapoRequest::SmartCamGetChildDeviceList(TapoParams::new(
+                    SmartCamGetChildDeviceListParams::new(start_index),
+                ));
+
+                self.execute_smart_cam_multiple_request::<R>(request)
+                    .await?
+                    .map(|result| result.decode())
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            }
+            DeviceFamily::Smart => {
+                let request = TapoRequest::GetChildDeviceList(TapoParams::new(
+                    GetChildDeviceListParams::new(start_index),
+                ));
+
+                self.protocol()?
+                    .execute_request::<R>(request)
+                    .await?
+                    .map(|result| result.decode())
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            }
+        }
     }
 
     #[cfg(feature = "debug")]
@@ -1151,13 +1238,27 @@ impl ApiClient {
         &self,
     ) -> Result<Vec<ChildDeviceComponentList>, Error> {
         debug!("Get Child device component list...");
-        let request = TapoRequest::GetChildDeviceComponentList(TapoParams::new(EmptyParams));
 
-        let result: ChildDeviceComponentListResult = self
-            .protocol()?
-            .execute_request(request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+        let result: ChildDeviceComponentListResult = match self.protocol()?.device_family() {
+            DeviceFamily::SmartCam => {
+                let request = TapoRequest::SmartCamGetChildDeviceComponentList(TapoParams::new(
+                    SmartCamGetChildDeviceListParams::new(0),
+                ));
+
+                self.execute_smart_cam_multiple_request(request)
+                    .await?
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            }
+            DeviceFamily::Smart => {
+                let request =
+                    TapoRequest::GetChildDeviceComponentList(TapoParams::new(EmptyParams));
+
+                self.protocol()?
+                    .execute_request(request)
+                    .await?
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            }
+        };
 
         Ok(result.child_component_list)
     }
@@ -1171,18 +1272,82 @@ impl ApiClient {
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
         debug!("Control child...");
-        let params = MultipleRequestParams::new(vec![child_request]);
-        let request = TapoRequest::MultipleRequest(Box::new(TapoParams::new(params)));
 
-        let params = ControlChildParams::new(device_id, request);
-        let request = TapoRequest::ControlChild(Box::new(TapoParams::new(params)));
+        match self.protocol()?.device_family() {
+            DeviceFamily::SmartCam => {
+                // The H200 wraps the child request directly in a controlChild
+                // envelope (no inner multipleRequest), and the reply nests the
+                // child's response under a snake_case `response_data` field.
+                let params = SmartCamControlChildParams::new(device_id, child_request);
+                let request = TapoRequest::SmartCamControlChild(Box::new(TapoParams::new(params)));
+
+                let response = self
+                    .execute_smart_cam_multiple_request::<SmartCamControlChildResult<R>>(request)
+                    .await?
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+                    .response_data;
+
+                validate_response(response.error_code)?;
+
+                Ok(response.result)
+            }
+            DeviceFamily::Smart => {
+                let params = MultipleRequestParams::new(vec![child_request]);
+                let request = TapoRequest::MultipleRequest(Box::new(TapoParams::new(params)));
+
+                let params = ControlChildParams::new(device_id, request);
+                let request = TapoRequest::ControlChild(Box::new(TapoParams::new(params)));
+
+                let responses = self
+                    .protocol()?
+                    .execute_request::<ControlChildResult<TapoMultipleResponse<R>>>(request)
+                    .await?
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+                    .response_data
+                    .result
+                    .responses;
+
+                let response = responses
+                    .into_iter()
+                    .next()
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+                validate_response(response.error_code)?;
+
+                Ok(response.result)
+            }
+        }
+    }
+
+    /// Executes a single SmartCam request.
+    pub(crate) async fn execute_smart_cam_request<R>(
+        &self,
+        request: TapoRequest,
+    ) -> Result<Option<R>, Error>
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
+    {
+        self.protocol()?.execute_request(request).await
+    }
+
+    /// Executes a single SmartCam request wrapped in a `multipleRequest`
+    /// envelope, returning the result of its sole response.
+    pub(crate) async fn execute_smart_cam_multiple_request<R>(
+        &self,
+        request: TapoRequest,
+    ) -> Result<Option<R>, Error>
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
+    {
+        let request = TapoRequest::MultipleRequest(Box::new(TapoParams::new(
+            MultipleRequestParams::new(vec![request]),
+        )));
 
         let responses = self
             .protocol()?
-            .execute_request::<ControlChildResult<TapoMultipleResponse<R>>>(request)
+            .execute_request::<TapoMultipleResponse<R>>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
-            .response_data
             .result
             .responses;
 
@@ -1194,31 +1359,6 @@ impl ApiClient {
         validate_response(response.error_code)?;
 
         Ok(response.result)
-    }
-
-    pub(crate) async fn execute_smart_cam_get<R>(
-        &self,
-        params: SmartCamGetParams,
-    ) -> Result<R, Error>
-    where
-        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
-    {
-        let request = TapoRequest::SmartCamGet(params);
-
-        self.protocol()?
-            .execute_request(request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
-    }
-
-    pub(crate) async fn execute_smart_cam_do(&self, params: SmartCamDoParams) -> Result<(), Error> {
-        let request = TapoRequest::SmartCamDo(params);
-
-        self.protocol()?
-            .execute_request::<serde_json::Value>(request)
-            .await?;
-
-        Ok(())
     }
 
     fn protocol_mut(&mut self) -> Result<&mut TapoProtocol, Error> {

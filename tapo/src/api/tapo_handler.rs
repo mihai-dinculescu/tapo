@@ -458,3 +458,96 @@ macro_rules! tapo_child_handler {
         }
     };
 }
+
+/// Generates the child device handler builders shared by hub handlers (H100,
+/// H200): the checked `ke100`/`s200`/.../`t31x` methods that resolve a
+/// [`HubDevice`] against the hub's child list, plus their `_unchecked`
+/// counterparts that trust a given `device_id`.
+macro_rules! hub_child_handlers {
+    ($name:ident, $ctor:literal) => {
+        /// Child device handler builders.
+        impl $name {
+            hub_child_handlers!(@checked ke100, KE100Handler, KE100, $ctor);
+            hub_child_handlers!(@checked s200, S200Handler, S200, $ctor);
+            hub_child_handlers!(@checked s210, S210Handler, S210, $ctor);
+            hub_child_handlers!(@checked t100, T100Handler, T100, $ctor);
+            hub_child_handlers!(@checked t110, T110Handler, T110, $ctor);
+            hub_child_handlers!(@checked t300, T300Handler, T300, $ctor);
+            hub_child_handlers!(@checked t31x, T31XHandler, T31X, $ctor);
+        }
+
+        /// Unchecked child device handler builders.
+        impl $name {
+            hub_child_handlers!(@unchecked ke100_unchecked, KE100Handler);
+            hub_child_handlers!(@unchecked s200_unchecked, S200Handler);
+            hub_child_handlers!(@unchecked s210_unchecked, S210Handler);
+            hub_child_handlers!(@unchecked t100_unchecked, T100Handler);
+            hub_child_handlers!(@unchecked t110_unchecked, T110Handler);
+            hub_child_handlers!(@unchecked t300_unchecked, T300Handler);
+            hub_child_handlers!(@unchecked t31x_unchecked, T31XHandler);
+        }
+    };
+
+    (@checked $method:ident, $handler:ident, $variant:ident, $ctor:literal) => {
+        #[doc = concat!(
+            "Returns a [`", stringify!($handler), "`](crate::", stringify!($handler),
+            ") for the given [`HubDevice`](crate::HubDevice).\n\n",
+            "# Arguments\n\n",
+            "* `identifier` - a hub device identifier\n\n",
+            "# Example\n\n",
+            "```rust,no_run\n",
+            "# use tapo::{ApiClient, HubDevice};\n",
+            "# #[tokio::main]\n",
+            "# async fn main() -> Result<(), Box<dyn std::error::Error>> {\n",
+            "// Connect to the hub\n",
+            "let hub = ApiClient::new(\"tapo-username@example.com\", \"tapo-password\")\n",
+            "    .", $ctor, "(\"192.168.1.100\")\n",
+            "    .await?;\n",
+            "// Get a handler for the child device\n",
+            "let device_id = \"0000000000000000000000000000000000000000\".to_string();\n",
+            "let device = hub.", stringify!($method), "(HubDevice::ByDeviceId(device_id)).await?;\n",
+            "// Get the device info of the child device\n",
+            "let device_info = device.get_device_info().await?;\n",
+            "# Ok(())\n",
+            "# }\n",
+            "```",
+        )]
+        pub async fn $method(
+            &self,
+            identifier: crate::api::HubDevice,
+        ) -> Result<crate::api::$handler, crate::error::Error> {
+            let device_id = self
+                .get_child_device_list()
+                .await?
+                .into_iter()
+                .find_map(|child| match child {
+                    crate::responses::ChildDeviceHubResult::$variant(c) => match &identifier {
+                        crate::api::HubDevice::ByDeviceId(id) if c.device_id == *id => {
+                            Some(c.device_id)
+                        }
+                        crate::api::HubDevice::ByNickname(nickname) if c.nickname == *nickname => {
+                            Some(c.device_id)
+                        }
+                        _ => None,
+                    },
+                    _ => None,
+                })
+                .ok_or(crate::error::Error::DeviceNotFound)?;
+            Ok(crate::api::$handler::new(self.client.clone(), device_id))
+        }
+    };
+
+    (@unchecked $method:ident, $handler:ident) => {
+        #[doc = concat!(
+            "Returns a [`", stringify!($handler), "`](crate::", stringify!($handler),
+            ") for the given `device_id` without first\n",
+            "listing the hub's children to verify the device exists or matches the\n",
+            "requested model. The device id is trusted; if it is wrong or refers to\n",
+            "a different model, subsequent operations on the returned handler will\n",
+            "fail at request time.",
+        )]
+        pub fn $method(&self, device_id: String) -> crate::api::$handler {
+            crate::api::$handler::new(self.client.clone(), device_id)
+        }
+    };
+}
