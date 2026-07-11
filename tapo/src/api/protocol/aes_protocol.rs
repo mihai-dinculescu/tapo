@@ -66,7 +66,7 @@ impl AesProtocol {
     {
         let session = self.session()?;
         let url = match &session.token {
-            Some(token) => format!("{}?token={token}", &session.url),
+            Some(token) => format!("{}?token={token}", session.url),
             None => session.url.clone(),
         };
 
