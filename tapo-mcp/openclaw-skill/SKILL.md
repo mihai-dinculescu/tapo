@@ -1,7 +1,7 @@
 ---
 name: tapo
 description: Control TP-Link Tapo smart home devices (lights, plugs, power strips, hubs and sensors, cameras) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp).
-version: 0.4.1
+version: 0.5.0
 metadata:
   {
     "openclaw":
@@ -18,7 +18,7 @@ Control Tapo devices using `npx mcporter call tapo.<tool>`.
 
 ## Setup
 
-You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp) server (v0.4.0 or later) running on your network (HTTP transport). Bearer token auth is recommended (and required when the server binds to a non-loopback address). When connecting by LAN IP or hostname, the server's `TAPO_MCP_ALLOWED_HOSTS` must include that host, or requests get `403 Forbidden`.
+You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp) server (v0.5.0 or later) running on your network (HTTP transport). Bearer token auth is recommended (and required when the server binds to a non-loopback address). When connecting by LAN IP or hostname, the server's `TAPO_MCP_ALLOWED_HOSTS` must include that host, or requests get `403 Forbidden`.
 
 1. **Add the Tapo server**:
 
