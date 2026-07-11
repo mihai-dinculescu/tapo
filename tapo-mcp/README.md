@@ -77,6 +77,7 @@ All configuration is via environment variables prefixed with `TAPO_MCP_`:
 | `TAPO_MCP_HTTP_ADDR`         | No       | `127.0.0.1:3000` | Address the server listens on                                  |
 | `TAPO_MCP_DISCOVERY_TIMEOUT` | No       | `5`              | Discovery timeout in seconds                                   |
 | `TAPO_MCP_API_KEY`           | No       | —                | Bearer token for HTTP authentication (see below)               |
+| `TAPO_MCP_ALLOWED_HOSTS`     | No       | loopback only    | Comma-separated `Host` header allowlist (see Network exposure) |
 
 [^camera]: Set on each camera in the Tapo app under Camera Settings > Advanced Settings > Camera Account. Distinct from your TP-Link cloud account.
 
@@ -85,6 +86,14 @@ All configuration is via environment variables prefixed with `TAPO_MCP_`:
 When `TAPO_MCP_API_KEY` is set, the server requires all HTTP requests to include an `Authorization: Bearer <key>` header. Requests with a missing or invalid token receive a `401 Unauthorized` response.
 
 When the variable is unset (or empty/whitespace-only), the server runs without authentication.
+
+## Network exposure
+
+The server enforces the MCP Streamable HTTP DNS-rebinding protection. By default only loopback `Host` headers (`localhost`, `127.0.0.1`, `::1`) are accepted, which prevents a malicious web page from reaching a locally running server via DNS rebinding. Requests with any other `Host` receive a `403 Forbidden` response.
+
+To reach the server over the LAN or from another host, set `TAPO_MCP_ALLOWED_HOSTS` to the exact hostname(s) or `host:port` authorities clients connect to, for example `TAPO_MCP_ALLOWED_HOSTS="tapo-mcp.lan:3000,192.168.1.50:3000"`. This replaces the loopback default, so include loopback entries as well if you still need them.
+
+To avoid shipping unauthenticated smart-home control, the server refuses to start when it binds to a non-loopback address (for example `0.0.0.0:3000`) without `TAPO_MCP_API_KEY` set. Set an API key, or bind to a loopback address.
 
 ## Deployment
 
@@ -98,8 +107,11 @@ docker run --rm \
   -e TAPO_MCP_CAMERA_USERNAME="<YOUR_CAMERA_ACCOUNT_USERNAME>" \
   -e TAPO_MCP_CAMERA_PASSWORD="<YOUR_CAMERA_ACCOUNT_PASSWORD>" \
   -e TAPO_MCP_DISCOVERY_TARGET="192.168.1.255" \
+  -e TAPO_MCP_API_KEY="<YOUR_TAPO_MCP_API_KEY>" \
   ghcr.io/mihai-dinculescu/tapo-mcp:latest
 ```
+
+> **Note:** The image binds to `0.0.0.0:3000`, so `TAPO_MCP_API_KEY` is required — the server refuses to start on a non-loopback address without it (see [Network exposure](#network-exposure)). To reach the server by hostname or LAN IP rather than loopback, also set `TAPO_MCP_ALLOWED_HOSTS`.
 
 > **Note:** `--network host` is required so the container can reach Tapo devices on your local network via UDP broadcast for discovery. On macOS and Windows, `--network host` is not supported — you can use `-p 3000:3000` instead, but device discovery won't work as Docker Desktop runs containers inside a VM without LAN access.
 
@@ -176,7 +188,7 @@ spec:
 
 ```
 
-> **Note:** `hostNetwork: true` is required for UDP broadcast discovery, similar to `--network host` in Docker.
+> **Note:** `hostNetwork: true` is required for UDP broadcast discovery, similar to `--network host` in Docker. Because clients reach the server by node IP or hostname rather than loopback, set `TAPO_MCP_ALLOWED_HOSTS` accordingly (see [Network exposure](#network-exposure)).
 
 ## OpenClaw
 

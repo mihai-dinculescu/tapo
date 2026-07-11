@@ -19,6 +19,11 @@ pub struct AppConfig {
     pub discovery_timeout: u64,
     #[serde(default)]
     pub api_key: Option<String>,
+    /// Hostnames or `host:port` authorities accepted in the inbound `Host`
+    /// header. Empty keeps rmcp's loopback-only default, which blocks DNS
+    /// rebinding. Populated from `TAPO_MCP_ALLOWED_HOSTS`.
+    #[serde(skip)]
+    pub allowed_hosts: Vec<String>,
 }
 
 impl std::fmt::Debug for AppConfig {
@@ -38,6 +43,7 @@ impl std::fmt::Debug for AppConfig {
             .field("discovery_target", &self.discovery_target)
             .field("discovery_timeout", &self.discovery_timeout)
             .field("api_key", &self.api_key.as_ref().map(|_| "[redacted]"))
+            .field("allowed_hosts", &self.allowed_hosts)
             .finish()
     }
 }
@@ -95,7 +101,60 @@ impl AppConfig {
             .map(|v| v.trim().to_string())
             .filter(|v| !v.is_empty());
 
+        config.allowed_hosts = Self::parse_list_env(&format!("{ENV_PREFIX}_ALLOWED_HOSTS"));
+
+        config.validate_binding_security()?;
+
         Ok(config)
+    }
+
+    /// Reads a comma-separated env var into a list of trimmed, non-empty entries.
+    fn parse_list_env(name: &str) -> Vec<String> {
+        std::env::var(name)
+            .unwrap_or_default()
+            .split(',')
+            .map(|entry| entry.trim().to_string())
+            .filter(|entry| !entry.is_empty())
+            .collect()
+    }
+
+    /// True when `http_addr` binds to a loopback interface (or `localhost`).
+    fn binds_to_loopback(&self) -> bool {
+        if let Ok(socket) = self.http_addr.parse::<std::net::SocketAddr>() {
+            return socket.ip().is_loopback();
+        }
+        // Fall back to parsing `host:port` forms that aren't literal socket
+        // addresses (e.g. `localhost:3000`). Unknown hosts are treated as
+        // non-loopback so the guard fails safe.
+        let host = self
+            .http_addr
+            .rsplit_once(':')
+            .map(|(host, _)| host)
+            .unwrap_or(&self.http_addr)
+            .trim_start_matches('[')
+            .trim_end_matches(']');
+
+        host.eq_ignore_ascii_case("localhost")
+            || host
+                .parse::<std::net::IpAddr>()
+                .map(|ip| ip.is_loopback())
+                .unwrap_or(false)
+    }
+
+    /// Refuses a network-exposed bind that has no access control, so the
+    /// documented deployment cannot silently run unauthenticated.
+    fn validate_binding_security(&self) -> Result<(), config::ConfigError> {
+        if self.binds_to_loopback() || self.api_key.is_some() {
+            return Ok(());
+        }
+
+        Err(config::ConfigError::Message(format!(
+            "Refusing to start: {ENV_PREFIX}_HTTP_ADDR binds to a non-loopback address ({}) \
+             with no {ENV_PREFIX}_API_KEY set, exposing unauthenticated smart-home control to \
+             the network. Set {ENV_PREFIX}_API_KEY to require bearer authentication, or bind to \
+             a loopback address.",
+            self.http_addr
+        )))
     }
 }
 
@@ -120,6 +179,7 @@ mod tests {
             "TAPO_MCP_HTTP_ADDR",
             "TAPO_MCP_DISCOVERY_TIMEOUT",
             "TAPO_MCP_API_KEY",
+            "TAPO_MCP_ALLOWED_HOSTS",
         ] {
             unsafe { std::env::remove_var(key) };
         }
@@ -204,6 +264,7 @@ mod tests {
             discovery_target: "192.168.1.255".to_string(),
             discovery_timeout: 5,
             api_key: Some("my-api-key".to_string()),
+            allowed_hosts: vec![],
         };
 
         let debug = format!("{config:?}");
@@ -269,5 +330,105 @@ mod tests {
         let config = AppConfig::from_env().unwrap();
         assert_eq!(config.camera_username.as_deref(), Some("cam_user"));
         assert_eq!(config.camera_password.as_deref(), Some("cam_pass"));
+    }
+
+    #[test]
+    fn allowed_hosts_parse_as_list() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var(
+                "TAPO_MCP_ALLOWED_HOSTS",
+                " 192.168.1.50:3000 , tapo.local , ",
+            );
+            std::env::set_var("TAPO_MCP_API_KEY", "a-key");
+        }
+
+        let config = AppConfig::from_env().unwrap();
+        assert_eq!(
+            config.allowed_hosts,
+            vec!["192.168.1.50:3000".to_string(), "tapo.local".to_string()]
+        );
+    }
+
+    #[test]
+    fn allowed_hosts_default_empty() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+        }
+
+        let config = AppConfig::from_env().unwrap();
+        assert!(config.allowed_hosts.is_empty());
+    }
+
+    #[test]
+    fn binds_to_loopback_detects_loopback_forms() {
+        let loopback = [
+            "127.0.0.1:3000",
+            "localhost:3000",
+            "[::1]:3000",
+            "127.0.0.1:80",
+        ];
+        for addr in loopback {
+            let config = config_with_addr(addr);
+            assert!(config.binds_to_loopback(), "{addr} should be loopback");
+        }
+
+        let exposed = [
+            "0.0.0.0:3000",
+            "192.168.1.50:3000",
+            "[::]:3000",
+            "tapo.local:3000",
+        ];
+        for addr in exposed {
+            let config = config_with_addr(addr);
+            assert!(!config.binds_to_loopback(), "{addr} should not be loopback");
+        }
+    }
+
+    #[test]
+    fn non_loopback_bind_without_key_is_rejected() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_HTTP_ADDR", "0.0.0.0:3000");
+        }
+
+        let err = AppConfig::from_env().unwrap_err().to_string();
+        assert!(
+            err.contains("non-loopback"),
+            "should refuse the exposed unauthenticated bind: {err}"
+        );
+    }
+
+    #[test]
+    fn non_loopback_bind_with_key_is_allowed() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_HTTP_ADDR", "0.0.0.0:3000");
+            std::env::set_var("TAPO_MCP_API_KEY", "a-key");
+        }
+
+        assert!(AppConfig::from_env().is_ok());
+    }
+
+    fn config_with_addr(addr: &str) -> AppConfig {
+        AppConfig {
+            http_addr: addr.to_string(),
+            username: "user@example.com".to_string(),
+            password: "secret".to_string(),
+            camera_username: None,
+            camera_password: None,
+            discovery_target: "192.168.1.255".to_string(),
+            discovery_timeout: 5,
+            api_key: None,
+            allowed_hosts: vec![],
+        }
     }
 }

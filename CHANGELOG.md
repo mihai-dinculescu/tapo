@@ -33,6 +33,18 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+### Added
+
+- `TAPO_MCP_ALLOWED_HOSTS`: comma-separated allowlist of `Host` header values accepted by the HTTP server, for LAN or remote deployments.
+
+### Changed
+
+- `Server`: now refuses to start when it binds to a non-loopback address (e.g. `0.0.0.0:3000`) without `TAPO_MCP_API_KEY` set, so the container image can no longer boot unauthenticated. Set an API key or bind to a loopback address.
+
+### Fixed
+
+- `Server`: restored the MCP Streamable HTTP DNS-rebinding protection that was disabled in v0.3.1. The `Host` header allowlist defaults to loopback-only again, so a malicious web page can no longer reach a locally running server via DNS rebinding. LAN and remote deployments opt in their hostnames via the new `TAPO_MCP_ALLOWED_HOSTS` variable.
+
 ## [MCP v0.4.0][tapo-mcp-v0.4.0] - 2026-05-22
 
 ### Added

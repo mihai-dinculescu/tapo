@@ -151,9 +151,13 @@ pub fn new_service(
     app_config: Arc<AppConfig>,
 ) -> StreamableHttpService<TapoMcp, LocalSessionManager> {
     let session_manager = Arc::new(LocalSessionManager::default());
-    // rmcp's default Host-header allowlist is loopback-only; disable it so the
-    // server is reachable over the LAN. Bearer auth remains the access control.
-    let server_config = StreamableHttpServerConfig::default().disable_allowed_hosts();
+    // Keep rmcp's DNS-rebinding protection. By default only loopback `Host`
+    // headers are accepted; LAN/remote deployments opt in explicit hostnames
+    // via `TAPO_MCP_ALLOWED_HOSTS`.
+    let mut server_config = StreamableHttpServerConfig::default();
+    if !app_config.allowed_hosts.is_empty() {
+        server_config = server_config.with_allowed_hosts(app_config.allowed_hosts.clone());
+    }
     StreamableHttpService::new(
         move || Ok(TapoMcp::new(Arc::clone(&app_config))),
         session_manager,

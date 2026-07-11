@@ -16,14 +16,19 @@ fn test_config(api_key: Option<&str>) -> AppConfig {
         discovery_target: "192.168.1.255".to_string(),
         discovery_timeout: 1,
         api_key: api_key.map(String::from),
+        allowed_hosts: vec![],
     }
 }
 
 fn mcp_request(authorization: Option<&str>) -> Request {
+    mcp_request_with_host(authorization, "localhost")
+}
+
+fn mcp_request_with_host(authorization: Option<&str>, host: &str) -> Request {
     let mut builder = Request::builder()
         .method("POST")
         .uri("/")
-        .header("Host", "localhost")
+        .header("Host", host)
         .header("Content-Type", "application/json")
         .header("Accept", "application/json, text/event-stream");
 
@@ -104,4 +109,20 @@ async fn unauthorized_includes_www_authenticate_header() {
         response.headers().get("WWW-Authenticate").unwrap(),
         "Bearer"
     );
+}
+
+#[tokio::test]
+async fn rejects_foreign_host_header() {
+    let app = tapo_mcp::router(test_config(None));
+    let request = mcp_request_with_host(None, "attacker.example:3000");
+    let response = app.oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+}
+
+#[tokio::test]
+async fn allows_loopback_host_header() {
+    let app = tapo_mcp::router(test_config(None));
+    let request = mcp_request_with_host(None, "127.0.0.1:3000");
+    let response = app.oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
 }

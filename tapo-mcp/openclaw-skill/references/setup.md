@@ -8,7 +8,8 @@ For deploying the Tapo MCP server itself (Docker, Kubernetes, configuration), se
 
 - A running [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp) server on your network (HTTP transport)
 - The server URL (e.g. `http://192.168.1.100`)
-- A Bearer auth token, if one was configured (highly recommended)
+- A Bearer auth token, if one was configured (highly recommended; required when the server binds to a non-loopback address)
+- When connecting by LAN IP or hostname (anything other than loopback), the server's `TAPO_MCP_ALLOWED_HOSTS` must include that host, or requests are rejected with `403 Forbidden` (see [tapo-mcp-setup.md](tapo-mcp-setup.md))
 
 ## Step 1: Add the Tapo MCP server
 
@@ -86,5 +87,6 @@ npx mcporter config doctor
 
 - **Connection refused**: Verify the Tapo MCP server is running and reachable (`curl http://<IP>/`).
 - **401 Unauthorized**: Check the Bearer token is correct.
+- **403 Forbidden**: The `Host` you connect with isn't in the server's allowlist. Add the exact hostname or `host:port` you use to `TAPO_MCP_ALLOWED_HOSTS` on the server (see [tapo-mcp-setup.md](tapo-mcp-setup.md)).
 - **Tools not showing**: Run `npx mcporter list tapo --schema` to verify the server responds. Check `npx mcporter config doctor` for config issues.
 - **Agent can't find tools**: Ensure the mcporter skill is enabled — it's bundled with OpenClaw by default.
