@@ -33,6 +33,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.5.0][tapo-mcp-v0.5.0] - 2026-07-11
+
 ### Added
 
 - `TAPO_MCP_ALLOWED_HOSTS`: comma-separated allowlist of `Host` header values accepted by the HTTP server, for LAN or remote deployments.
@@ -1005,6 +1007,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.5.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.0
 [tapo-mcp-v0.4.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.4.0
 [tapo-mcp-v0.3.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.3.1
 [tapo-mcp-v0.3.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.3.0
