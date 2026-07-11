@@ -1,5 +1,5 @@
 use rmcp::ErrorData as McpError;
-use rmcp::model::{CallToolResult, Content};
+use rmcp::model::{CallToolResult, ContentBlock};
 use tapo::DiscoveryResult;
 use tapo::responses::ChildDeviceHubResult;
 
@@ -37,7 +37,7 @@ pub async fn get_device_state(
         }
     };
 
-    let content = vec![Content::json(value)?];
+    let content = vec![ContentBlock::json(value)?];
     Ok(CallToolResult::success(content))
 }
 

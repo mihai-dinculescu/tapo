@@ -1,7 +1,7 @@
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
 use rmcp::ErrorData as McpError;
-use rmcp::model::{CallToolResult, Content};
+use rmcp::model::{CallToolResult, ContentBlock};
 use tapo::DiscoveryResult;
 
 use crate::config::AppConfig;
@@ -45,7 +45,7 @@ pub async fn take_snapshot(
     };
 
     let encoded = STANDARD.encode(&snapshot.data);
-    Ok(CallToolResult::success(vec![Content::image(
+    Ok(CallToolResult::success(vec![ContentBlock::image(
         encoded,
         snapshot.content_type,
     )]))
