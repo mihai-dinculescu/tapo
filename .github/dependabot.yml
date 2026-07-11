@@ -7,7 +7,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    versioning-strategy: increase
     commit-message:
       prefix: "chore"
       prefix-development: "chore"
