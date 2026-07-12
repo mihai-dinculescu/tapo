@@ -14,8 +14,11 @@ from tapo.responses import (
     EnergyUsageResult,
     PowerDataResult,
 )
+from tapo.timer_ext import TimerExt
 
-class PlugEnergyMonitoringHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, DebugExt):
+class PlugEnergyMonitoringHandler(
+    OnOffExt, DeviceManagementExt, RefreshSessionExt, TimerExt, DebugExt
+):
     """Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
     [P110M](https://www.tapo.com/en/search/?q=P110M) and
     [P115](https://www.tapo.com/en/search/?q=P115) devices.

@@ -1,8 +1,10 @@
+use std::time::Duration;
+
 use crate::error::Error;
 use crate::requests::{EnergyDataInterval, PowerDataInterval};
 use crate::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
-    EnergyDataResult, EnergyUsageResult, PowerDataResult,
+    EnergyDataResult, EnergyUsageResult, PowerDataResult, PowerState, Timer,
 };
 
 tapo_handler! {
@@ -40,5 +42,31 @@ impl PlugEnergyMonitoringHandler {
         interval: PowerDataInterval,
     ) -> Result<PowerDataResult, Error> {
         self.client.read().await.get_power_data(interval).await
+    }
+
+    /// Arms the plug's countdown timer (the "Timer" feature in the
+    /// Tapo app), replacing any timer that is currently armed.
+    /// After `delay`, the plug transitions to `desired_state`.
+    pub async fn set_timer(
+        &self,
+        delay: Duration,
+        desired_state: PowerState,
+    ) -> Result<Timer, Error> {
+        self.client
+            .read()
+            .await
+            .set_timer(delay, desired_state)
+            .await
+    }
+
+    /// Returns the armed timer, or `None` if no timer is armed.
+    pub async fn get_timer(&self) -> Result<Option<Timer>, Error> {
+        self.client.read().await.get_timer().await
+    }
+
+    /// Cancels the armed timer (the "Stop" button in the Tapo app),
+    /// or returns successfully if no timer was armed.
+    pub async fn clear_timer(&self) -> Result<(), Error> {
+        self.client.read().await.clear_timer().await
     }
 }
