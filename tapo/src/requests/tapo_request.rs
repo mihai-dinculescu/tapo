@@ -6,7 +6,8 @@ use super::{
     ControlChildParams, DeviceRebootParams, GetChildDeviceListParams, GetEnergyDataParams,
     GetPowerDataParams, GetTriggerLogsParams, HandshakeParams, LightingEffect, LoginDeviceParams,
     MultipleRequestParams, PlayAlarmParams, SecurePassthroughParams, SegmentEffect,
-    SmartCamDoParams, SmartCamGetParams,
+    SmartCamControlChildParams, SmartCamDoParams, SmartCamGetChildDeviceListParams,
+    SmartCamGetParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -50,6 +51,14 @@ pub(crate) enum TapoRequest {
     SmartCamGet(SmartCamGetParams),
     #[serde(rename = "do")]
     SmartCamDo(SmartCamDoParams),
+    #[serde(rename = "getChildDeviceList")]
+    SmartCamGetChildDeviceList(TapoParams<SmartCamGetChildDeviceListParams>),
+    // Shares the `childControl` pagination payload with `getChildDeviceList`.
+    #[cfg(feature = "debug")]
+    #[serde(rename = "getChildDeviceComponentList")]
+    SmartCamGetChildDeviceComponentList(TapoParams<SmartCamGetChildDeviceListParams>),
+    #[serde(rename = "controlChild")]
+    SmartCamControlChild(Box<TapoParams<SmartCamControlChildParams>>),
 }
 
 #[derive(Debug, Serialize)]
