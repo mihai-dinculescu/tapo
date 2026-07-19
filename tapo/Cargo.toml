@@ -52,7 +52,12 @@ schemars = { workspace = true, optional = true }
 # FFI
 pyo3 = { workspace = true, features = ["serde", "chrono", "multiple-pymethods"], optional = true }
 
+[[example]]
+name = "tapo_h110_ir"
+required-features = ["debug"]
+
 [dev-dependencies]
 once_cell = "1.21"
 env_logger = "0.11"
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+clap = { version = "4.6", features = ["derive", "env"] }
