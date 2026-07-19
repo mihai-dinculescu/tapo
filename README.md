@@ -54,9 +54,24 @@ export TAPO_PASSWORD=
 export IP_ADDRESS=
 
 cargo run --example tapo_l530
+cargo run --example tapo_h110_ir --features debug
 ```
 
 See all examples in [/tapo/examples][examples].
+
+### H110 IR hub
+
+The H110 IR hub uses the H100 handler for local KLAP access. IR remotes (`SMART.TAPOREMOTE`) are listed via `get_child_device_list_json` (requires the `debug` feature); use `send_ir_cmd_by_id` to blast a stored key configured in the Tapo app:
+
+```bash
+export TAPO_USERNAME=
+export TAPO_PASSWORD=
+export IP_ADDRESS=
+export REMOTE=TV
+export IR_KEY=POWER
+
+cargo run --example tapo_h110_ir --features debug
+```
 
 ## Python Library
 
