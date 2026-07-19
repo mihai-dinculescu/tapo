@@ -51,3 +51,5 @@ pub enum HubDevice {
     /// By Nickname.
     ByNickname(String),
 }
+
+mod hub_ir;
