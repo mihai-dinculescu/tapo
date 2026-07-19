@@ -127,7 +127,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 fn print_remotes(remotes: &[IrRemote]) {
     println!("IR remotes on the hub:\n");
-    println!("{:<20} {:<20} {}", "MODEL", "NICKNAME", "KEYS");
+    println!("{:<20} {:<20} KEYS", "MODEL", "NICKNAME");
     println!("{}", "-".repeat(56));
     for remote in remotes {
         println!(
