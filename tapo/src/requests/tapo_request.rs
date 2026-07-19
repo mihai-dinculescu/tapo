@@ -45,6 +45,8 @@ pub(crate) enum TapoRequest {
     #[cfg(feature = "debug")]
     #[serde(rename = "get_support_alarm_type_list")]
     GetSupportedAlarmTypeList(TapoParams<EmptyParams>),
+    #[serde(rename = "sendIrCmdById")]
+    SendIrCmdById(TapoParams<SendIrCmdByIdParams>),
     // Smart Camera requests
     #[serde(rename = "get")]
     SmartCamGet(SmartCamGetParams),
@@ -54,6 +56,17 @@ pub(crate) enum TapoRequest {
     AddCountdownRule(TapoParams<AddTimerParams>),
     GetCountdownRules(TapoParams<EmptyObjectParams>),
     RemoveCountdownRules(TapoParams<RemoveTimersParams>),
+}
+
+#[derive(Debug, Serialize)]
+pub(crate) struct SendIrCmdByIdParams {
+    name: String,
+}
+
+impl SendIrCmdByIdParams {
+    pub(crate) fn new(name: impl Into<String>) -> Self {
+        Self { name: name.into() }
+    }
 }
 
 #[derive(Debug, Serialize)]
