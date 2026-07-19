@@ -14,9 +14,8 @@ impl HubHandler {
         child_device_id: impl Into<String>,
         key_name: impl Into<String>,
     ) -> Result<(), Error> {
-        let request = TapoRequest::SendIrCmdById(TapoParams::new(SendIrCmdByIdParams::new(
-            key_name,
-        )));
+        let request =
+            TapoRequest::SendIrCmdById(TapoParams::new(SendIrCmdByIdParams::new(key_name)));
 
         self.client
             .read()
