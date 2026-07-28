@@ -1,5 +1,7 @@
 # Tapo
 
+[![MCP Toplist](https://mcptoplist.com/badge/io.github.mihai-dinculescu%2Ftapo-mcp.svg)](https://mcptoplist.com/server/io.github.mihai-dinculescu%2Ftapo-mcp)
+
 
 [![License][license_badge]][license]
 [![Crates][crates_badge]][crates]
