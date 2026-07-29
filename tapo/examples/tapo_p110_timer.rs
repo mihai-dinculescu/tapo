@@ -1,10 +1,4 @@
-/// Demo: arming the plug's countdown ("Timer" in the Tapo app).
-///
-/// Build / run:
-///   cargo run --example tapo_p110_timer
-///
-/// Environment variables: TAPO_USERNAME, TAPO_PASSWORD, IP_ADDRESS.
-use std::env;
+/// P110, P110M and P115 Timer Example
 use std::time::Duration;
 
 use log::info;
@@ -17,56 +11,56 @@ mod common;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     common::setup_logger();
 
-    let tapo_username = env::var("TAPO_USERNAME")?;
-    let tapo_password = env::var("TAPO_PASSWORD")?;
-    let ip_address = env::var("IP_ADDRESS")?;
+    let [tapo_username, tapo_password, ip_address] =
+        common::require_env_vars(["TAPO_USERNAME", "TAPO_PASSWORD", "IP_ADDRESS"])?;
 
     let device = ApiClient::new(tapo_username, tapo_password)
         .p110(ip_address)
         .await?;
 
-    info!("Baseline: plug off, no armed timer.");
+    info!("Turning device off and clearing any armed timer...");
     device.off().await?;
     device.clear_timer().await?;
-    assert!(device.get_timer().await?.is_none());
 
-    info!("Arming a 10-second 'turn ON' timer...");
-    let armed = device
-        .set_timer(Duration::from_secs(10), PowerState::On)
+    // The delay must be between 1 second and 24 hours.
+    info!("Arming a 5 second timer that turns the device on...");
+    let timer = device
+        .set_timer(Duration::from_secs(5), PowerState::On)
         .await?;
-    info!("Armed: id={} delay={}s", armed.id, armed.delay_s);
+    info!("Armed timer: {timer:?}");
 
-    let read_back = device.get_timer().await?.expect("a timer should be armed");
-    info!(
-        "Read back: id={} remain={}s desired_state={:?}",
-        read_back.id, read_back.remaining_s, read_back.desired_state
-    );
-    assert_eq!(read_back.id, armed.id);
-    assert_eq!(read_back.desired_state, PowerState::On);
+    let timer = device.get_timer().await?;
+    info!("Timer: {timer:?}");
 
-    info!("Waiting 15 seconds for the timer to fire (10s delay + slack)...");
-    tokio::time::sleep(Duration::from_secs(15)).await;
-    assert!(
-        device.get_device_info().await?.device_on,
-        "plug should be ON after the timer fired",
-    );
-    info!("Timer fired — plug is ON.");
+    info!("Waiting 10 seconds for the timer to fire...");
+    tokio::time::sleep(Duration::from_secs(10)).await;
 
-    info!("Arming a 5-second 'turn OFF' timer and clearing it before it fires...");
-    device
+    let device_info = device.get_device_info().await?;
+    info!("Device on: {}", device_info.device_on);
+
+    let timer = device.get_timer().await?;
+    info!("Timer once fired: {timer:?}");
+
+    info!("Arming a 5 second timer that turns the device off...");
+    let timer = device
         .set_timer(Duration::from_secs(5), PowerState::Off)
         .await?;
+    info!("Armed timer: {timer:?}");
+
+    info!("Clearing the timer before it fires...");
     device.clear_timer().await?;
-    assert!(device.get_timer().await?.is_none());
 
-    info!("Waiting 10 seconds to confirm the cleared timer did not fire...");
+    let timer = device.get_timer().await?;
+    info!("Timer once cleared: {timer:?}");
+
+    info!("Waiting 10 seconds to show that the cleared timer does not fire...");
     tokio::time::sleep(Duration::from_secs(10)).await;
-    assert!(
-        device.get_device_info().await?.device_on,
-        "plug should still be on after the cleared timer's original deadline",
-    );
 
+    let device_info = device.get_device_info().await?;
+    info!("Device on: {}", device_info.device_on);
+
+    info!("Turning device off...");
     device.off().await?;
-    info!("PASS");
+
     Ok(())
 }

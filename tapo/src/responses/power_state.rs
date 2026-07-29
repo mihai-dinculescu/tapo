@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-/// The state a plug transitions to when a timer or schedule rule fires.
+/// The power state of a device.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[cfg_attr(
@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
     pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
 )]
 pub enum PowerState {
-    /// The plug turns on when the timer / rule fires.
+    /// The device is on.
     On,
-    /// The plug turns off when the timer / rule fires.
+    /// The device is off.
     Off,
 }

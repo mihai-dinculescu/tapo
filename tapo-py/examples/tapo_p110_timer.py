@@ -1,69 +1,60 @@
-"""Demo: arming the plug's countdown ("Timer" in the Tapo app).
-
-Build / run:
-  cd tapo-py && maturin develop --release
-  python examples/tapo_p110_timer.py
-
-Environment variables: TAPO_USERNAME, TAPO_PASSWORD, IP_ADDRESS.
-"""
+"""P110, P110M and P115 Timer Example"""
 
 import asyncio
-import logging
-import os
 
 from tapo import ApiClient
 from tapo.responses import PowerState
 
+from common import require_env_vars
+
 
 async def main():
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
-    log = logging.getLogger("timer")
-
-    tapo_username = os.getenv("TAPO_USERNAME")
-    tapo_password = os.getenv("TAPO_PASSWORD")
-    ip_address = os.getenv("IP_ADDRESS")
+    tapo_username, tapo_password, ip_address = require_env_vars(
+        "TAPO_USERNAME", "TAPO_PASSWORD", "IP_ADDRESS"
+    )
 
     client = ApiClient(tapo_username, tapo_password)
     device = await client.p110(ip_address)
 
-    log.info("Baseline: plug off, no armed timer.")
+    print("Turning device off and clearing any armed timer...")
     await device.off()
     await device.clear_timer()
-    assert await device.get_timer() is None
 
-    log.info("Arming a 10-second 'turn ON' timer...")
-    armed = await device.set_timer(10, PowerState.On)
-    log.info("Armed: id=%s delay=%ds", armed.id, armed.delay_s)
+    # The delay must be between 1 second and 24 hours.
+    print("Arming a 5 second timer that turns the device on...")
+    timer = await device.set_timer(5, PowerState.On)
+    print(f"Armed timer: {timer.to_dict()}")
 
-    read_back = await device.get_timer()
-    assert read_back is not None
-    log.info(
-        "Read back: id=%s remain=%ds desired_state=%s",
-        read_back.id,
-        read_back.remaining_s,
-        read_back.desired_state,
-    )
-    assert read_back.id == armed.id
-    assert read_back.desired_state == PowerState.On
+    timer = await device.get_timer()
+    print(f"Timer: {timer.to_dict() if timer else None}")
 
-    log.info("Waiting 15 seconds for the timer to fire (10s delay + slack)...")
-    await asyncio.sleep(15)
-    assert (await device.get_device_info()).device_on, "plug should be ON"
-    log.info("Timer fired — plug is ON.")
-
-    log.info("Arming a 5-second 'turn OFF' timer and clearing it before it fires...")
-    await device.set_timer(5, PowerState.Off)
-    await device.clear_timer()
-    assert await device.get_timer() is None
-
-    log.info("Waiting 10 seconds to confirm the cleared timer did not fire...")
+    print("Waiting 10 seconds for the timer to fire...")
     await asyncio.sleep(10)
-    assert (
-        await device.get_device_info()
-    ).device_on, "plug should still be on after the cleared timer's original deadline"
 
+    device_info = await device.get_device_info()
+    print(f"Device on: {device_info.device_on}")
+
+    timer = await device.get_timer()
+    print(f"Timer once fired: {timer.to_dict() if timer else None}")
+
+    print("Arming a 5 second timer that turns the device off...")
+    timer = await device.set_timer(5, PowerState.Off)
+    print(f"Armed timer: {timer.to_dict()}")
+
+    print("Clearing the timer before it fires...")
+    await device.clear_timer()
+
+    timer = await device.get_timer()
+    print(f"Timer once cleared: {timer.to_dict() if timer else None}")
+
+    print("Waiting 10 seconds to show that the cleared timer does not fire...")
+    await asyncio.sleep(10)
+
+    device_info = await device.get_device_info()
+    print(f"Device on: {device_info.device_on}")
+
+    print("Turning device off...")
     await device.off()
-    log.info("PASS")
 
 
 if __name__ == "__main__":

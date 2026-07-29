@@ -3,7 +3,7 @@ from enum import Enum
 from tapo.to_dict_ext import ToDictExt
 
 class PowerState(str, Enum):
-    """The state a plug transitions to when its timer fires."""
+    """The power state of a device."""
 
     On = "on"
     Off = "off"

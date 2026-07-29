@@ -10,7 +10,16 @@ class TimerExt(Protocol):
     async def set_timer(self, delay_seconds: int, desired_state: PowerState) -> Timer:
         """Arms the timer for ``delay_seconds`` seconds, replacing any
         timer that is currently armed.  When it fires, the plug
-        transitions to ``desired_state``."""
+        transitions to ``desired_state``.
+
+        Args:
+            delay_seconds (int): between 1 second and 24 hours (86400 seconds),
+            the maximum the Tapo app allows.
+            desired_state (PowerState): the state the plug transitions to when the timer fires.
+
+        Returns:
+            Timer: The armed timer.
+        """
 
     async def get_timer(self) -> Optional[Timer]:
         """Returns the armed timer, or ``None`` if none is armed."""

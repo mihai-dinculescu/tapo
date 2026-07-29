@@ -47,6 +47,11 @@ impl PlugEnergyMonitoringHandler {
     /// Arms the plug's countdown timer (the "Timer" feature in the
     /// Tapo app), replacing any timer that is currently armed.
     /// After `delay`, the plug transitions to `desired_state`.
+    ///
+    /// # Arguments
+    ///
+    /// * `delay` - between 1 second and 24 hours, the maximum the Tapo app allows.
+    /// * `desired_state` - the state the plug transitions to when the timer fires.
     pub async fn set_timer(
         &self,
         delay: Duration,
