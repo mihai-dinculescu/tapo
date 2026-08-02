@@ -99,6 +99,7 @@ An MCP server that exposes Tapo devices as AI-callable tools and resources via t
 ## Community Projects
 
 - [tapo-rest][tapo_rest] — a REST wrapper of this library that can be deployed as a service or serve as an advanced example.
+- [tapoviz][tapoviz] — audio-reactive and screen-reactive lighting for L920/L930 LED strips, with a local web UI.
 
 ## Troubleshooting
 
@@ -117,6 +118,7 @@ Inspired by [petretiandrea/plugp100][inspired_by].
 [examples-py]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples
 [tapo_mcp]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp
 [tapo_rest]: https://github.com/ClementNerma/tapo-rest
+[tapoviz]: https://github.com/The-DarkMatter/tapoviz
 [troubleshooting]: https://github.com/mihai-dinculescu/tapo/blob/main/TROUBLESHOOTING.md
 [contributing]: https://github.com/mihai-dinculescu/tapo/blob/main/CONTRIBUTING.md
 [inspired_by]: https://github.com/petretiandrea/plugp100
