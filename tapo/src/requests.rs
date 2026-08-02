@@ -16,6 +16,7 @@ mod secure_passthrough;
 mod set_device_info;
 mod smart_cam;
 mod tapo_request;
+mod timer;
 
 pub use crate::responses::TemperatureUnitKE100;
 pub use energy_data_interval::*;
@@ -35,3 +36,4 @@ pub(crate) use multiple_request::*;
 pub(crate) use secure_passthrough::*;
 pub(crate) use smart_cam::*;
 pub(crate) use tapo_request::*;
+pub(crate) use timer::*;
