@@ -187,7 +187,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
       - name: Generate artifact attestation
-        uses: actions/attest@v4.2.0
+        uses: actions/attest@v4.2.1
         with:
           subject-path: 'wheels-*/*'
       - name: Install uv
