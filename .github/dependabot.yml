@@ -11,6 +11,18 @@ updates:
       prefix: "chore"
       prefix-development: "chore"
       include: "scope"
+    groups:
+      opentelemetry:
+        patterns:
+          - "*opentelemetry*"
+        update-types:
+          - "major"
+          - "minor"
+      rust-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
   - package-ecosystem: uv
     directory: "/tapo-py"
     schedule:
@@ -19,6 +31,12 @@ updates:
       prefix: "chore"
       prefix-development: "chore"
       include: "scope"
+    groups:
+      python-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -27,3 +45,9 @@ updates:
       prefix: "chore"
       prefix-development: "chore"
       include: "scope"
+    groups:
+      github-actions-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
