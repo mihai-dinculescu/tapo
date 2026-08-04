@@ -4,7 +4,7 @@ use anyhow::Result;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
     CallToolResult, ListResourcesResult, PaginatedRequestParams, ReadResourceRequestParams,
-    ReadResourceResult, ServerCapabilities, ServerInfo,
+    ReadResourceResponse, ServerCapabilities, ServerInfo,
 };
 use rmcp::service::{RequestContext, RoleServer};
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
@@ -136,9 +136,11 @@ impl ServerHandler for TapoMcp {
         &self,
         request: ReadResourceRequestParams,
         _context: RequestContext<RoleServer>,
-    ) -> Result<ReadResourceResult, McpError> {
+    ) -> Result<ReadResourceResponse, McpError> {
         match request.uri.as_str() {
-            resources::DEVICES_RESOURCE_URI => Ok(resources::read_devices(&self.config).await?),
+            resources::DEVICES_RESOURCE_URI => {
+                Ok(resources::read_devices(&self.config).await?.into())
+            }
             _ => Err(McpError::resource_not_found(
                 "Unknown resource URI",
                 Some(serde_json::json!({ "uri": request.uri })),
