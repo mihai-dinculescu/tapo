@@ -17,6 +17,7 @@ file. This change log follows the conventions of
 ### Changed
 
 - `TriggerLogsResult`: now derives `Serialize` so the type can be re-serialized by downstream consumers.
+- Device errors: the schedule rule error codes `-1802`, `-1803` and `-1805` now report as `SCHEDULE_RULE_MAX_COUNT`, `SCHEDULE_RULE_CONFLICT` and `SCHEDULE_RULE_NOT_FOUND` instead of `UNKNOWN`.
 
 ### Fixed
 
@@ -30,6 +31,10 @@ file. This change log follows the conventions of
 - `PlugHandler` and `PlugEnergyMonitoringHandler`: added `set_timer`, `get_timer`, and `clear_timer` for the plug's countdown timer (the "Timer" feature in the Tapo app). The plug supports a single armed timer at a time, so `set_timer` replaces any timer currently armed.
 - `HubHandler`: added `ke100_unchecked`, `s200_unchecked`, `s210_unchecked`, `t100_unchecked`, `t110_unchecked`, `t300_unchecked`, and `t31x_unchecked` for constructing typed child handlers without the validation round-trip. Use when the caller already has a valid device id.
 - `PowerStripHandler` and `PowerStripEnergyMonitoringHandler`: added `plug_unchecked(device_id)` for constructing the typed plug handler without the validation round-trip.
+
+### Changed
+
+- Device errors: the schedule rule error codes `-1802`, `-1803` and `-1805` now report as `SCHEDULE_RULE_MAX_COUNT`, `SCHEDULE_RULE_CONFLICT` and `SCHEDULE_RULE_NOT_FOUND` instead of `UNKNOWN`.
 
 ### Fixed
 
