@@ -219,7 +219,10 @@ pub struct ScheduleRule {
 }
 
 /// The largest sunrise / sunset offset the builders accept, in minutes.
-const MAX_OFFSET_MINUTES: i16 = 1440;
+///
+/// Measured on a P110: `±360` is stored, `±361` and beyond are refused with
+/// `-1008 PARAMS`. This matches the ±6 hours the Tapo app offers.
+const MAX_OFFSET_MINUTES: i16 = 360;
 
 impl ScheduleRule {
     fn new(
@@ -247,7 +250,7 @@ impl ScheduleRule {
                     return Err(Error::Validation {
                         field: "offset_minutes".to_string(),
                         message: format!(
-                            "Must be within -{MAX_OFFSET_MINUTES}..={MAX_OFFSET_MINUTES} minutes (±24h), got {offset_minutes}",
+                            "Must be within -{MAX_OFFSET_MINUTES}..={MAX_OFFSET_MINUTES} minutes (±6h), got {offset_minutes}",
                         ),
                     });
                 }
@@ -312,7 +315,7 @@ impl ScheduleRule {
     ///
     /// # Arguments
     ///
-    /// * `offset_minutes` - minutes from sunrise, `-1440..=1440`; negative
+    /// * `offset_minutes` - minutes from sunrise, `-360..=360`; negative
     ///   fires before it.
     /// * `days` - the days to fire on; must not be empty.
     /// * `desired_state` - the state the plug transitions to when the rule fires.
@@ -332,7 +335,7 @@ impl ScheduleRule {
     ///
     /// # Arguments
     ///
-    /// * `offset_minutes` - minutes from sunrise, `-1440..=1440`; negative
+    /// * `offset_minutes` - minutes from sunrise, `-360..=360`; negative
     ///   fires before it.
     /// * `desired_state` - the state the plug transitions to when the rule fires.
     pub fn sunrise_once(offset_minutes: i16, desired_state: PowerState) -> Result<Self, Error> {
@@ -347,7 +350,7 @@ impl ScheduleRule {
     ///
     /// # Arguments
     ///
-    /// * `offset_minutes` - minutes from sunset, `-1440..=1440`; negative
+    /// * `offset_minutes` - minutes from sunset, `-360..=360`; negative
     ///   fires before it.
     /// * `days` - the days to fire on; must not be empty.
     /// * `desired_state` - the state the plug transitions to when the rule fires.
@@ -367,7 +370,7 @@ impl ScheduleRule {
     ///
     /// # Arguments
     ///
-    /// * `offset_minutes` - minutes from sunset, `-1440..=1440`; negative
+    /// * `offset_minutes` - minutes from sunset, `-360..=360`; negative
     ///   fires before it.
     /// * `desired_state` - the state the plug transitions to when the rule fires.
     pub fn sunset_once(offset_minutes: i16, desired_state: PowerState) -> Result<Self, Error> {
@@ -949,8 +952,8 @@ mod tests {
     #[test]
     fn sun_rules_round_trip_offsets() {
         for original in [
-            ScheduleRule::sunrise_once(-1440, PowerState::Off).expect("valid"),
-            ScheduleRule::sunset_weekly(1440, DaysOfWeek::WEEKEND, PowerState::On).expect("valid"),
+            ScheduleRule::sunrise_once(-360, PowerState::Off).expect("valid"),
+            ScheduleRule::sunset_weekly(360, DaysOfWeek::WEEKEND, PowerState::On).expect("valid"),
         ] {
             let json = serde_json::to_string(&original).expect("serialize");
             let parsed: ScheduleRule = serde_json::from_str(&json).expect("deserialize");
@@ -1018,10 +1021,19 @@ mod tests {
     }
 
     #[test]
-    fn sunrise_rejects_huge_offset() {
-        let err =
-            ScheduleRule::sunrise_once(1441, PowerState::On).expect_err("should reject offset");
-        assert!(matches!(err, Error::Validation { ref field, .. } if field == "offset_minutes"));
+    fn sun_rules_reject_offsets_beyond_the_device_limit() {
+        // The device stores ±360 and refuses ±361, so the builders draw the
+        // line in the same place.
+        ScheduleRule::sunrise_once(360, PowerState::On).expect("360 is accepted");
+        ScheduleRule::sunset_once(-360, PowerState::On).expect("-360 is accepted");
+
+        for offset in [361, -361, 1440] {
+            let err = ScheduleRule::sunrise_once(offset, PowerState::On)
+                .expect_err("should reject offset");
+            assert!(
+                matches!(err, Error::Validation { ref field, .. } if field == "offset_minutes")
+            );
+        }
     }
 
     #[test]
