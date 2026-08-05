@@ -4,8 +4,8 @@ use crate::error::Error;
 use crate::responses::{DeviceInfoPlugResult, DeviceUsageResult, PowerState, Timer};
 
 tapo_handler! {
-    /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
-    /// [P105](https://www.tapo.com/en/search/?q=P105) devices.
+    /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
+    /// [P105](https://www.tapo.com/en/search/?q=P105) and TP10 devices.
     PlugHandler(DeviceInfoPlugResult),
     on_off,
     device_usage = DeviceUsageResult,

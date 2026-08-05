@@ -53,12 +53,12 @@ pub enum DiscoveryResult {
         /// [L930](https://www.tapo.com/en/search/?q=L930) devices.
         handler: RgbicLightStripHandler,
     },
-    /// Tapo P100 and P105 devices.
+    /// Tapo P100, P105 and TP10 devices.
     Plug {
-        /// Device info of Tapo P100 and P105.
+        /// Device info of Tapo P100, P105 and TP10.
         device_info: Box<DeviceInfoPlugResult>,
-        /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
-        /// [P105](https://www.tapo.com/en/search/?q=P105) devices.
+        /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
+        /// [P105](https://www.tapo.com/en/search/?q=P105) and TP10 devices.
         handler: PlugHandler,
     },
     /// Tapo P110, P110M and P115 devices.

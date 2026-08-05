@@ -6,8 +6,8 @@ from tapo.responses import DeviceInfoPlugResult, DeviceUsageResult
 from tapo.timer_ext import TimerExt
 
 class PlugHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, TimerExt, DebugExt):
-    """Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
-    [P105](https://www.tapo.com/en/search/?q=P105) devices.
+    """Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
+    [P105](https://www.tapo.com/en/search/?q=P105) and TP10 devices.
     """
 
     def __init__(self, handler: object):
@@ -22,7 +22,7 @@ class PlugHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, TimerExt, De
         try `PlugHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoPlugResult: Device info of Tapo P100 and P105.
+            DeviceInfoPlugResult: Device info of Tapo P100, P105 and TP10.
         """
 
     async def get_device_usage(self) -> DeviceUsageResult:

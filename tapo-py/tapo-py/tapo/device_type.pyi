@@ -19,7 +19,7 @@ class DeviceType(enum.Enum):
     """Tapo L920, L930 — RGBIC light strip."""
 
     Plug = ...
-    """Tapo P100, P105 — smart plugs."""
+    """Tapo P100, P105, TP10 — smart plugs."""
 
     PlugEnergyMonitoring = ...
     """Tapo P110, P110M, P115 — smart plugs with energy monitoring."""
