@@ -1,6 +1,11 @@
 use crate::error::Error;
 use crate::responses::{ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoCameraHubResult};
 
+#[cfg(feature = "debug")]
+use crate::requests::{SmartCamGetGeneralDeviceListParams, TapoParams, TapoRequest};
+#[cfg(feature = "debug")]
+use crate::responses::ChildDeviceComponentList;
+
 tapo_handler! {
     /// Handler for camera hubs, such as the
     /// [H200](https://www.tapo.com/en/search/?q=H200) and
@@ -55,12 +60,29 @@ impl CameraHubHandler {
             .await
     }
 
+    /// Returns *general device list* as [`serde_json::Value`].
+    /// It contains all the properties returned from the Tapo API for the
+    /// standalone Wi-Fi cameras paired to the hub.
+    #[cfg(feature = "debug")]
+    pub async fn get_general_device_list_json(&self) -> Result<serde_json::Value, Error> {
+        let request = TapoRequest::SmartCamGetGeneralDeviceList(TapoParams::new(
+            SmartCamGetGeneralDeviceListParams::new(),
+        ));
+
+        self.client
+            .read()
+            .await
+            .execute_smart_cam_multiple_request::<serde_json::Value>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(crate::error::TapoResponseError::EmptyResult))
+    }
+
     /// Returns *child device component list* as [`Vec<ChildDeviceComponentList>`].
     /// This information is useful in debugging or when investigating new functionality to add.
     #[cfg(feature = "debug")]
     pub async fn get_child_device_component_list(
         &self,
-    ) -> Result<Vec<crate::responses::ChildDeviceComponentList>, Error> {
+    ) -> Result<Vec<ChildDeviceComponentList>, Error> {
         self.client
             .read()
             .await
