@@ -55,6 +55,9 @@ impl PlugHandler {
     /// * `rule` - the rule to add; build one with the [`ScheduleRule`]
     ///   builders. Any `id` it carries is ignored, because the device assigns
     ///   one.
+    ///
+    /// The device has a fixed capacity — a P110 stores 32 rules — and returns
+    /// a device error once it is full.
     pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> Result<ScheduleRule, Error> {
         self.client.read().await.add_schedule_rule(rule).await
     }
@@ -66,7 +69,8 @@ impl PlugHandler {
     /// * `rule` - the replacement rule. Its `id` must be set to the id of the
     ///   rule to update, either from `add_schedule_rule` /
     ///   `get_schedule_rules` or via [`ScheduleRule::with_id`]; an unset id is
-    ///   an `Error::Validation`.
+    ///   an `Error::Validation`, and an id the device does not know is a
+    ///   device error.
     pub async fn edit_schedule_rule(&self, rule: ScheduleRule) -> Result<(), Error> {
         self.client.read().await.edit_schedule_rule(rule).await
     }

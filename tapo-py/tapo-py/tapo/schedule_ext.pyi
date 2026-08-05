@@ -15,6 +15,9 @@ class ScheduleExt(Protocol):
             rule: the rule to add; build one with the ``ScheduleRule``
                 factories. Any ``id`` it carries is ignored, because the
                 device assigns one.
+
+        The device has a fixed capacity — a P110 stores 32 rules — and raises
+        once it is full.
         """
 
     async def edit_schedule_rule(self, rule: ScheduleRule) -> None:
@@ -23,7 +26,8 @@ class ScheduleExt(Protocol):
         Args:
             rule: the replacement rule. Its ``id`` must be set to the id of
                 the rule to update, either from ``add_schedule_rule`` /
-                ``get_schedule_rules`` or via ``ScheduleRule.with_id``.
+                ``get_schedule_rules`` or via ``ScheduleRule.with_id``. An id
+                the device does not know raises.
         """
 
     async def get_schedule_rules(self) -> List[ScheduleRule]:

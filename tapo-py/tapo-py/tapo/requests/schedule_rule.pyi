@@ -137,7 +137,7 @@ class ScheduleRule(ToDictExt):
         """Fires every week, on ``days``, at ``offset_minutes`` from sunrise.
 
         Args:
-            offset_minutes: minutes from sunrise, -1440..=1440; negative fires
+            offset_minutes: minutes from sunrise, -360..=360; negative fires
                 before it.
             days: the days to fire on; must not be empty.
             desired_state: the state the plug transitions to when the rule fires.
@@ -148,7 +148,7 @@ class ScheduleRule(ToDictExt):
         """Fires once, at the next sunrise plus ``offset_minutes``.
 
         Args:
-            offset_minutes: minutes from sunrise, -1440..=1440; negative fires
+            offset_minutes: minutes from sunrise, -360..=360; negative fires
                 before it.
             desired_state: the state the plug transitions to when the rule fires.
         """
@@ -160,7 +160,7 @@ class ScheduleRule(ToDictExt):
         """Fires every week, on ``days``, at ``offset_minutes`` from sunset.
 
         Args:
-            offset_minutes: minutes from sunset, -1440..=1440; negative fires
+            offset_minutes: minutes from sunset, -360..=360; negative fires
                 before it.
             days: the days to fire on; must not be empty.
             desired_state: the state the plug transitions to when the rule fires.
@@ -171,7 +171,7 @@ class ScheduleRule(ToDictExt):
         """Fires once, at the next sunset plus ``offset_minutes``.
 
         Args:
-            offset_minutes: minutes from sunset, -1440..=1440; negative fires
+            offset_minutes: minutes from sunset, -360..=360; negative fires
                 before it.
             desired_state: the state the plug transitions to when the rule fires.
         """

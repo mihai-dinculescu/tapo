@@ -1316,10 +1316,11 @@ impl ApiClient {
     }
 
     pub(crate) async fn get_schedule_rules(&self) -> Result<Vec<ScheduleRule>, Error> {
-        // Bound pagination defensively in case the device misreports
-        // `sum` or never returns an empty page.  The P-series limit
-        // is well under this.
-        const MAX_PAGES: u32 = 64;
+        // A P110 returns 5 rules per page and stores at most 32, so a full
+        // device takes 7 pages. This bound is only a backstop against a
+        // firmware whose `sum` never lets the loop finish, with headroom for
+        // a device that holds more than the P110 does.
+        const MAX_PAGES: u32 = 16;
         let mut all = Vec::new();
         let mut start_index = 0u32;
         for _ in 0..MAX_PAGES {
@@ -1336,9 +1337,9 @@ impl ApiClient {
                 break;
             }
             all.extend(page.rule_list);
-            // Trust `sum` only when the device reports a positive value;
-            // some firmwares omit it (deserializes to 0 via `default`),
-            // which would silently truncate to a single page otherwise.
+            // A P110 reports `sum` accurately, but trust it only when it is
+            // positive: a firmware that omits it deserializes to 0 via
+            // `default`, which would silently truncate to a single page.
             if page.sum > 0 && all.len() as u32 >= page.sum {
                 break;
             }
