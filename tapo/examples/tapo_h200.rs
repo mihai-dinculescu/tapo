@@ -123,5 +123,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    let general_device_list = hub.get_general_device_list_json().await?;
+    info!("General device list: {general_device_list:?}");
+
     Ok(())
 }
