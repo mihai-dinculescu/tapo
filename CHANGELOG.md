@@ -19,6 +19,7 @@ file. This change log follows the conventions of
 
 ### Fixed
 
+- `ChildDeviceComponentListResult`: responses that omit the `child_component_list` field (e.g. H200 firmware 1.6.5 with no sensors attached) now deserialize as an empty list instead of failing with a missing field error.
 - AES SSL protocol: an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an `Unauthorized` error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
 - AES SSL protocol: successful responses that omit the error code are no longer treated as failures, and errors reported under `err_code` (e.g. `40210`) now surface their real code instead of `-1` UNKNOWN.
 - AES SSL protocol: responses that arrive encrypted inside the `securePassthrough` envelope (`result.response`) are now decrypted with the session cipher; previously they failed with `EmptyResult`.
@@ -33,6 +34,7 @@ file. This change log follows the conventions of
 
 ### Fixed
 
+- `get_child_device_component_list`: responses that omit the `child_component_list` field (e.g. H200 firmware 1.6.5 with no sensors attached) now deserialize as an empty list instead of failing with a missing field error.
 - AES SSL protocol: an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an authentication error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
 - AES SSL protocol: responses that arrive encrypted inside the `securePassthrough` envelope (`result.response`) are now decrypted with the session cipher; previously they failed with `EmptyResult`.
 
