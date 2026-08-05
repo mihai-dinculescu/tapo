@@ -22,7 +22,9 @@ async def main():
     # Rules that are already on the device are left alone; only the four
     # rules added below are removed again at the end.
     rules = await device.get_schedule_rules()
-    print(f"The device starts with {len(rules)} schedule rules.")
+    max_rules = await device.max_schedule_rules()
+    print(f"The device starts with {len(rules)} of a maximum {max_rules} schedule rules.")
+    print(f"There is room for {max_rules - len(rules)} more.")
 
     print("Adding a rule that turns the device on once, at the next 06:30...")
     rule = ScheduleRule.clock_once(6, 30, PowerState.On)

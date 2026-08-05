@@ -1348,6 +1348,23 @@ impl ApiClient {
         Ok(all)
     }
 
+    pub(crate) async fn max_schedule_rules(&self) -> Result<u32, Error> {
+        let request = TapoRequest::GetScheduleRules(TapoParams::new(GetScheduleRulesParams {
+            start_index: 0,
+        }));
+        let page = self
+            .protocol()?
+            .execute_request::<ScheduleRuleListResultRaw>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        page.schedule_rule_max_count.ok_or_else(|| {
+            Error::Tapo(TapoResponseError::ResponseError {
+                description: "The device did not report `schedule_rule_max_count`".to_string(),
+            })
+        })
+    }
+
     pub(crate) async fn remove_schedule_rule(&self, id: String) -> Result<(), Error> {
         let request = TapoRequest::RemoveScheduleRules(TapoParams::new(
             RemoveScheduleRulesParams::specific(vec![id]),

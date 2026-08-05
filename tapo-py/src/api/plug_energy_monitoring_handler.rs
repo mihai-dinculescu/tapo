@@ -147,6 +147,14 @@ impl PyPlugEnergyMonitoringHandler {
         )
     }
 
+    pub async fn max_schedule_rules(&self) -> PyResult<u32> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::max_schedule_rules
+        )
+    }
+
     pub async fn remove_schedule_rule(&self, id: String) -> PyResult<()> {
         let handler = self.inner.clone();
         call_handler_method!(

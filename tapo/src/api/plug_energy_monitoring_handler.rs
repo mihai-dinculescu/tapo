@@ -110,6 +110,15 @@ impl PlugEnergyMonitoringHandler {
         self.client.read().await.get_schedule_rules().await
     }
 
+    /// Returns how many schedule rules the device can store in total, as
+    /// reported by the device itself. A P110 stores 32. Compare against the
+    /// length of `get_schedule_rules` to tell whether there is room for
+    /// another rule, because `add_schedule_rule` fails once the device is
+    /// full.
+    pub async fn max_schedule_rules(&self) -> Result<u32, Error> {
+        self.client.read().await.max_schedule_rules().await
+    }
+
     /// Removes a single schedule rule, leaving every other rule in place.
     ///
     /// # Arguments
