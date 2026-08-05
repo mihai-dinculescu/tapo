@@ -33,6 +33,13 @@ class ScheduleExt(Protocol):
     async def get_schedule_rules(self) -> List[ScheduleRule]:
         """Returns every schedule rule currently stored on the device."""
 
+    async def max_schedule_rules(self) -> int:
+        """Returns how many schedule rules the device can store in total, as
+        reported by the device itself. A P110 stores 32. Compare against the
+        length of ``get_schedule_rules`` to tell whether there is room for
+        another rule, because ``add_schedule_rule`` raises once the device is
+        full."""
+
     async def remove_schedule_rule(self, id: str) -> None:
         """Removes a single schedule rule, leaving every other rule in place.
 

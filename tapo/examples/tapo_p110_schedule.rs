@@ -22,7 +22,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Rules that are already on the device are left alone; only the four
     // rules added below are removed again at the end.
     let rules = device.get_schedule_rules().await?;
-    info!("The device starts with {} schedule rules.", rules.len());
+    let max_rules = device.max_schedule_rules().await?;
+    info!(
+        "The device starts with {} of a maximum {max_rules} schedule rules.",
+        rules.len()
+    );
+    info!(
+        "There is room for {} more.",
+        max_rules as usize - rules.len()
+    );
 
     info!("Adding a rule that turns the device on once, at the next 06:30...");
     let rule = ScheduleRule::clock_once(6, 30, PowerState::On)?;
