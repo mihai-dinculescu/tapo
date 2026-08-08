@@ -117,6 +117,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     temperature_humidity_records.records.first()
                 );
             }
+            ChildDeviceHubResult::IrRemote(device) => {
+                info!(
+                    "Found IR remote child device with nickname: {}, id: {}, model: {}. IR remotes are only supported on the H110 hub.",
+                    device.nickname, device.device_id, device.model
+                );
+            }
             ChildDeviceHubResult::Other(device) => {
                 info!(
                     "Found unsupported child device with nickname: {}, id: {}, model: {}.",

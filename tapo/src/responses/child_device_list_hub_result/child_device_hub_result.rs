@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::responses::{
-    DecodableResultExt, KE100Result, OtherResult, S200Result, S210Result, T31XResult, T100Result,
-    T110Result, T300Result, TapoResponseExt,
+    DecodableResultExt, IrRemoteResult, KE100Result, OtherResult, S200Result, S210Result,
+    T31XResult, T100Result, T110Result, T300Result, TapoResponseExt,
 };
 
 /// Hub child device list result.
@@ -34,6 +34,8 @@ impl TapoResponseExt for ChildDeviceListHubResult {}
 /// Hub child device result.
 #[derive(Debug, Clone)]
 pub enum ChildDeviceHubResult {
+    /// IR remote paired with an H110 hub.
+    IrRemote(Box<IrRemoteResult>),
     /// KE100 thermostatic radiator valve (TRV).
     KE100(Box<KE100Result>),
     /// S200B/S200D button switch.
@@ -56,6 +58,7 @@ impl ChildDeviceHubResult {
     /// Returns the device ID.
     pub fn device_id(&self) -> &str {
         match self {
+            ChildDeviceHubResult::IrRemote(d) => &d.device_id,
             ChildDeviceHubResult::KE100(d) => &d.device_id,
             ChildDeviceHubResult::S200(d) => &d.device_id,
             ChildDeviceHubResult::S210(d) => &d.device_id,
@@ -70,6 +73,7 @@ impl ChildDeviceHubResult {
     /// Returns the device nickname.
     pub fn nickname(&self) -> &str {
         match self {
+            ChildDeviceHubResult::IrRemote(d) => &d.nickname,
             ChildDeviceHubResult::KE100(d) => &d.nickname,
             ChildDeviceHubResult::S200(d) => &d.nickname,
             ChildDeviceHubResult::S210(d) => &d.nickname,
@@ -82,8 +86,10 @@ impl ChildDeviceHubResult {
     }
 
     /// Returns the model string (e.g. "S200B", "T310").
+    /// For IR remotes, this is the kind of appliance the remote controls (e.g. "TV").
     pub fn model(&self) -> &str {
         match self {
+            ChildDeviceHubResult::IrRemote(d) => &d.model,
             ChildDeviceHubResult::KE100(d) => &d.model,
             ChildDeviceHubResult::S200(d) => &d.model,
             ChildDeviceHubResult::S210(d) => &d.model,
@@ -102,6 +108,7 @@ impl Serialize for ChildDeviceHubResult {
         S: Serializer,
     {
         match self {
+            ChildDeviceHubResult::IrRemote(d) => d.serialize(serializer),
             ChildDeviceHubResult::KE100(d) => d.serialize(serializer),
             ChildDeviceHubResult::S200(d) => d.serialize(serializer),
             ChildDeviceHubResult::S210(d) => d.serialize(serializer),
@@ -120,6 +127,15 @@ impl<'de> Deserialize<'de> for ChildDeviceHubResult {
         D: Deserializer<'de>,
     {
         let value = serde_json::Value::deserialize(deserializer)?;
+
+        // IR remotes are matched on `type` because their `model` is the kind of
+        // appliance the remote controls (e.g. "TV"), not a Tapo model.
+        if value.get("type").and_then(|t| t.as_str()) == Some("SMART.TAPOREMOTE") {
+            return serde_json::from_value(value)
+                .map(|r| ChildDeviceHubResult::IrRemote(Box::new(r)))
+                .map_err(serde::de::Error::custom);
+        }
+
         let model = value.get("model").and_then(|m| m.as_str()).unwrap_or("");
 
         match model {
@@ -154,6 +170,9 @@ impl<'de> Deserialize<'de> for ChildDeviceHubResult {
 impl DecodableResultExt for ChildDeviceHubResult {
     fn decode(self) -> Result<Self, Error> {
         match self {
+            ChildDeviceHubResult::IrRemote(device) => {
+                Ok(ChildDeviceHubResult::IrRemote(Box::new(device.decode()?)))
+            }
             ChildDeviceHubResult::KE100(device) => {
                 Ok(ChildDeviceHubResult::KE100(Box::new(device.decode()?)))
             }

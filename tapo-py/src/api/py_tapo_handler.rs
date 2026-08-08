@@ -412,6 +412,9 @@ macro_rules! py_hub_child_handlers {
 
                     for child in children {
                         match child {
+                            ChildDeviceHubResult::IrRemote(device) => {
+                                results.append(device.into_pyobject(py)?)?;
+                            }
                             ChildDeviceHubResult::KE100(device) => {
                                 results.append(device.into_pyobject(py)?)?;
                             }

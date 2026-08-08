@@ -21,21 +21,21 @@ use tapo::responses::{
     DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult, DeviceInfoPowerStripResult,
     DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataIntervalResult,
-    EnergyDataResult, EnergyUsageResult, KE100Result, OtherResult, OvercurrentStatus,
-    OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
-    PowerState, PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset,
-    RecordingDateHubResult, RecordingDownloadResult, RgbLightStripState, RgbicLightStripState,
-    RtspStreamUrl, S200Result, S200RotationParams, S210Result, ScheduleRuleResult, Snapshot,
-    Status, T31XResult, T100Event, T100Result, T110Event, T110Result, T300Event, T300Result,
-    TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100,
-    Timer, TimezoneHubResult, UsageByPeriodResult, WaterLeakStatus,
+    EnergyDataResult, EnergyUsageResult, IrRemoteKey, IrRemoteResult, KE100Result, OtherResult,
+    OvercurrentStatus, OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult,
+    PowerProtectionStatus, PowerState, PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult,
+    Preset, RecordingDateHubResult, RecordingDownloadResult, RgbLightStripState,
+    RgbicLightStripState, RtspStreamUrl, S200Result, S200RotationParams, S210Result,
+    ScheduleRuleResult, Snapshot, Status, T31XResult, T100Event, T100Result, T110Event, T110Result,
+    T300Event, T300Result, TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit,
+    TemperatureUnitKE100, Timer, TimezoneHubResult, UsageByPeriodResult, WaterLeakStatus,
 };
 use tapo::{DeviceType, DiscoveryRawResult};
 
 use api::{
     PyApiClient, PyCameraHubHandler, PyCameraPtzHandler, PyColorLightHandler, PyDeviceDiscovery,
     PyDeviceDiscoveryIter, PyDeviceDiscoveryRaw, PyDeviceDiscoveryRawIter, PyDiscoveryResult,
-    PyHubHandler, PyKE100Handler, PyLightHandler, PyMaybeDiscoveryRawResult,
+    PyHubHandler, PyIrRemoteHandler, PyKE100Handler, PyLightHandler, PyMaybeDiscoveryRawResult,
     PyMaybeDiscoveryResult, PyPlugEnergyMonitoringHandler, PyPlugHandler,
     PyPowerStripEnergyMonitoringHandler, PyPowerStripHandler,
     PyPowerStripPlugEnergyMonitoringHandler, PyPowerStripPlugHandler, PyRgbLightStripHandler,
@@ -119,6 +119,7 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyCameraPtzHandler>()?;
 
     module.add_class::<PyHubHandler>()?;
+    module.add_class::<PyIrRemoteHandler>()?;
     module.add_class::<PyKE100Handler>()?;
     module.add_class::<PyT100Handler>()?;
     module.add_class::<PyT110Handler>()?;
@@ -209,6 +210,7 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
 
 fn register_responses_hub(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DeviceInfoHubResult>()?;
+    module.add_class::<IrRemoteResult>()?;
     module.add_class::<KE100Result>()?;
     module.add_class::<OtherResult>()?;
     module.add_class::<S200Result>()?;
@@ -219,6 +221,7 @@ fn register_responses_hub(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<T31XResult>()?;
 
     // child devices
+    module.add_class::<IrRemoteKey>()?;
     module.add_class::<PyS200Event>()?;
     module.add_class::<PyS200Log>()?;
     module.add_class::<S200RotationParams>()?;
