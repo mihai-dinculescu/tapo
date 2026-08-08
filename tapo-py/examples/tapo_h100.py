@@ -5,6 +5,7 @@ import asyncio
 from tapo import ApiClient
 from tapo.requests import AlarmRingtone, AlarmVolume, AlarmDuration
 from tapo.responses import (
+    IrRemoteResult,
     KE100Result,
     OtherResult,
     S200Result,
@@ -35,6 +36,12 @@ async def main():
         if isinstance(child, OtherResult):
             print(
                 "Found unsupported child device with nickname: {}, id: {}, model: {}.".format(
+                    child.nickname, child.device_id, child.model
+                )
+            )
+        elif isinstance(child, IrRemoteResult):
+            print(
+                "Found IR remote child device with nickname: {}, id: {}, model: {}. See the H110 example for more details.".format(
                     child.nickname, child.device_id, child.model
                 )
             )
