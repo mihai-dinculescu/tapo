@@ -8,11 +8,8 @@ use super::{
     HandshakeParams, LightingEffect, LoginDeviceParams, MultipleRequestParams, PlayAlarmParams,
     RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams,
     SegmentEffect, SmartCamControlChildParams, SmartCamDoParams, SmartCamGetChildDeviceListParams,
-    SmartCamGetParams,
+    SmartCamGetGeneralDeviceListParams, SmartCamGetParams,
 };
-
-#[cfg(feature = "debug")]
-use super::SmartCamGetGeneralDeviceListParams;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -61,7 +58,6 @@ pub(crate) enum TapoRequest {
     #[cfg(feature = "debug")]
     #[serde(rename = "getChildDeviceComponentList")]
     SmartCamGetChildDeviceComponentList(TapoParams<SmartCamGetChildDeviceListParams>),
-    #[cfg(feature = "debug")]
     #[serde(rename = "getGeneralDeviceList")]
     SmartCamGetGeneralDeviceList(TapoParams<SmartCamGetGeneralDeviceListParams>),
     #[serde(rename = "controlChild")]
