@@ -1,8 +1,10 @@
-use crate::error::Error;
-use crate::responses::{ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoCameraHubResult};
-
-#[cfg(feature = "debug")]
+use crate::error::{Error, TapoResponseError};
 use crate::requests::{SmartCamGetGeneralDeviceListParams, TapoParams, TapoRequest};
+use crate::responses::{
+    ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoCameraHubResult,
+    GeneralDeviceHubResult, GeneralDeviceListHubResultRaw,
+};
+
 #[cfg(feature = "debug")]
 use crate::responses::ChildDeviceComponentList;
 
@@ -60,6 +62,24 @@ impl CameraHubHandler {
             .await
     }
 
+    /// Returns *general device list* as [`GeneralDeviceHubResult`].
+    /// These are the standalone Wi-Fi cameras paired to the hub.
+    /// It is not guaranteed to contain all the properties returned from the Tapo API.
+    /// If the deserialization fails, or if a property that you care about it's not present, try [`CameraHubHandler::get_general_device_list_json`].
+    pub async fn get_general_device_list(&self) -> Result<Vec<GeneralDeviceHubResult>, Error> {
+        let request = TapoRequest::SmartCamGetGeneralDeviceList(TapoParams::new(
+            SmartCamGetGeneralDeviceListParams::new(),
+        ));
+
+        self.client
+            .read()
+            .await
+            .execute_smart_cam_multiple_request::<GeneralDeviceListHubResultRaw>(request)
+            .await?
+            .map(|result| result.devices())
+            .ok_or(Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
     /// Returns *general device list* as [`serde_json::Value`].
     /// It contains all the properties returned from the Tapo API for the
     /// standalone Wi-Fi cameras paired to the hub.
@@ -74,7 +94,7 @@ impl CameraHubHandler {
             .await
             .execute_smart_cam_multiple_request::<serde_json::Value>(request)
             .await?
-            .ok_or_else(|| Error::Tapo(crate::error::TapoResponseError::EmptyResult))
+            .ok_or(Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     /// Returns *child device component list* as [`Vec<ChildDeviceComponentList>`].
