@@ -108,6 +108,14 @@ See [/TROUBLESHOOTING.md][troubleshooting] for solutions to common issues.
 
 Contributions are welcome and encouraged! See [/CONTRIBUTING.md][contributing].
 
+## Sponsors
+
+A big thank you to the sponsors of this project!
+
+- [abler98][sponsor_abler98]
+- [nathanja][sponsor_nathanja]
+- [santiago-salas-v][sponsor_santiago_salas_v]
+
 ## Credits
 
 Inspired by [petretiandrea/plugp100][inspired_by].
@@ -119,4 +127,7 @@ Inspired by [petretiandrea/plugp100][inspired_by].
 [tapo_rest]: https://github.com/ClementNerma/tapo-rest
 [troubleshooting]: https://github.com/mihai-dinculescu/tapo/blob/main/TROUBLESHOOTING.md
 [contributing]: https://github.com/mihai-dinculescu/tapo/blob/main/CONTRIBUTING.md
+[sponsor_abler98]: https://github.com/abler98
+[sponsor_nathanja]: https://github.com/nathanja
+[sponsor_santiago_salas_v]: https://github.com/santiago-salas-v
 [inspired_by]: https://github.com/petretiandrea/plugp100
