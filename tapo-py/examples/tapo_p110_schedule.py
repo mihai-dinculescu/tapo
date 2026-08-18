@@ -3,7 +3,7 @@
 import asyncio
 
 from tapo import ApiClient
-from tapo.requests import MON, WED, WEEKDAYS, EVERY_DAY, ScheduleRule
+from tapo.requests import ScheduleRule, DaysOfWeek
 from tapo.responses import PowerState
 
 from common import require_env_vars
@@ -30,18 +30,18 @@ async def main():
     print(f"Added rule: {morning.to_dict()}")
 
     print("Adding a rule that turns the device off at 23:30 on Mondays and Wednesdays...")
-    rule = ScheduleRule.clock_weekly(23, 30, MON | WED, PowerState.Off)
+    rule = ScheduleRule.clock_weekly(23, 30, DaysOfWeek.MON | DaysOfWeek.WED, PowerState.Off)
     late_night = await device.add_schedule_rule(rule)
     print(f"Added rule: {late_night.to_dict()}")
 
     print("Adding a rule that turns the device on every day, an hour after sunset...")
-    rule = ScheduleRule.sunset_weekly(60, EVERY_DAY, PowerState.On)
+    rule = ScheduleRule.sunset_weekly(60, DaysOfWeek.EVERY_DAY, PowerState.On)
     after_sunset = await device.add_schedule_rule(rule)
     print(f"Added rule: {after_sunset.to_dict()}")
 
     # A negative offset fires before the astronomical event instead of after it.
     print("Adding a rule that turns the device off on weekdays, 30 minutes before sunrise...")
-    rule = ScheduleRule.sunrise_weekly(-30, WEEKDAYS, PowerState.Off)
+    rule = ScheduleRule.sunrise_weekly(-30, DaysOfWeek.WEEKDAYS, PowerState.Off)
     before_sunrise = await device.add_schedule_rule(rule)
     print(f"Added rule: {before_sunrise.to_dict()}")
 
@@ -52,7 +52,7 @@ async def main():
 
     # A disabled rule stays on the device, but does not fire.
     print("Disabling the 23:30 rule...")
-    await device.edit_schedule_rule(late_night.with_enable(False))
+    await device.edit_schedule_rule(late_night.with_enabled(False))
     rules = await device.get_schedule_rules()
     late_night_after_edit = next((rule for rule in rules if rule.id == late_night.id), None)
     print(

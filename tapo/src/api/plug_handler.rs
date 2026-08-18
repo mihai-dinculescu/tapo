@@ -45,15 +45,28 @@ impl PlugHandler {
         self.client.read().await.clear_timer().await
     }
 
-    /// Adds a new schedule rule to the device.  Returns the same rule
-    /// with its device-assigned `id` filled in.  Schedule rules fire
-    /// on the device itself, so they keep working even if the phone /
-    /// Wi-Fi router / Tapo cloud is offline.
+    /// Adds a new schedule rule to the device. Returns the same rule with its
+    /// device-assigned `id` filled in. Schedule rules fire on the device
+    /// itself, so they keep working even if the phone / Wi-Fi router / Tapo
+    /// cloud is offline.
+    ///
+    /// # Arguments
+    ///
+    /// * `rule` - the rule to add; build one with the [`ScheduleRule`]
+    ///   builders. Any `id` it carries is ignored, because the device assigns
+    ///   one.
     pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> Result<ScheduleRule, Error> {
         self.client.read().await.add_schedule_rule(rule).await
     }
 
-    /// Edits an existing schedule rule.  `rule.id` must be set.
+    /// Edits an existing schedule rule, replacing it with the given one.
+    ///
+    /// # Arguments
+    ///
+    /// * `rule` - the replacement rule. Its `id` must be set to the id of the
+    ///   rule to update, either from `add_schedule_rule` /
+    ///   `get_schedule_rules` or via [`ScheduleRule::with_id`]; an unset id is
+    ///   an `Error::Validation`.
     pub async fn edit_schedule_rule(&self, rule: ScheduleRule) -> Result<(), Error> {
         self.client.read().await.edit_schedule_rule(rule).await
     }
@@ -63,7 +76,11 @@ impl PlugHandler {
         self.client.read().await.get_schedule_rules().await
     }
 
-    /// Removes the schedule rule with the given id.
+    /// Removes a single schedule rule, leaving every other rule in place.
+    ///
+    /// # Arguments
+    ///
+    /// * `id` - the device-assigned id of the rule to remove.
     pub async fn remove_schedule_rule(&self, id: impl Into<String>) -> Result<(), Error> {
         self.client
             .read()

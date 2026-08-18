@@ -1,7 +1,7 @@
 /// P110, P110M and P115 Schedule Example
 use log::info;
 use tapo::ApiClient;
-use tapo::requests::{ScheduleRule, week_day};
+use tapo::requests::{DaysOfWeek, ScheduleRule};
 use tapo::responses::PowerState;
 
 mod common;
@@ -30,18 +30,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Added rule: {morning:?}");
 
     info!("Adding a rule that turns the device off at 23:30 on Mondays and Wednesdays...");
-    let rule = ScheduleRule::clock_weekly(23, 30, week_day::MON | week_day::WED, PowerState::Off)?;
+    let rule =
+        ScheduleRule::clock_weekly(23, 30, DaysOfWeek::MON | DaysOfWeek::WED, PowerState::Off)?;
     let late_night = device.add_schedule_rule(rule).await?;
     info!("Added rule: {late_night:?}");
 
     info!("Adding a rule that turns the device on every day, an hour after sunset...");
-    let rule = ScheduleRule::sunset_weekly(60, week_day::EVERY_DAY, PowerState::On)?;
+    let rule = ScheduleRule::sunset_weekly(60, DaysOfWeek::EVERY_DAY, PowerState::On)?;
     let after_sunset = device.add_schedule_rule(rule).await?;
     info!("Added rule: {after_sunset:?}");
 
     // A negative offset fires before the astronomical event instead of after it.
     info!("Adding a rule that turns the device off on weekdays, 30 minutes before sunrise...");
-    let rule = ScheduleRule::sunrise_weekly(-30, week_day::WEEKDAYS, PowerState::Off)?;
+    let rule = ScheduleRule::sunrise_weekly(-30, DaysOfWeek::WEEKDAYS, PowerState::Off)?;
     let before_sunrise = device.add_schedule_rule(rule).await?;
     info!("Added rule: {before_sunrise:?}");
 
@@ -57,7 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // A disabled rule stays on the device, but does not fire.
     info!("Disabling the 23:30 rule...");
     device
-        .edit_schedule_rule(late_night.with_enable(false))
+        .edit_schedule_rule(late_night.with_enabled(false))
         .await?;
     let rules = device.get_schedule_rules().await?;
     let late_night_after_edit = rules.iter().find(|rule| rule.id == late_night.id);

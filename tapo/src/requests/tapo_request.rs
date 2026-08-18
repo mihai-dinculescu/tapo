@@ -6,7 +6,7 @@ use super::{
     AddTimerParams, ControlChildParams, DeviceRebootParams, GetChildDeviceListParams,
     GetEnergyDataParams, GetPowerDataParams, GetScheduleRulesParams, GetTriggerLogsParams,
     HandshakeParams, LightingEffect, LoginDeviceParams, MultipleRequestParams, PlayAlarmParams,
-    RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRule, SecurePassthroughParams,
+    RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams,
     SegmentEffect, SmartCamDoParams, SmartCamGetParams,
 };
 
@@ -56,8 +56,8 @@ pub(crate) enum TapoRequest {
     GetCountdownRules(TapoParams<EmptyObjectParams>),
     RemoveCountdownRules(TapoParams<RemoveTimersParams>),
     // Plug "Schedule" requests
-    AddScheduleRule(TapoParams<ScheduleRule>),
-    EditScheduleRule(TapoParams<ScheduleRule>),
+    AddScheduleRule(TapoParams<ScheduleRuleRaw>),
+    EditScheduleRule(TapoParams<ScheduleRuleRaw>),
     GetScheduleRules(TapoParams<GetScheduleRulesParams>),
     RemoveScheduleRules(TapoParams<RemoveScheduleRulesParams>),
 }

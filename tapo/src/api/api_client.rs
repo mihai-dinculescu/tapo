@@ -23,10 +23,10 @@ use crate::responses::{
 };
 
 use crate::responses::{
-    AddTimerResult, ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
-    EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw, PowerState,
-    ScheduleRuleAddResult, ScheduleRuleListResultRaw, TapoMultipleResponse, TapoResponseExt,
-    TapoResult, Timer, TimerListResultRaw, validate_response,
+    AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
+    DecodableResultExt, EnergyDataResult, EnergyDataResultRaw, EnergyUsageResult, PowerDataResult,
+    PowerDataResultRaw, PowerState, ScheduleRuleListResultRaw, TapoMultipleResponse,
+    TapoResponseExt, TapoResult, Timer, TimerListResultRaw, validate_response,
 };
 
 use super::discovery::DeviceDiscovery;
@@ -1246,7 +1246,7 @@ impl ApiClient {
         // Wipe first to make `set_timer` a true replace.
         self.clear_timer().await?;
 
-        let params = AddTimerParams::new(delay_s, desired_state == PowerState::On);
+        let params = AddTimerParams::new(delay_s, desired_state);
         let request = TapoRequest::AddCountdownRule(TapoParams::new(params));
 
         let result = self
@@ -1291,10 +1291,10 @@ impl ApiClient {
         mut rule: ScheduleRule,
     ) -> Result<ScheduleRule, Error> {
         rule.id = None;
-        let request = TapoRequest::AddScheduleRule(TapoParams::new(rule.clone()));
+        let request = TapoRequest::AddScheduleRule(TapoParams::new(rule.clone().into()));
         let added = self
             .protocol()?
-            .execute_request::<ScheduleRuleAddResult>(request)
+            .execute_request::<AddScheduleRuleResult>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
         rule.id = Some(added.id);
@@ -1308,7 +1308,7 @@ impl ApiClient {
                 message: "edit_schedule_rule requires rule.id to be set".into(),
             });
         }
-        let request = TapoRequest::EditScheduleRule(TapoParams::new(rule));
+        let request = TapoRequest::EditScheduleRule(TapoParams::new(rule.into()));
         self.protocol()?
             .execute_request::<serde_json::Value>(request)
             .await?;

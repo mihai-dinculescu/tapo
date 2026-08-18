@@ -14,8 +14,8 @@ pub(crate) struct ScheduleRuleListResultRaw {
 impl TapoResponseExt for ScheduleRuleListResultRaw {}
 
 #[derive(Debug, Clone, Deserialize)]
-pub(crate) struct ScheduleRuleAddResult {
+pub(crate) struct AddScheduleRuleResult {
     pub id: String,
 }
 
-impl TapoResponseExt for ScheduleRuleAddResult {}
+impl TapoResponseExt for AddScheduleRuleResult {}
