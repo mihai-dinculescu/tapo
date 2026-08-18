@@ -1,15 +1,16 @@
 from typing import List, Protocol
 
 from tapo.requests import ScheduleRule
+from tapo.responses import ScheduleRuleResult
 
 class ScheduleExt(Protocol):
     """Extension class for the plug's schedule rules (the "Schedule" feature
     in the Tapo app). Schedule rules live on the device, so they keep firing
     even if the phone / Wi-Fi router / Tapo cloud is offline."""
 
-    async def add_schedule_rule(self, rule: ScheduleRule) -> ScheduleRule:
-        """Adds a new schedule rule. Returns the same rule with its
-        device-assigned ``id`` filled in.
+    async def add_schedule_rule(self, rule: ScheduleRule) -> ScheduleRuleResult:
+        """Adds a new schedule rule. Returns it as a ``ScheduleRuleResult``
+        carrying the device-assigned ``id``.
 
         Args:
             rule: the rule to add; build one with the ``ScheduleRule``
@@ -30,10 +31,12 @@ class ScheduleExt(Protocol):
                 the device does not know raises.
         """
 
-    async def get_schedule_rules(self) -> List[ScheduleRule]:
-        """Returns every schedule rule currently stored on the device."""
+    async def get_schedule_rules(self) -> List[ScheduleRuleResult]:
+        """Returns every schedule rule currently stored on the device. A rule
+        the library cannot parse is skipped rather than failing the whole
+        listing."""
 
-    async def max_schedule_rules(self) -> int:
+    async def get_max_schedule_rules(self) -> int:
         """Returns how many schedule rules the device can store in total, as
         reported by the device itself. A P110 stores 32. Compare against the
         length of ``get_schedule_rules`` to tell whether there is room for

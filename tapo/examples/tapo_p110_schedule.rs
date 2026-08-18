@@ -22,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Rules that are already on the device are left alone; only the four
     // rules added below are removed again at the end.
     let rules = device.get_schedule_rules().await?;
-    let max_rules = device.max_schedule_rules().await?;
+    let max_rules = device.get_max_schedule_rules().await?;
     info!(
         "The device starts with {} of a maximum {max_rules} schedule rules.",
         rules.len()
@@ -63,20 +63,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         info!("Rule: {rule:?}");
     }
 
-    // A disabled rule stays on the device, but does not fire.
+    // Rules come back as results, which are read-only; `to_editable` turns one
+    // back into a rule that can be changed and sent. A disabled rule stays on
+    // the device, but does not fire.
     info!("Disabling the 23:30 rule...");
-    device
-        .edit_schedule_rule(late_night.with_enabled(false))
-        .await?;
+    let edit = late_night.to_editable()?.with_enabled(false);
+    device.edit_schedule_rule(edit).await?;
     let rules = device.get_schedule_rules().await?;
     let late_night_after_edit = rules.iter().find(|rule| rule.id == late_night.id);
     info!("The 23:30 rule should now be disabled: {late_night_after_edit:?}");
 
     info!("Removing the four rules that were added...");
     for rule in [&morning, &late_night, &after_sunset, &before_sunrise] {
-        if let Some(id) = &rule.id {
-            device.remove_schedule_rule(id.clone()).await?;
-        }
+        device.remove_schedule_rule(&rule.id).await?;
     }
 
     let rules = device.get_schedule_rules().await?;

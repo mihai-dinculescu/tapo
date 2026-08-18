@@ -22,7 +22,7 @@ async def main():
     # Rules that are already on the device are left alone; only the four
     # rules added below are removed again at the end.
     rules = await device.get_schedule_rules()
-    max_rules = await device.max_schedule_rules()
+    max_rules = await device.get_max_schedule_rules()
     print(f"The device starts with {len(rules)} of a maximum {max_rules} schedule rules.")
     print(f"There is room for {max_rules - len(rules)} more.")
 
@@ -52,9 +52,11 @@ async def main():
     for rule in rules:
         print(f"Rule: {rule.to_dict()}")
 
-    # A disabled rule stays on the device, but does not fire.
+    # Rules come back as results, which are read-only; `to_editable` turns one
+    # back into a rule that can be changed and sent. A disabled rule stays on
+    # the device, but does not fire.
     print("Disabling the 23:30 rule...")
-    await device.edit_schedule_rule(late_night.with_enabled(False))
+    await device.edit_schedule_rule(late_night.to_editable().with_enabled(False))
     rules = await device.get_schedule_rules()
     late_night_after_edit = next((rule for rule in rules if rule.id == late_night.id), None)
     print(
@@ -64,8 +66,7 @@ async def main():
 
     print("Removing the four rules that were added...")
     for rule in [morning, late_night, after_sunset, before_sunrise]:
-        if rule.id:
-            await device.remove_schedule_rule(rule.id)
+        await device.remove_schedule_rule(rule.id)
 
     rules = await device.get_schedule_rules()
     print(f"The added rules should be gone: the device holds {len(rules)} rules again.")

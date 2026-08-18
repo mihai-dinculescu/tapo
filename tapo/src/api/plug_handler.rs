@@ -2,7 +2,9 @@ use std::time::Duration;
 
 use crate::error::Error;
 use crate::requests::ScheduleRule;
-use crate::responses::{DeviceInfoPlugResult, DeviceUsageResult, PowerState, Timer};
+use crate::responses::{
+    DeviceInfoPlugResult, DeviceUsageResult, PowerState, ScheduleRuleResult, Timer,
+};
 
 tapo_handler! {
     /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
@@ -45,8 +47,8 @@ impl PlugHandler {
         self.client.read().await.clear_timer().await
     }
 
-    /// Adds a new schedule rule to the device. Returns the same rule with its
-    /// device-assigned `id` filled in. Schedule rules fire on the device
+    /// Adds a new schedule rule to the device. Returns it as a
+    /// [`ScheduleRuleResult`] carrying the device-assigned `id`. Schedule rules fire on the device
     /// itself, so they keep working even if the phone / Wi-Fi router / Tapo
     /// cloud is offline.
     ///
@@ -58,7 +60,7 @@ impl PlugHandler {
     ///
     /// The device has a fixed capacity — a P110 stores 32 rules — and returns
     /// a device error once it is full.
-    pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> Result<ScheduleRule, Error> {
+    pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> Result<ScheduleRuleResult, Error> {
         self.client.read().await.add_schedule_rule(rule).await
     }
 
@@ -75,8 +77,9 @@ impl PlugHandler {
         self.client.read().await.edit_schedule_rule(rule).await
     }
 
-    /// Returns every schedule rule currently stored on the device.
-    pub async fn get_schedule_rules(&self) -> Result<Vec<ScheduleRule>, Error> {
+    /// Returns every schedule rule currently stored on the device. A rule the
+    /// library cannot parse is skipped rather than failing the whole listing.
+    pub async fn get_schedule_rules(&self) -> Result<Vec<ScheduleRuleResult>, Error> {
         self.client.read().await.get_schedule_rules().await
     }
 
@@ -85,8 +88,8 @@ impl PlugHandler {
     /// length of `get_schedule_rules` to tell whether there is room for
     /// another rule, because `add_schedule_rule` fails once the device is
     /// full.
-    pub async fn max_schedule_rules(&self) -> Result<u32, Error> {
-        self.client.read().await.max_schedule_rules().await
+    pub async fn get_max_schedule_rules(&self) -> Result<u32, Error> {
+        self.client.read().await.get_max_schedule_rules().await
     }
 
     /// Removes a single schedule rule, leaving every other rule in place.
