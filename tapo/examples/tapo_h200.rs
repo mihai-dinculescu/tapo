@@ -127,9 +127,52 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for general_device in general_device_list {
         info!(
-            "Found general device with alias: {}, id: {}, model: {}.",
-            general_device.alias, general_device.device_id, general_device.device_model
+            "Found general device with alias: {}, id: {}, model: {}, hub storage enabled: {}.",
+            general_device.alias,
+            general_device.device_id,
+            general_device.device_model,
+            general_device.hub_storage_enabled
         );
+
+        if !general_device.hub_storage_enabled {
+            continue;
+        }
+
+        let end_date = chrono::Utc::now().date_naive();
+        let start_date = end_date - chrono::Duration::days(7);
+
+        let recording_dates = hub
+            .search_date_with_video(
+                start_date,
+                end_date,
+                general_device.device_id.clone(),
+                general_device.mac.clone(),
+            )
+            .await?;
+        info!(
+            "{} has recordings stored on the hub on the following dates: {recording_dates:?}.",
+            general_device.alias
+        );
+
+        if let Some(date) = recording_dates.last() {
+            let day_start = date.and_hms_opt(0, 0, 0).unwrap().and_utc().timestamp() as u64;
+            let day_end = day_start + 24 * 60 * 60 - 1;
+
+            let recordings = hub
+                .search_video_with_utc(
+                    day_start,
+                    day_end,
+                    general_device.device_id.clone(),
+                    general_device.mac.clone(),
+                )
+                .await?;
+            info!(
+                "{} has {} recordings on {date}. First: {:?}.",
+                general_device.alias,
+                recordings.len(),
+                recordings.first()
+            );
+        }
     }
 
     Ok(())
