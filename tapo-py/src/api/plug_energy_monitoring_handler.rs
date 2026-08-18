@@ -7,7 +7,7 @@ use tapo::PlugEnergyMonitoringHandler;
 use tapo::requests::{EnergyDataInterval, PowerDataInterval, ScheduleRule};
 use tapo::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
-    EnergyDataResult, EnergyUsageResult, PowerDataResult, PowerState, Timer,
+    EnergyDataResult, EnergyUsageResult, PowerDataResult, PowerState, ScheduleRuleResult, Timer,
 };
 
 use crate::call_handler_method;
@@ -121,7 +121,7 @@ impl PyPlugEnergyMonitoringHandler {
         )
     }
 
-    pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> PyResult<ScheduleRule> {
+    pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> PyResult<ScheduleRuleResult> {
         let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
@@ -139,7 +139,7 @@ impl PyPlugEnergyMonitoringHandler {
         )
     }
 
-    pub async fn get_schedule_rules(&self) -> PyResult<Vec<ScheduleRule>> {
+    pub async fn get_schedule_rules(&self) -> PyResult<Vec<ScheduleRuleResult>> {
         let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
@@ -147,11 +147,11 @@ impl PyPlugEnergyMonitoringHandler {
         )
     }
 
-    pub async fn max_schedule_rules(&self) -> PyResult<u32> {
+    pub async fn get_max_schedule_rules(&self) -> PyResult<u32> {
         let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
-            PlugEnergyMonitoringHandler::max_schedule_rules
+            PlugEnergyMonitoringHandler::get_max_schedule_rules
         )
     }
 

@@ -1,7 +1,4 @@
-from typing import Optional
-
 from tapo.responses import PowerState
-from tapo.to_dict_ext import ToDictExt
 
 class DaysOfWeek:
     """The days of the week a weekly ``ScheduleRule`` fires on.
@@ -44,7 +41,10 @@ class DaysOfWeek:
         Saturday. The inverse of ``bits``.
 
         Args:
-            bits: a device bitmask; bit 0 is Sunday through bit 6, Saturday.
+            bits: a device bitmask in the range 0..=255; bit 0 is Sunday
+                through bit 6, Saturday. Bits 7 and above are ignored, but the
+                value must still fit in a byte — a wider int raises
+                ``OverflowError``.
         """
 
     def bits(self) -> int:
@@ -53,6 +53,9 @@ class DaysOfWeek:
 
     def contains(self, other: "DaysOfWeek") -> bool:
         """Returns ``True`` if every day in ``other`` is also in this set."""
+
+    def is_empty(self) -> bool:
+        """Returns ``True`` if this set contains no days."""
 
     def __or__(self, other: "DaysOfWeek") -> "DaysOfWeek": ...
 
@@ -88,24 +91,17 @@ class ScheduleTime:
 
         def __init__(self, offset_minutes: int) -> None: ...
 
-class ScheduleRule(ToDictExt):
-    """A plug schedule rule (the "Schedule" feature in the Tapo app).
+class ScheduleRule:
+    """A plug schedule rule to send to the device (the "Schedule" feature in
+    the Tapo app).
 
-    Construct one with the factory methods below; each raises for
-    out-of-range inputs. The device evaluates the time against its own
-    configured timezone; you don't supply a calendar date."""
+    Values are valid by construction: the factory methods below are the only
+    way to make one, and each raises for out-of-range input. Rules read back
+    from the device are the separate ``ScheduleRuleResult``; convert one for
+    editing with ``ScheduleRuleResult.to_editable``.
 
-    id: Optional[str]
-    """Device-assigned id. ``None`` when constructed locally."""
-    enabled: bool
-    """Whether the rule is currently active. Disabled rules are kept on the
-    device but do not fire."""
-    time: ScheduleTime
-    """When the rule fires within a day."""
-    days: Optional[DaysOfWeek]
-    """The days a weekly rule fires on, or ``None`` when it fires once."""
-    desired_state: PowerState
-    """The state the plug transitions to when the rule fires."""
+    The device evaluates the time against its own configured timezone; you
+    don't supply a calendar date."""
 
     @staticmethod
     def clock_weekly(

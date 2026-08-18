@@ -4,7 +4,9 @@ use std::time::Duration;
 use pyo3::prelude::*;
 use tapo::PlugHandler;
 use tapo::requests::ScheduleRule;
-use tapo::responses::{DeviceInfoPlugResult, DeviceUsageResult, PowerState, Timer};
+use tapo::responses::{
+    DeviceInfoPlugResult, DeviceUsageResult, PowerState, ScheduleRuleResult, Timer,
+};
 
 use crate::call_handler_method;
 
@@ -43,7 +45,7 @@ impl PyPlugHandler {
         call_handler_method!(handler.read().await.deref(), PlugHandler::clear_timer)
     }
 
-    pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> PyResult<ScheduleRule> {
+    pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> PyResult<ScheduleRuleResult> {
         let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
@@ -61,7 +63,7 @@ impl PyPlugHandler {
         )
     }
 
-    pub async fn get_schedule_rules(&self) -> PyResult<Vec<ScheduleRule>> {
+    pub async fn get_schedule_rules(&self) -> PyResult<Vec<ScheduleRuleResult>> {
         let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
@@ -69,11 +71,11 @@ impl PyPlugHandler {
         )
     }
 
-    pub async fn max_schedule_rules(&self) -> PyResult<u32> {
+    pub async fn get_max_schedule_rules(&self) -> PyResult<u32> {
         let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
-            PlugHandler::max_schedule_rules
+            PlugHandler::get_max_schedule_rules
         )
     }
 

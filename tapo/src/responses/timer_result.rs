@@ -36,14 +36,17 @@ pub(crate) struct TimerRaw {
     #[serde(default)]
     pub remain: u32,
     #[serde(default)]
-    pub desired_states: DesiredStateRaw,
+    pub desired_states: Option<DesiredStateRaw>,
     #[serde(default)]
     pub action: Option<String>,
 }
 
 impl TimerRaw {
     pub(crate) fn into_timer(self) -> Option<Timer> {
-        let desired_state = self.desired_states.resolve(self.action.as_deref())?;
+        let desired_state = self
+            .desired_states
+            .unwrap_or_default()
+            .resolve(self.action.as_deref())?;
 
         Some(Timer {
             id: self.id,

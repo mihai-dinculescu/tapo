@@ -6,12 +6,9 @@ use std::ops::{BitOr, BitOrAssign};
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{DesiredStateRaw, PowerState};
+use crate::responses::{DesiredStateRaw, PowerState, ScheduleRuleResult};
 
-#[cfg(feature = "python")]
-use pyo3::prelude::*;
-
-/// The days of the week a weekly [`ScheduleRule`] fires on.
+/// The days of the week a repeating [`ScheduleRule`] fires on.
 ///
 /// Combine the individual days with `|`, or use one of the preset groups:
 ///
@@ -24,13 +21,16 @@ use pyo3::prelude::*;
 ///
 /// assert_eq!(DaysOfWeek::WEEKEND, DaysOfWeek::SUN | DaysOfWeek::SAT);
 /// ```
-#[derive(Clone, Copy, Default, PartialEq, Eq, Serialize)]
-#[cfg_attr(feature = "python", pyclass(from_py_object, eq, frozen))]
+#[derive(Clone, Copy, Default, PartialEq, Eq, Hash, Serialize)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, eq, hash, frozen)
+)]
 #[serde(transparent)]
 pub struct DaysOfWeek(u8);
 
 impl DaysOfWeek {
-    /// No days. A weekly rule with no days would never fire, so the
+    /// No days. A repeating rule with no days would never fire, so the
     /// `*_weekly` builders reject it.
     pub const NONE: Self = Self(0);
     /// Sunday.
@@ -55,22 +55,6 @@ impl DaysOfWeek {
     /// Every day of the week.
     pub const EVERY_DAY: Self = Self(Self::WEEKDAYS.0 | Self::WEEKEND.0);
 
-    /// Returns the device bitmask for this set: bit 0 is Sunday
-    /// through bit 6, Saturday.
-    pub const fn bits(self) -> u8 {
-        self.0
-    }
-
-    /// Returns `true` if every day in `other` is also in this set.
-    pub const fn contains(self, other: Self) -> bool {
-        self.0 & other.0 == other.0
-    }
-
-    /// Returns `true` if this set contains no days.
-    pub const fn is_empty(self) -> bool {
-        self.0 == 0
-    }
-
     /// Builds a set from a device bitmask, ignoring any bits above Saturday.
     /// Only bits 0..=6 are meaningful to the device, so this is the inverse
     /// of [`DaysOfWeek::bits`].
@@ -81,8 +65,31 @@ impl DaysOfWeek {
     pub const fn from_bits_truncate(bits: u8) -> Self {
         Self(bits & Self::EVERY_DAY.0)
     }
+}
 
-    /// The individual days in this set, Sunday first, paired with their names.
+/// Methods with a `&self` receiver need no pyo3 attribute, so they are shared
+/// with Python directly rather than through wrappers.
+#[cfg_attr(feature = "python", pyo3::pymethods)]
+impl DaysOfWeek {
+    /// Returns the device bitmask for this set: bit 0 is Sunday through
+    /// bit 6, Saturday.
+    pub const fn bits(&self) -> u8 {
+        self.0
+    }
+
+    /// Returns `true` if every day in `other` is also in this set.
+    pub const fn contains(&self, other: Self) -> bool {
+        self.0 & other.0 == other.0
+    }
+
+    /// Returns `true` if this set contains no days.
+    pub const fn is_empty(&self) -> bool {
+        self.0 == 0
+    }
+}
+
+impl DaysOfWeek {
+    /// The individual days, Sunday first, paired with their names.
     const fn all_days() -> [(Self, &'static str); 7] {
         [
             (Self::SUN, "SUN"),
@@ -93,6 +100,62 @@ impl DaysOfWeek {
             (Self::FRI, "FRI"),
             (Self::SAT, "SAT"),
         ]
+    }
+}
+
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl DaysOfWeek {
+    // `#[classattr]` and `#[staticmethod]` are inner attributes of
+    // `#[pymethods]`, so they cannot be written behind `cfg_attr` and these
+    // cannot join the shared impl above. Distinct Rust names avoid colliding
+    // with the consts and constructor they re-export.
+    #[classattr]
+    #[pyo3(name = "NONE")]
+    const PY_NONE: DaysOfWeek = DaysOfWeek::NONE;
+    #[classattr]
+    #[pyo3(name = "SUN")]
+    const PY_SUN: DaysOfWeek = DaysOfWeek::SUN;
+    #[classattr]
+    #[pyo3(name = "MON")]
+    const PY_MON: DaysOfWeek = DaysOfWeek::MON;
+    #[classattr]
+    #[pyo3(name = "TUE")]
+    const PY_TUE: DaysOfWeek = DaysOfWeek::TUE;
+    #[classattr]
+    #[pyo3(name = "WED")]
+    const PY_WED: DaysOfWeek = DaysOfWeek::WED;
+    #[classattr]
+    #[pyo3(name = "THU")]
+    const PY_THU: DaysOfWeek = DaysOfWeek::THU;
+    #[classattr]
+    #[pyo3(name = "FRI")]
+    const PY_FRI: DaysOfWeek = DaysOfWeek::FRI;
+    #[classattr]
+    #[pyo3(name = "SAT")]
+    const PY_SAT: DaysOfWeek = DaysOfWeek::SAT;
+    #[classattr]
+    #[pyo3(name = "WEEKDAYS")]
+    const PY_WEEKDAYS: DaysOfWeek = DaysOfWeek::WEEKDAYS;
+    #[classattr]
+    #[pyo3(name = "WEEKEND")]
+    const PY_WEEKEND: DaysOfWeek = DaysOfWeek::WEEKEND;
+    #[classattr]
+    #[pyo3(name = "EVERY_DAY")]
+    const PY_EVERY_DAY: DaysOfWeek = DaysOfWeek::EVERY_DAY;
+
+    #[staticmethod]
+    #[pyo3(name = "from_bits_truncate")]
+    fn py_from_bits_truncate(bits: u8) -> Self {
+        Self::from_bits_truncate(bits)
+    }
+
+    fn __or__(&self, other: &Self) -> Self {
+        *self | *other
+    }
+
+    fn __repr__(&self) -> String {
+        format!("{self:?}")
     }
 }
 
@@ -144,12 +207,15 @@ impl BitOrAssign for DaysOfWeek {
     }
 }
 
-/// When a [`ScheduleRule`] fires within a day.
+/// When a schedule rule fires within a day.
 ///
 /// Each variant carries only the fields that apply to it, so a clock rule
 /// cannot hold a sunrise offset and vice versa.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[cfg_attr(feature = "python", pyclass(from_py_object, eq))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, eq, hash, frozen)
+)]
 #[serde(rename_all = "snake_case")]
 pub enum ScheduleTime {
     /// At a wall-clock time, in the device's own timezone.
@@ -171,28 +237,21 @@ pub enum ScheduleTime {
     },
 }
 
-/// Whether a [`ScheduleRule`] fires once or repeats weekly.
+/// The largest sunrise / sunset offset the builders accept, in minutes.
 ///
-/// Python has no sum types, so the bindings flatten this onto
-/// `ScheduleRule.days`, which is `None` for a one-shot rule.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "snake_case")]
-pub enum ScheduleFrequency {
-    /// Fires once, at the next matching time.
-    Once,
-    /// Fires every week, on the given days.
-    Weekly {
-        /// The days the rule fires on.
-        days: DaysOfWeek,
-    },
-}
+/// Measured on a P110: `±360` is stored, `±361` and beyond are refused with
+/// `-1008 PARAMS`. This matches the ±6 hours the Tapo app offers.
+const MAX_OFFSET_MINUTES: i16 = 360;
 
-/// A plug schedule rule (the "Schedule" feature in the Tapo app).
+/// A plug schedule rule to send to the device (the "Schedule" feature in the
+/// Tapo app).
 ///
-/// Construct one with the builders ([`ScheduleRule::clock_weekly`],
-/// [`ScheduleRule::sunrise_once`], …); each returns `Result<Self, Error>`
-/// and reports an `Error::Validation` for out-of-range inputs. The wire
-/// representation is filled in on serialization.
+/// Values are valid by construction: the fields are private and the builders
+/// ([`ScheduleRule::clock_weekly`], [`ScheduleRule::sunrise_once`], …) are the
+/// only way to make one, each returning an `Error::Validation` for
+/// out-of-range input. Rules read back from the device are the separate
+/// [`ScheduleRuleResult`], which is lenient rather than validated; convert one
+/// for editing with [`ScheduleRuleResult::to_editable`].
 ///
 /// The device evaluates the time against its own configured timezone; you
 /// don't supply a calendar date. The on-the-wire `year` / `month` / `day`
@@ -200,34 +259,119 @@ pub enum ScheduleFrequency {
 /// (`1970-01-01`) because the device ignores their values — this was
 /// confirmed experimentally on a P110: a `clock_once` sent with
 /// `year=1970, month=1, day=1` still fires at the requested HH:MM.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyclass(from_py_object, frozen))]
-#[serde(try_from = "ScheduleRuleRaw", into = "ScheduleRuleRaw")]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, frozen))]
 pub struct ScheduleRule {
-    /// Device-assigned id. `None` when the rule was constructed locally;
-    /// `Some` when read back from the device.
-    pub id: Option<String>,
-    /// Whether the rule is currently active. Disabled rules are kept on
-    /// the device but do not fire.
-    pub enabled: bool,
-    /// When the rule fires within a day.
-    pub time: ScheduleTime,
-    /// Once, or weekly on a set of days.
-    pub frequency: ScheduleFrequency,
-    /// The state the plug transitions to when the rule fires.
-    pub desired_state: PowerState,
+    id: Option<String>,
+    enabled: bool,
+    time: ScheduleTime,
+    /// `None` fires once; `Some(days)` repeats weekly on those days.
+    days: Option<DaysOfWeek>,
+    desired_state: PowerState,
 }
 
-/// The largest sunrise / sunset offset the builders accept, in minutes.
-///
-/// Measured on a P110: `±360` is stored, `±361` and beyond are refused with
-/// `-1008 PARAMS`. This matches the ±6 hours the Tapo app offers.
-const MAX_OFFSET_MINUTES: i16 = 360;
-
 impl ScheduleRule {
+    /// Fires every week, on `days`, at the given wall-clock time.
+    ///
+    /// # Arguments
+    ///
+    /// * `hour` - hour of the day, `0..=23`.
+    /// * `minute` - minute of the hour, `0..=59`.
+    /// * `days` - the days to fire on; must not be empty.
+    /// * `desired_state` - the state the plug transitions to when the rule fires.
+    pub fn clock_weekly(
+        hour: u8,
+        minute: u8,
+        days: DaysOfWeek,
+        desired_state: PowerState,
+    ) -> Result<Self, Error> {
+        Self::new(
+            ScheduleTime::Clock { hour, minute },
+            Some(days),
+            desired_state,
+        )
+    }
+
+    /// Fires once, the next time the device's wall clock reaches `hour:minute`.
+    ///
+    /// # Arguments
+    ///
+    /// * `hour` - hour of the day, `0..=23`.
+    /// * `minute` - minute of the hour, `0..=59`.
+    /// * `desired_state` - the state the plug transitions to when the rule fires.
+    pub fn clock_once(hour: u8, minute: u8, desired_state: PowerState) -> Result<Self, Error> {
+        Self::new(ScheduleTime::Clock { hour, minute }, None, desired_state)
+    }
+
+    /// Fires every week, on `days`, at `offset_minutes` from sunrise.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset_minutes` - minutes from sunrise, `-360..=360`; negative
+    ///   fires before it.
+    /// * `days` - the days to fire on; must not be empty.
+    /// * `desired_state` - the state the plug transitions to when the rule fires.
+    pub fn sunrise_weekly(
+        offset_minutes: i16,
+        days: DaysOfWeek,
+        desired_state: PowerState,
+    ) -> Result<Self, Error> {
+        Self::new(
+            ScheduleTime::Sunrise { offset_minutes },
+            Some(days),
+            desired_state,
+        )
+    }
+
+    /// Fires once, at the next sunrise plus `offset_minutes`.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset_minutes` - minutes from sunrise, `-360..=360`; negative
+    ///   fires before it.
+    /// * `desired_state` - the state the plug transitions to when the rule fires.
+    pub fn sunrise_once(offset_minutes: i16, desired_state: PowerState) -> Result<Self, Error> {
+        Self::new(
+            ScheduleTime::Sunrise { offset_minutes },
+            None,
+            desired_state,
+        )
+    }
+
+    /// Fires every week, on `days`, at `offset_minutes` from sunset.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset_minutes` - minutes from sunset, `-360..=360`; negative
+    ///   fires before it.
+    /// * `days` - the days to fire on; must not be empty.
+    /// * `desired_state` - the state the plug transitions to when the rule fires.
+    pub fn sunset_weekly(
+        offset_minutes: i16,
+        days: DaysOfWeek,
+        desired_state: PowerState,
+    ) -> Result<Self, Error> {
+        Self::new(
+            ScheduleTime::Sunset { offset_minutes },
+            Some(days),
+            desired_state,
+        )
+    }
+
+    /// Fires once, at the next sunset plus `offset_minutes`.
+    ///
+    /// # Arguments
+    ///
+    /// * `offset_minutes` - minutes from sunset, `-360..=360`; negative
+    ///   fires before it.
+    /// * `desired_state` - the state the plug transitions to when the rule fires.
+    pub fn sunset_once(offset_minutes: i16, desired_state: PowerState) -> Result<Self, Error> {
+        Self::new(ScheduleTime::Sunset { offset_minutes }, None, desired_state)
+    }
+
     fn new(
         time: ScheduleTime,
-        frequency: ScheduleFrequency,
+        days: Option<DaysOfWeek>,
         desired_state: PowerState,
     ) -> Result<Self, Error> {
         match time {
@@ -257,12 +401,12 @@ impl ScheduleRule {
             }
         }
 
-        if let ScheduleFrequency::Weekly { days } = frequency
+        if let Some(days) = days
             && days.is_empty()
         {
             return Err(Error::Validation {
                 field: "days".to_string(),
-                message: "A weekly rule must fire on at least one day".to_string(),
+                message: "A repeating rule must fire on at least one day".to_string(),
             });
         }
 
@@ -270,117 +414,114 @@ impl ScheduleRule {
             id: None,
             enabled: true,
             time,
-            frequency,
+            days,
             desired_state,
         })
     }
 
-    /// Fires every week, on `days`, at the given wall-clock time.
+    /// Returns a copy of this rule with `id` set to the given value.
+    /// Use before `edit_schedule_rule` (on
+    /// [`PlugHandler`](crate::PlugHandler) or
+    /// [`PlugEnergyMonitoringHandler`](crate::PlugEnergyMonitoringHandler))
+    /// when reconstructing an edit from scratch;
+    /// [`ScheduleRuleResult::to_editable`] carries the id across for you.
     ///
     /// # Arguments
     ///
-    /// * `hour` - hour of the day, `0..=23`.
-    /// * `minute` - minute of the hour, `0..=59`.
-    /// * `days` - the days to fire on; must not be empty.
-    /// * `desired_state` - the state the plug transitions to when the rule fires.
-    pub fn clock_weekly(
+    /// * `id` - the device-assigned id of the rule to update.
+    pub fn with_id(&self, id: impl Into<String>) -> Self {
+        Self {
+            id: Some(id.into()),
+            ..self.clone()
+        }
+    }
+
+    pub(crate) fn id(&self) -> Option<&str> {
+        self.id.as_deref()
+    }
+
+    /// Pairs this rule with the id the device assigned it, for returning from
+    /// `add_schedule_rule` without a second round trip.
+    pub(crate) fn into_result(self, id: String) -> ScheduleRuleResult {
+        ScheduleRuleResult {
+            id,
+            enabled: self.enabled,
+            time: self.time,
+            days: self.days,
+            desired_state: self.desired_state,
+        }
+    }
+}
+
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl ScheduleRule {
+    // `#[staticmethod]` is an inner attribute of `#[pymethods]`, so it cannot
+    // be written behind `cfg_attr` and these cannot join the shared impl
+    // above. `From<Error> for PyErr` means they need no error mapping.
+    #[staticmethod]
+    #[pyo3(name = "clock_weekly")]
+    fn py_clock_weekly(
         hour: u8,
         minute: u8,
         days: DaysOfWeek,
         desired_state: PowerState,
     ) -> Result<Self, Error> {
-        Self::new(
-            ScheduleTime::Clock { hour, minute },
-            ScheduleFrequency::Weekly { days },
-            desired_state,
-        )
+        Self::clock_weekly(hour, minute, days, desired_state)
     }
 
-    /// Fires once, the next time the device's wall clock reaches `hour:minute`.
-    ///
-    /// # Arguments
-    ///
-    /// * `hour` - hour of the day, `0..=23`.
-    /// * `minute` - minute of the hour, `0..=59`.
-    /// * `desired_state` - the state the plug transitions to when the rule fires.
-    pub fn clock_once(hour: u8, minute: u8, desired_state: PowerState) -> Result<Self, Error> {
-        Self::new(
-            ScheduleTime::Clock { hour, minute },
-            ScheduleFrequency::Once,
-            desired_state,
-        )
+    #[staticmethod]
+    #[pyo3(name = "clock_once")]
+    fn py_clock_once(hour: u8, minute: u8, desired_state: PowerState) -> Result<Self, Error> {
+        Self::clock_once(hour, minute, desired_state)
     }
 
-    /// Fires every week, on `days`, at `offset_minutes` from sunrise.
-    ///
-    /// # Arguments
-    ///
-    /// * `offset_minutes` - minutes from sunrise, `-360..=360`; negative
-    ///   fires before it.
-    /// * `days` - the days to fire on; must not be empty.
-    /// * `desired_state` - the state the plug transitions to when the rule fires.
-    pub fn sunrise_weekly(
+    #[staticmethod]
+    #[pyo3(name = "sunrise_weekly")]
+    fn py_sunrise_weekly(
         offset_minutes: i16,
         days: DaysOfWeek,
         desired_state: PowerState,
     ) -> Result<Self, Error> {
-        Self::new(
-            ScheduleTime::Sunrise { offset_minutes },
-            ScheduleFrequency::Weekly { days },
-            desired_state,
-        )
+        Self::sunrise_weekly(offset_minutes, days, desired_state)
     }
 
-    /// Fires once, at the next sunrise plus `offset_minutes`.
-    ///
-    /// # Arguments
-    ///
-    /// * `offset_minutes` - minutes from sunrise, `-360..=360`; negative
-    ///   fires before it.
-    /// * `desired_state` - the state the plug transitions to when the rule fires.
-    pub fn sunrise_once(offset_minutes: i16, desired_state: PowerState) -> Result<Self, Error> {
-        Self::new(
-            ScheduleTime::Sunrise { offset_minutes },
-            ScheduleFrequency::Once,
-            desired_state,
-        )
+    #[staticmethod]
+    #[pyo3(name = "sunrise_once")]
+    fn py_sunrise_once(offset_minutes: i16, desired_state: PowerState) -> Result<Self, Error> {
+        Self::sunrise_once(offset_minutes, desired_state)
     }
 
-    /// Fires every week, on `days`, at `offset_minutes` from sunset.
-    ///
-    /// # Arguments
-    ///
-    /// * `offset_minutes` - minutes from sunset, `-360..=360`; negative
-    ///   fires before it.
-    /// * `days` - the days to fire on; must not be empty.
-    /// * `desired_state` - the state the plug transitions to when the rule fires.
-    pub fn sunset_weekly(
+    #[staticmethod]
+    #[pyo3(name = "sunset_weekly")]
+    fn py_sunset_weekly(
         offset_minutes: i16,
         days: DaysOfWeek,
         desired_state: PowerState,
     ) -> Result<Self, Error> {
-        Self::new(
-            ScheduleTime::Sunset { offset_minutes },
-            ScheduleFrequency::Weekly { days },
-            desired_state,
-        )
+        Self::sunset_weekly(offset_minutes, days, desired_state)
     }
 
-    /// Fires once, at the next sunset plus `offset_minutes`.
-    ///
-    /// # Arguments
-    ///
-    /// * `offset_minutes` - minutes from sunset, `-360..=360`; negative
-    ///   fires before it.
-    /// * `desired_state` - the state the plug transitions to when the rule fires.
-    pub fn sunset_once(offset_minutes: i16, desired_state: PowerState) -> Result<Self, Error> {
-        Self::new(
-            ScheduleTime::Sunset { offset_minutes },
-            ScheduleFrequency::Once,
-            desired_state,
-        )
+    #[staticmethod]
+    #[pyo3(name = "sunset_once")]
+    fn py_sunset_once(offset_minutes: i16, desired_state: PowerState) -> Result<Self, Error> {
+        Self::sunset_once(offset_minutes, desired_state)
     }
 
+    #[pyo3(name = "with_id")]
+    fn py_with_id(&self, id: String) -> Self {
+        self.with_id(id)
+    }
+
+    fn __repr__(&self) -> String {
+        format!("{self:?}")
+    }
+}
+
+/// `&self` methods need no pyo3 attribute, so they are shared with Python
+/// directly rather than through wrappers.
+#[cfg_attr(feature = "python", pyo3::pymethods)]
+impl ScheduleRule {
     /// Returns a copy of this rule with `enabled` set to the given value.
     ///
     /// # Arguments
@@ -393,27 +534,23 @@ impl ScheduleRule {
             ..self.clone()
         }
     }
+}
 
-    /// Returns a copy of this rule with `id` set to the given value.
-    /// Use before `edit_schedule_rule` (on
-    /// [`PlugHandler`](crate::PlugHandler) or
-    /// [`PlugEnergyMonitoringHandler`](crate::PlugEnergyMonitoringHandler))
-    /// when reconstructing an edit from scratch.
-    ///
-    /// # Arguments
-    ///
-    /// * `id` - the device-assigned id of the rule to update.
-    pub fn with_id(&self, id: impl Into<String>) -> Self {
-        Self {
-            id: Some(id.into()),
-            ..self.clone()
-        }
+impl TryFrom<&ScheduleRuleResult> for ScheduleRule {
+    type Error = Error;
+
+    /// Re-runs the builder validation, because a [`ScheduleRuleResult`] is
+    /// parsed leniently and may hold values this type must refuse.
+    fn try_from(result: &ScheduleRuleResult) -> Result<Self, Error> {
+        Ok(Self::new(result.time, result.days, result.desired_state)?
+            .with_enabled(result.enabled)
+            .with_id(result.id.clone()))
     }
 }
 
-/// Wire shape of a schedule rule, used for (de)serialization and as the
-/// parameters of the add / edit requests. Mirrors `ThingRuleSchedule` from
-/// the official Tapo Android app.
+/// Wire shape of a schedule rule. Mirrors `ThingRuleSchedule` from the
+/// official Tapo Android app, and stays private so the device format is not
+/// part of the public API.
 ///
 /// `year` / `month` / `day` are required by the API but their values are
 /// ignored by the device (verified on a P110). `s_type` determines whether
@@ -422,7 +559,7 @@ impl ScheduleRule {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct ScheduleRuleRaw {
     #[serde(skip_serializing_if = "Option::is_none")]
-    id: Option<String>,
+    pub id: Option<String>,
     enable: bool,
     year: i32,
     month: u8,
@@ -436,7 +573,7 @@ pub(crate) struct ScheduleRuleRaw {
     e_action: String,
     mode: String,
     #[serde(default)]
-    desired_states: DesiredStateRaw,
+    desired_states: Option<DesiredStateRaw>,
     /// Deprecated mirror of the firing state, still emitted by some
     /// firmwares. Used as a fallback when `desired_states.on` is absent.
     /// See `ThingRuleSchedule.startAction` in the Tapo app.
@@ -447,8 +584,8 @@ pub(crate) struct ScheduleRuleRaw {
 /// Constant placeholder for the wire `year` / `month` / `day` (device ignores these).
 const PLACEHOLDER_DATE: (i32, u8, u8) = (1970, 1, 1);
 
-impl From<ScheduleRule> for ScheduleRuleRaw {
-    fn from(rule: ScheduleRule) -> Self {
+impl From<&ScheduleRule> for ScheduleRuleRaw {
+    fn from(rule: &ScheduleRule) -> Self {
         let (s_type, time_offset, s_min) = match rule.time {
             ScheduleTime::Clock { hour, minute } => {
                 ("normal", 0_i32, i32::from(hour) * 60 + i32::from(minute))
@@ -456,14 +593,14 @@ impl From<ScheduleRule> for ScheduleRuleRaw {
             ScheduleTime::Sunrise { offset_minutes } => ("sunrise", i32::from(offset_minutes), 0),
             ScheduleTime::Sunset { offset_minutes } => ("sunset", i32::from(offset_minutes), 0),
         };
-        let (mode, week_day) = match rule.frequency {
-            ScheduleFrequency::Once => ("once", 0),
-            ScheduleFrequency::Weekly { days } => ("repeat", days.bits()),
+        let (mode, week_day) = match rule.days {
+            None => ("once", 0),
+            Some(days) => ("repeat", days.bits()),
         };
         let (year, month, day) = PLACEHOLDER_DATE;
 
         ScheduleRuleRaw {
-            id: rule.id,
+            id: rule.id.clone(),
             enable: rule.enabled,
             year,
             month,
@@ -476,13 +613,13 @@ impl From<ScheduleRule> for ScheduleRuleRaw {
             e_type: "normal".into(),
             e_action: "none".into(),
             mode: mode.into(),
-            desired_states: DesiredStateRaw::new(rule.desired_state),
+            desired_states: Some(DesiredStateRaw::new(rule.desired_state)),
             s_action: None,
         }
     }
 }
 
-impl TryFrom<ScheduleRuleRaw> for ScheduleRule {
+impl TryFrom<ScheduleRuleRaw> for ScheduleRuleResult {
     type Error = String;
 
     fn try_from(raw: ScheduleRuleRaw) -> Result<Self, Self::Error> {
@@ -512,258 +649,28 @@ impl TryFrom<ScheduleRuleRaw> for ScheduleRule {
             other => return Err(format!("unknown schedule s_type {other:?}")),
         };
 
-        let frequency = match raw.mode.as_str() {
-            "once" => ScheduleFrequency::Once,
-            "repeat" => ScheduleFrequency::Weekly {
-                days: DaysOfWeek::from_bits_truncate(raw.week_day),
-            },
+        let days = match raw.mode.as_str() {
+            "once" => None,
+            "repeat" => Some(DaysOfWeek::from_bits_truncate(raw.week_day)),
             other => return Err(format!("unknown schedule mode {other:?}")),
         };
 
         let desired_state = raw
             .desired_states
+            .unwrap_or_default()
             .resolve(raw.s_action.as_deref())
             .ok_or_else(|| {
                 "neither desired_states.on nor s_action contained a recognised firing state"
                     .to_string()
             })?;
 
-        Ok(ScheduleRule {
-            id: raw.id,
+        Ok(ScheduleRuleResult {
+            id: raw.id.ok_or_else(|| "the rule has no id".to_string())?,
             enabled: raw.enable,
             time,
-            frequency,
+            days,
             desired_state,
         })
-    }
-}
-
-#[cfg(feature = "python")]
-#[pymethods]
-impl DaysOfWeek {
-    #[classattr]
-    #[pyo3(name = "NONE")]
-    fn py_none() -> Self {
-        Self::NONE
-    }
-
-    #[classattr]
-    #[pyo3(name = "SUN")]
-    fn py_sun() -> Self {
-        Self::SUN
-    }
-
-    #[classattr]
-    #[pyo3(name = "MON")]
-    fn py_mon() -> Self {
-        Self::MON
-    }
-
-    #[classattr]
-    #[pyo3(name = "TUE")]
-    fn py_tue() -> Self {
-        Self::TUE
-    }
-
-    #[classattr]
-    #[pyo3(name = "WED")]
-    fn py_wed() -> Self {
-        Self::WED
-    }
-
-    #[classattr]
-    #[pyo3(name = "THU")]
-    fn py_thu() -> Self {
-        Self::THU
-    }
-
-    #[classattr]
-    #[pyo3(name = "FRI")]
-    fn py_fri() -> Self {
-        Self::FRI
-    }
-
-    #[classattr]
-    #[pyo3(name = "SAT")]
-    fn py_sat() -> Self {
-        Self::SAT
-    }
-
-    #[classattr]
-    #[pyo3(name = "WEEKDAYS")]
-    fn py_weekdays() -> Self {
-        Self::WEEKDAYS
-    }
-
-    #[classattr]
-    #[pyo3(name = "WEEKEND")]
-    fn py_weekend() -> Self {
-        Self::WEEKEND
-    }
-
-    #[classattr]
-    #[pyo3(name = "EVERY_DAY")]
-    fn py_every_day() -> Self {
-        Self::EVERY_DAY
-    }
-
-    #[staticmethod]
-    #[pyo3(name = "from_bits_truncate")]
-    fn py_from_bits_truncate(bits: u8) -> Self {
-        Self::from_bits_truncate(bits)
-    }
-
-    #[pyo3(name = "bits")]
-    fn py_bits(&self) -> u8 {
-        self.bits()
-    }
-
-    #[pyo3(name = "contains")]
-    fn py_contains(&self, other: &Self) -> bool {
-        self.contains(*other)
-    }
-
-    fn __or__(&self, other: &Self) -> Self {
-        *self | *other
-    }
-
-    fn __repr__(&self) -> String {
-        format!("{self:?}")
-    }
-}
-
-#[cfg(feature = "python")]
-#[pymethods]
-impl ScheduleRule {
-    #[getter]
-    fn id(&self) -> Option<String> {
-        self.id.clone()
-    }
-
-    #[getter]
-    fn enabled(&self) -> bool {
-        self.enabled
-    }
-
-    #[getter]
-    fn time(&self) -> ScheduleTime {
-        self.time
-    }
-
-    /// The days a weekly rule fires on, or `None` when it fires once.
-    #[getter]
-    fn days(&self) -> Option<DaysOfWeek> {
-        match self.frequency {
-            ScheduleFrequency::Once => None,
-            ScheduleFrequency::Weekly { days } => Some(days),
-        }
-    }
-
-    #[getter]
-    fn desired_state(&self) -> PowerState {
-        self.desired_state
-    }
-
-    #[staticmethod]
-    #[pyo3(name = "clock_weekly")]
-    fn py_clock_weekly(
-        hour: u8,
-        minute: u8,
-        days: DaysOfWeek,
-        desired_state: PowerState,
-    ) -> PyResult<Self> {
-        Ok(Self::clock_weekly(hour, minute, days, desired_state)?)
-    }
-
-    #[staticmethod]
-    #[pyo3(name = "clock_once")]
-    fn py_clock_once(hour: u8, minute: u8, desired_state: PowerState) -> PyResult<Self> {
-        Ok(Self::clock_once(hour, minute, desired_state)?)
-    }
-
-    #[staticmethod]
-    #[pyo3(name = "sunrise_weekly")]
-    fn py_sunrise_weekly(
-        offset_minutes: i16,
-        days: DaysOfWeek,
-        desired_state: PowerState,
-    ) -> PyResult<Self> {
-        Ok(Self::sunrise_weekly(offset_minutes, days, desired_state)?)
-    }
-
-    #[staticmethod]
-    #[pyo3(name = "sunrise_once")]
-    fn py_sunrise_once(offset_minutes: i16, desired_state: PowerState) -> PyResult<Self> {
-        Ok(Self::sunrise_once(offset_minutes, desired_state)?)
-    }
-
-    #[staticmethod]
-    #[pyo3(name = "sunset_weekly")]
-    fn py_sunset_weekly(
-        offset_minutes: i16,
-        days: DaysOfWeek,
-        desired_state: PowerState,
-    ) -> PyResult<Self> {
-        Ok(Self::sunset_weekly(offset_minutes, days, desired_state)?)
-    }
-
-    #[staticmethod]
-    #[pyo3(name = "sunset_once")]
-    fn py_sunset_once(offset_minutes: i16, desired_state: PowerState) -> PyResult<Self> {
-        Ok(Self::sunset_once(offset_minutes, desired_state)?)
-    }
-
-    #[pyo3(name = "with_enabled")]
-    fn py_with_enabled(&self, enabled: bool) -> Self {
-        self.with_enabled(enabled)
-    }
-
-    #[pyo3(name = "with_id")]
-    fn py_with_id(&self, id: String) -> Self {
-        self.with_id(id)
-    }
-
-    fn __repr__(&self) -> String {
-        format!("{self:?}")
-    }
-
-    /// Returns the user-facing fields of this rule as a Python dictionary.
-    ///
-    /// Mirrors the names exposed by attribute access (`time`, `days`, …)
-    /// rather than the wire shape used for transport (`s_type`, `s_min`, …).
-    fn to_dict(&self, py: pyo3::Python) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
-        let value = serde_json::to_value(DictRule::from(self))
-            .map_err(|e| pyo3::exceptions::PyException::new_err(e.to_string()))?;
-        crate::python::serde_object_to_py_dict(py, &value)
-    }
-}
-
-/// User-facing dict shape for `ScheduleRule::to_dict`. Matches the public
-/// fields of [`ScheduleRule`] (and the `get_all` attributes exposed to
-/// Python) instead of the on-the-wire [`ScheduleRuleRaw`].
-#[cfg(feature = "python")]
-#[derive(Serialize)]
-struct DictRule<'a> {
-    id: &'a Option<String>,
-    enabled: bool,
-    time: ScheduleTime,
-    days: Option<DaysOfWeek>,
-    desired_state: PowerState,
-}
-
-#[cfg(feature = "python")]
-impl<'a> From<&'a ScheduleRule> for DictRule<'a> {
-    fn from(rule: &'a ScheduleRule) -> Self {
-        DictRule {
-            id: &rule.id,
-            enabled: rule.enabled,
-            time: rule.time,
-            days: match rule.frequency {
-                ScheduleFrequency::Once => None,
-                ScheduleFrequency::Weekly { days } => Some(days),
-            },
-            desired_state: rule.desired_state,
-        }
     }
 }
 
@@ -809,7 +716,7 @@ mod tests {
     use super::*;
 
     fn wire_json(rule: &ScheduleRule) -> serde_json::Value {
-        serde_json::to_value(rule).expect("serialize")
+        serde_json::to_value(ScheduleRuleRaw::from(rule)).expect("serialize")
     }
 
     fn clock_once(hour: u8, minute: u8, desired_state: PowerState) -> ScheduleRule {
@@ -825,12 +732,34 @@ mod tests {
         ScheduleRule::clock_weekly(hour, minute, days, desired_state).expect("valid clock_weekly")
     }
 
+    fn parse(raw: serde_json::Value) -> Result<ScheduleRuleResult, String> {
+        let raw: ScheduleRuleRaw = serde_json::from_value(raw).map_err(|e| e.to_string())?;
+        ScheduleRuleResult::try_from(raw)
+    }
+
+    fn raw_json(overrides: serde_json::Value) -> serde_json::Value {
+        let mut base = serde_json::json!({
+            "id": "S1", "enable": true, "year": 1970, "month": 1, "day": 1,
+            "time_offset": 0, "week_day": 0, "s_min": 0, "e_min": 0,
+            "s_type": "normal", "e_type": "normal", "e_action": "none",
+            "mode": "once", "desired_states": { "on": true }
+        });
+        let map = base.as_object_mut().expect("object");
+        for (key, value) in overrides.as_object().expect("object") {
+            if value.is_null() && key != "desired_states" {
+                map.remove(key);
+            } else {
+                map.insert(key.clone(), value.clone());
+            }
+        }
+        base
+    }
+
     #[test]
     fn days_of_week_combine_and_contain() {
         let midweek = DaysOfWeek::MON | DaysOfWeek::WED;
         assert_eq!(midweek.bits(), 0b0000_1010);
         assert!(midweek.contains(DaysOfWeek::MON));
-        assert!(midweek.contains(DaysOfWeek::WED));
         assert!(!midweek.contains(DaysOfWeek::TUE));
         assert!(!midweek.is_empty());
         assert!(DaysOfWeek::NONE.is_empty());
@@ -853,11 +782,21 @@ mod tests {
 
     #[test]
     fn days_of_week_deserialize_cannot_smuggle_high_bits() {
-        // The bit-7+ guard is the type's invariant, so the one remaining way
-        // in — deserializing a bitmask directly — has to honour it too.
         let days: DaysOfWeek = serde_json::from_str("255").expect("deserialize");
         assert_eq!(days, DaysOfWeek::EVERY_DAY);
-        assert_eq!(days.bits(), DaysOfWeek::EVERY_DAY.bits());
+    }
+
+    #[test]
+    fn days_of_week_equal_values_hash_equally() {
+        use std::collections::HashSet;
+
+        // Equal sets built by different routes must collapse to one entry,
+        // which is what the pyclass `hash` option relies on.
+        let mut set = HashSet::new();
+        set.insert(DaysOfWeek::MON | DaysOfWeek::WED);
+        set.insert(DaysOfWeek::WED | DaysOfWeek::MON);
+        assert_eq!(set.len(), 1);
+        assert!(set.contains(&DaysOfWeek::from_bits_truncate(0b0000_1010)));
     }
 
     #[test]
@@ -867,16 +806,27 @@ mod tests {
             "DaysOfWeek(MON | WED)"
         );
         assert_eq!(format!("{:?}", DaysOfWeek::NONE), "DaysOfWeek(NONE)");
-        assert_eq!(
-            format!("{:?}", DaysOfWeek::EVERY_DAY),
-            "DaysOfWeek(SUN | MON | TUE | WED | THU | FRI | SAT)"
-        );
+    }
+
+    #[test]
+    fn schedule_time_equal_values_hash_equally() {
+        use std::collections::HashSet;
+
+        let mut set = HashSet::new();
+        set.insert(ScheduleTime::Clock {
+            hour: 6,
+            minute: 30,
+        });
+        set.insert(ScheduleTime::Clock {
+            hour: 6,
+            minute: 30,
+        });
+        assert_eq!(set.len(), 1);
     }
 
     #[test]
     fn clock_once_wire_shape() {
-        let r = clock_once(6, 30, PowerState::On);
-        let j = wire_json(&r);
+        let j = wire_json(&clock_once(6, 30, PowerState::On));
         assert_eq!(j["s_type"], "normal");
         assert_eq!(j["mode"], "once");
         assert_eq!(j["s_min"], 6 * 60 + 30);
@@ -884,19 +834,20 @@ mod tests {
         assert_eq!(j["week_day"], 0);
         assert_eq!(j["enable"], true);
         assert_eq!(j["desired_states"], serde_json::json!({ "on": true }));
-        // Date placeholder is constant per the ScheduleRuleRaw contract.
         assert_eq!(j["year"], 1970);
         assert_eq!(j["month"], 1);
         assert_eq!(j["day"], 1);
-        // No id field when constructed locally.
         assert!(j.get("id").is_none());
     }
 
     #[test]
     fn clock_weekly_wire_shape() {
-        let r = clock_weekly(23, 30, DaysOfWeek::MON | DaysOfWeek::WED, PowerState::Off);
-        let j = wire_json(&r);
-        assert_eq!(j["s_type"], "normal");
+        let j = wire_json(&clock_weekly(
+            23,
+            30,
+            DaysOfWeek::MON | DaysOfWeek::WED,
+            PowerState::Off,
+        ));
         assert_eq!(j["mode"], "repeat");
         assert_eq!(j["s_min"], 23 * 60 + 30);
         assert_eq!(j["week_day"], 0b0000_1010);
@@ -904,119 +855,65 @@ mod tests {
     }
 
     #[test]
-    fn sunrise_weekly_wire_shape() {
-        let r = ScheduleRule::sunrise_weekly(-30, DaysOfWeek::WEEKDAYS, PowerState::Off)
-            .expect("valid sunrise_weekly");
-        let j = wire_json(&r);
+    fn sun_rules_wire_shape() {
+        let j = wire_json(
+            &ScheduleRule::sunrise_weekly(-30, DaysOfWeek::WEEKDAYS, PowerState::Off)
+                .expect("valid"),
+        );
         assert_eq!(j["s_type"], "sunrise");
-        assert_eq!(j["mode"], "repeat");
         assert_eq!(j["time_offset"], -30);
         assert_eq!(j["s_min"], 0);
         assert_eq!(j["week_day"], 0b0011_1110);
-    }
 
-    #[test]
-    fn sunset_once_wire_shape() {
-        let r = ScheduleRule::sunset_once(60, PowerState::On).expect("valid sunset_once");
-        let j = wire_json(&r);
+        let j = wire_json(&ScheduleRule::sunset_once(60, PowerState::On).expect("valid"));
         assert_eq!(j["s_type"], "sunset");
         assert_eq!(j["mode"], "once");
         assert_eq!(j["time_offset"], 60);
-        assert_eq!(j["week_day"], 0);
     }
 
     #[test]
-    fn round_trip_via_wire() {
-        let original = clock_weekly(8, 5, DaysOfWeek::EVERY_DAY, PowerState::On);
-        let json = serde_json::to_string(&original).expect("serialize");
-        let parsed: ScheduleRule = serde_json::from_str(&json).expect("deserialize");
-        assert_eq!(parsed, original);
-        assert_eq!(parsed.time, ScheduleTime::Clock { hour: 8, minute: 5 });
+    fn public_serialization_is_not_the_wire_shape() {
+        // The device format stays private: a result serializes as its own
+        // documented fields, not `s_type` / `s_min` / the 1970 placeholders.
+        let result = parse(raw_json(serde_json::json!({ "s_min": 390 }))).expect("parse");
+        let j = serde_json::to_value(&result).expect("serialize");
         assert_eq!(
-            parsed.frequency,
-            ScheduleFrequency::Weekly {
-                days: DaysOfWeek::EVERY_DAY
-            }
+            j,
+            serde_json::json!({
+                "id": "S1",
+                "enabled": true,
+                "time": { "clock": { "hour": 6, "minute": 30 } },
+                "days": null,
+                "desired_state": "on"
+            })
         );
     }
 
     #[test]
-    fn round_trip_preserves_device_id() {
-        let original = clock_weekly(8, 0, DaysOfWeek::MON, PowerState::On).with_id("S42");
-        let json = serde_json::to_string(&original).expect("serialize");
-        assert!(json.contains("\"id\":\"S42\""));
-        let parsed: ScheduleRule = serde_json::from_str(&json).expect("deserialize");
-        assert_eq!(parsed.id.as_deref(), Some("S42"));
+    fn result_round_trips_through_to_editable() {
+        let original = clock_weekly(8, 5, DaysOfWeek::EVERY_DAY, PowerState::On);
+        let raw = ScheduleRuleRaw::from(&original.with_id("S7"));
+        let result = ScheduleRuleResult::try_from(raw).expect("parse");
+
+        assert_eq!(result.id, "S7");
+        assert_eq!(result.time, ScheduleTime::Clock { hour: 8, minute: 5 });
+        assert_eq!(result.days, Some(DaysOfWeek::EVERY_DAY));
+
+        let editable = result.to_editable().expect("valid");
+        assert_eq!(editable, original.with_id("S7"));
     }
 
     #[test]
-    fn sun_rules_round_trip_offsets() {
-        for original in [
-            ScheduleRule::sunrise_once(-360, PowerState::Off).expect("valid"),
-            ScheduleRule::sunset_weekly(360, DaysOfWeek::WEEKEND, PowerState::On).expect("valid"),
-        ] {
-            let json = serde_json::to_string(&original).expect("serialize");
-            let parsed: ScheduleRule = serde_json::from_str(&json).expect("deserialize");
-            assert_eq!(parsed, original);
-        }
-    }
+    fn to_editable_rejects_what_the_builders_would() {
+        // A repeating rule the device stored with no days set is readable but
+        // not writable, which is why the conversion is fallible.
+        let result = parse(raw_json(
+            serde_json::json!({ "mode": "repeat", "week_day": 0 }),
+        ))
+        .expect("parse");
+        assert_eq!(result.days, Some(DaysOfWeek::NONE));
 
-    #[test]
-    fn with_enabled_clones_and_overrides() {
-        let r = clock_weekly(8, 0, DaysOfWeek::MON, PowerState::On).with_id("S42");
-        let disabled = r.with_enabled(false);
-        assert!(r.enabled);
-        assert!(!disabled.enabled);
-        assert_eq!(disabled.id.as_deref(), Some("S42"));
-        assert_eq!(wire_json(&disabled)["enable"], false);
-    }
-
-    #[test]
-    fn deserialize_rejects_bad_s_min() {
-        let raw = serde_json::json!({
-            "enable": true, "year": 1970, "month": 1, "day": 1,
-            "time_offset": 0, "week_day": 0, "s_min": 5000, "e_min": 0,
-            "s_type": "normal", "e_type": "normal", "e_action": "none",
-            "mode": "once", "desired_states": { "on": true }
-        });
-        let err = serde_json::from_value::<ScheduleRule>(raw).expect_err("should reject");
-        assert!(err.to_string().contains("minute of the day"));
-    }
-
-    #[test]
-    fn deserialize_rejects_unknown_s_type() {
-        let raw = serde_json::json!({
-            "enable": true, "year": 1970, "month": 1, "day": 1,
-            "time_offset": 0, "week_day": 0, "s_min": 0, "e_min": 0,
-            "s_type": "moonrise", "e_type": "normal", "e_action": "none",
-            "mode": "once", "desired_states": { "on": true }
-        });
-        let err = serde_json::from_value::<ScheduleRule>(raw).expect_err("should reject");
-        assert!(err.to_string().contains("moonrise"));
-    }
-
-    #[test]
-    fn clock_weekly_rejects_bad_hour() {
-        let err = ScheduleRule::clock_weekly(24, 0, DaysOfWeek::MON, PowerState::On)
-            .expect_err("should reject");
-        assert!(matches!(err, Error::Validation { ref field, .. } if field == "hour"));
-    }
-
-    #[test]
-    fn clock_weekly_rejects_bad_minute() {
-        let err = ScheduleRule::clock_weekly(0, 60, DaysOfWeek::MON, PowerState::On)
-            .expect_err("should reject");
-        assert!(matches!(err, Error::Validation { ref field, .. } if field == "minute"));
-    }
-
-    #[test]
-    fn weekly_rejects_empty_days() {
-        let err = ScheduleRule::clock_weekly(8, 0, DaysOfWeek::NONE, PowerState::On)
-            .expect_err("should reject");
-        assert!(matches!(err, Error::Validation { ref field, .. } if field == "days"));
-
-        let err = ScheduleRule::sunset_weekly(0, DaysOfWeek::NONE, PowerState::On)
-            .expect_err("should reject");
+        let err = result.to_editable().expect_err("should reject");
         assert!(matches!(err, Error::Validation { ref field, .. } if field == "days"));
     }
 
@@ -1037,46 +934,74 @@ mod tests {
     }
 
     #[test]
-    fn deserialize_falls_back_to_s_action_when_desired_states_absent() {
-        let raw = serde_json::json!({
-            "enable": true, "year": 1970, "month": 1, "day": 1,
-            "time_offset": 0, "week_day": 0, "s_min": 90, "e_min": 0,
-            "s_type": "normal", "e_type": "normal", "e_action": "none",
-            "mode": "once", "s_action": "off"
-        });
-        let rule: ScheduleRule = serde_json::from_value(raw).expect("deserialize");
-        assert_eq!(rule.desired_state, PowerState::Off);
-        assert_eq!(
-            rule.time,
-            ScheduleTime::Clock {
-                hour: 1,
-                minute: 30
-            }
-        );
+    fn builders_reject_out_of_range_clock_and_empty_days() {
+        let err = ScheduleRule::clock_weekly(24, 0, DaysOfWeek::MON, PowerState::On)
+            .expect_err("should reject");
+        assert!(matches!(err, Error::Validation { ref field, .. } if field == "hour"));
+
+        let err = ScheduleRule::clock_weekly(0, 60, DaysOfWeek::MON, PowerState::On)
+            .expect_err("should reject");
+        assert!(matches!(err, Error::Validation { ref field, .. } if field == "minute"));
+
+        for build in [
+            ScheduleRule::clock_weekly(8, 0, DaysOfWeek::NONE, PowerState::On),
+            ScheduleRule::sunset_weekly(0, DaysOfWeek::NONE, PowerState::On),
+        ] {
+            let err = build.expect_err("should reject");
+            assert!(matches!(err, Error::Validation { ref field, .. } if field == "days"));
+        }
     }
 
     #[test]
-    fn deserialize_prefers_desired_states_over_s_action() {
-        let raw = serde_json::json!({
-            "enable": true, "year": 1970, "month": 1, "day": 1,
-            "time_offset": 0, "week_day": 0, "s_min": 0, "e_min": 0,
-            "s_type": "normal", "e_type": "normal", "e_action": "none",
-            "mode": "once", "desired_states": { "on": true }, "s_action": "off"
-        });
-        let rule: ScheduleRule = serde_json::from_value(raw).expect("deserialize");
+    fn with_enabled_clones_and_overrides() {
+        let rule = clock_weekly(8, 0, DaysOfWeek::MON, PowerState::On).with_id("S42");
+        let disabled = rule.with_enabled(false);
+        assert_eq!(wire_json(&rule)["enable"], true);
+        assert_eq!(wire_json(&disabled)["enable"], false);
+        assert_eq!(disabled.id(), Some("S42"));
+    }
+
+    #[test]
+    fn parse_rejects_unrepresentable_rules() {
+        for (overrides, expected) in [
+            (serde_json::json!({ "s_min": 5000 }), "minute of the day"),
+            (serde_json::json!({ "s_type": "moonrise" }), "moonrise"),
+            (serde_json::json!({ "mode": "fortnightly" }), "fortnightly"),
+            (serde_json::json!({ "id": null }), "no id"),
+        ] {
+            let err = parse(raw_json(overrides)).expect_err("should reject");
+            assert!(err.contains(expected), "{err} should mention {expected}");
+        }
+    }
+
+    #[test]
+    fn parse_falls_back_to_s_action_and_tolerates_null_desired_states() {
+        // A firmware that sends an explicit null, or omits the key, still
+        // parses through the legacy `s_action` field.
+        for desired_states in [serde_json::Value::Null, serde_json::json!({})] {
+            let rule = parse(raw_json(serde_json::json!({
+                "desired_states": desired_states,
+                "s_action": "off",
+                "s_min": 90
+            })))
+            .expect("parse");
+            assert_eq!(rule.desired_state, PowerState::Off);
+            assert_eq!(
+                rule.time,
+                ScheduleTime::Clock {
+                    hour: 1,
+                    minute: 30
+                }
+            );
+        }
+
+        // `desired_states` wins when both are present.
+        let rule = parse(raw_json(serde_json::json!({ "s_action": "off" }))).expect("parse");
         assert_eq!(rule.desired_state, PowerState::On);
-    }
 
-    #[test]
-    fn deserialize_rejects_missing_firing_state() {
-        let raw = serde_json::json!({
-            "enable": true, "year": 1970, "month": 1, "day": 1,
-            "time_offset": 0, "week_day": 0, "s_min": 0, "e_min": 0,
-            "s_type": "normal", "e_type": "normal", "e_action": "none",
-            "mode": "once"
-        });
-        let err = serde_json::from_value::<ScheduleRule>(raw).expect_err("should reject");
-        assert!(err.to_string().contains("recognised firing state"));
+        let err = parse(raw_json(serde_json::json!({ "desired_states": null })))
+            .expect_err("should reject");
+        assert!(err.contains("recognised firing state"));
     }
 
     #[test]

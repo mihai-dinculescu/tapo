@@ -23,9 +23,10 @@ use tapo::responses::{
     OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
     PowerState, PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset,
     RgbLightStripState, RgbicLightStripState, RtspStreamUrl, S200Log, S200Result,
-    S200RotationParams, S210Result, Snapshot, Status, T31XResult, T100Log, T100Result, T110Log,
-    T110Result, T300Log, T300Result, TemperatureHumidityRecord, TemperatureHumidityRecords,
-    TemperatureUnit, TemperatureUnitKE100, Timer, UsageByPeriodResult, WaterLeakStatus,
+    S200RotationParams, S210Result, ScheduleRuleResult, Snapshot, Status, T31XResult, T100Log,
+    T100Result, T110Log, T110Result, T300Log, T300Result, TemperatureHumidityRecord,
+    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, Timer, UsageByPeriodResult,
+    WaterLeakStatus,
 };
 use tapo::{DeviceType, DiscoveryRawResult};
 
@@ -154,6 +155,7 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PowerDataIntervalResult>()?;
     module.add_class::<PowerDataResult>()?;
     module.add_class::<PowerProtectionStatus>()?;
+    module.add_class::<ScheduleRuleResult>()?;
     module.add_class::<UsageByPeriodResult>()?;
 
     // device info: other

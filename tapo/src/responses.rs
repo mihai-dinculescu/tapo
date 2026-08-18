@@ -45,13 +45,13 @@ pub use power_data_result::*;
 pub use power_state::*;
 pub use preset::*;
 pub use rtsp_stream_url::*;
+pub use schedule_rule_result::*;
 pub use snapshot_result::*;
 pub use timer_result::*;
 pub use trigger_logs_result::*;
 
 pub(crate) use control_child_result::*;
 pub(crate) use decodable_result_ext::*;
-pub(crate) use schedule_rule_result::*;
 #[cfg(feature = "debug")]
 pub(crate) use supported_alarm_type_list_result::*;
 pub(crate) use tapo_response::*;
