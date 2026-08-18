@@ -27,7 +27,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
-      - uses: davidB/rust-cargo-make@v1.16.0
+      - uses: davidB/rust-cargo-make@v1.17.0
       - uses: actions/checkout@v7
       - name: Run format
         run: cargo make format
@@ -47,7 +47,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.88.0
-      - uses: davidB/rust-cargo-make@v1.16.0
+      - uses: davidB/rust-cargo-make@v1.17.0
       - uses: actions/checkout@v7
       - name: Run check on the minimum supported version
         run: cargo +1.88.0 make check
