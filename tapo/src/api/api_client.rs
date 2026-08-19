@@ -3,7 +3,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
-use log::debug;
+use log::{debug, warn};
 use reqwest::Client;
 use serde::de::DeserializeOwned;
 use tokio::sync::RwLock;
@@ -12,8 +12,9 @@ use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     AddTimerParams, ControlChildParams, DeviceRebootParams, EmptyObjectParams, EmptyParams,
     EnergyDataInterval, GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams,
-    LightingEffect, MultipleRequestParams, PlayAlarmParams, PowerDataInterval, RemoveTimersParams,
-    SegmentEffect, SmartCamDoParams, SmartCamGetParams, TapoParams, TapoRequest,
+    GetScheduleRulesParams, LightingEffect, MultipleRequestParams, PlayAlarmParams,
+    PowerDataInterval, RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRule,
+    ScheduleRuleRaw, SegmentEffect, SmartCamDoParams, SmartCamGetParams, TapoParams, TapoRequest,
 };
 #[cfg(feature = "debug")]
 use crate::responses::{
@@ -22,8 +23,9 @@ use crate::responses::{
 };
 
 use crate::responses::{
-    AddTimerResult, ControlChildResult, CurrentPowerResult, DecodableResultExt, EnergyDataResult,
-    EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw, PowerState,
+    AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
+    DecodableResultExt, EnergyDataResult, EnergyDataResultRaw, EnergyUsageResult, PowerDataResult,
+    PowerDataResultRaw, PowerState, ScheduleRuleListResultRaw, ScheduleRuleResult,
     TapoMultipleResponse, TapoResponseExt, TapoResult, Timer, TimerListResultRaw,
     validate_response,
 };
@@ -39,6 +41,11 @@ use super::{
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
+
+/// Backstop against a firmware whose reported rule count never lets the
+/// listing loop finish. A P110 returns 5 rules per page and stores at most 32,
+/// so a full device takes 7 pages.
+const MAX_SCHEDULE_RULE_PAGES: u32 = 16;
 
 /// Implemented by all ApiClient implementations.
 #[async_trait]
@@ -1245,7 +1252,7 @@ impl ApiClient {
         // Wipe first to make `set_timer` a true replace.
         self.clear_timer().await?;
 
-        let params = AddTimerParams::new(delay_s, desired_state == PowerState::On);
+        let params = AddTimerParams::new(delay_s, desired_state);
         let request = TapoRequest::AddCountdownRule(TapoParams::new(params));
 
         let result = self
@@ -1282,6 +1289,114 @@ impl ApiClient {
         self.protocol()?
             .execute_request::<serde_json::Value>(request)
             .await?;
+        Ok(())
+    }
+
+    pub(crate) async fn add_schedule_rule(
+        &self,
+        rule: ScheduleRule,
+    ) -> Result<ScheduleRuleResult, Error> {
+        // The device assigns the id, so never send one it might honour.
+        let mut params = ScheduleRuleRaw::from(&rule);
+        params.id = None;
+
+        let request = TapoRequest::AddScheduleRule(TapoParams::new(params));
+        let added = self
+            .protocol()?
+            .execute_request::<AddScheduleRuleResult>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        Ok(rule.into_result(added.id))
+    }
+
+    pub(crate) async fn edit_schedule_rule(&self, rule: ScheduleRule) -> Result<(), Error> {
+        if rule.id().is_none() {
+            return Err(Error::Validation {
+                field: "rule.id".into(),
+                message: "edit_schedule_rule requires rule.id to be set".into(),
+            });
+        }
+
+        let request = TapoRequest::EditScheduleRule(TapoParams::new(ScheduleRuleRaw::from(&rule)));
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
+            .await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn get_schedule_rules(&self) -> Result<Vec<ScheduleRuleResult>, Error> {
+        let mut all = Vec::new();
+        let mut start_index = 0u32;
+
+        for _ in 0..MAX_SCHEDULE_RULE_PAGES {
+            let page = self.get_schedule_rules_page(start_index).await?;
+            let returned = page.rule_list.len() as u32;
+
+            for raw in page.rule_list {
+                // Parse per rule, so one the library cannot represent — an
+                // unknown `s_type` from a newer app, say — degrades the
+                // listing instead of failing it outright.
+                match ScheduleRuleResult::try_from(raw) {
+                    Ok(rule) => all.push(rule),
+                    Err(e) => warn!("Skipping a schedule rule that could not be parsed: {e}"),
+                }
+            }
+
+            if all.len() as u32 >= page.sum {
+                break;
+            }
+
+            start_index += returned;
+        }
+
+        Ok(all)
+    }
+
+    pub(crate) async fn get_max_schedule_rules(&self) -> Result<u32, Error> {
+        self.get_schedule_rules_page(0)
+            .await?
+            .schedule_rule_max_count
+            .ok_or_else(|| {
+                Error::Tapo(TapoResponseError::ResponseError {
+                    description: "The device did not report `schedule_rule_max_count`".to_string(),
+                })
+            })
+    }
+
+    async fn get_schedule_rules_page(
+        &self,
+        start_index: u32,
+    ) -> Result<ScheduleRuleListResultRaw, Error> {
+        let request =
+            TapoRequest::GetScheduleRules(TapoParams::new(GetScheduleRulesParams { start_index }));
+
+        self.protocol()?
+            .execute_request::<ScheduleRuleListResultRaw>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn remove_schedule_rule(&self, id: String) -> Result<(), Error> {
+        let request = TapoRequest::RemoveScheduleRules(TapoParams::new(
+            RemoveScheduleRulesParams::specific(vec![id]),
+        ));
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
+            .await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn remove_all_schedule_rules(&self) -> Result<(), Error> {
+        let request = TapoRequest::RemoveScheduleRules(TapoParams::new(
+            RemoveScheduleRulesParams::remove_all(),
+        ));
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
+            .await?;
+
         Ok(())
     }
 
