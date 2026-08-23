@@ -465,6 +465,32 @@ impl ApiClient {
         Ok(PlugHandler::new(Arc::new(RwLock::new(self))))
     }
 
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .tp10("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn tp10(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
+
+        Ok(PlugHandler::new(Arc::new(RwLock::new(self))))
+    }
+
     /// Specializes the given [`ApiClient`] into an authenticated [`PlugEnergyMonitoringHandler`].
     ///
     /// # Arguments

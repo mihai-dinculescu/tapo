@@ -143,6 +143,12 @@ impl PyApiClient {
         Ok(PyPlugHandler::new(handler))
     }
 
+    pub async fn tp10(&self, ip_address: String) -> PyResult<PyPlugHandler> {
+        let handler: PlugHandler =
+            call_handler_constructor!(self, tapo::ApiClient::tp10, ip_address);
+        Ok(PyPlugHandler::new(handler))
+    }
+
     pub async fn p110(&self, ip_address: String) -> PyResult<PyPlugEnergyMonitoringHandler> {
         let handler: PlugEnergyMonitoringHandler =
             call_handler_constructor!(self, tapo::ApiClient::p110, ip_address);
