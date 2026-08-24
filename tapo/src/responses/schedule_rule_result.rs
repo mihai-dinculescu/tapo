@@ -51,12 +51,10 @@ crate::impl_to_dict!(ScheduleRuleResult);
 pub(crate) struct ScheduleRuleListResultRaw {
     #[serde(default)]
     pub rule_list: Vec<crate::requests::ScheduleRuleRaw>,
-    #[serde(default)]
+    /// How many rules the device holds in total, across all pages.
     pub sum: u32,
-    /// How many rules the device can store in total. Kept as an `Option` so a
-    /// firmware that omits it is distinguishable from one that reports zero.
-    #[serde(default)]
-    pub schedule_rule_max_count: Option<u32>,
+    /// How many rules the device can store in total.
+    pub schedule_rule_max_count: u32,
 }
 
 impl TapoResponseExt for ScheduleRuleListResultRaw {}

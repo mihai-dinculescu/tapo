@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use crate::error::{Error, TapoResponseError};
 use crate::responses::{DesiredStateRaw, PowerState, TapoResponseExt};
 
 /// A pending "Timer" countdown on a Tapo plug. Plugs accept at most
@@ -42,13 +43,25 @@ pub(crate) struct TimerRaw {
 }
 
 impl TimerRaw {
-    pub(crate) fn into_timer(self) -> Option<Timer> {
+    /// Fails rather than returning `None` when the firing state cannot be
+    /// read: the plug holds at most one timer, so a rule that is present but
+    /// unreadable means a timer is armed and about to fire. Reporting "no
+    /// timer" there would be worse than reporting an error.
+    pub(crate) fn into_timer(self) -> Result<Timer, Error> {
         let desired_state = self
             .desired_states
             .unwrap_or_default()
-            .resolve(self.action.as_deref())?;
+            .resolve(self.action.as_deref())
+            .ok_or_else(|| {
+                Error::Tapo(TapoResponseError::ResponseError {
+                    description: format!(
+                        "Timer {} reported neither desired_states.on nor a recognised action",
+                        self.id
+                    ),
+                })
+            })?;
 
-        Some(Timer {
+        Ok(Timer {
             id: self.id,
             delay_s: self.delay,
             remaining_s: self.remain,

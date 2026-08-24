@@ -17,7 +17,7 @@ file. This change log follows the conventions of
 ### Changed
 
 - `TriggerLogsResult`: now derives `Serialize` so the type can be re-serialized by downstream consumers.
-- Device errors: the schedule rule error codes `-1802`, `-1803` and `-1805` now report as `SCHEDULE_RULE_MAX_COUNT`, `SCHEDULE_RULE_CONFLICT` and `SCHEDULE_RULE_NOT_FOUND` instead of `UNKNOWN`.
+- Device errors: the schedule rule error codes `-1802`, `-1803` and `-1805` now report as `SCHEDULE_FULL`, `SCHEDULE_CONFLICT` and `SCHEDULE_INDEX` instead of `UNKNOWN`.
 
 ### Fixed
 
@@ -34,7 +34,7 @@ file. This change log follows the conventions of
 
 ### Changed
 
-- Device errors: the schedule rule error codes `-1802`, `-1803` and `-1805` now report as `SCHEDULE_RULE_MAX_COUNT`, `SCHEDULE_RULE_CONFLICT` and `SCHEDULE_RULE_NOT_FOUND` instead of `UNKNOWN`.
+- Device errors: the schedule rule error codes `-1802`, `-1803` and `-1805` now report as `SCHEDULE_FULL`, `SCHEDULE_CONFLICT` and `SCHEDULE_INDEX` instead of `UNKNOWN`.
 
 ### Fixed
 

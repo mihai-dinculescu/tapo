@@ -1276,11 +1276,11 @@ impl ApiClient {
             .execute_request::<TimerListResultRaw>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
-        Ok(list
-            .rule_list
+        list.rule_list
             .into_iter()
             .next()
-            .and_then(|r| r.into_timer()))
+            .map(|raw| raw.into_timer())
+            .transpose()
     }
 
     pub(crate) async fn clear_timer(&self) -> Result<(), Error> {
@@ -1328,11 +1328,19 @@ impl ApiClient {
 
     pub(crate) async fn get_schedule_rules(&self) -> Result<Vec<ScheduleRuleResult>, Error> {
         let mut all = Vec::new();
+        // Counted separately from `all`, which holds only the rules that
+        // parsed: a skipped rule must still advance us towards `sum`, or the
+        // loop would never reach it.
+        let mut fetched = 0u32;
         let mut start_index = 0u32;
 
         for _ in 0..MAX_SCHEDULE_RULE_PAGES {
             let page = self.get_schedule_rules_page(start_index).await?;
             let returned = page.rule_list.len() as u32;
+
+            if returned == 0 {
+                break;
+            }
 
             for raw in page.rule_list {
                 // Parse per rule, so one the library cannot represent — an
@@ -1344,7 +1352,8 @@ impl ApiClient {
                 }
             }
 
-            if all.len() as u32 >= page.sum {
+            fetched += returned;
+            if fetched >= page.sum {
                 break;
             }
 
@@ -1355,14 +1364,10 @@ impl ApiClient {
     }
 
     pub(crate) async fn get_max_schedule_rules(&self) -> Result<u32, Error> {
-        self.get_schedule_rules_page(0)
+        Ok(self
+            .get_schedule_rules_page(0)
             .await?
-            .schedule_rule_max_count
-            .ok_or_else(|| {
-                Error::Tapo(TapoResponseError::ResponseError {
-                    description: "The device did not report `schedule_rule_max_count`".to_string(),
-                })
-            })
+            .schedule_rule_max_count)
     }
 
     async fn get_schedule_rules_page(

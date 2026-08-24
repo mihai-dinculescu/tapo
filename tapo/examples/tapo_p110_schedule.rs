@@ -29,7 +29,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     info!(
         "There is room for {} more.",
-        max_rules as usize - rules.len()
+        (max_rules as usize).saturating_sub(rules.len())
     );
 
     info!("Adding a rule that turns the device on once, at the next 06:30...");

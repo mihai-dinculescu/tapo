@@ -24,7 +24,7 @@ async def main():
     rules = await device.get_schedule_rules()
     max_rules = await device.get_max_schedule_rules()
     print(f"The device starts with {len(rules)} of a maximum {max_rules} schedule rules.")
-    print(f"There is room for {max_rules - len(rules)} more.")
+    print(f"There is room for {max(0, max_rules - len(rules))} more.")
 
     print("Adding a rule that turns the device on once, at the next 06:30...")
     rule = ScheduleRule.clock_once(6, 30, PowerState.On)
