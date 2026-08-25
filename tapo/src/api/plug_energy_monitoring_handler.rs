@@ -1,10 +1,10 @@
 use std::time::Duration;
 
 use crate::error::Error;
-use crate::requests::{EnergyDataInterval, PowerDataInterval};
+use crate::requests::{EnergyDataInterval, PowerDataInterval, ScheduleRule};
 use crate::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
-    EnergyDataResult, EnergyUsageResult, PowerDataResult, PowerState, Timer,
+    EnergyDataResult, EnergyUsageResult, PowerDataResult, PowerState, ScheduleRuleResult, Timer,
 };
 
 tapo_handler! {
@@ -73,5 +73,68 @@ impl PlugEnergyMonitoringHandler {
     /// or returns successfully if no timer was armed.
     pub async fn clear_timer(&self) -> Result<(), Error> {
         self.client.read().await.clear_timer().await
+    }
+
+    /// Adds a new schedule rule to the device. Returns it as a
+    /// [`ScheduleRuleResult`] carrying the device-assigned `id`. Schedule rules fire on the device
+    /// itself, so they keep working even if the phone / Wi-Fi router / Tapo
+    /// cloud is offline.
+    ///
+    /// # Arguments
+    ///
+    /// * `rule` - the rule to add; build one with the [`ScheduleRule`]
+    ///   builders. Any `id` it carries is ignored, because the device assigns
+    ///   one.
+    ///
+    /// The device has a fixed capacity — a P110 stores 32 rules — and returns
+    /// a device error once it is full.
+    pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> Result<ScheduleRuleResult, Error> {
+        self.client.read().await.add_schedule_rule(rule).await
+    }
+
+    /// Edits an existing schedule rule, replacing it with the given one.
+    ///
+    /// # Arguments
+    ///
+    /// * `rule` - the replacement rule. Its `id` must be set to the id of the
+    ///   rule to update, either from `add_schedule_rule` /
+    ///   `get_schedule_rules` or via [`ScheduleRule::with_id`]; an unset id is
+    ///   an `Error::Validation`, and an id the device does not know is a
+    ///   device error.
+    pub async fn edit_schedule_rule(&self, rule: ScheduleRule) -> Result<(), Error> {
+        self.client.read().await.edit_schedule_rule(rule).await
+    }
+
+    /// Returns every schedule rule currently stored on the device. A rule the
+    /// library cannot parse is skipped rather than failing the whole listing.
+    pub async fn get_schedule_rules(&self) -> Result<Vec<ScheduleRuleResult>, Error> {
+        self.client.read().await.get_schedule_rules().await
+    }
+
+    /// Returns how many schedule rules the device can store in total, as
+    /// reported by the device itself. A P110 stores 32. Compare against the
+    /// length of `get_schedule_rules` to tell whether there is room for
+    /// another rule, because `add_schedule_rule` fails once the device is
+    /// full.
+    pub async fn get_max_schedule_rules(&self) -> Result<u32, Error> {
+        self.client.read().await.get_max_schedule_rules().await
+    }
+
+    /// Removes a single schedule rule, leaving every other rule in place.
+    ///
+    /// # Arguments
+    ///
+    /// * `id` - the device-assigned id of the rule to remove.
+    pub async fn remove_schedule_rule(&self, id: impl Into<String>) -> Result<(), Error> {
+        self.client
+            .read()
+            .await
+            .remove_schedule_rule(id.into())
+            .await
+    }
+
+    /// Removes every schedule rule from the device.
+    pub async fn remove_all_schedule_rules(&self) -> Result<(), Error> {
+        self.client.read().await.remove_all_schedule_rules().await
     }
 }

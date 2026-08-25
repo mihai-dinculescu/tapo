@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::responses::{PowerState, TapoResponseExt};
+use crate::error::{Error, TapoResponseError};
+use crate::responses::{DesiredStateRaw, PowerState, TapoResponseExt};
 
 /// A pending "Timer" countdown on a Tapo plug. Plugs accept at most
 /// one armed timer at a time, set via `set_timer` and cleared via
@@ -21,12 +22,6 @@ pub struct Timer {
 #[cfg(feature = "python")]
 crate::impl_to_dict!(Timer);
 
-/// The `desired_states` payload exchanged with the device, e.g. `{ "on": true }`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct TimerDesiredStateRaw {
-    pub on: bool,
-}
-
 #[derive(Debug, Clone, Deserialize)]
 pub(crate) struct TimerListResultRaw {
     #[serde(default)]
@@ -42,25 +37,35 @@ pub(crate) struct TimerRaw {
     #[serde(default)]
     pub remain: u32,
     #[serde(default)]
-    pub desired_states: Option<TimerDesiredStateRaw>,
+    pub desired_states: Option<DesiredStateRaw>,
     #[serde(default)]
     pub action: Option<String>,
 }
 
 impl TimerRaw {
-    pub(crate) fn into_timer(self) -> Option<Timer> {
-        let on = self.desired_states.as_ref().map(|states| states.on).or(
-            match self.action.as_deref() {
-                Some("on") => Some(true),
-                Some("off") => Some(false),
-                _ => None,
-            },
-        )?;
-        Some(Timer {
+    /// Fails rather than returning `None` when the firing state cannot be
+    /// read: the plug holds at most one timer, so a rule that is present but
+    /// unreadable means a timer is armed and about to fire. Reporting "no
+    /// timer" there would be worse than reporting an error.
+    pub(crate) fn into_timer(self) -> Result<Timer, Error> {
+        let desired_state = self
+            .desired_states
+            .unwrap_or_default()
+            .resolve(self.action.as_deref())
+            .ok_or_else(|| {
+                Error::Tapo(TapoResponseError::ResponseError {
+                    description: format!(
+                        "Timer {} reported neither desired_states.on nor a recognised action",
+                        self.id
+                    ),
+                })
+            })?;
+
+        Ok(Timer {
             id: self.id,
             delay_s: self.delay,
             remaining_s: self.remain,
-            desired_state: if on { PowerState::On } else { PowerState::Off },
+            desired_state,
         })
     }
 }

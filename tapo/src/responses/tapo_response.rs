@@ -59,6 +59,10 @@ fn error_kind(code: i64) -> &'static str {
         -1010 => "PUBLIC_KEY",
         -1501 => "LOGIN",
         9999 => "SESSION_TIMEOUT",
+        // Smart Devices: plug schedule rules
+        -1802 => "SCHEDULE_FULL",
+        -1803 => "SCHEDULE_CONFLICT",
+        -1805 => "SCHEDULE_INDEX",
         // SmartCam Devices
         -40106 => "UNSUPPORTED_METHOD",
         -40109 => "ONE_SECOND_REPEAT_REQUEST",
