@@ -8,8 +8,8 @@ file. This change log follows the conventions of
 
 ### Added
 
-- `PlugHandler` and `PlugEnergyMonitoringHandler`: added `add_schedule_rule`, `edit_schedule_rule`, `get_schedule_rules`, `get_max_schedule_rules`, `remove_schedule_rule`, and `remove_all_schedule_rules` for plug schedule rules (the "Schedule" feature in the Tapo app). Construct rules with the `ScheduleRule::clock_weekly` / `clock_once` / `sunrise_weekly` / `sunrise_once` / `sunset_weekly` / `sunset_once` builders, which take a `DaysOfWeek` set for the days a repeating rule fires on and a `ScheduleTime` for when it fires. Rules read back from the device are `ScheduleRuleResult`, which `to_editable` converts into a `ScheduleRule` for editing. `get_max_schedule_rules` reports how many rules the device can store in total.
-- `PlugHandler` and `PlugEnergyMonitoringHandler`: added `set_timer`, `get_timer`, and `clear_timer` for the plug's countdown timer (the "Timer" feature in the Tapo app). The plug supports a single armed timer at a time, so `set_timer` replaces any timer currently armed.
+- `PlugHandler` and `PlugEnergyMonitoringHandler`: added `add_schedule_rule`, `edit_schedule_rule`, `get_schedule_rules`, `get_max_schedule_rules`, `remove_schedule_rule`, and `remove_all_schedule_rules` for plug schedule rules (the "Schedule" feature in the Tapo app). Construct rules with the `ScheduleRule::clock_weekly` / `clock_once` / `sunrise_weekly` / `sunrise_once` / `sunset_weekly` / `sunset_once` builders, which take a `DaysOfWeek` set for the days a repeating rule fires on and a `ScheduleTime` for when it fires. Rules read back from the device are `ScheduleRuleResult`, which `to_editable` converts into a `ScheduleRule` for editing. `get_max_schedule_rules` reports how many rules the device can store in total. (thanks to @Hueburtsonly)
+- `PlugHandler` and `PlugEnergyMonitoringHandler`: added `set_timer`, `get_timer`, and `clear_timer` for the plug's countdown timer (the "Timer" feature in the Tapo app). The plug supports a single armed timer at a time, so `set_timer` replaces any timer currently armed. (thanks to @Hueburtsonly)
 - `ChildDeviceHubResult`: added `device_id()`, `nickname()`, and `model()` accessors so callers can read these common fields without matching on every variant.
 - `HubHandler`: added `ke100_unchecked`, `s200_unchecked`, `s210_unchecked`, `t100_unchecked`, `t110_unchecked`, `t300_unchecked`, and `t31x_unchecked` for constructing typed child handlers without the validation round-trip. Use when the caller already has a valid device id.
 - `PowerStripHandler` and `PowerStripEnergyMonitoringHandler`: added `plug_unchecked(device_id)` for constructing the typed plug handler without the validation round-trip.
@@ -17,7 +17,7 @@ file. This change log follows the conventions of
 ### Changed
 
 - `TriggerLogsResult`: now derives `Serialize` so the type can be re-serialized by downstream consumers.
-- Device errors: the schedule rule error codes `-1802`, `-1803` and `-1805` now report as `SCHEDULE_FULL`, `SCHEDULE_CONFLICT` and `SCHEDULE_INDEX` instead of `UNKNOWN`.
+- Device errors: the schedule rule error codes `-1802`, `-1803` and `-1805` now report as `SCHEDULE_FULL`, `SCHEDULE_CONFLICT` and `SCHEDULE_INDEX` instead of `UNKNOWN`. (thanks to @Hueburtsonly)
 
 ### Fixed
 
@@ -27,14 +27,14 @@ file. This change log follows the conventions of
 
 ### Added
 
-- `PlugHandler` and `PlugEnergyMonitoringHandler`: added `add_schedule_rule`, `edit_schedule_rule`, `get_schedule_rules`, `get_max_schedule_rules`, `remove_schedule_rule`, and `remove_all_schedule_rules` for plug schedule rules (the "Schedule" feature in the Tapo app). Construct rules with the `ScheduleRule.clock_weekly` / `clock_once` / `sunrise_weekly` / `sunrise_once` / `sunset_weekly` / `sunset_once` factory methods, which take a `DaysOfWeek` set for the days a repeating rule fires on and a `ScheduleTime` for when it fires. Rules read back from the device are `ScheduleRuleResult`, which `to_editable` converts into a `ScheduleRule` for editing. `get_max_schedule_rules` reports how many rules the device can store in total.
-- `PlugHandler` and `PlugEnergyMonitoringHandler`: added `set_timer`, `get_timer`, and `clear_timer` for the plug's countdown timer (the "Timer" feature in the Tapo app). The plug supports a single armed timer at a time, so `set_timer` replaces any timer currently armed.
+- `PlugHandler` and `PlugEnergyMonitoringHandler`: added `add_schedule_rule`, `edit_schedule_rule`, `get_schedule_rules`, `get_max_schedule_rules`, `remove_schedule_rule`, and `remove_all_schedule_rules` for plug schedule rules (the "Schedule" feature in the Tapo app). Construct rules with the `ScheduleRule.clock_weekly` / `clock_once` / `sunrise_weekly` / `sunrise_once` / `sunset_weekly` / `sunset_once` factory methods, which take a `DaysOfWeek` set for the days a repeating rule fires on and a `ScheduleTime` for when it fires. Rules read back from the device are `ScheduleRuleResult`, which `to_editable` converts into a `ScheduleRule` for editing. `get_max_schedule_rules` reports how many rules the device can store in total. (thanks to @Hueburtsonly)
+- `PlugHandler` and `PlugEnergyMonitoringHandler`: added `set_timer`, `get_timer`, and `clear_timer` for the plug's countdown timer (the "Timer" feature in the Tapo app). The plug supports a single armed timer at a time, so `set_timer` replaces any timer currently armed. (thanks to @Hueburtsonly)
 - `HubHandler`: added `ke100_unchecked`, `s200_unchecked`, `s210_unchecked`, `t100_unchecked`, `t110_unchecked`, `t300_unchecked`, and `t31x_unchecked` for constructing typed child handlers without the validation round-trip. Use when the caller already has a valid device id.
 - `PowerStripHandler` and `PowerStripEnergyMonitoringHandler`: added `plug_unchecked(device_id)` for constructing the typed plug handler without the validation round-trip.
 
 ### Changed
 
-- Device errors: the schedule rule error codes `-1802`, `-1803` and `-1805` now report as `SCHEDULE_FULL`, `SCHEDULE_CONFLICT` and `SCHEDULE_INDEX` instead of `UNKNOWN`.
+- Device errors: the schedule rule error codes `-1802`, `-1803` and `-1805` now report as `SCHEDULE_FULL`, `SCHEDULE_CONFLICT` and `SCHEDULE_INDEX` instead of `UNKNOWN`. (thanks to @Hueburtsonly)
 
 ### Fixed
 
