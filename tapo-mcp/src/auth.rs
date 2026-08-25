@@ -11,14 +11,16 @@ pub async fn require_bearer_token(
     State(expected_key): State<String>,
     request: Request,
     next: Next,
-) -> Result<Response, Response> {
-    let token = extract_bearer_token(request.headers()).ok_or_else(unauthorized)?;
+) -> Response {
+    let Some(token) = extract_bearer_token(request.headers()) else {
+        return unauthorized();
+    };
 
     if expected_key.as_bytes().ct_eq(token.as_bytes()).unwrap_u8() != 1 {
-        return Err(unauthorized());
+        return unauthorized();
     }
 
-    Ok(next.run(request).await)
+    next.run(request).await
 }
 
 fn unauthorized() -> Response {
