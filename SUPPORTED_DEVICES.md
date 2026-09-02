@@ -12,7 +12,7 @@
 &#x2705; - Rust and Python\
 (d) - Requires the `debug` feature flag (enabled by default in `tapo-py`)
 
-| Feature<br/><br/><br/>              | L510<br/>L520<br/>L610<br/> | L530<br/>L535<br/>L630<br/> | L900<br/><br/><br/> | L920<br/>L930<br/><br/> | P100<br/>P105<br/><br/> | P110<br/>P110M<br/>P115<br/> | P300<br/>P306<br/><br/> | P304M<br/>P316M<br/><br/> | H100<br/><br/><br/> |
+| Feature<br/><br/><br/>              | L510<br/>L520<br/>L610<br/> | L530<br/>L535<br/>L630<br/> | L900<br/><br/><br/> | L920<br/>L930<br/><br/> | P100<br/>P105<br/><br/> | P110<br/>P110M<br/>P115<br/> | P300<br/>P306<br/><br/> | P304M<br/>P316M<br/><br/> | H100<br/>H110<br/><br/> |
 | ----------------------------------- | :-------------------------- | :-------------------------- | :------------------ | :---------------------- | :---------------------- | :--------------------------- | :---------------------- | :------------------------ | :------------------ |
 | add_schedule_rule                   |                             |                             |                     |                         | &#x2705;                | &#x2705;                     |                         |                           |                     |
 | clear_timer                         |                             |                             |                     |                         | &#x2705;                | &#x2705;                     |                         |                           |                     |
@@ -78,24 +78,26 @@
 &#x2705; - Rust and Python\
 (d) - Requires the `debug` feature flag (enabled by default in `tapo-py`)
 
-| Feature<br/><br/>                | KE100<br/><br/> | S200B<br/>S200D | S210<br/><br/> | T100<br/><br/> | T110<br/><br/> | T300<br/><br/> | T310<br/>T315 |
-| -------------------------------- | :-------------- | :-------------- | :------------- | :------------- | :------------- | :------------- | :------------ |
-| get_component_list (d)           | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
-| get_device_info \*               | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
-| get_device_info_json (d)         | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
-| get_device_usage                 |                 |                 | &#x2705;       |                |                |                |               |
-| get_temperature_humidity_records |                 |                 |                |                |                |                | &#x2705;      |
-| get_trigger_logs                 |                 | &#x2705;        |                | &#x2705;       | &#x2705;       | &#x2705;       |               |
-| off                              |                 |                 | &#x2705;       |                |                |                |               |
-| on                               |                 |                 | &#x2705;       |                |                |                |               |
-| set_child_protection             | &#x2705;        |                 |                |                |                |                |               |
-| set_frost_protection             | &#x2705;        |                 |                |                |                |                |               |
-| set_max_control_temperature      | &#x2705;        |                 |                |                |                |                |               |
-| set_min_control_temperature      | &#x2705;        |                 |                |                |                |                |               |
-| set_target_temperature           | &#x2705;        |                 |                |                |                |                |               |
-| set_temperature_offset           | &#x2705;        |                 |                |                |                |                |               |
+| Feature<br/><br/>                | KE100<br/><br/> | S200B<br/>S200D | S210<br/><br/> | T100<br/><br/> | T110<br/><br/> | T300<br/><br/> | T310<br/>T315 | IR Remote<br/><br/> |
+| -------------------------------- | :-------------- | :-------------- | :------------- | :------------- | :------------- | :------------- | :------------ | :------------------ |
+| get_component_list (d)           | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |                     |
+| get_device_info \*               | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      | &#x2705; \*\*       |
+| get_device_info_json (d)         | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |                     |
+| get_device_usage                 |                 |                 | &#x2705;       |                |                |                |               |                     |
+| get_temperature_humidity_records |                 |                 |                |                |                |                | &#x2705;      |                     |
+| get_trigger_logs                 |                 | &#x2705;        |                | &#x2705;       | &#x2705;       | &#x2705;       |               |                     |
+| off                              |                 |                 | &#x2705;       |                |                |                |               |                     |
+| on                               |                 |                 | &#x2705;       |                |                |                |               |                     |
+| send_ir_cmd_by_id                |                 |                 |                |                |                |                |               | &#x2705;            |
+| set_child_protection             | &#x2705;        |                 |                |                |                |                |               |                     |
+| set_frost_protection             | &#x2705;        |                 |                |                |                |                |               |                     |
+| set_max_control_temperature      | &#x2705;        |                 |                |                |                |                |               |                     |
+| set_min_control_temperature      | &#x2705;        |                 |                |                |                |                |               |                     |
+| set_target_temperature           | &#x2705;        |                 |                |                |                |                |               |                     |
+| set_temperature_offset           | &#x2705;        |                 |                |                |                |                |               |                     |
 
-\* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child device handler.
+\* Obtained by calling `get_child_device_list` on the hub device or `get_device_info` on a child device handler.\
+\*\* IR remotes have no device info of their own, so it is only available from `get_child_device_list` on the hub device.
 
 ## Power Strip Child Devices
 

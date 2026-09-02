@@ -10,6 +10,11 @@ file. This change log follows the conventions of
 
 - `PlugHandler` and `PlugEnergyMonitoringHandler`: added `add_schedule_rule`, `edit_schedule_rule`, `get_schedule_rules`, `get_max_schedule_rules`, `remove_schedule_rule`, and `remove_all_schedule_rules` for plug schedule rules (the "Schedule" feature in the Tapo app). Construct rules with the `ScheduleRule::clock_weekly` / `clock_once` / `sunrise_weekly` / `sunrise_once` / `sunset_weekly` / `sunset_once` builders, which take a `DaysOfWeek` set for the days a repeating rule fires on and a `ScheduleTime` for when it fires. Rules read back from the device are `ScheduleRuleResult`, which `to_editable` converts into a `ScheduleRule` for editing. `get_max_schedule_rules` reports how many rules the device can store in total. (thanks to @Hueburtsonly)
 - `PlugHandler` and `PlugEnergyMonitoringHandler`: added `set_timer`, `get_timer`, and `clear_timer` for the plug's countdown timer (the "Timer" feature in the Tapo app). The plug supports a single armed timer at a time, so `set_timer` replaces any timer currently armed. (thanks to @Hueburtsonly)
+- H110 hub support. `ApiClient`: added `h110`, an alias for `h100` since the two hubs speak the same protocol. `DeviceType::from_model` now maps `H110` to `DeviceType::Hub`, so H110 hubs are returned by device discovery.
+- `ChildDeviceHubResult`: added an `IrRemote` variant for the IR remotes (`SMART.TAPOREMOTE`) that can be paired with an H110 hub. Existing exhaustive matches on `ChildDeviceHubResult` will need to handle it.
+- `IrRemoteResult` and `IrRemoteKey`: added for the IR remote child devices, exposing the stored `key_list` alongside the usual child device properties.
+- `IrRemoteHandler`: added with a `send_ir_cmd_by_id` method that sends one of the keys stored on an IR remote.
+- `HubHandler`: added `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`.
 - `ChildDeviceHubResult`: added `device_id()`, `nickname()`, and `model()` accessors so callers can read these common fields without matching on every variant.
 - `HubHandler`: added `ke100_unchecked`, `s200_unchecked`, `s210_unchecked`, `t100_unchecked`, `t110_unchecked`, `t300_unchecked`, and `t31x_unchecked` for constructing typed child handlers without the validation round-trip. Use when the caller already has a valid device id.
 - `PowerStripHandler` and `PowerStripEnergyMonitoringHandler`: added `plug_unchecked(device_id)` for constructing the typed plug handler without the validation round-trip.
@@ -29,6 +34,10 @@ file. This change log follows the conventions of
 
 - `PlugHandler` and `PlugEnergyMonitoringHandler`: added `add_schedule_rule`, `edit_schedule_rule`, `get_schedule_rules`, `get_max_schedule_rules`, `remove_schedule_rule`, and `remove_all_schedule_rules` for plug schedule rules (the "Schedule" feature in the Tapo app). Construct rules with the `ScheduleRule.clock_weekly` / `clock_once` / `sunrise_weekly` / `sunrise_once` / `sunset_weekly` / `sunset_once` factory methods, which take a `DaysOfWeek` set for the days a repeating rule fires on and a `ScheduleTime` for when it fires. Rules read back from the device are `ScheduleRuleResult`, which `to_editable` converts into a `ScheduleRule` for editing. `get_max_schedule_rules` reports how many rules the device can store in total. (thanks to @Hueburtsonly)
 - `PlugHandler` and `PlugEnergyMonitoringHandler`: added `set_timer`, `get_timer`, and `clear_timer` for the plug's countdown timer (the "Timer" feature in the Tapo app). The plug supports a single armed timer at a time, so `set_timer` replaces any timer currently armed. (thanks to @Hueburtsonly)
+- H110 hub support. `ApiClient`: added `h110`, an alias for `h100` since the two hubs speak the same protocol. `DeviceType.from_model` now maps `H110` to `DeviceType.Hub`, so H110 hubs are returned by device discovery.
+- `IrRemoteResult` and `IrRemoteKey`: added for the IR remote child devices (`SMART.TAPOREMOTE`) that can be paired with an H110 hub, exposing the stored `key_list` alongside the usual child device properties. `HubHandler.get_child_device_list` can now return `IrRemoteResult` items.
+- `IrRemoteHandler`: added with a `send_ir_cmd_by_id` method that sends one of the keys stored on an IR remote.
+- `HubHandler`: added `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`.
 - `HubHandler`: added `ke100_unchecked`, `s200_unchecked`, `s210_unchecked`, `t100_unchecked`, `t110_unchecked`, `t300_unchecked`, and `t31x_unchecked` for constructing typed child handlers without the validation round-trip. Use when the caller already has a valid device id.
 - `PowerStripHandler` and `PowerStripEnergyMonitoringHandler`: added `plug_unchecked(device_id)` for constructing the typed plug handler without the validation round-trip.
 
@@ -41,6 +50,10 @@ file. This change log follows the conventions of
 - AES SSL protocol (cameras): an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an authentication error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
 
 ## [MCP Unreleased][Unreleased]
+
+### Added
+
+- `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub. It is now listed as a supported device, with its sensors and IR remotes surfaced under `children`. IR remotes serve `DeviceInfo`, which includes the list of keys stored on the remote.
 
 ## [MCP v0.5.0][tapo-mcp-v0.5.0] - 2026-07-11
 
