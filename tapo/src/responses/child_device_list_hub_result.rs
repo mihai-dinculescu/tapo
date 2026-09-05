@@ -27,7 +27,8 @@ use crate::responses::{DecodableResultExt, TapoResponseExt};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct ChildDeviceListHubResult {
     /// Hub child devices
-    #[serde(rename = "child_device_list")]
+    /// H200 firmware 1.6.5 omits the field entirely when the list is empty.
+    #[serde(rename = "child_device_list", default)]
     pub devices: Vec<ChildDeviceHubResult>,
 }
 
@@ -206,5 +207,30 @@ impl DecodableResultExt for ChildDeviceHubResult {
                 Ok(ChildDeviceHubResult::Other(Box::new(device.decode()?)))
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_empty_child_device_list_parses_as_empty() {
+        // H200 firmware 1.6.1 response when no sensors are attached.
+        let json = r#"{"child_device_list":[],"start_index":0,"sum":0}"#;
+
+        let parsed: ChildDeviceListHubResult = serde_json::from_str(json).unwrap();
+
+        assert!(parsed.devices.is_empty());
+    }
+
+    #[test]
+    fn test_missing_child_device_list_parses_as_empty() {
+        // H200 firmware 1.6.5 response when no sensors are attached.
+        let json = r#"{"start_index":0,"sum":0}"#;
+
+        let parsed: ChildDeviceListHubResult = serde_json::from_str(json).unwrap();
+
+        assert!(parsed.devices.is_empty());
     }
 }

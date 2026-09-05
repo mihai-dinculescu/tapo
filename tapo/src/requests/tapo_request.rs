@@ -7,7 +7,9 @@ use super::{
     GetEnergyDataParams, GetPowerDataParams, GetScheduleRulesParams, GetTriggerLogsParams,
     HandshakeParams, LightingEffect, LoginDeviceParams, MultipleRequestParams, PlayAlarmParams,
     RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams,
-    SegmentEffect, SmartCamDoParams, SmartCamGetParams,
+    SegmentEffect, SmartCamControlChildParams, SmartCamDoParams, SmartCamGetChildDeviceListParams,
+    SmartCamGetGeneralDeviceListParams, SmartCamGetParams, SmartCamSearchDateWithVideoParams,
+    SmartCamSearchVideoWithUtcParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -51,6 +53,20 @@ pub(crate) enum TapoRequest {
     SmartCamGet(SmartCamGetParams),
     #[serde(rename = "do")]
     SmartCamDo(SmartCamDoParams),
+    #[serde(rename = "getChildDeviceList")]
+    SmartCamGetChildDeviceList(TapoParams<SmartCamGetChildDeviceListParams>),
+    // Shares the `childControl` pagination payload with `getChildDeviceList`.
+    #[cfg(feature = "debug")]
+    #[serde(rename = "getChildDeviceComponentList")]
+    SmartCamGetChildDeviceComponentList(TapoParams<SmartCamGetChildDeviceListParams>),
+    #[serde(rename = "getGeneralDeviceList")]
+    SmartCamGetGeneralDeviceList(TapoParams<SmartCamGetGeneralDeviceListParams>),
+    #[serde(rename = "searchDateWithVideo")]
+    SmartCamSearchDateWithVideo(TapoParams<SmartCamSearchDateWithVideoParams>),
+    #[serde(rename = "searchVideoWithUTC")]
+    SmartCamSearchVideoWithUtc(TapoParams<SmartCamSearchVideoWithUtcParams>),
+    #[serde(rename = "controlChild")]
+    SmartCamControlChild(Box<TapoParams<SmartCamControlChildParams>>),
     // Plug "Timer" (countdown) requests
     AddCountdownRule(TapoParams<AddTimerParams>),
     GetCountdownRules(TapoParams<EmptyObjectParams>),
