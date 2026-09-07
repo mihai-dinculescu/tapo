@@ -175,5 +175,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    info!("Opening a media stream session...");
+    let media_stream_session = hub.open_media_stream_session().await?;
+    info!("Media stream session: {media_stream_session:?}");
+
     Ok(())
 }

@@ -141,6 +141,10 @@ macro_rules! tapo_handler {
         #[derive(Debug)]
         pub struct $name {
             client: std::sync::Arc<tokio::sync::RwLock<crate::api::ApiClient>>,
+            // A handler may read its IP address only from `debug`-gated
+            // methods (e.g. `CameraHubHandler::open_media_stream_session`),
+            // which leaves the field unused without the feature.
+            #[cfg_attr(not(feature = "debug"), allow(dead_code))]
             ip_address: String,
         }
 

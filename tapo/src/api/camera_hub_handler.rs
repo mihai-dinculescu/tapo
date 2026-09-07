@@ -12,13 +12,14 @@ use crate::responses::{
 };
 
 #[cfg(feature = "debug")]
-use crate::responses::ChildDeviceComponentList;
+use crate::responses::{ChildDeviceComponentList, MediaStreamSession};
 
 tapo_handler! {
     /// Handler for camera hubs, such as the
     /// [H200](https://www.tapo.com/en/search/?q=H200) and
     /// [H500](https://www.tapo.com/en/search/?q=H500).
     CameraHubHandler(DeviceInfoCameraHubResult),
+    ip_address,
 }
 
 /// Hub handler methods.
@@ -213,6 +214,23 @@ impl CameraHubHandler {
             .read()
             .await
             .get_child_device_component_list()
+            .await
+    }
+
+    /// Opens an authenticated session with the hub's media stream service
+    /// (TCP port 8800), which the Tapo app uses for live view and for playing
+    /// back recordings stored on the hub, and returns it as [`MediaStreamSession`].
+    ///
+    /// This is a stepping stone towards fetching recorded video from the hub.
+    /// Only the authentication handshake is implemented, so the session is
+    /// closed again as soon as it has been established. Useful for verifying
+    /// that the hub accepts the handshake and the cloud password.
+    #[cfg(feature = "debug")]
+    pub async fn open_media_stream_session(&self) -> Result<MediaStreamSession, Error> {
+        self.client
+            .read()
+            .await
+            .open_media_stream_session(&self.ip_address)
             .await
     }
 }

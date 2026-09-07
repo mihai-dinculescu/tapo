@@ -5,6 +5,8 @@ mod aes_ssl_protocol;
 mod crypto;
 mod klap_cipher;
 mod klap_protocol;
+#[cfg(feature = "debug")]
+pub(super) mod media_stream;
 mod tapo_protocol;
 
 pub(crate) use tapo_protocol::*;

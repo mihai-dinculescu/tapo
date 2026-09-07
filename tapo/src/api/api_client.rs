@@ -20,7 +20,7 @@ use crate::requests::{
 #[cfg(feature = "debug")]
 use crate::responses::{
     ChildDeviceComponentList, ChildDeviceComponentListResult, Component, ComponentListResult,
-    SupportedAlarmTypeListResult,
+    MediaStreamSession, SupportedAlarmTypeListResult,
 };
 
 use crate::responses::{
@@ -34,6 +34,8 @@ use crate::responses::{
 use super::discovery::DeviceDiscovery;
 #[cfg(feature = "debug")]
 use super::discovery::DeviceDiscoveryRaw;
+#[cfg(feature = "debug")]
+use super::protocol::media_stream;
 use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
 use super::{
     CameraHubHandler, CameraPtzHandler, ColorLightHandler, HubHandler, LightHandler,
@@ -42,6 +44,8 @@ use super::{
 };
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
+/// Used when the caller does not set one via [`ApiClient::with_timeout`].
+const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 /// Camera hubs (H200, H500) authenticate the local session with this username
 /// and the TP-Link cloud password, rather than the cloud account username.
 const CAMERA_HUB_USERNAME: &str = "admin";
@@ -709,11 +713,19 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn h200(mut self, ip_address: impl Into<String>) -> Result<CameraHubHandler, Error> {
+        let ip_address = ip_address.into();
         self.tapo_username = CAMERA_HUB_USERNAME.to_string();
-        self.login(ip_address, DeviceFamily::SmartCam, AuthProtocol::AesSsl)
-            .await?;
+        self.login(
+            ip_address.clone(),
+            DeviceFamily::SmartCam,
+            AuthProtocol::AesSsl,
+        )
+        .await?;
 
-        Ok(CameraHubHandler::new(Arc::new(RwLock::new(self))))
+        Ok(CameraHubHandler::new(
+            Arc::new(RwLock::new(self)),
+            ip_address,
+        ))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraHubHandler`].
@@ -741,11 +753,19 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn h500(mut self, ip_address: impl Into<String>) -> Result<CameraHubHandler, Error> {
+        let ip_address = ip_address.into();
         self.tapo_username = CAMERA_HUB_USERNAME.to_string();
-        self.login(ip_address, DeviceFamily::SmartCam, AuthProtocol::AesSsl)
-            .await?;
+        self.login(
+            ip_address.clone(),
+            DeviceFamily::SmartCam,
+            AuthProtocol::AesSsl,
+        )
+        .await?;
 
-        Ok(CameraHubHandler::new(Arc::new(RwLock::new(self))))
+        Ok(CameraHubHandler::new(
+            Arc::new(RwLock::new(self)),
+            ip_address,
+        ))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraPtzHandler`].
@@ -1036,6 +1056,21 @@ impl ApiClient {
         self.protocol_mut()?
             .refresh_session(tapo_username, tapo_password)
             .await
+    }
+
+    #[cfg(feature = "debug")]
+    pub(crate) async fn open_media_stream_session(
+        &self,
+        ip_address: &str,
+    ) -> Result<MediaStreamSession, Error> {
+        debug!("Open media stream session...");
+
+        // Only the handshake is implemented for now, so the socket is dropped
+        // as soon as the session has been established.
+        let (_stream, session) =
+            media_stream::authenticate(ip_address, &self.tapo_password, self.timeout()).await?;
+
+        Ok(session)
     }
 
     #[cfg(feature = "debug")]
@@ -1544,13 +1579,15 @@ impl ApiClient {
         Ok(())
     }
 
+    fn timeout(&self) -> Duration {
+        self.timeout.unwrap_or(DEFAULT_TIMEOUT)
+    }
+
     fn protocol_mut(&mut self) -> Result<&mut TapoProtocol, Error> {
         if self.protocol.is_none() {
-            let timeout = self.timeout.unwrap_or_else(|| Duration::from_secs(30));
-
             let client = Client::builder()
                 .http1_title_case_headers()
-                .timeout(timeout)
+                .timeout(self.timeout())
                 .danger_accept_invalid_certs(true)
                 .build()?;
             self.protocol = Some(TapoProtocol::new(client));
