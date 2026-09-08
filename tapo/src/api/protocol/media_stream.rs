@@ -3,9 +3,12 @@
 //! Camera hubs (H200, H500) serve live view and playback of hub-stored
 //! recordings over a proprietary, stateful media session on TCP port 8800.
 //! The session opens with a plain HTTP `POST /stream` request, which the hub
-//! challenges with RFC 2617 Digest authentication. On success, the hub issues
-//! an `X-Session-Id` and the socket then carries `multipart/mixed` control and
-//! media parts.
+//! challenges with RFC 2617 Digest authentication. On success, the hub answers
+//! `200` with the start of a `multipart/mixed` response whose body carries the
+//! control and media parts for the rest of the connection. Verified against an
+//! H200: the `200` is `HTTP/1.0`, advertises `X-Encrypt-Type: PLAIN` and a
+//! `Key-Exchange` header, and omits both `X-Session-Id` and `X-Hb`. The Tapo
+//! app tolerates the missing headers and judges success on the status alone.
 //!
 //! Only the authentication handshake is implemented for now. The multipart
 //! control channel (`GetVodParams`, heartbeats) and media demuxing are not.
@@ -116,7 +119,7 @@ async fn handshake(
 
     match response.status {
         200 => {
-            let session = MediaStreamSession::try_from(&response)?;
+            let session = MediaStreamSession::from(&response);
             debug!("Media stream session established: {session:?}");
             Ok((stream, session))
         }
@@ -352,19 +355,12 @@ impl HttpResponse {
     }
 }
 
-impl TryFrom<&HttpResponse> for MediaStreamSession {
-    type Error = Error;
-
-    fn try_from(response: &HttpResponse) -> Result<Self, Self::Error> {
-        let session_id = response
-            .header("x-session-id")
-            .ok_or_else(|| {
-                Error::Tapo(TapoResponseError::ResponseError {
-                    description: "X-Session-Id header not found in the media stream response"
-                        .to_string(),
-                })
-            })?
-            .to_string();
+impl From<&HttpResponse> for MediaStreamSession {
+    fn from(response: &HttpResponse) -> Self {
+        // Every header is optional: the Tapo app defaults a missing session id
+        // to an empty string and a missing heartbeat interval to 15 seconds,
+        // and the H200 sends neither.
+        let session_id = response.header("x-session-id").map(str::to_string);
 
         let heartbeat_interval_s = response
             .header("x-hb")
@@ -372,11 +368,11 @@ impl TryFrom<&HttpResponse> for MediaStreamSession {
 
         let key_exchange = response.header("key-exchange").map(str::to_string);
 
-        Ok(Self {
+        Self {
             session_id,
             heartbeat_interval_s,
             key_exchange,
-        })
+        }
     }
 }
 
@@ -822,8 +818,8 @@ mod tests {
         assert_eq!(response.body, b"body");
         assert!(!response.keep_alive());
 
-        let session = MediaStreamSession::try_from(&response).unwrap();
-        assert_eq!(session.session_id, "42");
+        let session = MediaStreamSession::from(&response);
+        assert_eq!(session.session_id.as_deref(), Some("42"));
         assert_eq!(session.heartbeat_interval_s, Some(10));
         assert_eq!(session.key_exchange.as_deref(), Some("KEY"));
     }
@@ -850,10 +846,33 @@ mod tests {
         assert!(HttpResponse::parse(b"", Vec::new()).is_err());
     }
 
+    /// The `200` an H200 (firmware 1.6.5) actually sends: no session id, no
+    /// heartbeat interval, and a structured `Key-Exchange` value.
     #[test]
-    fn test_media_stream_session_requires_session_id() {
-        let response = HttpResponse::parse(b"HTTP/1.1 200 OK", Vec::new()).unwrap();
-        assert!(MediaStreamSession::try_from(&response).is_err());
+    fn test_media_stream_session_from_h200_response() {
+        let response = HttpResponse::parse(
+            b"HTTP/1.0 200 OK\r\n\
+              Server: streamd\r\n\
+              Content-Type: multipart/mixed;boundary=--device-stream-boundary--\r\n\
+              X-Encrypt-Type: PLAIN\r\n\
+              Pragma: no-cache\r\n\
+              Cache-Control: no-cache\r\n\
+              Key-Exchange: cipher=\"AES_128_CBC\" username=\"admin\" padding=\"PKCS7_16\" algorithm=\"HKDF\" nonce=\"4514f88f1148a6735bdc6a7d7b93b0b0\" salt=\"f9192a9ee24bc7db8df141bf2bd56af4\"\r\n\
+              Connection: close",
+            Vec::new(),
+        )
+        .unwrap();
+
+        let session = MediaStreamSession::from(&response);
+
+        assert_eq!(session.session_id, None);
+        assert_eq!(session.heartbeat_interval_s, None);
+        assert_eq!(
+            session.key_exchange.as_deref(),
+            Some(
+                "cipher=\"AES_128_CBC\" username=\"admin\" padding=\"PKCS7_16\" algorithm=\"HKDF\" nonce=\"4514f88f1148a6735bdc6a7d7b93b0b0\" salt=\"f9192a9ee24bc7db8df141bf2bd56af4\""
+            )
+        );
     }
 
     #[test]
