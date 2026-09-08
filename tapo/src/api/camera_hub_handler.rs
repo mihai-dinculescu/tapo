@@ -1,3 +1,6 @@
+#[cfg(feature = "debug")]
+use std::time::Duration;
+
 use chrono::NaiveDate;
 
 use crate::error::{Error, TapoResponseError};
@@ -12,7 +15,7 @@ use crate::responses::{
 };
 
 #[cfg(feature = "debug")]
-use crate::responses::{ChildDeviceComponentList, MediaStreamSession};
+use crate::responses::{ChildDeviceComponentList, MediaStreamPlaybackProbe, MediaStreamSession};
 
 tapo_handler! {
     /// Handler for camera hubs, such as the
@@ -166,6 +169,9 @@ impl CameraHubHandler {
         let child_device_id = child_device_id.into();
         let child_device_mac = child_device_mac.into();
 
+        let client = self.client.read().await;
+        let player_id = client.player_id().to_string();
+
         let mut results = Vec::new();
         let mut start_index = 0;
 
@@ -178,13 +184,11 @@ impl CameraHubHandler {
                     start_index + PAGE_SIZE - 1,
                     child_device_id.clone(),
                     child_device_mac.clone(),
+                    player_id.clone(),
                 ),
             ));
 
-            let (recordings, to_be_continued) = self
-                .client
-                .read()
-                .await
+            let (recordings, to_be_continued) = client
                 .execute_smart_cam_multiple_request::<RecordingListHubResultRaw>(request)
                 .await?
                 .ok_or(Error::Tapo(TapoResponseError::EmptyResult))?
@@ -222,15 +226,53 @@ impl CameraHubHandler {
     /// back recordings stored on the hub, and returns it as [`MediaStreamSession`].
     ///
     /// This is a stepping stone towards fetching recorded video from the hub.
-    /// Only the authentication handshake is implemented, so the session is
-    /// closed again as soon as it has been established. Useful for verifying
-    /// that the hub accepts the handshake and the cloud password.
+    /// The session is closed again as soon as it has been established. Useful
+    /// for verifying that the hub accepts the handshake and the cloud password.
+    /// See [`CameraHubHandler::probe_recording_playback`] for the next step.
     #[cfg(feature = "debug")]
     pub async fn open_media_stream_session(&self) -> Result<MediaStreamSession, Error> {
         self.client
             .read()
             .await
             .open_media_stream_session(&self.ip_address)
+            .await
+    }
+
+    /// Plays back a recording stored on the hub over the media stream service
+    /// (TCP port 8800) and reports what the hub sent, as [`MediaStreamPlaybackProbe`].
+    ///
+    /// This is a stepping stone towards fetching recorded video from the hub.
+    /// The playback request and the control channel (heartbeats, sequence
+    /// acknowledgements, stop) are implemented, but the media parts are only
+    /// counted, not kept. Useful for verifying that the hub accepts the
+    /// playback request for a clip found with
+    /// [`CameraHubHandler::search_video_with_utc`] and streams media for it.
+    ///
+    /// # Arguments
+    ///
+    /// * `child_device_mac` - the `mac` of a camera returned by [`CameraHubHandler::get_general_device_list`].
+    /// * `start_time` - the `start_time` of a recording returned by [`CameraHubHandler::search_video_with_utc`].
+    /// * `end_time` - the `end_time` of that recording.
+    /// * `duration` - how long to keep the playback going. The method returns
+    ///   earlier if the hub reports the end of the recording or closes the session.
+    #[cfg(feature = "debug")]
+    pub async fn probe_recording_playback(
+        &self,
+        child_device_mac: impl Into<String>,
+        start_time: u64,
+        end_time: u64,
+        duration: Duration,
+    ) -> Result<MediaStreamPlaybackProbe, Error> {
+        self.client
+            .read()
+            .await
+            .probe_recording_playback(
+                &self.ip_address,
+                child_device_mac.into(),
+                start_time,
+                end_time,
+                duration,
+            )
             .await
     }
 }

@@ -20,7 +20,7 @@ use crate::requests::{
 #[cfg(feature = "debug")]
 use crate::responses::{
     ChildDeviceComponentList, ChildDeviceComponentListResult, Component, ComponentListResult,
-    MediaStreamSession, SupportedAlarmTypeListResult,
+    MediaStreamPlaybackProbe, MediaStreamSession, SupportedAlarmTypeListResult,
 };
 
 use crate::responses::{
@@ -88,6 +88,11 @@ pub trait ApiClientExt: std::fmt::Debug + Send + Sync {
 pub struct ApiClient {
     tapo_username: String,
     tapo_password: String,
+    /// Identifies this client to camera hubs, the way the Tapo app's
+    /// persistent terminal UUID does: it is sent as `player_id` in recording
+    /// searches and as `X-Client-UUID` on the media stream, which is how the
+    /// hub ties a playback session to the search that found the clip.
+    player_id: String,
     timeout: Option<Duration>,
     protocol: Option<TapoProtocol>,
 }
@@ -109,9 +114,14 @@ impl ApiClient {
         Self {
             tapo_username: tapo_username.into(),
             tapo_password: tapo_password.into(),
+            player_id: uuid::Uuid::new_v4().to_string(),
             timeout: None,
             protocol: None,
         }
+    }
+
+    pub(crate) fn player_id(&self) -> &str {
+        &self.player_id
     }
 
     /// Changes the connection timeout from the default value to the given value.
@@ -1065,12 +1075,45 @@ impl ApiClient {
     ) -> Result<MediaStreamSession, Error> {
         debug!("Open media stream session...");
 
-        // Only the handshake is implemented for now, so the socket is dropped
-        // as soon as the session has been established.
-        let (_stream, session) =
-            media_stream::authenticate(ip_address, &self.tapo_password, self.timeout()).await?;
+        // The socket is dropped as soon as the session has been established.
+        let connection = media_stream::authenticate(
+            ip_address,
+            &self.tapo_password,
+            &self.player_id,
+            self.timeout(),
+        )
+        .await?;
 
-        Ok(session)
+        Ok(connection.session)
+    }
+
+    #[cfg(feature = "debug")]
+    pub(crate) async fn probe_recording_playback(
+        &self,
+        ip_address: &str,
+        child_device_mac: String,
+        start_time: u64,
+        end_time: u64,
+        duration: Duration,
+    ) -> Result<MediaStreamPlaybackProbe, Error> {
+        debug!("Probe recording playback...");
+
+        let connection = media_stream::authenticate(
+            ip_address,
+            &self.tapo_password,
+            &self.player_id,
+            self.timeout(),
+        )
+        .await?;
+
+        let request = media_stream::playback::PlaybackRequest {
+            camera_mac: child_device_mac,
+            player_id: self.player_id.clone(),
+            start_time,
+            end_time,
+        };
+
+        media_stream::playback::probe(connection, request, duration).await
     }
 
     #[cfg(feature = "debug")]

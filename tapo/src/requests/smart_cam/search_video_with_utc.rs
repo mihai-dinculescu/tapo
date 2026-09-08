@@ -23,6 +23,10 @@ struct UtcFilterParams {
     end_index: u64,
     child_device_id: String,
     child_device_mac: String,
+    /// Identifies the client, so that the hub can tie a later playback of a
+    /// result (which sends the same id as `X-Client-UUID` and `player_id`
+    /// on the media stream) to this search.
+    player_id: String,
 }
 
 impl SmartCamSearchVideoWithUtcParams {
@@ -33,6 +37,7 @@ impl SmartCamSearchVideoWithUtcParams {
         end_index: u64,
         child_device_id: String,
         child_device_mac: String,
+        player_id: String,
     ) -> Self {
         Self {
             playback: PlaybackParams {
@@ -44,6 +49,7 @@ impl SmartCamSearchVideoWithUtcParams {
                     end_index,
                     child_device_id,
                     child_device_mac,
+                    player_id,
                 },
             },
         }
