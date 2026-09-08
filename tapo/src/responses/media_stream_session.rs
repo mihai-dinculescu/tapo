@@ -5,8 +5,9 @@ use serde::{Deserialize, Serialize};
 /// recordings stored on the hub.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MediaStreamSession {
-    /// The session identifier issued by the hub (`X-Session-Id`).
-    pub session_id: String,
+    /// The session identifier issued by the hub (`X-Session-Id`), when the
+    /// hub reports one. The H200 does not.
+    pub session_id: Option<String>,
     /// The heartbeat interval requested by the hub, in seconds (`X-Hb`),
     /// when the hub reports one.
     pub heartbeat_interval_s: Option<u64>,
