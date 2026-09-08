@@ -16,6 +16,8 @@ mod energy_data_result;
 mod energy_usage_result;
 mod general_device_list_hub_result;
 #[cfg(feature = "debug")]
+mod media_stream_playback_probe;
+#[cfg(feature = "debug")]
 mod media_stream_session;
 mod power_data_result;
 mod power_state;
@@ -46,6 +48,8 @@ pub use device_usage_result::*;
 pub use energy_data_result::*;
 pub use energy_usage_result::*;
 pub use general_device_list_hub_result::*;
+#[cfg(feature = "debug")]
+pub use media_stream_playback_probe::*;
 #[cfg(feature = "debug")]
 pub use media_stream_session::*;
 pub use power_data_result::*;

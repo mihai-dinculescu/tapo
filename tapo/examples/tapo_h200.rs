@@ -125,6 +125,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let general_device_list = hub.get_general_device_list().await?;
 
+    // The first recording found, to try playing it back at the end.
+    let mut recording_to_play = None;
+
     for general_device in general_device_list {
         info!(
             "Found general device with alias: {}, id: {}, model: {}, hub storage enabled: {}.",
@@ -172,12 +175,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 recordings.len(),
                 recordings.first()
             );
+
+            if recording_to_play.is_none() {
+                recording_to_play = recordings
+                    .into_iter()
+                    .next()
+                    .map(|recording| (general_device.mac.clone(), recording));
+            }
         }
     }
 
-    info!("Opening a media stream session...");
-    let media_stream_session = hub.open_media_stream_session().await?;
-    info!("Media stream session: {media_stream_session:?}");
+    match recording_to_play {
+        Some((mac, recording)) => {
+            info!(
+                "Playing back the recording from {} to {} of {mac} for up to 20 seconds...",
+                recording.start_time, recording.end_time
+            );
+            let probe = hub
+                .probe_recording_playback(
+                    mac,
+                    recording.start_time,
+                    recording.end_time,
+                    std::time::Duration::from_secs(20),
+                )
+                .await?;
+            info!("Recording playback probe: {probe:?}");
+        }
+        None => {
+            info!("No recording to play back. Opening a media stream session instead...");
+            let media_stream_session = hub.open_media_stream_session().await?;
+            info!("Media stream session: {media_stream_session:?}");
+        }
+    }
 
     Ok(())
 }

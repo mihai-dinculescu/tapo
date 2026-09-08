@@ -1,4 +1,4 @@
-//! Media stream authentication for camera hubs.
+//! Media stream sessions with camera hubs.
 //!
 //! Camera hubs (H200, H500) serve live view and playback of hub-stored
 //! recordings over a proprietary, stateful media session on TCP port 8800.
@@ -10,12 +10,16 @@
 //! `Key-Exchange` header, and omits both `X-Session-Id` and `X-Hb`. The Tapo
 //! app tolerates the missing headers and judges success on the status alone.
 //!
-//! Only the authentication handshake is implemented for now. The multipart
-//! control channel (`GetVodParams`, heartbeats) and media demuxing are not.
+//! This module implements the handshake. [`multipart`] frames the parts that
+//! flow in both directions afterwards and [`playback`] drives the control
+//! channel to play back a recording.
 //!
 //! The password is pre-hashed before it enters the Digest computation: the
 //! hub advertises `encrypt_type`, where `"3"` selects an upper-case hex SHA-256
 //! of the password and anything else falls back to upper-case hex MD5.
+
+mod multipart;
+pub(crate) mod playback;
 
 use std::collections::HashMap;
 use std::io::{self, ErrorKind};
@@ -46,21 +50,32 @@ const MAX_HEAD_SIZE: usize = 64 * 1024;
 /// re-established for the next request instead.
 const MAX_DRAIN_SIZE: usize = 64 * 1024;
 
+/// An authenticated media stream connection.
+pub(crate) struct MediaStreamConnection {
+    /// The socket, positioned somewhere inside the multipart body that
+    /// follows the `200 OK` head.
+    pub stream: TcpStream,
+    /// Body bytes that were read together with the `200 OK` head. They are
+    /// the start of the multipart body and must be parsed before anything
+    /// else read from `stream`.
+    pub buffered: Vec<u8>,
+    pub session: MediaStreamSession,
+}
+
 /// Connects to the hub's media stream port and completes the Digest
 /// authentication handshake.
 ///
-/// Returns the socket, positioned right after the `200 OK` response head,
-/// together with the session details. Later phases will use the socket for
-/// the multipart control and media channel.
-///
-/// `timeout` bounds the whole handshake: connecting, both request rounds,
-/// and a possible reconnect in between.
+/// `client_uuid` identifies this client to the hub (`X-Client-UUID`). It must
+/// match the `player_id` of the recording searches whose results are played
+/// back over the session. `timeout` bounds the whole handshake: connecting,
+/// both request rounds, and a possible reconnect in between.
 pub(crate) async fn authenticate(
     ip_address: &str,
     password: &str,
+    client_uuid: &str,
     timeout: Duration,
-) -> Result<(TcpStream, MediaStreamSession), Error> {
-    match tokio::time::timeout(timeout, handshake(ip_address, password)).await {
+) -> Result<MediaStreamConnection, Error> {
+    match tokio::time::timeout(timeout, handshake(ip_address, password, client_uuid)).await {
         Ok(result) => result,
         Err(_) => Err(anyhow!("media stream handshake timed out after {timeout:?}").into()),
     }
@@ -69,14 +84,14 @@ pub(crate) async fn authenticate(
 async fn handshake(
     ip_address: &str,
     password: &str,
-) -> Result<(TcpStream, MediaStreamSession), Error> {
-    let client_uuid = uuid::Uuid::new_v4().to_string();
+    client_uuid: &str,
+) -> Result<MediaStreamConnection, Error> {
     let mut stream = connect(ip_address).await?;
 
     // Round 1: an unauthenticated request, which the hub answers with a
     // Digest challenge.
     debug!("Requesting the media stream Digest challenge...");
-    let request = build_request(ip_address, &client_uuid, None);
+    let request = build_request(ip_address, client_uuid, None);
     let challenge_response = exchange(&mut stream, &request)
         .await?
         .ok_or_else(|| anyhow!("the hub closed the connection without sending a challenge"))?;
@@ -96,7 +111,7 @@ async fn handshake(
             // The hub may have closed the connection after the challenge, in
             // which case the request is retried on a fresh one.
             debug!("Sending the media stream Digest credentials...");
-            let request = build_request(ip_address, &client_uuid, Some(&authorization));
+            let request = build_request(ip_address, client_uuid, Some(&authorization));
             let mut response = if challenge_response.keep_alive() {
                 exchange(&mut stream, &request).await?
             } else {
@@ -121,7 +136,11 @@ async fn handshake(
         200 => {
             let session = MediaStreamSession::from(&response);
             debug!("Media stream session established: {session:?}");
-            Ok((stream, session))
+            Ok(MediaStreamConnection {
+                stream,
+                buffered: response.body,
+                session,
+            })
         }
         401 => Err(Error::Tapo(TapoResponseError::Unauthorized {
             kind: "MEDIA_STREAM_DIGEST",
