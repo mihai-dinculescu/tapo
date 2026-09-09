@@ -19,18 +19,20 @@
 //!    `do` `stop` request when the client is done.
 //!
 //! Shapes and defaults follow the Tapo app (`GetVodParams`,
-//! `DoStopRequest`, and the `VodStreamConnection` read loop).
+//! `DoStopRequest`, and the `VodStreamConnection` read loop). Verified
+//! against an H200 on 2026-09-09: a 15 s clip arrived as 705 `video/mp2t`
+//! parts (7.9 MB) followed by `stream_status: finished`.
 
 use std::time::{Duration, Instant};
 
 use anyhow::Context;
 use log::{debug, trace, warn};
 use serde::{Deserialize, Serialize};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::io::{AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 
 use crate::error::{Error, TapoResponseError};
-use crate::responses::{MediaStreamPlaybackOutcome, MediaStreamPlaybackProbe};
+use crate::responses::{MediaStreamPlaybackOutcome, MediaStreamPlaybackResult};
 
 use super::MediaStreamConnection;
 use super::multipart::{Frame, Part, PartParser, encode_client_part};
@@ -45,6 +47,9 @@ const ACK_EVERY: u64 = 25;
 const DEFAULT_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(15);
 /// Spare capacity reserved before each socket read.
 const READ_CHUNK_SIZE: usize = 64 * 1024;
+/// MPEG-TS packets are 188 bytes and start with this sync byte.
+const MPEG_TS_PACKET_SIZE: usize = 188;
+const MPEG_TS_SYNC_BYTE: u8 = 0x47;
 
 /// Selects the recording to play back.
 #[derive(Debug, Clone)]
@@ -63,7 +68,19 @@ pub(crate) async fn probe(
     connection: MediaStreamConnection,
     request: PlaybackRequest,
     duration: Duration,
-) -> Result<MediaStreamPlaybackProbe, Error> {
+) -> Result<MediaStreamPlaybackResult, Error> {
+    play(connection, request, duration, &mut tokio::io::sink()).await
+}
+
+/// Plays back the recording for up to `duration`, writing the body of every
+/// media part to `sink` in the order received, and reports what the hub
+/// sent. For an MPEG-TS stream the concatenation is a playable `.ts` file.
+pub(crate) async fn play<W: AsyncWrite + Unpin>(
+    connection: MediaStreamConnection,
+    request: PlaybackRequest,
+    duration: Duration,
+    sink: &mut W,
+) -> Result<MediaStreamPlaybackResult, Error> {
     let MediaStreamConnection {
         stream,
         buffered,
@@ -80,13 +97,14 @@ pub(crate) async fn probe(
     let mut state = State {
         session_id: session.session_id.clone(),
         seq: 0,
-        probe: MediaStreamPlaybackProbe {
+        result: MediaStreamPlaybackResult {
             session,
             playback_session_id: None,
             speed: None,
             media_part_count: 0,
             media_byte_count: 0,
             media_content_types: Vec::new(),
+            media_is_mpeg_ts: None,
             last_data_sequence: None,
             encrypted: false,
             event_types: Vec::new(),
@@ -115,11 +133,14 @@ pub(crate) async fn probe(
             match frame {
                 Frame::End => {
                     debug!("The hub sent the closing delimiter");
-                    state.probe.outcome = MediaStreamPlaybackOutcome::ClosedByHub;
+                    state.result.outcome = MediaStreamPlaybackOutcome::ClosedByHub;
                     break 'session;
                 }
                 Frame::Part(part) => {
-                    if !state.handle_part(&mut writer, part, request_seq).await? {
+                    if !state
+                        .handle_part(&mut writer, sink, part, request_seq)
+                        .await?
+                    {
                         break 'session;
                     }
                 }
@@ -128,7 +149,7 @@ pub(crate) async fn probe(
 
         let now = Instant::now();
         if now >= deadline {
-            debug!("Playback probe duration elapsed");
+            debug!("Playback time limit elapsed");
             break;
         }
         if now >= next_heartbeat {
@@ -150,7 +171,7 @@ pub(crate) async fn probe(
             ReadOutcome::TimedOut => {}
             ReadOutcome::Eof => {
                 debug!("The hub closed the media stream");
-                state.probe.outcome = MediaStreamPlaybackOutcome::ClosedByHub;
+                state.result.outcome = MediaStreamPlaybackOutcome::ClosedByHub;
                 break;
             }
         }
@@ -175,8 +196,10 @@ pub(crate) async fn probe(
         debug!("Failed to shut down the media stream: {err:?}");
     }
 
-    debug!("Playback probe finished: {:?}", state.probe);
-    Ok(state.probe)
+    sink.flush().await.context("flush the media sink")?;
+
+    debug!("Playback finished: {:?}", state.result);
+    Ok(state.result)
 }
 
 struct State {
@@ -185,7 +208,7 @@ struct State {
     /// handshake, if any.
     session_id: Option<String>,
     seq: u32,
-    probe: MediaStreamPlaybackProbe,
+    result: MediaStreamPlaybackResult,
 }
 
 impl State {
@@ -204,19 +227,20 @@ impl State {
     }
 
     /// Returns `false` when the session is over.
-    async fn handle_part(
+    async fn handle_part<W: AsyncWrite + Unpin>(
         &mut self,
         writer: &mut OwnedWriteHalf,
+        sink: &mut W,
         part: Part,
         request_seq: u32,
     ) -> Result<bool, Error> {
         if part
             .header("x-if-encrypt")
             .is_some_and(|value| value.trim() == "1")
-            && !self.probe.encrypted
+            && !self.result.encrypted
         {
-            warn!("The hub encrypts the media stream parts, which is not supported yet");
-            self.probe.encrypted = true;
+            debug!("The hub flags the media stream parts as encrypted (X-If-Encrypt: 1)");
+            self.result.encrypted = true;
         }
 
         if part.is_json() {
@@ -245,10 +269,10 @@ impl State {
                         "connection_closed" => Some(MediaStreamPlaybackOutcome::ClosedByHub),
                         _ => None,
                     };
-                    self.probe.event_types.push(event_type);
+                    self.result.event_types.push(event_type);
 
                     if let Some(outcome) = outcome {
-                        self.probe.outcome = outcome;
+                        self.result.outcome = outcome;
                         return Ok(false);
                     }
                 }
@@ -265,17 +289,31 @@ impl State {
             part.headers
         );
 
-        self.probe.media_part_count += 1;
-        self.probe.media_byte_count += part.body.len() as u64;
-        if !self.probe.media_content_types.contains(&content_type) {
-            self.probe.media_content_types.push(content_type);
+        if self.result.media_is_mpeg_ts.is_none() {
+            let is_mpeg_ts = looks_like_mpeg_ts(&part.body);
+            if self.result.encrypted && !is_mpeg_ts {
+                warn!(
+                    "The media stream parts are flagged as encrypted and do not look like MPEG-TS; decrypting them is not supported yet"
+                );
+            }
+            self.result.media_is_mpeg_ts = Some(is_mpeg_ts);
         }
+
+        self.result.media_part_count += 1;
+        self.result.media_byte_count += part.body.len() as u64;
+        if !self.result.media_content_types.contains(&content_type) {
+            self.result.media_content_types.push(content_type);
+        }
+
+        sink.write_all(&part.body)
+            .await
+            .context("write a media part to the media sink")?;
 
         if let Some(sequence) = part
             .header("x-data-sequence")
             .and_then(|value| value.trim().parse::<u64>().ok())
         {
-            self.probe.last_data_sequence = Some(sequence);
+            self.result.last_data_sequence = Some(sequence);
 
             if sequence % ACK_EVERY == 0 {
                 trace!("Acknowledging media stream sequence {sequence}");
@@ -315,11 +353,21 @@ impl State {
         if response.session_id.is_some() {
             self.session_id = response.session_id.clone();
         }
-        self.probe.playback_session_id = response.session_id;
-        self.probe.speed = response.speed;
+        self.result.playback_session_id = response.session_id;
+        self.result.speed = response.speed;
 
         Ok(true)
     }
+}
+
+/// Whether `body` starts with MPEG-TS packets: a sync byte at every packet
+/// boundary that falls inside the body.
+fn looks_like_mpeg_ts(body: &[u8]) -> bool {
+    !body.is_empty()
+        && body
+            .iter()
+            .step_by(MPEG_TS_PACKET_SIZE)
+            .all(|byte| *byte == MPEG_TS_SYNC_BYTE)
 }
 
 enum ReadOutcome {
@@ -575,6 +623,22 @@ mod tests {
     }
 
     #[test]
+    fn test_looks_like_mpeg_ts() {
+        let mut packets = vec![0u8; 188 * 3];
+        for index in [0, 188, 376] {
+            packets[index] = 0x47;
+        }
+        assert!(looks_like_mpeg_ts(&packets));
+        // A partial trailing packet is still MPEG-TS.
+        assert!(looks_like_mpeg_ts(&packets[..300]));
+
+        assert!(!looks_like_mpeg_ts(&[]));
+        assert!(!looks_like_mpeg_ts(&[0x00; 188]));
+        packets[188] = 0x00;
+        assert!(!looks_like_mpeg_ts(&packets));
+    }
+
+    #[test]
     fn test_parse_notification_without_seq() {
         let message: ControlMessage = serde_json::from_str(
             r#"{"type":"notification","params":{"event_type":"stream_status","status":"finished"}}"#,
@@ -592,7 +656,7 @@ mod tests {
         let mut state = State {
             session_id: None,
             seq: 0,
-            probe: MediaStreamPlaybackProbe {
+            result: MediaStreamPlaybackResult {
                 session: crate::responses::MediaStreamSession {
                     session_id: None,
                     heartbeat_interval_s: None,
@@ -603,6 +667,7 @@ mod tests {
                 media_part_count: 0,
                 media_byte_count: 0,
                 media_content_types: Vec::new(),
+                media_is_mpeg_ts: None,
                 last_data_sequence: None,
                 encrypted: false,
                 event_types: Vec::new(),

@@ -185,9 +185,22 @@ async fn handshake(
         200 => {
             let session = MediaStreamSession::from(&response);
             debug!("Media stream session established: {session:?}");
+
+            // Skip the declared body; the bytes after it are the start of
+            // the multipart stream.
+            let mut body = response.body;
+            let skip = response.content_length.min(body.len());
+            if skip > 0 {
+                debug!(
+                    "Media stream response body: {}",
+                    String::from_utf8_lossy(&body[..skip])
+                );
+            }
+            let buffered = body.split_off(skip);
+
             Ok(MediaStreamConnection {
                 stream,
-                buffered: response.body,
+                buffered,
                 session,
             })
         }
@@ -291,11 +304,10 @@ async fn exchange(stream: &mut TcpStream, request: &str) -> anyhow::Result<Optio
 
     let mut response = HttpResponse::parse(&buffer[..head_end], body)?;
 
-    // Only the challenge carries a body worth draining; a successful response
-    // is followed by the multipart stream, which must be left in the socket.
-    if response.status != 200 {
-        drain_body(stream, &mut response).await?;
-    }
+    // The challenge carries a short text body, and so may the `200` (an H200
+    // sends `Content-Length: 16` before the multipart stream). Only the
+    // declared length is drained; whatever follows is left for the caller.
+    drain_body(stream, &mut response).await?;
 
     Ok(Some(response))
 }
@@ -307,10 +319,7 @@ async fn drain_body(stream: &mut TcpStream, response: &mut HttpResponse) -> anyh
         return Ok(());
     }
 
-    let content_length = response
-        .header("content-length")
-        .and_then(|value| value.trim().parse::<usize>().ok())
-        .unwrap_or(0);
+    let content_length = response.content_length;
 
     if content_length > MAX_DRAIN_SIZE {
         response.reusable = false;
@@ -327,10 +336,10 @@ async fn drain_body(stream: &mut TcpStream, response: &mut HttpResponse) -> anyh
         response.body.extend_from_slice(&rest);
     }
 
-    if !response.body.is_empty() {
+    if content_length > 0 {
         trace!(
             "Media stream response body (raw):\n{}",
-            String::from_utf8_lossy(&response.body)
+            String::from_utf8_lossy(&response.body[..content_length.min(response.body.len())])
         );
     }
 
@@ -357,8 +366,11 @@ struct HttpResponse {
     status: u16,
     /// Header names are lower-cased.
     headers: Vec<(String, String)>,
-    /// Bytes received after the head, i.e. the start of the body.
+    /// Bytes received after the head, i.e. the start of the body. May run
+    /// past `content_length` into whatever follows the body.
     body: Vec<u8>,
+    /// The declared `Content-Length`, or 0.
+    content_length: usize,
     /// Whether the connection is still in a state where another request can
     /// be sent on it.
     reusable: bool,
@@ -384,7 +396,7 @@ impl HttpResponse {
                 anyhow!("media stream response has an invalid status line: {status_line}")
             })?;
 
-        let headers = lines
+        let headers: Vec<(String, String)> = lines
             .filter(|line| !line.is_empty())
             .filter_map(|line| {
                 let (name, value) = line.split_once(':')?;
@@ -392,11 +404,18 @@ impl HttpResponse {
             })
             .collect();
 
+        let content_length = headers
+            .iter()
+            .find(|(name, _)| name == "content-length")
+            .and_then(|(_, value)| value.trim().parse::<usize>().ok())
+            .unwrap_or(0);
+
         Ok(Self {
             version,
             status,
             headers,
             body,
+            content_length,
             reusable: true,
         })
     }

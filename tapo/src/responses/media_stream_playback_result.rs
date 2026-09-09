@@ -3,10 +3,9 @@ use serde::{Deserialize, Serialize};
 use crate::responses::MediaStreamSession;
 
 /// What a camera hub sent while a recording stored on it was played back over
-/// the media stream service (TCP port 8800). Media parts are counted, not
-/// kept.
+/// the media stream service (TCP port 8800).
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MediaStreamPlaybackProbe {
+pub struct MediaStreamPlaybackResult {
     /// The authenticated media stream session the playback ran on.
     pub session: MediaStreamSession,
     /// The playback session id issued by the hub in its response to the
@@ -21,10 +20,14 @@ pub struct MediaStreamPlaybackProbe {
     /// The distinct `Content-Type` values of the media parts, in order of
     /// first appearance. The Tapo app expects `video/mp2t` (MPEG-TS).
     pub media_content_types: Vec<String>,
+    /// Whether the first media part looks like cleartext MPEG-TS (a `0x47`
+    /// sync byte every 188 bytes). `None` until a media part has arrived.
+    pub media_is_mpeg_ts: Option<bool>,
     /// The `X-Data-Sequence` of the last media part received.
     pub last_data_sequence: Option<u64>,
     /// Whether the hub flagged the parts as encrypted (`X-If-Encrypt: 1`).
-    /// Encrypted parts are not supported yet.
+    /// An H200 sets the flag on a LAN session it also declares
+    /// `X-Encrypt-Type: PLAIN`; compare with `media_is_mpeg_ts`.
     pub encrypted: bool,
     /// The `event_type` of every notification the hub sent, in order.
     pub event_types: Vec<String>,
@@ -39,6 +42,6 @@ pub enum MediaStreamPlaybackOutcome {
     Finished,
     /// The hub closed the session or the connection.
     ClosedByHub,
-    /// The requested duration elapsed and the client stopped the playback.
+    /// The time limit elapsed and the client stopped the playback.
     DurationElapsed,
 }

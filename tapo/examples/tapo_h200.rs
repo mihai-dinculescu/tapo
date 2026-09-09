@@ -125,8 +125,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let general_device_list = hub.get_general_device_list().await?;
 
-    // The first recording found, to try playing it back at the end.
-    let mut recording_to_play = None;
+    // The first recording found, to download at the end.
+    let mut recording_to_download = None;
 
     for general_device in general_device_list {
         info!(
@@ -176,8 +176,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 recordings.first()
             );
 
-            if recording_to_play.is_none() {
-                recording_to_play = recordings
+            if recording_to_download.is_none() {
+                recording_to_download = recordings
                     .into_iter()
                     .next()
                     .map(|recording| (general_device.mac.clone(), recording));
@@ -185,24 +185,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    match recording_to_play {
+    match recording_to_download {
         Some((mac, recording)) => {
+            let path = format!("recording_{mac}_{}.ts", recording.start_time);
             info!(
-                "Playing back the recording from {} to {} of {mac} for up to 20 seconds...",
+                "Downloading the recording from {} to {} of {mac} to {path}...",
                 recording.start_time, recording.end_time
             );
-            let probe = hub
-                .probe_recording_playback(
-                    mac,
-                    recording.start_time,
-                    recording.end_time,
-                    std::time::Duration::from_secs(20),
-                )
+
+            let mut media = Vec::new();
+            let result = hub
+                .download_recording(mac, recording.start_time, recording.end_time, &mut media)
                 .await?;
-            info!("Recording playback probe: {probe:?}");
+            std::fs::write(&path, &media)?;
+
+            info!("Recording download: {result:?}");
+            info!("Wrote {} bytes to {path}.", media.len());
         }
         None => {
-            info!("No recording to play back. Opening a media stream session instead...");
+            info!("No recording to download. Opening a media stream session instead...");
             let media_stream_session = hub.open_media_stream_session().await?;
             info!("Media stream session: {media_stream_session:?}");
         }
