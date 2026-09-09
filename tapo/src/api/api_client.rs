@@ -1076,10 +1076,13 @@ impl ApiClient {
         debug!("Open media stream session...");
 
         // The socket is dropped as soon as the session has been established.
+        let session_request = media_stream::SessionRequest::PreConnect {
+            client_uuid: self.player_id.clone(),
+        };
         let connection = media_stream::authenticate(
             ip_address,
             &self.tapo_password,
-            &self.player_id,
+            &session_request,
             self.timeout(),
         )
         .await?;
@@ -1098,10 +1101,15 @@ impl ApiClient {
     ) -> Result<MediaStreamPlaybackProbe, Error> {
         debug!("Probe recording playback...");
 
+        let session_request = media_stream::SessionRequest::Playback {
+            camera_mac: child_device_mac.clone(),
+            player_id: self.player_id.clone(),
+            start_time,
+        };
         let connection = media_stream::authenticate(
             ip_address,
             &self.tapo_password,
-            &self.player_id,
+            &session_request,
             self.timeout(),
         )
         .await?;
