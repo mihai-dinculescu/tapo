@@ -107,6 +107,7 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
             media_is_mpeg_ts: None,
             last_data_sequence: None,
             encrypted: false,
+            first_media_part_headers: Vec::new(),
             event_types: Vec::new(),
             outcome: MediaStreamPlaybackOutcome::DurationElapsed,
         },
@@ -288,6 +289,11 @@ impl State {
             part.body.len(),
             part.headers
         );
+
+        if self.result.first_media_part_headers.is_empty() {
+            debug!("First media part headers: {:?}", part.headers);
+            self.result.first_media_part_headers = part.headers.clone();
+        }
 
         if self.result.media_is_mpeg_ts.is_none() {
             let is_mpeg_ts = looks_like_mpeg_ts(&part.body);
@@ -670,6 +676,7 @@ mod tests {
                 media_is_mpeg_ts: None,
                 last_data_sequence: None,
                 encrypted: false,
+                first_media_part_headers: Vec::new(),
                 event_types: Vec::new(),
                 outcome: MediaStreamPlaybackOutcome::DurationElapsed,
             },

@@ -29,6 +29,13 @@ pub struct MediaStreamPlaybackResult {
     /// An H200 sets the flag on a LAN session it also declares
     /// `X-Encrypt-Type: PLAIN`; compare with `media_is_mpeg_ts`.
     pub encrypted: bool,
+    /// The headers of the first media part received, verbatim (names
+    /// lower-cased). When the parts are encrypted, this exposes the crypto
+    /// headers the Tapo app decrypts with (`x-nonce` as the per-part IV,
+    /// `x-data-hmac`, and any `x-chain` / `x-password` key material), which
+    /// is what a decryption implementation needs. Empty until a media part
+    /// has arrived.
+    pub first_media_part_headers: Vec<(String, String)>,
     /// The `event_type` of every notification the hub sent, in order.
     pub event_types: Vec<String>,
     /// Why the playback stopped.
