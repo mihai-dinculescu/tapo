@@ -1,6 +1,9 @@
 #[cfg(feature = "debug")]
 use std::time::Duration;
 
+#[cfg(feature = "debug")]
+use tokio::io::AsyncWrite;
+
 use chrono::NaiveDate;
 
 use crate::error::{Error, TapoResponseError};
@@ -15,7 +18,7 @@ use crate::responses::{
 };
 
 #[cfg(feature = "debug")]
-use crate::responses::{ChildDeviceComponentList, MediaStreamPlaybackProbe, MediaStreamSession};
+use crate::responses::{ChildDeviceComponentList, MediaStreamPlaybackResult, MediaStreamSession};
 
 tapo_handler! {
     /// Handler for camera hubs, such as the
@@ -239,14 +242,11 @@ impl CameraHubHandler {
     }
 
     /// Plays back a recording stored on the hub over the media stream service
-    /// (TCP port 8800) and reports what the hub sent, as [`MediaStreamPlaybackProbe`].
-    ///
-    /// This is a stepping stone towards fetching recorded video from the hub.
-    /// The playback request and the control channel (heartbeats, sequence
-    /// acknowledgements, stop) are implemented, but the media parts are only
-    /// counted, not kept. Useful for verifying that the hub accepts the
-    /// playback request for a clip found with
+    /// (TCP port 8800) and reports what the hub sent, as [`MediaStreamPlaybackResult`],
+    /// without keeping the media. Useful for verifying that the hub accepts
+    /// the playback request for a clip found with
     /// [`CameraHubHandler::search_video_with_utc`] and streams media for it.
+    /// See [`CameraHubHandler::download_recording`] to keep the media.
     ///
     /// # Arguments
     ///
@@ -262,7 +262,7 @@ impl CameraHubHandler {
         start_time: u64,
         end_time: u64,
         duration: Duration,
-    ) -> Result<MediaStreamPlaybackProbe, Error> {
+    ) -> Result<MediaStreamPlaybackResult, Error> {
         self.client
             .read()
             .await
@@ -272,6 +272,42 @@ impl CameraHubHandler {
                 start_time,
                 end_time,
                 duration,
+            )
+            .await
+    }
+
+    /// Downloads a recording stored on the hub over the media stream service
+    /// (TCP port 8800), writing the media to `writer` as it arrives, and
+    /// reports what the hub sent as [`MediaStreamPlaybackResult`].
+    ///
+    /// The hub streams the recording as MPEG-TS, so writing to a file with a
+    /// `.ts` extension produces a playable clip. The method waits for the hub
+    /// to report the end of the recording, allowing twice the clip's length on
+    /// top of the client's timeout, and fails if that limit is reached.
+    ///
+    /// # Arguments
+    ///
+    /// * `child_device_mac` - the `mac` of a camera returned by [`CameraHubHandler::get_general_device_list`].
+    /// * `start_time` - the `start_time` of a recording returned by [`CameraHubHandler::search_video_with_utc`].
+    /// * `end_time` - the `end_time` of that recording.
+    /// * `writer` - where the media is written, e.g. a `Vec<u8>` or a `tokio::fs::File`.
+    #[cfg(feature = "debug")]
+    pub async fn download_recording<W: AsyncWrite + Unpin + Send>(
+        &self,
+        child_device_mac: impl Into<String>,
+        start_time: u64,
+        end_time: u64,
+        writer: &mut W,
+    ) -> Result<MediaStreamPlaybackResult, Error> {
+        self.client
+            .read()
+            .await
+            .download_recording(
+                &self.ip_address,
+                child_device_mac.into(),
+                start_time,
+                end_time,
+                writer,
             )
             .await
     }

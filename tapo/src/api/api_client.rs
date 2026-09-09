@@ -20,7 +20,8 @@ use crate::requests::{
 #[cfg(feature = "debug")]
 use crate::responses::{
     ChildDeviceComponentList, ChildDeviceComponentListResult, Component, ComponentListResult,
-    MediaStreamPlaybackProbe, MediaStreamSession, SupportedAlarmTypeListResult,
+    MediaStreamPlaybackOutcome, MediaStreamPlaybackResult, MediaStreamSession,
+    SupportedAlarmTypeListResult,
 };
 
 use crate::responses::{
@@ -1098,9 +1099,64 @@ impl ApiClient {
         start_time: u64,
         end_time: u64,
         duration: Duration,
-    ) -> Result<MediaStreamPlaybackProbe, Error> {
+    ) -> Result<MediaStreamPlaybackResult, Error> {
         debug!("Probe recording playback...");
 
+        let (connection, request) = self
+            .open_recording_playback(ip_address, child_device_mac, start_time, end_time)
+            .await?;
+
+        media_stream::playback::probe(connection, request, duration).await
+    }
+
+    #[cfg(feature = "debug")]
+    pub(crate) async fn download_recording<W: tokio::io::AsyncWrite + Unpin + Send>(
+        &self,
+        ip_address: &str,
+        child_device_mac: String,
+        start_time: u64,
+        end_time: u64,
+        writer: &mut W,
+    ) -> Result<MediaStreamPlaybackResult, Error> {
+        debug!("Download recording...");
+
+        // The hub streams at about real time, so allow twice the clip's
+        // length on top of the configured timeout before giving up.
+        let clip_length = Duration::from_secs(end_time.saturating_sub(start_time));
+        let time_limit = self.timeout() + clip_length * 2;
+
+        let (connection, request) = self
+            .open_recording_playback(ip_address, child_device_mac, start_time, end_time)
+            .await?;
+
+        let result = media_stream::playback::play(connection, request, time_limit, writer).await?;
+
+        if result.outcome == MediaStreamPlaybackOutcome::DurationElapsed {
+            return Err(anyhow::anyhow!(
+                "the hub did not finish streaming the recording within {time_limit:?}; received {} media parts ({} bytes)",
+                result.media_part_count,
+                result.media_byte_count
+            )
+            .into());
+        }
+
+        Ok(result)
+    }
+
+    #[cfg(feature = "debug")]
+    async fn open_recording_playback(
+        &self,
+        ip_address: &str,
+        child_device_mac: String,
+        start_time: u64,
+        end_time: u64,
+    ) -> Result<
+        (
+            media_stream::MediaStreamConnection,
+            media_stream::playback::PlaybackRequest,
+        ),
+        Error,
+    > {
         let session_request = media_stream::SessionRequest::Playback {
             camera_mac: child_device_mac.clone(),
             player_id: self.player_id.clone(),
@@ -1121,7 +1177,7 @@ impl ApiClient {
             end_time,
         };
 
-        media_stream::playback::probe(connection, request, duration).await
+        Ok((connection, request))
     }
 
     #[cfg(feature = "debug")]
