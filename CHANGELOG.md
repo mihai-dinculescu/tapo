@@ -42,6 +42,10 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+### Changed
+
+- Tool errors: error messages now include the full chain of causes, so a transport failure reports why it failed (e.g. `connection closed before message completed` or `operation timed out`) instead of stopping at the request URL.
+
 ## [MCP v0.5.0][tapo-mcp-v0.5.0] - 2026-07-11
 
 ### Added
