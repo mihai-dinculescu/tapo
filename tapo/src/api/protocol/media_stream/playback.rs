@@ -18,6 +18,10 @@
 //! 3. Heartbeat notifications every `X-Hb` seconds (default 15), and a
 //!    `do` `stop` request when the client is done.
 //!
+//! The media parts are encrypted (`X-If-Encrypt: 1`); see [`super::cipher`].
+//! The hub does not stop at the requested `end_time`, so a download stops
+//! itself once the MPEG-TS clock has covered the clip (see [`super::mpeg_ts`]).
+//!
 //! Shapes and defaults follow the Tapo app (`GetVodParams`,
 //! `DoStopRequest`, and the `VodStreamConnection` read loop). Verified
 //! against an H200 on 2026-09-09: a 15 s clip arrived as 705 `video/mp2t`
@@ -25,16 +29,19 @@
 
 use std::time::{Duration, Instant};
 
-use anyhow::Context;
+use anyhow::{Context, anyhow};
 use log::{debug, trace, warn};
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 
+use crate::api::protocol::crypto;
 use crate::error::{Error, TapoResponseError};
 use crate::responses::{MediaStreamPlaybackOutcome, MediaStreamPlaybackResult};
 
 use super::MediaStreamConnection;
+use super::cipher::{KeyExchange, MediaCipher};
+use super::mpeg_ts::PcrClock;
 use super::multipart::{Frame, Part, PartParser, encode_client_part};
 
 const CONTENT_TYPE_JSON: (&str, &str) = ("Content-Type", "application/json");
@@ -50,6 +57,8 @@ const READ_CHUNK_SIZE: usize = 64 * 1024;
 /// MPEG-TS packets are 188 bytes and start with this sync byte.
 const MPEG_TS_PACKET_SIZE: usize = 188;
 const MPEG_TS_SYNC_BYTE: u8 = 0x47;
+/// Warn about at most this many HMAC mismatches; the count keeps growing.
+const HMAC_WARNINGS: u64 = 3;
 
 /// Selects the recording to play back.
 #[derive(Debug, Clone)]
@@ -63,28 +72,34 @@ pub(crate) struct PlaybackRequest {
 }
 
 /// Plays back the recording for up to `duration` and reports what the hub
-/// sent. Media parts are counted, not kept.
+/// sent. Media parts are decrypted and counted, not kept.
 pub(crate) async fn probe(
     connection: MediaStreamConnection,
     request: PlaybackRequest,
     duration: Duration,
 ) -> Result<MediaStreamPlaybackResult, Error> {
-    play(connection, request, duration, &mut tokio::io::sink()).await
+    play(connection, request, duration, None, &mut tokio::io::sink()).await
 }
 
-/// Plays back the recording for up to `duration`, writing the body of every
-/// media part to `sink` in the order received, and reports what the hub
-/// sent. For an MPEG-TS stream the concatenation is a playable `.ts` file.
+/// Plays back the recording for up to `duration`, writing the decrypted body
+/// of every media part to `sink` in the order received, and reports what the
+/// hub sent. For an MPEG-TS stream the concatenation is a playable `.ts` file.
+///
+/// With `clip_length`, playback also stops once the MPEG-TS clock shows that
+/// much media, since the hub itself plays on past the recording's end.
 pub(crate) async fn play<W: AsyncWrite + Unpin>(
     connection: MediaStreamConnection,
     request: PlaybackRequest,
     duration: Duration,
+    clip_length: Option<Duration>,
     sink: &mut W,
 ) -> Result<MediaStreamPlaybackResult, Error> {
     let MediaStreamConnection {
         stream,
         buffered,
         session,
+        password_hash,
+        password,
     } = connection;
     let (mut reader, mut writer) = stream.into_split();
     let mut parser = PartParser::new(buffered);
@@ -97,6 +112,10 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
     let mut state = State {
         session_id: session.session_id.clone(),
         seq: 0,
+        secrets: candidate_secrets(&password_hash, &password),
+        cipher: CipherState::Pending,
+        pcr: PcrClock::default(),
+        clip_length,
         result: MediaStreamPlaybackResult {
             session,
             playback_session_id: None,
@@ -105,8 +124,12 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
             media_byte_count: 0,
             media_content_types: Vec::new(),
             media_is_mpeg_ts: None,
+            media_duration_s: None,
             last_data_sequence: None,
             encrypted: false,
+            decrypted: false,
+            hmac_verified: None,
+            hmac_mismatch_count: 0,
             first_media_part_headers: Vec::new(),
             event_types: Vec::new(),
             outcome: MediaStreamPlaybackOutcome::DurationElapsed,
@@ -203,12 +226,45 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
     Ok(state.result)
 }
 
+/// The secrets to try for the media cipher, most likely first: the Digest
+/// pre-hash (what the app uses), the other pre-hash, the raw password, and
+/// an empty secret.
+fn candidate_secrets(password_hash: &str, password: &str) -> Vec<(String, &'static str)> {
+    let mut secrets: Vec<(String, &'static str)> =
+        vec![(password_hash.to_string(), "Digest pre-hash")];
+    for (secret, label) in [
+        (crypto::sha256_hex(password.as_bytes()), "SHA-256 pre-hash"),
+        (crypto::md5_hex(password.as_bytes()), "MD5 pre-hash"),
+        (password.to_string(), "raw password"),
+        (String::new(), "empty secret"),
+    ] {
+        if !secrets.iter().any(|(known, _)| *known == secret) {
+            secrets.push((secret, label));
+        }
+    }
+    secrets
+}
+
+enum CipherState {
+    /// No encrypted part seen yet.
+    Pending,
+    /// Keys derived and, when the part carried an HMAC, verified.
+    Ready(MediaCipher),
+    /// The scheme is unsupported or no candidate secret matched; parts are
+    /// passed through undecrypted.
+    Unavailable,
+}
+
 struct State {
     /// The session id echoed as `X-Session-Id` on client parts: the one
     /// issued for the playback once known, otherwise the one from the
     /// handshake, if any.
     session_id: Option<String>,
     seq: u32,
+    secrets: Vec<(String, &'static str)>,
+    cipher: CipherState,
+    pcr: PcrClock,
+    clip_length: Option<Duration>,
     result: MediaStreamPlaybackResult,
 }
 
@@ -295,48 +351,182 @@ impl State {
             self.result.first_media_part_headers = part.headers.clone();
         }
 
+        let sequence = part
+            .header("x-data-sequence")
+            .and_then(|value| value.trim().parse::<u64>().ok());
+
+        let body = if part
+            .header("x-if-encrypt")
+            .is_some_and(|value| value.trim() == "1")
+        {
+            match self.decrypt(&part)? {
+                Some(body) => body,
+                // Dropped (HMAC mismatch); still acknowledge the sequence.
+                None => {
+                    self.acknowledge(writer, sequence).await?;
+                    return Ok(true);
+                }
+            }
+        } else {
+            part.body
+        };
+
         if self.result.media_is_mpeg_ts.is_none() {
-            let is_mpeg_ts = looks_like_mpeg_ts(&part.body);
-            if self.result.encrypted && !is_mpeg_ts {
+            let is_mpeg_ts = looks_like_mpeg_ts(&body);
+            if !is_mpeg_ts {
                 warn!(
-                    "The media stream parts are flagged as encrypted and do not look like MPEG-TS; decrypting them is not supported yet"
+                    "The media stream parts do not look like MPEG-TS (decrypted: {})",
+                    self.result.decrypted
                 );
             }
             self.result.media_is_mpeg_ts = Some(is_mpeg_ts);
         }
 
         self.result.media_part_count += 1;
-        self.result.media_byte_count += part.body.len() as u64;
+        self.result.media_byte_count += body.len() as u64;
         if !self.result.media_content_types.contains(&content_type) {
             self.result.media_content_types.push(content_type);
         }
 
-        sink.write_all(&part.body)
+        sink.write_all(&body)
             .await
             .context("write a media part to the media sink")?;
 
-        if let Some(sequence) = part
-            .header("x-data-sequence")
-            .and_then(|value| value.trim().parse::<u64>().ok())
-        {
-            self.result.last_data_sequence = Some(sequence);
+        self.pcr.observe(&body);
+        let elapsed = self.pcr.elapsed();
+        self.result.media_duration_s = elapsed.map(|elapsed| elapsed.as_secs_f64());
 
-            if sequence % ACK_EVERY == 0 {
-                trace!("Acknowledging media stream sequence {sequence}");
-                let received = sequence.to_string();
-                send(
-                    writer,
-                    &self.session_headers(&[
-                        ("X-Data-Received", received.as_str()),
-                        CONTENT_TYPE_JSON,
-                    ]),
-                    &Notification::new("stream_sequence"),
-                )
-                .await?;
-            }
+        self.acknowledge(writer, sequence).await?;
+
+        if let (Some(clip_length), Some(elapsed)) = (self.clip_length, elapsed)
+            && elapsed >= clip_length
+        {
+            debug!("The media covers the clip's {clip_length:?}; stopping the playback");
+            self.result.outcome = MediaStreamPlaybackOutcome::ClipEndReached;
+            return Ok(false);
         }
 
         Ok(true)
+    }
+
+    /// Records the sequence and acknowledges every `ACK_EVERY`th one.
+    async fn acknowledge(
+        &mut self,
+        writer: &mut OwnedWriteHalf,
+        sequence: Option<u64>,
+    ) -> Result<(), Error> {
+        let Some(sequence) = sequence else {
+            return Ok(());
+        };
+        self.result.last_data_sequence = Some(sequence);
+
+        if sequence % ACK_EVERY == 0 {
+            trace!("Acknowledging media stream sequence {sequence}");
+            let received = sequence.to_string();
+            send(
+                writer,
+                &self.session_headers(&[("X-Data-Received", received.as_str()), CONTENT_TYPE_JSON]),
+                &Notification::new("stream_sequence"),
+            )
+            .await?;
+        }
+
+        Ok(())
+    }
+
+    /// Decrypts an encrypted media part. Returns `None` when the part must be
+    /// dropped because its HMAC does not match, and the ciphertext itself
+    /// when no cipher could be set up.
+    fn decrypt(&mut self, part: &Part) -> Result<Option<Vec<u8>>, Error> {
+        if matches!(self.cipher, CipherState::Pending) {
+            self.cipher = self.select_cipher(part);
+        }
+
+        let cipher = match &self.cipher {
+            CipherState::Ready(cipher) => cipher,
+            CipherState::Pending | CipherState::Unavailable => {
+                return Ok(Some(part.body.clone()));
+            }
+        };
+
+        if let Some(hmac) = part.header("x-data-hmac")
+            && !cipher.verify_hmac(&part.body, hmac)
+        {
+            self.result.hmac_mismatch_count += 1;
+            if self.result.hmac_mismatch_count <= HMAC_WARNINGS {
+                warn!(
+                    "Dropping a media stream part whose X-Data-Hmac does not match (sequence {:?})",
+                    part.header("x-data-sequence")
+                );
+            }
+            return Ok(None);
+        }
+
+        let Some(nonce) = part.header("x-nonce") else {
+            return Err(anyhow!("encrypted media stream part without an X-Nonce").into());
+        };
+
+        Ok(Some(cipher.decrypt(nonce, &part.body)?))
+    }
+
+    /// Derives the media cipher from the session's `Key-Exchange`, letting the
+    /// part's `X-Data-Hmac` choose among the candidate secrets.
+    fn select_cipher(&mut self, part: &Part) -> CipherState {
+        let Some(key_exchange) = self.result.session.key_exchange.as_deref() else {
+            warn!("The media stream parts are encrypted but the hub sent no Key-Exchange");
+            return CipherState::Unavailable;
+        };
+        let key_exchange = match KeyExchange::parse(key_exchange) {
+            Ok(key_exchange) => key_exchange,
+            Err(err) => {
+                warn!("Cannot parse the media stream Key-Exchange: {err:#}");
+                return CipherState::Unavailable;
+            }
+        };
+        if !key_exchange.is_supported() {
+            warn!(
+                "Unsupported media stream cipher: cipher={:?}, algorithm={:?}",
+                key_exchange.cipher, key_exchange.algorithm
+            );
+            return CipherState::Unavailable;
+        }
+
+        let hmac = part.header("x-data-hmac");
+        for (index, (secret, label)) in self.secrets.iter().enumerate() {
+            let cipher = match MediaCipher::derive(&key_exchange, secret) {
+                Ok(cipher) => cipher,
+                Err(err) => {
+                    warn!("Cannot derive the media stream keys: {err:#}");
+                    return CipherState::Unavailable;
+                }
+            };
+
+            match hmac {
+                Some(hmac) if cipher.verify_hmac(&part.body, hmac) => {
+                    debug!(
+                        "Media stream cipher ready: secret candidate {index} ({label}) matches the X-Data-Hmac"
+                    );
+                    self.result.hmac_verified = Some(true);
+                    self.result.decrypted = true;
+                    return CipherState::Ready(cipher);
+                }
+                Some(_) => continue,
+                None => {
+                    debug!(
+                        "Media stream cipher ready: secret candidate {index} ({label}), unverified (no X-Data-Hmac)"
+                    );
+                    self.result.decrypted = true;
+                    return CipherState::Ready(cipher);
+                }
+            }
+        }
+
+        warn!(
+            "None of the {} candidate secrets matches the X-Data-Hmac of the media stream parts; passing them through encrypted",
+            self.secrets.len()
+        );
+        self.result.hmac_verified = Some(false);
+        CipherState::Unavailable
     }
 
     fn handle_playback_response(&mut self, params: serde_json::Value) -> Result<bool, Error> {
@@ -629,6 +819,25 @@ mod tests {
     }
 
     #[test]
+    fn test_candidate_secrets_are_distinct_and_ordered() {
+        let secrets = candidate_secrets(&crypto::sha256_hex(b"pw"), "pw");
+        let labels: Vec<&str> = secrets.iter().map(|(_, label)| *label).collect();
+        // The Digest pre-hash equals the SHA-256 pre-hash, which is dropped.
+        assert_eq!(
+            labels,
+            [
+                "Digest pre-hash",
+                "MD5 pre-hash",
+                "raw password",
+                "empty secret"
+            ]
+        );
+        assert_eq!(secrets[0].0, crypto::sha256_hex(b"pw"));
+        assert_eq!(secrets[2].0, "pw");
+        assert_eq!(secrets[3].0, "");
+    }
+
+    #[test]
     fn test_looks_like_mpeg_ts() {
         let mut packets = vec![0u8; 188 * 3];
         for index in [0, 188, 376] {
@@ -662,6 +871,10 @@ mod tests {
         let mut state = State {
             session_id: None,
             seq: 0,
+            secrets: candidate_secrets("HASH", "pw"),
+            cipher: CipherState::Pending,
+            pcr: PcrClock::default(),
+            clip_length: None,
             result: MediaStreamPlaybackResult {
                 session: crate::responses::MediaStreamSession {
                     session_id: None,
@@ -674,8 +887,12 @@ mod tests {
                 media_byte_count: 0,
                 media_content_types: Vec::new(),
                 media_is_mpeg_ts: None,
+                media_duration_s: None,
                 last_data_sequence: None,
                 encrypted: false,
+                decrypted: false,
+                hmac_verified: None,
+                hmac_mismatch_count: 0,
                 first_media_part_headers: Vec::new(),
                 event_types: Vec::new(),
                 outcome: MediaStreamPlaybackOutcome::DurationElapsed,

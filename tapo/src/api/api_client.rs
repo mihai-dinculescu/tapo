@@ -1120,8 +1120,9 @@ impl ApiClient {
     ) -> Result<MediaStreamPlaybackResult, Error> {
         debug!("Download recording...");
 
-        // The hub streams at about real time, so allow twice the clip's
-        // length on top of the configured timeout before giving up.
+        // The playback stops itself once the media covers the clip; the time
+        // limit (twice the clip's length on top of the configured timeout) is
+        // a backstop for a hub that streams slowly or a stream without PCR.
         let clip_length = Duration::from_secs(end_time.saturating_sub(start_time));
         let time_limit = self.timeout() + clip_length * 2;
 
@@ -1129,13 +1130,20 @@ impl ApiClient {
             .open_recording_playback(ip_address, child_device_mac, start_time, end_time)
             .await?;
 
-        let result = media_stream::playback::play(connection, request, time_limit, writer).await?;
+        let result = media_stream::playback::play(
+            connection,
+            request,
+            time_limit,
+            Some(clip_length),
+            writer,
+        )
+        .await?;
 
-        if result.outcome == MediaStreamPlaybackOutcome::DurationElapsed {
+        if result.outcome == MediaStreamPlaybackOutcome::DurationElapsed
+            && result.media_part_count == 0
+        {
             return Err(anyhow::anyhow!(
-                "the hub did not finish streaming the recording within {time_limit:?}; received {} media parts ({} bytes)",
-                result.media_part_count,
-                result.media_byte_count
+                "the hub sent no media for the recording within {time_limit:?}"
             )
             .into());
         }
