@@ -20,15 +20,29 @@ pub struct MediaStreamPlaybackResult {
     /// The distinct `Content-Type` values of the media parts, in order of
     /// first appearance. The Tapo app expects `video/mp2t` (MPEG-TS).
     pub media_content_types: Vec<String>,
-    /// Whether the first media part looks like cleartext MPEG-TS (a `0x47`
-    /// sync byte every 188 bytes). `None` until a media part has arrived.
+    /// Whether the first media part, after decryption when applicable, looks
+    /// like MPEG-TS (a `0x47` sync byte every 188 bytes). `None` until a
+    /// media part has arrived.
     pub media_is_mpeg_ts: Option<bool>,
+    /// The playback time covered by the media so far, from the MPEG-TS
+    /// Program Clock Reference, when one was found.
+    pub media_duration_s: Option<f64>,
     /// The `X-Data-Sequence` of the last media part received.
     pub last_data_sequence: Option<u64>,
     /// Whether the hub flagged the parts as encrypted (`X-If-Encrypt: 1`).
-    /// An H200 sets the flag on a LAN session it also declares
-    /// `X-Encrypt-Type: PLAIN`; compare with `media_is_mpeg_ts`.
+    /// An H200 does so even on a LAN session it declares
+    /// `X-Encrypt-Type: PLAIN`.
     pub encrypted: bool,
+    /// Whether the media parts were decrypted with keys derived from the
+    /// session's `Key-Exchange` header before being written and inspected.
+    pub decrypted: bool,
+    /// Whether the `X-Data-Hmac` of the first encrypted part matched one of
+    /// the candidate secrets. `None` when the parts carried no HMAC or were
+    /// not encrypted.
+    pub hmac_verified: Option<bool>,
+    /// The number of encrypted parts whose `X-Data-Hmac` did not match once a
+    /// secret had been chosen. Such parts are dropped, not written.
+    pub hmac_mismatch_count: u64,
     /// The headers of the first media part received, verbatim (names
     /// lower-cased). When the parts are encrypted, this exposes the crypto
     /// headers the Tapo app decrypts with (`x-nonce` as the per-part IV,
@@ -47,6 +61,9 @@ pub struct MediaStreamPlaybackResult {
 pub enum MediaStreamPlaybackOutcome {
     /// The hub reported the end of the recording.
     Finished,
+    /// The client stopped the playback once the media covered the clip's
+    /// length. The hub plays on through the following footage otherwise.
+    ClipEndReached,
     /// The hub closed the session or the connection.
     ClosedByHub,
     /// The time limit elapsed and the client stopped the playback.

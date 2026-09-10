@@ -280,10 +280,14 @@ impl CameraHubHandler {
     /// (TCP port 8800), writing the media to `writer` as it arrives, and
     /// reports what the hub sent as [`MediaStreamPlaybackResult`].
     ///
-    /// The hub streams the recording as MPEG-TS, so writing to a file with a
-    /// `.ts` extension produces a playable clip. The method waits for the hub
-    /// to report the end of the recording, allowing twice the clip's length on
-    /// top of the client's timeout, and fails if that limit is reached.
+    /// The hub streams the recording as encrypted MPEG-TS; the parts are
+    /// decrypted with keys derived from the session's key exchange, so
+    /// writing to a file with a `.ts` extension produces a playable clip. The
+    /// hub plays on past the recording's end, so the method stops once the
+    /// stream's clock has covered the clip's length (or when the hub reports
+    /// the end of the footage), with twice the clip's length on top of the
+    /// client's timeout as a backstop. See the returned result for whether the
+    /// parts were decrypted and verified.
     ///
     /// # Arguments
     ///

@@ -26,6 +26,8 @@
 //! hub advertises `encrypt_type`, where `"3"` selects an upper-case hex SHA-256
 //! of the password and anything else falls back to upper-case hex MD5.
 
+mod cipher;
+mod mpeg_ts;
 mod multipart;
 pub(crate) mod playback;
 
@@ -68,6 +70,11 @@ pub(crate) struct MediaStreamConnection {
     /// else read from `stream`.
     pub buffered: Vec<u8>,
     pub session: MediaStreamSession,
+    /// The password as pre-hashed for the Digest round. The Tapo app uses the
+    /// same value as the secret of the media cipher.
+    pub password_hash: String,
+    /// The password as given, for fallback cipher secrets.
+    pub password: String,
 }
 
 /// What a media stream session is opened for. It decides the request URI and
@@ -136,6 +143,9 @@ async fn handshake(
 ) -> Result<MediaStreamConnection, Error> {
     let uri = session_request.uri();
     let mut stream = connect(ip_address).await?;
+    // Assume the modern pre-hash until a challenge says otherwise; a hub that
+    // skips the challenge does not tell us its `encrypt_type`.
+    let mut password_hash = prehash_password(password, Some("3"));
 
     // Round 1: an unauthenticated request, which the hub answers with a
     // Digest challenge.
@@ -151,10 +161,10 @@ async fn handshake(
             let challenge = DigestChallenge::parse(&challenge_response)?;
             debug!("Media stream Digest challenge: {challenge:?}");
 
-            let hashed_password = prehash_password(password, challenge.encrypt_type.as_deref());
+            password_hash = prehash_password(password, challenge.encrypt_type.as_deref());
             let cnonce = generate_nonce();
             let authorization =
-                authorization_header(&challenge, USERNAME, &hashed_password, &uri, &cnonce);
+                authorization_header(&challenge, USERNAME, &password_hash, &uri, &cnonce);
 
             // Round 2: the same request, now carrying the Digest credentials.
             // The hub may have closed the connection after the challenge, in
@@ -202,6 +212,8 @@ async fn handshake(
                 stream,
                 buffered,
                 session,
+                password_hash,
+                password: password.to_string(),
             })
         }
         401 => Err(Error::Tapo(TapoResponseError::Unauthorized {
