@@ -8,8 +8,10 @@
 //!
 //! - AES key: `HKDF-SHA256(ikm = "<nonce>:<secret>", salt = "<salt>",
 //!   info = "stream_hkdf_aes_key", 16 bytes)`.
-//! - HMAC key: the same with `info = "stream_hkdf_hmac_key"`, 8 bytes. Each
-//!   part's `X-Data-Hmac` is the base64 HMAC-SHA256 of its ciphertext.
+//! - HMAC key: the same with `info = "stream_hkdf_hmac_key"`, also 16 bytes
+//!   (the app's `HKDFHelper.d()` relies on the default length; the `8` in
+//!   the decompiled call is Kotlin's default-argument mask). Each part's
+//!   `X-Data-Hmac` is the base64 HMAC-SHA256 of its ciphertext.
 //! - IV: the part's `X-Nonce` header, hex-decoded.
 //!
 //! The secret the app uses is the password as pre-hashed for the Digest
@@ -27,7 +29,7 @@ use crate::api::protocol::crypto;
 const AES_KEY_INFO: &[u8] = b"stream_hkdf_aes_key";
 const HMAC_KEY_INFO: &[u8] = b"stream_hkdf_hmac_key";
 const AES_KEY_LENGTH: usize = 16;
-const HMAC_KEY_LENGTH: usize = 8;
+const HMAC_KEY_LENGTH: usize = 16;
 
 /// The parsed `Key-Exchange` header.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -205,6 +207,6 @@ mod tests {
         assert_eq!(a.hmac_key, b.hmac_key);
         assert_ne!(a.aes_key, c.aes_key);
         assert_eq!(a.aes_key.len(), 16);
-        assert_eq!(a.hmac_key.len(), 8);
+        assert_eq!(a.hmac_key.len(), 16);
     }
 }

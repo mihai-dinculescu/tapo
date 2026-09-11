@@ -392,8 +392,14 @@ impl State {
             .await
             .context("write a media part to the media sink")?;
 
-        self.pcr.observe(&body);
-        let elapsed = self.pcr.elapsed();
+        // Only a stream known to be MPEG-TS has a meaningful clock; ciphertext
+        // would yield random "sync bytes" and a nonsense duration.
+        let elapsed = if self.result.media_is_mpeg_ts == Some(true) {
+            self.pcr.observe(&body);
+            self.pcr.elapsed()
+        } else {
+            None
+        };
         self.result.media_duration_s = elapsed.map(|elapsed| elapsed.as_secs_f64());
 
         self.acknowledge(writer, sequence).await?;

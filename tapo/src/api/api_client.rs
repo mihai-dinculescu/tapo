@@ -1148,6 +1148,14 @@ impl ApiClient {
             .into());
         }
 
+        if result.encrypted && !result.decrypted {
+            return Err(anyhow::anyhow!(
+                "the hub encrypts the recording and it could not be decrypted (HMAC verified: {:?}); the media was written as received",
+                result.hmac_verified
+            )
+            .into());
+        }
+
         Ok(result)
     }
 
