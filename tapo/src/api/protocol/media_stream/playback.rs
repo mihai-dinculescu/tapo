@@ -78,8 +78,8 @@ pub(crate) struct PlaybackRequest {
 /// With `clip_length`, playback also stops once the MPEG-TS clock shows that
 /// much media, since the hub itself plays on past the recording's end.
 ///
-/// Fails when the hub sent no media at all, or when it encrypted the media
-/// and no candidate secret could decrypt it. Everything else the hub reported
+/// Fails when the hub sent no media at all, or at the first encrypted media
+/// part that no cipher can be set up for. Everything else the hub reported
 /// is logged rather than returned; `RUST_LOG=tapo=debug` shows the control
 /// messages and the cipher setup, `tapo=trace` every part.
 pub(crate) async fn play<W: AsyncWrite + Unpin>(
@@ -109,15 +109,13 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
         key_exchange: session.key_exchange.clone(),
         seq: 0,
         secrets: candidate_secrets(&password_hash, &password),
-        cipher: CipherState::Pending,
+        cipher: None,
         pcr: PcrClock::default(),
         clip_length,
         byte_count: 0,
         part_count: 0,
         duration_s: None,
         is_mpeg_ts: None,
-        encrypted: false,
-        decrypted: false,
         hmac_verified: None,
         hmac_mismatch_count: 0,
         first_media_part_seen: false,
@@ -232,16 +230,6 @@ fn candidate_secrets(password_hash: &str, password: &str) -> Vec<(String, &'stat
     secrets
 }
 
-enum CipherState {
-    /// No encrypted part seen yet.
-    Pending,
-    /// Keys derived and, when the part carried an HMAC, verified.
-    Ready(MediaCipher),
-    /// The scheme is unsupported or no candidate secret matched; parts are
-    /// passed through undecrypted.
-    Unavailable,
-}
-
 struct State {
     /// The session id echoed as `X-Session-Id` on client parts: the one
     /// issued for the playback once known, otherwise the one from the
@@ -251,15 +239,14 @@ struct State {
     key_exchange: Option<String>,
     seq: u32,
     secrets: Vec<(String, &'static str)>,
-    cipher: CipherState,
+    /// Set up from the first encrypted media part.
+    cipher: Option<MediaCipher>,
     pcr: PcrClock,
     clip_length: Option<Duration>,
     byte_count: u64,
     part_count: u64,
     duration_s: Option<f64>,
     is_mpeg_ts: Option<bool>,
-    encrypted: bool,
-    decrypted: bool,
     hmac_verified: Option<bool>,
     hmac_mismatch_count: u64,
     first_media_part_seen: bool,
@@ -271,13 +258,12 @@ impl State {
     /// explains why the download is not usable.
     fn finish(self, time_limit: Duration) -> Result<RecordingDownloadResult, Error> {
         debug!(
-            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, encrypted {}, decrypted {}, HMAC verified {:?}, HMAC mismatches {}",
+            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, decrypted {}, HMAC verified {:?}, HMAC mismatches {}",
             self.part_count,
             self.byte_count,
             self.duration_s,
             self.outcome,
-            self.encrypted,
-            self.decrypted,
+            self.cipher.is_some(),
             self.hmac_verified,
             self.hmac_mismatch_count,
         );
@@ -286,13 +272,6 @@ impl State {
             return Err(
                 anyhow!("the hub sent no media for the recording within {time_limit:?}").into(),
             );
-        }
-
-        if self.encrypted && !self.decrypted {
-            return Err(anyhow!(
-                "the hub encrypts the recording and none of the candidate secrets could decrypt it; make sure the TP-Link cloud password is correct"
-            )
-            .into());
         }
 
         Ok(RecordingDownloadResult {
@@ -324,15 +303,6 @@ impl State {
         part: Part,
         request_seq: u32,
     ) -> Result<bool, Error> {
-        if part
-            .header("x-if-encrypt")
-            .is_some_and(|value| value.trim() == "1")
-            && !self.encrypted
-        {
-            debug!("The hub flags the media stream parts as encrypted (X-If-Encrypt: 1)");
-            self.encrypted = true;
-        }
-
         if part.is_json() {
             let text = String::from_utf8_lossy(&part.body);
             debug!("Media stream control message: {text}");
@@ -409,7 +379,7 @@ impl State {
             if !is_mpeg_ts {
                 warn!(
                     "The media stream parts ({content_type}) do not look like MPEG-TS (decrypted: {})",
-                    self.decrypted
+                    self.cipher.is_some()
                 );
             }
             self.is_mpeg_ts = Some(is_mpeg_ts);
@@ -470,17 +440,14 @@ impl State {
     }
 
     /// Decrypts an encrypted media part. Returns `None` when the part must be
-    /// dropped because its HMAC does not match, and the ciphertext itself
-    /// when no cipher could be set up.
+    /// dropped because its HMAC does not match, and fails when no cipher can
+    /// be set up for it.
     fn decrypt(&mut self, part: &Part) -> Result<Option<Vec<u8>>, Error> {
-        if matches!(self.cipher, CipherState::Pending) {
-            self.cipher = self.select_cipher(part);
-        }
-
         let cipher = match &self.cipher {
-            CipherState::Ready(cipher) => cipher,
-            CipherState::Pending | CipherState::Unavailable => {
-                return Ok(Some(part.body.clone()));
+            Some(cipher) => cipher,
+            None => {
+                let cipher = self.select_cipher(part)?;
+                self.cipher.insert(cipher)
             }
         };
 
@@ -506,35 +473,26 @@ impl State {
 
     /// Derives the media cipher from the session's `Key-Exchange`, letting the
     /// part's `X-Data-Hmac` choose among the candidate secrets.
-    fn select_cipher(&mut self, part: &Part) -> CipherState {
-        let Some(key_exchange) = self.key_exchange.clone() else {
-            warn!("The media stream parts are encrypted but the hub sent no Key-Exchange");
-            return CipherState::Unavailable;
-        };
-        let key_exchange = match KeyExchange::parse(&key_exchange) {
-            Ok(key_exchange) => key_exchange,
-            Err(err) => {
-                warn!("Cannot parse the media stream Key-Exchange: {err:#}");
-                return CipherState::Unavailable;
-            }
-        };
+    fn select_cipher(&mut self, part: &Part) -> Result<MediaCipher, Error> {
+        let key_exchange = self
+            .key_exchange
+            .as_deref()
+            .ok_or_else(|| anyhow!("the hub encrypts the recording but sent no Key-Exchange"))?;
+        let key_exchange =
+            KeyExchange::parse(key_exchange).context("invalid media stream Key-Exchange")?;
         if !key_exchange.is_supported() {
-            warn!(
-                "Unsupported media stream cipher: cipher={:?}, algorithm={:?}",
-                key_exchange.cipher, key_exchange.algorithm
-            );
-            return CipherState::Unavailable;
+            return Err(anyhow!(
+                "unsupported media stream cipher: cipher={:?}, algorithm={:?}",
+                key_exchange.cipher,
+                key_exchange.algorithm
+            )
+            .into());
         }
 
         let hmac = part.header("x-data-hmac");
         for (index, (secret, label)) in self.secrets.iter().enumerate() {
-            let cipher = match MediaCipher::derive(&key_exchange, secret) {
-                Ok(cipher) => cipher,
-                Err(err) => {
-                    warn!("Cannot derive the media stream keys: {err:#}");
-                    return CipherState::Unavailable;
-                }
-            };
+            let cipher = MediaCipher::derive(&key_exchange, secret)
+                .context("derive the media stream keys")?;
 
             match hmac {
                 Some(hmac) if cipher.verify_hmac(&part.body, hmac) => {
@@ -542,26 +500,23 @@ impl State {
                         "Media stream cipher ready: secret candidate {index} ({label}) matches the X-Data-Hmac"
                     );
                     self.hmac_verified = Some(true);
-                    self.decrypted = true;
-                    return CipherState::Ready(cipher);
+                    return Ok(cipher);
                 }
                 Some(_) => continue,
                 None => {
                     debug!(
                         "Media stream cipher ready: secret candidate {index} ({label}), unverified (no X-Data-Hmac)"
                     );
-                    self.decrypted = true;
-                    return CipherState::Ready(cipher);
+                    return Ok(cipher);
                 }
             }
         }
 
-        warn!(
-            "None of the {} candidate secrets matches the X-Data-Hmac of the media stream parts; passing them through encrypted",
+        Err(anyhow!(
+            "cannot decrypt the recording: none of the {} candidate secrets matches the X-Data-Hmac of the media stream parts",
             self.secrets.len()
-        );
-        self.hmac_verified = Some(false);
-        CipherState::Unavailable
+        )
+        .into())
     }
 
     fn handle_playback_response(&mut self, params: serde_json::Value) -> Result<bool, Error> {
@@ -906,15 +861,13 @@ mod tests {
             key_exchange: None,
             seq: 0,
             secrets: candidate_secrets("HASH", "pw"),
-            cipher: CipherState::Pending,
+            cipher: None,
             pcr: PcrClock::default(),
             clip_length: None,
             byte_count: 0,
             part_count: 0,
             duration_s: None,
             is_mpeg_ts: None,
-            encrypted: false,
-            decrypted: false,
             hmac_verified: None,
             hmac_mismatch_count: 0,
             first_media_part_seen: false,
