@@ -148,7 +148,8 @@ impl CameraHubHandler {
     }
 
     /// Returns the recordings stored on the hub for the given camera, within the
-    /// given time range, as [`Vec<RecordingHubResult>`]. All pages are fetched.
+    /// given time range, as [`Vec<RecordingHubResult>`]. Like the Tapo app, all
+    /// pages are fetched, up to 12,300 recordings.
     ///
     /// # Arguments
     ///
@@ -164,8 +165,9 @@ impl CameraHubHandler {
         child_device_mac: impl Into<String>,
     ) -> Result<Vec<RecordingHubResult>, Error> {
         // The Tapo app fetches pages of 100 (`start_index: 0`, `end_index: 99`)
-        // and keeps going while the response reports `to_be_continued`.
+        // and stops paging past a start index of 12288.
         const PAGE_SIZE: u64 = 100;
+        const MAX_START_INDEX: u64 = 12288;
 
         let child_device_id = child_device_id.into();
         let child_device_mac = child_device_mac.into();
@@ -176,7 +178,7 @@ impl CameraHubHandler {
         let mut results = Vec::new();
         let mut start_index = 0;
 
-        loop {
+        while start_index <= MAX_START_INDEX {
             let request = TapoRequest::SmartCamSearchVideoWithUtc(TapoParams::new(
                 SmartCamSearchVideoWithUtcParams::new(
                     start_time,
@@ -189,18 +191,19 @@ impl CameraHubHandler {
                 ),
             ));
 
-            let (recordings, to_be_continued) = client
+            let recordings = client
                 .execute_smart_cam_multiple_request::<RecordingListHubResultRaw>(request)
                 .await?
                 .ok_or(Error::Tapo(TapoResponseError::EmptyResult))?
-                .into_parts();
+                .recordings();
 
-            // An empty page also stops the loop, in case a device claims
-            // `to_be_continued` without ever returning more recordings.
-            let page_is_empty = recordings.is_empty();
+            // The H200 sends no `to_be_continued` flag, so like the Tapo app
+            // (`PlaybackHubRepository`) in that case, a full page means that
+            // another may follow.
+            let page_is_full = recordings.len() as u64 >= PAGE_SIZE;
             results.extend(recordings);
 
-            if !to_be_continued || page_is_empty {
+            if !page_is_full {
                 break;
             }
             start_index += PAGE_SIZE;
