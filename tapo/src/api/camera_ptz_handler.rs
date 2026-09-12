@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use crate::api::rtsp_snapshot::grab_mjpeg_frame;
-use crate::error::Error;
-use crate::requests::{SmartCamDoParams, SmartCamGetParams};
+use crate::error::{Error, TapoResponseError};
+use crate::requests::{SmartCamDoParams, SmartCamGetParams, TapoRequest};
 use crate::responses::{DeviceInfoCameraResult, Preset, PresetRaw, RtspStreamUrl, Snapshot};
 
 tapo_handler! {
@@ -77,48 +77,67 @@ impl CameraPtzHandler {
     ///
     /// If unsure of the value, `10` for both `pan` and `tilt` are good values for small nudges.
     pub async fn pan_tilt(&self, pan: i32, tilt: i32) -> Result<(), Error> {
+        let request = TapoRequest::SmartCamDo(SmartCamDoParams::motor_move(pan, tilt));
+
         self.client
             .read()
             .await
-            .execute_smart_cam_do(SmartCamDoParams::motor_move(pan, tilt))
-            .await
+            .execute_smart_cam_request::<serde_json::Value>(request)
+            .await?;
+
+        Ok(())
     }
 
     /// Saves the current camera position as a named preset.
     pub async fn save_preset(&self, name: &str) -> Result<(), Error> {
+        let request = TapoRequest::SmartCamDo(SmartCamDoParams::set_preset(name));
+
         self.client
             .read()
             .await
-            .execute_smart_cam_do(SmartCamDoParams::set_preset(name))
-            .await
+            .execute_smart_cam_request::<serde_json::Value>(request)
+            .await?;
+
+        Ok(())
     }
 
     /// Moves the camera to a saved preset position by its ID.
     pub async fn goto_preset(&self, id: &str) -> Result<(), Error> {
+        let request = TapoRequest::SmartCamDo(SmartCamDoParams::goto_preset(id));
+
         self.client
             .read()
             .await
-            .execute_smart_cam_do(SmartCamDoParams::goto_preset(id))
-            .await
+            .execute_smart_cam_request::<serde_json::Value>(request)
+            .await?;
+
+        Ok(())
     }
 
     /// Deletes a preset by its ID.
     pub async fn delete_preset(&self, id: &str) -> Result<(), Error> {
+        let request = TapoRequest::SmartCamDo(SmartCamDoParams::remove_preset(id));
+
         self.client
             .read()
             .await
-            .execute_smart_cam_do(SmartCamDoParams::remove_preset(id))
-            .await
+            .execute_smart_cam_request::<serde_json::Value>(request)
+            .await?;
+
+        Ok(())
     }
 
     /// Returns the list of saved PTZ presets.
     pub async fn get_presets(&self) -> Result<Vec<Preset>, Error> {
+        let request = TapoRequest::SmartCamGet(SmartCamGetParams::preset());
+
         let raw: PresetRaw = self
             .client
             .read()
             .await
-            .execute_smart_cam_get(SmartCamGetParams::preset())
-            .await?;
+            .execute_smart_cam_request(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
         Ok(raw.into_presets())
     }
