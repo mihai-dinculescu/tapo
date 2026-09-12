@@ -20,22 +20,21 @@ use crate::requests::{
 #[cfg(feature = "debug")]
 use crate::responses::{
     ChildDeviceComponentList, ChildDeviceComponentListResult, Component, ComponentListResult,
-    MediaStreamPlaybackOutcome, MediaStreamPlaybackResult, MediaStreamSession,
-    SupportedAlarmTypeListResult,
+    MediaStreamSession, SupportedAlarmTypeListResult,
 };
 
 use crate::responses::{
     AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
-    DecodableResultExt, EnergyDataResult, EnergyDataResultRaw, EnergyUsageResult, PowerDataResult,
-    PowerDataResultRaw, PowerState, ScheduleRuleListResultRaw, ScheduleRuleResult,
-    SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt, TapoResult, Timer,
-    TimerListResultRaw, validate_response,
+    DecodableResultExt, EnergyDataResult, EnergyDataResultRaw, EnergyUsageResult,
+    MediaStreamPlaybackOutcome, MediaStreamPlaybackResult, PowerDataResult, PowerDataResultRaw,
+    PowerState, ScheduleRuleListResultRaw, ScheduleRuleResult, SmartCamControlChildResult,
+    TapoMultipleResponse, TapoResponseExt, TapoResult, Timer, TimerListResultRaw,
+    validate_response,
 };
 
 use super::discovery::DeviceDiscovery;
 #[cfg(feature = "debug")]
 use super::discovery::DeviceDiscoveryRaw;
-#[cfg(feature = "debug")]
 use super::protocol::media_stream;
 use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
 use super::{
@@ -1109,7 +1108,6 @@ impl ApiClient {
         media_stream::playback::probe(connection, request, duration).await
     }
 
-    #[cfg(feature = "debug")]
     pub(crate) async fn download_recording<W: tokio::io::AsyncWrite + Unpin + Send>(
         &self,
         ip_address: &str,
@@ -1159,7 +1157,6 @@ impl ApiClient {
         Ok(result)
     }
 
-    #[cfg(feature = "debug")]
     async fn open_recording_playback(
         &self,
         ip_address: &str,

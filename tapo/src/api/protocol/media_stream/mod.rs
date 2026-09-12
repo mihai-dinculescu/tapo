@@ -85,7 +85,8 @@ pub(crate) enum SessionRequest {
     /// A pre-connected session with nothing requested yet: bare `/stream`,
     /// `X-Preconn: 1`, and the client identified by `X-Client-UUID`
     /// (`zh0/e.java`). The app keeps such a session idle until a player
-    /// needs it.
+    /// needs it. Only the `debug`-gated session opener builds one.
+    #[cfg_attr(not(feature = "debug"), allow(dead_code))]
     PreConnect { client_uuid: String },
     /// Playback of a recording stored on the hub. The selection travels in
     /// the URI query (`hc0/d.java`), with the player identified by

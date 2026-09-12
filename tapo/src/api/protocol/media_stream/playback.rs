@@ -73,6 +73,7 @@ pub(crate) struct PlaybackRequest {
 
 /// Plays back the recording for up to `duration` and reports what the hub
 /// sent. Media parts are decrypted and counted, not kept.
+#[cfg(feature = "debug")]
 pub(crate) async fn probe(
     connection: MediaStreamConnection,
     request: PlaybackRequest,
