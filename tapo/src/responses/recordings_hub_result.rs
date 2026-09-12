@@ -65,17 +65,12 @@ pub(crate) struct RecordingListHubResultRaw {
 }
 
 impl RecordingListHubResultRaw {
-    /// Returns the recordings of this page and whether another page follows.
-    pub fn into_parts(self) -> (Vec<RecordingHubResult>, bool) {
-        let to_be_continued = self.playback.to_be_continued == Some(1);
-        let recordings = self
-            .playback
+    pub fn recordings(self) -> Vec<RecordingHubResult> {
+        self.playback
             .search_video_results
             .into_iter()
             .flat_map(RecordingEntryRaw::into_recordings)
-            .collect();
-
-        (recordings, to_be_continued)
+            .collect()
     }
 }
 
@@ -85,8 +80,6 @@ impl TapoResponseExt for RecordingListHubResultRaw {}
 struct RecordingListRaw {
     #[serde(default)]
     search_video_results: Vec<RecordingEntryRaw>,
-    #[serde(default)]
-    to_be_continued: Option<i64>,
 }
 
 /// The Tapo app parses each entry either flat or as a single-key section
@@ -318,19 +311,17 @@ mod tests {
             "playback": {
                 "search_video_results": [
                     {"startTime": 1786694400, "endTime": 1786694460, "vedio_type": "2"}
-                ],
-                "to_be_continued": 1
+                ]
             }
         }"#;
 
         let parsed: RecordingListHubResultRaw = serde_json::from_str(json).unwrap();
-        let (recordings, to_be_continued) = parsed.into_parts();
+        let recordings = parsed.recordings();
 
         assert_eq!(recordings.len(), 1);
         assert_eq!(recordings[0].start_time, 1786694400);
         assert_eq!(recordings[0].end_time, 1786694460);
         assert_eq!(recordings[0].video_type, RecordingType::Motion);
-        assert!(to_be_continued);
     }
 
     #[test]
@@ -346,7 +337,7 @@ mod tests {
         }"#;
 
         let parsed: RecordingListHubResultRaw = serde_json::from_str(json).unwrap();
-        let (recordings, _) = parsed.into_parts();
+        let recordings = parsed.recordings();
 
         assert_eq!(recordings[0].video_type, RecordingType::Timing);
         assert_eq!(recordings[1].video_type, RecordingType::Motion);
@@ -374,11 +365,10 @@ mod tests {
         }"#;
 
         let parsed: RecordingListHubResultRaw = serde_json::from_str(json).unwrap();
-        let (recordings, to_be_continued) = parsed.into_parts();
+        let recordings = parsed.recordings();
 
         assert_eq!(recordings.len(), 1);
         assert_eq!(recordings[0].start_time, 1786694400);
-        assert!(!to_be_continued);
     }
 
     #[test]
@@ -386,9 +376,7 @@ mod tests {
         let json = r#"{"playback": {}}"#;
 
         let parsed: RecordingListHubResultRaw = serde_json::from_str(json).unwrap();
-        let (recordings, to_be_continued) = parsed.into_parts();
 
-        assert!(recordings.is_empty());
-        assert!(!to_be_continued);
+        assert!(parsed.recordings().is_empty());
     }
 }
