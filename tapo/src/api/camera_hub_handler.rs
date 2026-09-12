@@ -236,8 +236,8 @@ impl CameraHubHandler {
     /// the end of the footage), with twice the clip's length on top of the
     /// client's timeout as a backstop.
     ///
-    /// Fails if the hub sends no media, or if it encrypts the media and the
-    /// account password cannot decrypt it.
+    /// Fails if the hub sends no media, or if it sends encrypted media that
+    /// cannot be decrypted.
     ///
     /// # Arguments
     ///
