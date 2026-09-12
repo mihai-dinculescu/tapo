@@ -1,6 +1,3 @@
-#[cfg(feature = "debug")]
-use std::time::Duration;
-
 use tokio::io::AsyncWrite;
 
 use chrono::NaiveDate;
@@ -16,10 +13,10 @@ use crate::responses::{
     RecordingHubResult, RecordingListHubResultRaw,
 };
 
-use crate::responses::MediaStreamPlaybackResult;
+use crate::responses::RecordingDownloadResult;
 
 #[cfg(feature = "debug")]
-use crate::responses::{ChildDeviceComponentList, MediaStreamSession};
+use crate::responses::ChildDeviceComponentList;
 
 tapo_handler! {
     /// Handler for camera hubs, such as the
@@ -225,61 +222,8 @@ impl CameraHubHandler {
             .await
     }
 
-    /// Opens an authenticated session with the hub's media stream service
-    /// (TCP port 8800), which the Tapo app uses for live view and for playing
-    /// back recordings stored on the hub, and returns it as [`MediaStreamSession`].
-    ///
-    /// This is a stepping stone towards fetching recorded video from the hub.
-    /// The session is closed again as soon as it has been established. Useful
-    /// for verifying that the hub accepts the handshake and the cloud password.
-    /// See [`CameraHubHandler::probe_recording_playback`] for the next step.
-    #[cfg(feature = "debug")]
-    pub async fn open_media_stream_session(&self) -> Result<MediaStreamSession, Error> {
-        self.client
-            .read()
-            .await
-            .open_media_stream_session(&self.ip_address)
-            .await
-    }
-
-    /// Plays back a recording stored on the hub over the media stream service
-    /// (TCP port 8800) and reports what the hub sent, as [`MediaStreamPlaybackResult`],
-    /// without keeping the media. Useful for verifying that the hub accepts
-    /// the playback request for a clip found with
-    /// [`CameraHubHandler::search_video_with_utc`] and streams media for it.
-    /// See [`CameraHubHandler::download_recording`] to keep the media.
-    ///
-    /// # Arguments
-    ///
-    /// * `child_device_mac` - the `mac` of a camera returned by [`CameraHubHandler::get_general_device_list`].
-    /// * `start_time` - the `start_time` of a recording returned by [`CameraHubHandler::search_video_with_utc`].
-    /// * `end_time` - the `end_time` of that recording.
-    /// * `duration` - how long to keep the playback going. The method returns
-    ///   earlier if the hub reports the end of the recording or closes the session.
-    #[cfg(feature = "debug")]
-    pub async fn probe_recording_playback(
-        &self,
-        child_device_mac: impl Into<String>,
-        start_time: u64,
-        end_time: u64,
-        duration: Duration,
-    ) -> Result<MediaStreamPlaybackResult, Error> {
-        self.client
-            .read()
-            .await
-            .probe_recording_playback(
-                &self.ip_address,
-                child_device_mac.into(),
-                start_time,
-                end_time,
-                duration,
-            )
-            .await
-    }
-
-    /// Downloads a recording stored on the hub over the media stream service
-    /// (TCP port 8800), writing the media to `writer` as it arrives, and
-    /// reports what the hub sent as [`MediaStreamPlaybackResult`].
+    /// Downloads a recording stored on the hub over the hub's media stream
+    /// service (TCP port 8800), writing the media to `writer` as it arrives.
     ///
     /// The hub streams the recording as encrypted MPEG-TS; the parts are
     /// decrypted with keys derived from the session's key exchange, so
@@ -287,8 +231,10 @@ impl CameraHubHandler {
     /// hub plays on past the recording's end, so the method stops once the
     /// stream's clock has covered the clip's length (or when the hub reports
     /// the end of the footage), with twice the clip's length on top of the
-    /// client's timeout as a backstop. See the returned result for whether the
-    /// parts were decrypted and verified.
+    /// client's timeout as a backstop.
+    ///
+    /// Fails if the hub sends no media, or if it encrypts the media and the
+    /// account password cannot decrypt it.
     ///
     /// # Arguments
     ///
@@ -340,7 +286,7 @@ impl CameraHubHandler {
         start_time: u64,
         end_time: u64,
         writer: &mut W,
-    ) -> Result<MediaStreamPlaybackResult, Error> {
+    ) -> Result<RecordingDownloadResult, Error> {
         self.client
             .read()
             .await

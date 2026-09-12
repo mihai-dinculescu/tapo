@@ -37,7 +37,7 @@ use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 
 use crate::api::protocol::crypto;
 use crate::error::{Error, TapoResponseError};
-use crate::responses::{MediaStreamPlaybackOutcome, MediaStreamPlaybackResult};
+use crate::responses::{RecordingDownloadOutcome, RecordingDownloadResult};
 
 use super::MediaStreamConnection;
 use super::cipher::{KeyExchange, MediaCipher};
@@ -71,30 +71,24 @@ pub(crate) struct PlaybackRequest {
     pub end_time: u64,
 }
 
-/// Plays back the recording for up to `duration` and reports what the hub
-/// sent. Media parts are decrypted and counted, not kept.
-#[cfg(feature = "debug")]
-pub(crate) async fn probe(
-    connection: MediaStreamConnection,
-    request: PlaybackRequest,
-    duration: Duration,
-) -> Result<MediaStreamPlaybackResult, Error> {
-    play(connection, request, duration, None, &mut tokio::io::sink()).await
-}
-
 /// Plays back the recording for up to `duration`, writing the decrypted body
-/// of every media part to `sink` in the order received, and reports what the
-/// hub sent. For an MPEG-TS stream the concatenation is a playable `.ts` file.
+/// of every media part to `sink` in the order received. For an MPEG-TS stream
+/// the concatenation is a playable `.ts` file.
 ///
 /// With `clip_length`, playback also stops once the MPEG-TS clock shows that
 /// much media, since the hub itself plays on past the recording's end.
+///
+/// Fails when the hub sent no media at all, or when it encrypted the media
+/// and no candidate secret could decrypt it. Everything else the hub reported
+/// is logged rather than returned; `RUST_LOG=tapo=debug` shows the control
+/// messages and the cipher setup, `tapo=trace` every part.
 pub(crate) async fn play<W: AsyncWrite + Unpin>(
     connection: MediaStreamConnection,
     request: PlaybackRequest,
     duration: Duration,
     clip_length: Option<Duration>,
     sink: &mut W,
-) -> Result<MediaStreamPlaybackResult, Error> {
+) -> Result<RecordingDownloadResult, Error> {
     let MediaStreamConnection {
         stream,
         buffered,
@@ -112,29 +106,22 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
 
     let mut state = State {
         session_id: session.session_id.clone(),
+        key_exchange: session.key_exchange.clone(),
         seq: 0,
         secrets: candidate_secrets(&password_hash, &password),
         cipher: CipherState::Pending,
         pcr: PcrClock::default(),
         clip_length,
-        result: MediaStreamPlaybackResult {
-            session,
-            playback_session_id: None,
-            speed: None,
-            media_part_count: 0,
-            media_byte_count: 0,
-            media_content_types: Vec::new(),
-            media_is_mpeg_ts: None,
-            media_duration_s: None,
-            last_data_sequence: None,
-            encrypted: false,
-            decrypted: false,
-            hmac_verified: None,
-            hmac_mismatch_count: 0,
-            first_media_part_headers: Vec::new(),
-            event_types: Vec::new(),
-            outcome: MediaStreamPlaybackOutcome::DurationElapsed,
-        },
+        byte_count: 0,
+        part_count: 0,
+        duration_s: None,
+        is_mpeg_ts: None,
+        encrypted: false,
+        decrypted: false,
+        hmac_verified: None,
+        hmac_mismatch_count: 0,
+        first_media_part_seen: false,
+        outcome: RecordingDownloadOutcome::DurationElapsed,
     };
 
     let request_seq = state.next_seq();
@@ -158,7 +145,7 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
             match frame {
                 Frame::End => {
                     debug!("The hub sent the closing delimiter");
-                    state.result.outcome = MediaStreamPlaybackOutcome::ClosedByHub;
+                    state.outcome = RecordingDownloadOutcome::ClosedByHub;
                     break 'session;
                 }
                 Frame::Part(part) => {
@@ -196,7 +183,7 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
             ReadOutcome::TimedOut => {}
             ReadOutcome::Eof => {
                 debug!("The hub closed the media stream");
-                state.result.outcome = MediaStreamPlaybackOutcome::ClosedByHub;
+                state.outcome = RecordingDownloadOutcome::ClosedByHub;
                 break;
             }
         }
@@ -223,8 +210,7 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
 
     sink.flush().await.context("flush the media sink")?;
 
-    debug!("Playback finished: {:?}", state.result);
-    Ok(state.result)
+    state.finish(duration)
 }
 
 /// The secrets to try for the media cipher, most likely first: the Digest
@@ -261,15 +247,61 @@ struct State {
     /// issued for the playback once known, otherwise the one from the
     /// handshake, if any.
     session_id: Option<String>,
+    /// The `Key-Exchange` header the media cipher is derived from.
+    key_exchange: Option<String>,
     seq: u32,
     secrets: Vec<(String, &'static str)>,
     cipher: CipherState,
     pcr: PcrClock,
     clip_length: Option<Duration>,
-    result: MediaStreamPlaybackResult,
+    byte_count: u64,
+    part_count: u64,
+    duration_s: Option<f64>,
+    is_mpeg_ts: Option<bool>,
+    encrypted: bool,
+    decrypted: bool,
+    hmac_verified: Option<bool>,
+    hmac_mismatch_count: u64,
+    first_media_part_seen: bool,
+    outcome: RecordingDownloadOutcome,
 }
 
 impl State {
+    /// Turns the bookkeeping into the caller's result, or into the error that
+    /// explains why the download is not usable.
+    fn finish(self, time_limit: Duration) -> Result<RecordingDownloadResult, Error> {
+        debug!(
+            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, encrypted {}, decrypted {}, HMAC verified {:?}, HMAC mismatches {}",
+            self.part_count,
+            self.byte_count,
+            self.duration_s,
+            self.outcome,
+            self.encrypted,
+            self.decrypted,
+            self.hmac_verified,
+            self.hmac_mismatch_count,
+        );
+
+        if self.part_count == 0 {
+            return Err(
+                anyhow!("the hub sent no media for the recording within {time_limit:?}").into(),
+            );
+        }
+
+        if self.encrypted && !self.decrypted {
+            return Err(anyhow!(
+                "the hub encrypts the recording and none of the candidate secrets could decrypt it; make sure the TP-Link cloud password is correct"
+            )
+            .into());
+        }
+
+        Ok(RecordingDownloadResult {
+            byte_count: self.byte_count,
+            duration_s: self.duration_s,
+            outcome: self.outcome,
+        })
+    }
+
     fn next_seq(&mut self) -> u32 {
         self.seq += 1;
         self.seq
@@ -295,10 +327,10 @@ impl State {
         if part
             .header("x-if-encrypt")
             .is_some_and(|value| value.trim() == "1")
-            && !self.result.encrypted
+            && !self.encrypted
         {
             debug!("The hub flags the media stream parts as encrypted (X-If-Encrypt: 1)");
-            self.result.encrypted = true;
+            self.encrypted = true;
         }
 
         if part.is_json() {
@@ -320,17 +352,17 @@ impl State {
                     let event_type = notification.event_type.unwrap_or_default();
 
                     let outcome = match event_type.as_str() {
-                        "stream_finish" => Some(MediaStreamPlaybackOutcome::Finished),
+                        "stream_finish" => Some(RecordingDownloadOutcome::Finished),
                         "stream_status" if notification.status.as_deref() == Some("finished") => {
-                            Some(MediaStreamPlaybackOutcome::Finished)
+                            Some(RecordingDownloadOutcome::Finished)
                         }
-                        "connection_closed" => Some(MediaStreamPlaybackOutcome::ClosedByHub),
+                        "connection_closed" => Some(RecordingDownloadOutcome::ClosedByHub),
                         _ => None,
                     };
-                    self.result.event_types.push(event_type);
+                    debug!("Media stream notification: {event_type}");
 
                     if let Some(outcome) = outcome {
-                        self.result.outcome = outcome;
+                        self.outcome = outcome;
                         return Ok(false);
                     }
                 }
@@ -347,9 +379,9 @@ impl State {
             part.headers
         );
 
-        if self.result.first_media_part_headers.is_empty() {
+        if !self.first_media_part_seen {
+            self.first_media_part_seen = true;
             debug!("First media part headers: {:?}", part.headers);
-            self.result.first_media_part_headers = part.headers.clone();
         }
 
         let sequence = part
@@ -372,22 +404,19 @@ impl State {
             part.body
         };
 
-        if self.result.media_is_mpeg_ts.is_none() {
+        if self.is_mpeg_ts.is_none() {
             let is_mpeg_ts = looks_like_mpeg_ts(&body);
             if !is_mpeg_ts {
                 warn!(
-                    "The media stream parts do not look like MPEG-TS (decrypted: {})",
-                    self.result.decrypted
+                    "The media stream parts ({content_type}) do not look like MPEG-TS (decrypted: {})",
+                    self.decrypted
                 );
             }
-            self.result.media_is_mpeg_ts = Some(is_mpeg_ts);
+            self.is_mpeg_ts = Some(is_mpeg_ts);
         }
 
-        self.result.media_part_count += 1;
-        self.result.media_byte_count += body.len() as u64;
-        if !self.result.media_content_types.contains(&content_type) {
-            self.result.media_content_types.push(content_type);
-        }
+        self.part_count += 1;
+        self.byte_count += body.len() as u64;
 
         sink.write_all(&body)
             .await
@@ -395,13 +424,13 @@ impl State {
 
         // Only a stream known to be MPEG-TS has a meaningful clock; ciphertext
         // would yield random "sync bytes" and a nonsense duration.
-        let elapsed = if self.result.media_is_mpeg_ts == Some(true) {
+        let elapsed = if self.is_mpeg_ts == Some(true) {
             self.pcr.observe(&body);
             self.pcr.elapsed()
         } else {
             None
         };
-        self.result.media_duration_s = elapsed.map(|elapsed| elapsed.as_secs_f64());
+        self.duration_s = elapsed.map(|elapsed| elapsed.as_secs_f64());
 
         self.acknowledge(writer, sequence).await?;
 
@@ -409,7 +438,7 @@ impl State {
             && elapsed >= clip_length
         {
             debug!("The media covers the clip's {clip_length:?}; stopping the playback");
-            self.result.outcome = MediaStreamPlaybackOutcome::ClipEndReached;
+            self.outcome = RecordingDownloadOutcome::ClipEndReached;
             return Ok(false);
         }
 
@@ -425,7 +454,6 @@ impl State {
         let Some(sequence) = sequence else {
             return Ok(());
         };
-        self.result.last_data_sequence = Some(sequence);
 
         if sequence % ACK_EVERY == 0 {
             trace!("Acknowledging media stream sequence {sequence}");
@@ -459,8 +487,8 @@ impl State {
         if let Some(hmac) = part.header("x-data-hmac")
             && !cipher.verify_hmac(&part.body, hmac)
         {
-            self.result.hmac_mismatch_count += 1;
-            if self.result.hmac_mismatch_count <= HMAC_WARNINGS {
+            self.hmac_mismatch_count += 1;
+            if self.hmac_mismatch_count <= HMAC_WARNINGS {
                 warn!(
                     "Dropping a media stream part whose X-Data-Hmac does not match (sequence {:?})",
                     part.header("x-data-sequence")
@@ -479,11 +507,11 @@ impl State {
     /// Derives the media cipher from the session's `Key-Exchange`, letting the
     /// part's `X-Data-Hmac` choose among the candidate secrets.
     fn select_cipher(&mut self, part: &Part) -> CipherState {
-        let Some(key_exchange) = self.result.session.key_exchange.as_deref() else {
+        let Some(key_exchange) = self.key_exchange.clone() else {
             warn!("The media stream parts are encrypted but the hub sent no Key-Exchange");
             return CipherState::Unavailable;
         };
-        let key_exchange = match KeyExchange::parse(key_exchange) {
+        let key_exchange = match KeyExchange::parse(&key_exchange) {
             Ok(key_exchange) => key_exchange,
             Err(err) => {
                 warn!("Cannot parse the media stream Key-Exchange: {err:#}");
@@ -513,8 +541,8 @@ impl State {
                     debug!(
                         "Media stream cipher ready: secret candidate {index} ({label}) matches the X-Data-Hmac"
                     );
-                    self.result.hmac_verified = Some(true);
-                    self.result.decrypted = true;
+                    self.hmac_verified = Some(true);
+                    self.decrypted = true;
                     return CipherState::Ready(cipher);
                 }
                 Some(_) => continue,
@@ -522,7 +550,7 @@ impl State {
                     debug!(
                         "Media stream cipher ready: secret candidate {index} ({label}), unverified (no X-Data-Hmac)"
                     );
-                    self.result.decrypted = true;
+                    self.decrypted = true;
                     return CipherState::Ready(cipher);
                 }
             }
@@ -532,7 +560,7 @@ impl State {
             "None of the {} candidate secrets matches the X-Data-Hmac of the media stream parts; passing them through encrypted",
             self.secrets.len()
         );
-        self.result.hmac_verified = Some(false);
+        self.hmac_verified = Some(false);
         CipherState::Unavailable
     }
 
@@ -554,10 +582,8 @@ impl State {
             response.session_id, response.speed
         );
         if response.session_id.is_some() {
-            self.session_id = response.session_id.clone();
+            self.session_id = response.session_id;
         }
-        self.result.playback_session_id = response.session_id;
-        self.result.speed = response.speed;
 
         Ok(true)
     }
@@ -877,33 +903,22 @@ mod tests {
     fn test_session_headers_prepend_session_id() {
         let mut state = State {
             session_id: None,
+            key_exchange: None,
             seq: 0,
             secrets: candidate_secrets("HASH", "pw"),
             cipher: CipherState::Pending,
             pcr: PcrClock::default(),
             clip_length: None,
-            result: MediaStreamPlaybackResult {
-                session: crate::responses::MediaStreamSession {
-                    session_id: None,
-                    heartbeat_interval_s: None,
-                    key_exchange: None,
-                },
-                playback_session_id: None,
-                speed: None,
-                media_part_count: 0,
-                media_byte_count: 0,
-                media_content_types: Vec::new(),
-                media_is_mpeg_ts: None,
-                media_duration_s: None,
-                last_data_sequence: None,
-                encrypted: false,
-                decrypted: false,
-                hmac_verified: None,
-                hmac_mismatch_count: 0,
-                first_media_part_headers: Vec::new(),
-                event_types: Vec::new(),
-                outcome: MediaStreamPlaybackOutcome::DurationElapsed,
-            },
+            byte_count: 0,
+            part_count: 0,
+            duration_s: None,
+            is_mpeg_ts: None,
+            encrypted: false,
+            decrypted: false,
+            hmac_verified: None,
+            hmac_mismatch_count: 0,
+            first_media_part_seen: false,
+            outcome: RecordingDownloadOutcome::DurationElapsed,
         };
 
         assert_eq!(

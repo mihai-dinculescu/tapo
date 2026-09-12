@@ -143,7 +143,7 @@ macro_rules! tapo_handler {
             client: std::sync::Arc<tokio::sync::RwLock<crate::api::ApiClient>>,
             // Only handlers with an IP-addressed side channel read this
             // (e.g. `CameraHubHandler`'s media stream on port 8800).
-            #[cfg_attr(not(feature = "debug"), allow(dead_code))]
+            #[allow(dead_code)]
             ip_address: String,
         }
 

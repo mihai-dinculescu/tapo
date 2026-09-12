@@ -14,13 +14,12 @@
 //! flow in both directions afterwards and [`playback`] drives the control
 //! channel to play back a recording.
 //!
-//! The Tapo app opens two kinds of session. A pre-connected one
-//! (`X-Preconn: 1`, bare `/stream`) that it keeps idle until a player needs
-//! it, and a purpose-built one whose request URI already names what to stream
-//! (`/stream?camera_mac=…&type=sdvod&playerId=…&start_time=…`), with the
-//! Digest `uri` computed over path and query. An H200 accepted a playback
-//! request as JSON on a pre-connected session but never answered it, so
-//! playback uses the second kind; see [`SessionRequest`].
+//! The request URI names what to stream
+//! (`/stream?camera_mac=…&type=sdvod&playerId=…&start_time=…`) and the Digest
+//! `uri` covers path and query, the way the app's `HttpMediaClient` asks. The
+//! app also has a pre-connected session it keeps idle (`X-Preconn: 1`, bare
+//! `/stream`), but an H200 accepted a playback request as JSON on such a
+//! session and never answered it, so it is of no use here.
 //!
 //! The password is pre-hashed before it enters the Digest computation: the
 //! hub advertises `encrypt_type`, where `"3"` selects an upper-case hex SHA-256
@@ -41,7 +40,6 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
 use crate::error::{Error, TapoResponseError};
-use crate::responses::MediaStreamSession;
 
 use super::aes_ssl_cipher::generate_nonce;
 use super::crypto;
@@ -60,6 +58,22 @@ const MAX_HEAD_SIZE: usize = 64 * 1024;
 /// re-established for the next request instead.
 const MAX_DRAIN_SIZE: usize = 64 * 1024;
 
+/// What the hub reported when it accepted the session. Every field is
+/// optional: the Tapo app defaults a missing session id to an empty string
+/// and a missing heartbeat interval to 15 seconds, and an H200 sends neither.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct MediaStreamSession {
+    /// The session identifier issued by the hub (`X-Session-Id`), echoed on
+    /// later client parts.
+    pub session_id: Option<String>,
+    /// The heartbeat interval the hub asks for, in seconds (`X-Hb`).
+    pub heartbeat_interval_s: Option<u64>,
+    /// The `Key-Exchange` header, e.g. `cipher="AES_128_CBC" username="admin"
+    /// padding="PKCS7_16" algorithm="HKDF" nonce="…" salt="…"`. Its `nonce`
+    /// and `salt` are the key material for the media cipher.
+    pub key_exchange: Option<String>,
+}
+
 /// An authenticated media stream connection.
 pub(crate) struct MediaStreamConnection {
     /// The socket, positioned somewhere inside the multipart body that
@@ -77,46 +91,31 @@ pub(crate) struct MediaStreamConnection {
     pub password: String,
 }
 
-/// What a media stream session is opened for. It decides the request URI and
-/// the header set of the `POST /stream` handshake, the way the Tapo app's two
-/// stream clients do.
+/// What a media stream session is opened for: playback of a recording stored
+/// on the hub. The selection travels in the URI query (`hc0/d.java`), with
+/// the player identified by `playerId` rather than a header.
 #[derive(Debug, Clone)]
-pub(crate) enum SessionRequest {
-    /// A pre-connected session with nothing requested yet: bare `/stream`,
-    /// `X-Preconn: 1`, and the client identified by `X-Client-UUID`
-    /// (`zh0/e.java`). The app keeps such a session idle until a player
-    /// needs it. Only the `debug`-gated session opener builds one.
-    #[cfg_attr(not(feature = "debug"), allow(dead_code))]
-    PreConnect { client_uuid: String },
-    /// Playback of a recording stored on the hub. The selection travels in
-    /// the URI query (`hc0/d.java`), with the player identified by
-    /// `playerId` instead of a header, and the Digest `uri` covers the query.
-    Playback {
-        camera_mac: String,
-        player_id: String,
-        /// Unix timestamp (seconds).
-        start_time: u64,
-    },
+pub(crate) struct SessionRequest {
+    pub camera_mac: String,
+    pub player_id: String,
+    /// Unix timestamp (seconds).
+    pub start_time: u64,
 }
 
 impl SessionRequest {
-    /// The request URI: path plus query.
+    /// The request URI: path plus query. The Digest `uri` covers all of it.
     fn uri(&self) -> String {
-        match self {
-            Self::PreConnect { .. } => PATH.to_string(),
-            Self::Playback {
-                camera_mac,
-                player_id,
-                start_time,
-            } => {
-                // `auto_seek` is `SeekMethod::NORMAL` and `vod_type` is
-                // `VodType::NORMAL`, the app's defaults for plain playback.
-                format!(
-                    "{PATH}?camera_mac={camera_mac}&type=sdvod&playerId={player_id}\
-                     &start_time={start_time}&auto_seek=0&vod_type=0"
-                )
-            }
-        }
+        let Self {
+            camera_mac,
+            player_id,
+            start_time,
+        } = self;
+        // `auto_seek` is `SeekMethod::NORMAL` and `vod_type` is
+        // `VodType::NORMAL`, the app's defaults for plain playback.
+        format!(
+            "{PATH}?camera_mac={camera_mac}&type=sdvod&playerId={player_id}\
+             &start_time={start_time}&auto_seek=0&vod_type=0"
+        )
     }
 }
 
@@ -151,7 +150,7 @@ async fn handshake(
     // Round 1: an unauthenticated request, which the hub answers with a
     // Digest challenge.
     debug!("Requesting the media stream Digest challenge for {uri}...");
-    let request = build_request(ip_address, session_request, &uri, None);
+    let request = build_request(ip_address, &uri, None);
     let challenge_response = exchange(&mut stream, &request)
         .await?
         .ok_or_else(|| anyhow!("the hub closed the connection without sending a challenge"))?;
@@ -171,7 +170,7 @@ async fn handshake(
             // The hub may have closed the connection after the challenge, in
             // which case the request is retried on a fresh one.
             debug!("Sending the media stream Digest credentials...");
-            let request = build_request(ip_address, session_request, &uri, Some(&authorization));
+            let request = build_request(ip_address, &uri, Some(&authorization));
             let mut response = if challenge_response.keep_alive() {
                 exchange(&mut stream, &request).await?
             } else {
@@ -237,29 +236,17 @@ async fn connect(ip_address: &str) -> anyhow::Result<TcpStream> {
         .with_context(|| format!("connect to the media stream at {address}"))
 }
 
-fn build_request(
-    ip_address: &str,
-    session_request: &SessionRequest,
-    uri: &str,
-    authorization: Option<&str>,
-) -> String {
+fn build_request(ip_address: &str, uri: &str, authorization: Option<&str>) -> String {
     // The header set mirrors the Tapo app, minus the generic ones it sends
     // (`User-Agent`, `Connection`, `Accept-Encoding`) that carry no
     // hub-specific meaning.
     let mut request = format!(
         "{METHOD} {uri} HTTP/1.1\r\n\
          Host: {ip_address}:{PORT}\r\n\
-         Content-Type: multipart/mixed; boundary={CLIENT_BOUNDARY}\r\n"
+         Content-Type: multipart/mixed; boundary={CLIENT_BOUNDARY}\r\n\
+         X-Key-Exchange: 1\r\n\
+         Content-Length: 0\r\n"
     );
-
-    if let SessionRequest::PreConnect { client_uuid } = session_request {
-        request.push_str(&format!(
-            "X-Client-UUID: {client_uuid}\r\n\
-             X-Preconn: 1\r\n"
-        ));
-    }
-
-    request.push_str("X-Key-Exchange: 1\r\nContent-Length: 0\r\n");
 
     if let Some(authorization) = authorization {
         request.push_str(&format!("Authorization: {authorization}\r\n"));
@@ -997,37 +984,12 @@ mod tests {
         assert_eq!(find_head_end(b"HTTP/1.1 200 OK\r\n"), None);
     }
 
+    /// The request names the clip in the URI and identifies the player there
+    /// too, so it carries neither `X-Preconn` nor `X-Client-UUID`, like the
+    /// app's `HttpMediaClient`.
     #[test]
-    fn test_build_request_pre_connect() {
-        let session_request = SessionRequest::PreConnect {
-            client_uuid: "UUID".to_string(),
-        };
-        let uri = session_request.uri();
-        assert_eq!(uri, "/stream");
-
-        let request = build_request("192.168.1.100", &session_request, &uri, None);
-        assert_eq!(
-            request,
-            "POST /stream HTTP/1.1\r\n\
-             Host: 192.168.1.100:8800\r\n\
-             Content-Type: multipart/mixed; boundary=--client-stream-boundary--\r\n\
-             X-Client-UUID: UUID\r\n\
-             X-Preconn: 1\r\n\
-             X-Key-Exchange: 1\r\n\
-             Content-Length: 0\r\n\
-             \r\n"
-        );
-
-        let request = build_request("192.168.1.100", &session_request, &uri, Some("Digest x"));
-        assert!(request.ends_with("Content-Length: 0\r\nAuthorization: Digest x\r\n\r\n"));
-    }
-
-    /// The playback request names the clip in the URI and identifies the
-    /// player there too, so it carries neither `X-Preconn` nor
-    /// `X-Client-UUID`, like the app's `HttpMediaClient`.
-    #[test]
-    fn test_build_request_playback() {
-        let session_request = SessionRequest::Playback {
+    fn test_build_request() {
+        let session_request = SessionRequest {
             camera_mac: "8C902D40A6AE".to_string(),
             player_id: "6d198157-565a-4adb-aaa5-85b81bc5c918".to_string(),
             start_time: 1_788_931_768,
@@ -1040,7 +1002,7 @@ mod tests {
              &start_time=1788931768&auto_seek=0&vod_type=0"
         );
 
-        let request = build_request("192.168.1.100", &session_request, &uri, None);
+        let request = build_request("192.168.1.100", &uri, None);
         assert_eq!(
             request,
             format!(
