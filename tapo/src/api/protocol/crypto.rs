@@ -52,7 +52,6 @@ pub fn aes128_cbc_decrypt_bytes(key: &[u8], iv: &[u8], data: &[u8]) -> anyhow::R
 }
 
 /// HMAC-SHA256 (RFC 2104).
-#[cfg_attr(not(feature = "debug"), allow(dead_code))]
 pub fn hmac_sha256(key: &[u8], data: &[u8]) -> [u8; 32] {
     const BLOCK_SIZE: usize = 64;
 
@@ -76,7 +75,6 @@ pub fn hmac_sha256(key: &[u8], data: &[u8]) -> [u8; 32] {
 
 /// HKDF with HMAC-SHA256 (RFC 5869): extract with `salt`, then expand with
 /// `info` to `length` bytes (at most 255 * 32).
-#[cfg_attr(not(feature = "debug"), allow(dead_code))]
 pub fn hkdf_sha256(ikm: &[u8], salt: &[u8], info: &[u8], length: usize) -> Vec<u8> {
     let prk = hmac_sha256(salt, ikm);
 

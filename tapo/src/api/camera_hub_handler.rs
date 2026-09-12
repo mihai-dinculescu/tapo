@@ -1,7 +1,6 @@
 #[cfg(feature = "debug")]
 use std::time::Duration;
 
-#[cfg(feature = "debug")]
 use tokio::io::AsyncWrite;
 
 use chrono::NaiveDate;
@@ -17,8 +16,10 @@ use crate::responses::{
     RecordingHubResult, RecordingListHubResultRaw,
 };
 
+use crate::responses::MediaStreamPlaybackResult;
+
 #[cfg(feature = "debug")]
-use crate::responses::{ChildDeviceComponentList, MediaStreamPlaybackResult, MediaStreamSession};
+use crate::responses::{ChildDeviceComponentList, MediaStreamSession};
 
 tapo_handler! {
     /// Handler for camera hubs, such as the
@@ -295,7 +296,44 @@ impl CameraHubHandler {
     /// * `start_time` - the `start_time` of a recording returned by [`CameraHubHandler::search_video_with_utc`].
     /// * `end_time` - the `end_time` of that recording.
     /// * `writer` - where the media is written, e.g. a `Vec<u8>` or a `tokio::fs::File`.
-    #[cfg(feature = "debug")]
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .h200("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let camera = hub
+    ///     .get_general_device_list()
+    ///     .await?
+    ///     .into_iter()
+    ///     .next()
+    ///     .expect("no camera is paired to the hub");
+    ///
+    /// let end_time = chrono::Utc::now().timestamp() as u64;
+    /// let start_time = end_time - 24 * 60 * 60;
+    /// let recordings = hub
+    ///     .search_video_with_utc(start_time, end_time, camera.device_id, camera.mac.clone())
+    ///     .await?;
+    ///
+    /// if let Some(recording) = recordings.first() {
+    ///     let mut media = Vec::new();
+    ///     hub.download_recording(
+    ///         camera.mac,
+    ///         recording.start_time,
+    ///         recording.end_time,
+    ///         &mut media,
+    ///     )
+    ///     .await?;
+    ///     std::fs::write("recording.ts", media)?;
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub async fn download_recording<W: AsyncWrite + Unpin + Send>(
         &self,
         child_device_mac: impl Into<String>,
