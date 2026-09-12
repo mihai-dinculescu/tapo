@@ -199,13 +199,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .await?;
             std::fs::write(&path, &media)?;
 
-            info!("Recording download: {result:?}");
-            info!("Wrote {} bytes to {path}.", media.len());
+            info!(
+                "Wrote {} bytes to {path}: {:?} of video, {:?}.",
+                media.len(),
+                result.duration_s,
+                result.outcome
+            );
         }
         None => {
-            info!("No recording to download. Opening a media stream session instead...");
-            let media_stream_session = hub.open_media_stream_session().await?;
-            info!("Media stream session: {media_stream_session:?}");
+            info!("No recording found to download.");
         }
     }
 

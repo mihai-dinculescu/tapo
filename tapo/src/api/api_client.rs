@@ -20,16 +20,15 @@ use crate::requests::{
 #[cfg(feature = "debug")]
 use crate::responses::{
     ChildDeviceComponentList, ChildDeviceComponentListResult, Component, ComponentListResult,
-    MediaStreamSession, SupportedAlarmTypeListResult,
+    SupportedAlarmTypeListResult,
 };
 
 use crate::responses::{
     AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
-    DecodableResultExt, EnergyDataResult, EnergyDataResultRaw, EnergyUsageResult,
-    MediaStreamPlaybackOutcome, MediaStreamPlaybackResult, PowerDataResult, PowerDataResultRaw,
-    PowerState, ScheduleRuleListResultRaw, ScheduleRuleResult, SmartCamControlChildResult,
-    TapoMultipleResponse, TapoResponseExt, TapoResult, Timer, TimerListResultRaw,
-    validate_response,
+    DecodableResultExt, EnergyDataResult, EnergyDataResultRaw, EnergyUsageResult, PowerDataResult,
+    PowerDataResultRaw, PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw,
+    ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
+    TapoResult, Timer, TimerListResultRaw, validate_response,
 };
 
 use super::discovery::DeviceDiscovery;
@@ -1068,46 +1067,6 @@ impl ApiClient {
             .await
     }
 
-    #[cfg(feature = "debug")]
-    pub(crate) async fn open_media_stream_session(
-        &self,
-        ip_address: &str,
-    ) -> Result<MediaStreamSession, Error> {
-        debug!("Open media stream session...");
-
-        // The socket is dropped as soon as the session has been established.
-        let session_request = media_stream::SessionRequest::PreConnect {
-            client_uuid: self.player_id.clone(),
-        };
-        let connection = media_stream::authenticate(
-            ip_address,
-            &self.tapo_password,
-            &session_request,
-            self.timeout(),
-        )
-        .await?;
-
-        Ok(connection.session)
-    }
-
-    #[cfg(feature = "debug")]
-    pub(crate) async fn probe_recording_playback(
-        &self,
-        ip_address: &str,
-        child_device_mac: String,
-        start_time: u64,
-        end_time: u64,
-        duration: Duration,
-    ) -> Result<MediaStreamPlaybackResult, Error> {
-        debug!("Probe recording playback...");
-
-        let (connection, request) = self
-            .open_recording_playback(ip_address, child_device_mac, start_time, end_time)
-            .await?;
-
-        media_stream::playback::probe(connection, request, duration).await
-    }
-
     pub(crate) async fn download_recording<W: tokio::io::AsyncWrite + Unpin + Send>(
         &self,
         ip_address: &str,
@@ -1115,7 +1074,7 @@ impl ApiClient {
         start_time: u64,
         end_time: u64,
         writer: &mut W,
-    ) -> Result<MediaStreamPlaybackResult, Error> {
+    ) -> Result<RecordingDownloadResult, Error> {
         debug!("Download recording...");
 
         // The playback stops itself once the media covers the clip; the time
@@ -1128,33 +1087,8 @@ impl ApiClient {
             .open_recording_playback(ip_address, child_device_mac, start_time, end_time)
             .await?;
 
-        let result = media_stream::playback::play(
-            connection,
-            request,
-            time_limit,
-            Some(clip_length),
-            writer,
-        )
-        .await?;
-
-        if result.outcome == MediaStreamPlaybackOutcome::DurationElapsed
-            && result.media_part_count == 0
-        {
-            return Err(anyhow::anyhow!(
-                "the hub sent no media for the recording within {time_limit:?}"
-            )
-            .into());
-        }
-
-        if result.encrypted && !result.decrypted {
-            return Err(anyhow::anyhow!(
-                "the hub encrypts the recording and it could not be decrypted (HMAC verified: {:?}); the media was written as received",
-                result.hmac_verified
-            )
-            .into());
-        }
-
-        Ok(result)
+        media_stream::playback::play(connection, request, time_limit, Some(clip_length), writer)
+            .await
     }
 
     async fn open_recording_playback(
@@ -1170,7 +1104,7 @@ impl ApiClient {
         ),
         Error,
     > {
-        let session_request = media_stream::SessionRequest::Playback {
+        let session_request = media_stream::SessionRequest {
             camera_mac: child_device_mac.clone(),
             player_id: self.player_id.clone(),
             start_time,
