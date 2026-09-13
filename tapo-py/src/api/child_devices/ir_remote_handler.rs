@@ -1,23 +1,14 @@
 use std::ops::Deref;
-use std::sync::Arc;
 
 use pyo3::prelude::*;
 use tapo::IrRemoteHandler;
+use tapo::responses::IrRemoteResult;
 
 use crate::call_handler_method;
 
-#[derive(Clone)]
-#[pyclass(from_py_object, name = "IrRemoteHandler")]
-pub struct PyIrRemoteHandler {
-    inner: Arc<IrRemoteHandler>,
-}
-
-impl PyIrRemoteHandler {
-    pub fn new(handler: IrRemoteHandler) -> Self {
-        Self {
-            inner: Arc::new(handler),
-        }
-    }
+py_child_handler! {
+    PyIrRemoteHandler(IrRemoteHandler, IrRemoteResult),
+    py_name = "IrRemoteHandler",
 }
 
 #[pymethods]

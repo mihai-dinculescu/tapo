@@ -1,29 +1,19 @@
-use std::sync::Arc;
-
-use tokio::sync::RwLock;
-
-use crate::api::ApiClient;
 use crate::error::Error;
 use crate::requests::{SendIrCmdByIdParams, TapoParams, TapoRequest};
+use crate::responses::IrRemoteResult;
 
-/// Handler for the IR remotes paired with a
-/// [H110](https://www.tapo.com/en/search/?q=H110) hub.
-///
-/// IR remotes are virtual child devices that are created by the Tapo app, so they
-/// don't report device info of their own. Their properties, including the list of
-/// keys that can be sent, are available from
-/// [`HubHandler::get_child_device_list`](crate::HubHandler::get_child_device_list)
-/// as [`IrRemoteResult`](crate::responses::IrRemoteResult).
-pub struct IrRemoteHandler {
-    client: Arc<RwLock<ApiClient>>,
-    device_id: String,
+tapo_child_handler! {
+    /// Handler for the IR remotes paired with a
+    /// [H110](https://www.tapo.com/en/search/?q=H110) hub.
+    ///
+    /// IR remotes are virtual child devices that are created by the Tapo app, either by
+    /// picking an appliance from TP-Link's IR database or by learning the keys from a
+    /// physical remote.
+    IrRemoteHandler(IrRemoteResult),
+    camel_case_device_info,
 }
 
 impl IrRemoteHandler {
-    pub(crate) fn new(client: Arc<RwLock<ApiClient>>, device_id: String) -> Self {
-        Self { client, device_id }
-    }
-
     /// Sends one of the IR keys stored on this remote.
     ///
     /// # Arguments
@@ -39,7 +29,7 @@ impl IrRemoteHandler {
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// // Connect to the hub
     /// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
-    ///     .h100("192.168.1.100")
+    ///     .h110("192.168.1.100")
     ///     .await?;
     /// // Get a handler for the IR remote
     /// let remote = hub

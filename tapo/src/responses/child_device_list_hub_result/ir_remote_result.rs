@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
-use crate::responses::{DecodableResultExt, decode_value};
+use crate::responses::{DecodableResultExt, TapoResponseExt, decode_value};
 
 /// Device info of the IR remotes paired with a Tapo H110 hub.
 ///
@@ -50,6 +50,8 @@ pub struct IrRemoteResult {
 
 #[cfg(feature = "python")]
 crate::impl_to_dict!(IrRemoteResult);
+
+impl TapoResponseExt for IrRemoteResult {}
 
 impl DecodableResultExt for IrRemoteResult {
     fn decode(mut self) -> Result<Self, Error> {

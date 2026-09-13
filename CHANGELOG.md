@@ -11,7 +11,7 @@ file. This change log follows the conventions of
 - H110 hub support. `ApiClient`: added `h110`, an alias for `h100` since the two hubs speak the same protocol. `DeviceType::from_model` now maps `H110` to `DeviceType::Hub`, so H110 hubs are returned by device discovery.
 - `ChildDeviceHubResult`: added an `IrRemote` variant for the IR remotes (`SMART.TAPOREMOTE`) that can be paired with an H110 hub. Existing exhaustive matches on `ChildDeviceHubResult` will need to handle it.
 - `IrRemoteResult` and `IrRemoteKey`: added for the IR remote child devices, exposing the stored `key_list` alongside the usual child device properties.
-- `IrRemoteHandler`: added with a `send_ir_cmd_by_id` method that sends one of the keys stored on an IR remote.
+- `IrRemoteHandler`: added with `get_device_info`, `get_device_info_json`, `get_component_list`, and a `send_ir_cmd_by_id` method that sends one of the keys stored on an IR remote.
 - `HubHandler`: added `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`.
 
 ## [Python Unreleased][Unreleased]
@@ -20,7 +20,7 @@ file. This change log follows the conventions of
 
 - H110 hub support. `ApiClient`: added `h110`, an alias for `h100` since the two hubs speak the same protocol. `DeviceType.from_model` now maps `H110` to `DeviceType.Hub`, so H110 hubs are returned by device discovery.
 - `IrRemoteResult` and `IrRemoteKey`: added for the IR remote child devices (`SMART.TAPOREMOTE`) that can be paired with an H110 hub, exposing the stored `key_list` alongside the usual child device properties. `HubHandler.get_child_device_list` can now return `IrRemoteResult` items.
-- `IrRemoteHandler`: added with a `send_ir_cmd_by_id` method that sends one of the keys stored on an IR remote.
+- `IrRemoteHandler`: added with `get_device_info`, `get_device_info_json`, `get_component_list`, and a `send_ir_cmd_by_id` method that sends one of the keys stored on an IR remote.
 - `HubHandler`: added `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`.
 
 ## [MCP Unreleased][Unreleased]
