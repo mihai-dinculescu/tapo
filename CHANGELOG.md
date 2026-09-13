@@ -55,6 +55,10 @@ file. This change log follows the conventions of
 
 - `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub. It is now listed as a supported device, with its sensors and IR remotes surfaced under `children`. IR remotes serve `DeviceInfo`, which includes the list of keys stored on the remote.
 
+### Changed
+
+- Tool errors: error messages now include the full chain of causes, so a transport failure reports why it failed (e.g. `connection closed before message completed` or `operation timed out`) instead of stopping at the request URL.
+
 ## [MCP v0.5.0][tapo-mcp-v0.5.0] - 2026-07-11
 
 ### Added
