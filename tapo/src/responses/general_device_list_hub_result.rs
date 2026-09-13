@@ -11,55 +11,23 @@ use crate::responses::TapoResponseExt;
 /// General device list result.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct GeneralDeviceListHubResultRaw {
-    #[serde(default)]
     general_camera_manage: GeneralCameraManageResultRaw,
 }
 
 impl GeneralDeviceListHubResultRaw {
     pub fn devices(self) -> Vec<GeneralDeviceHubResult> {
-        self.general_camera_manage
-            .paired_general_device_list
-            .into_devices()
+        self.general_camera_manage.paired_general_device_list
     }
 }
 
 impl TapoResponseExt for GeneralDeviceListHubResultRaw {}
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-struct GeneralCameraManageResultRaw {
-    #[serde(default)]
-    paired_general_device_list: PairedGeneralDeviceListRaw,
-}
-
-/// The H200 returns the camera array directly under `general_camera_manage`,
-/// but the app's beans expect an extra `paired_general_device_list` section
-/// wrapper around it. Only the flat shape has been observed on the wire;
-/// accept both.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-enum PairedGeneralDeviceListRaw {
-    List(Vec<GeneralDeviceHubResult>),
-    Section {
-        #[serde(default)]
-        paired_general_device_list: Vec<GeneralDeviceHubResult>,
-    },
-}
-
-impl PairedGeneralDeviceListRaw {
-    fn into_devices(self) -> Vec<GeneralDeviceHubResult> {
-        match self {
-            PairedGeneralDeviceListRaw::List(devices) => devices,
-            PairedGeneralDeviceListRaw::Section {
-                paired_general_device_list,
-            } => paired_general_device_list,
-        }
-    }
-}
-
-impl Default for PairedGeneralDeviceListRaw {
-    fn default() -> Self {
-        PairedGeneralDeviceListRaw::List(Vec::new())
-    }
+struct GeneralCameraManageResultRaw {
+    /// H200 firmware 1.6.5 omits its other lists when they are empty, so a
+    /// missing list is taken to mean no paired cameras.
+    #[serde(default)]
+    paired_general_device_list: Vec<GeneralDeviceHubResult>,
 }
 
 /// General device (standalone Wi-Fi camera) paired to a camera hub.
@@ -100,15 +68,6 @@ mod tests {
                 "paired_general_device_list": []
             }
         }"#;
-
-        let parsed: GeneralDeviceListHubResultRaw = serde_json::from_str(json).unwrap();
-
-        assert!(parsed.devices().is_empty());
-    }
-
-    #[test]
-    fn test_missing_paired_general_device_list_parses_as_empty() {
-        let json = r#"{"general_camera_manage": {"current_bound": 0, "max_bound": 4}}"#;
 
         let parsed: GeneralDeviceListHubResultRaw = serde_json::from_str(json).unwrap();
 

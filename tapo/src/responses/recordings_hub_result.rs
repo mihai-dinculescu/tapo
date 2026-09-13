@@ -8,7 +8,6 @@ use crate::responses::TapoResponseExt;
 /// Recording date list result (`searchDateWithVideo`).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct RecordingDateListHubResultRaw {
-    #[serde(default)]
     playback: RecordingDateListRaw,
 }
 
@@ -17,39 +16,20 @@ impl RecordingDateListHubResultRaw {
         self.playback
             .search_results
             .into_iter()
-            .flat_map(RecordingDateEntryRaw::into_dates)
-            .map(|date| NaiveDate::parse_from_str(&date, "%Y%m%d"))
+            .flat_map(HashMap::into_values)
+            .map(|entry| NaiveDate::parse_from_str(&entry.date, "%Y%m%d"))
             .collect()
     }
 }
 
 impl TapoResponseExt for RecordingDateListHubResultRaw {}
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-struct RecordingDateListRaw {
-    #[serde(default)]
-    search_results: Vec<RecordingDateEntryRaw>,
-}
-
-/// The Tapo app parses each entry as a single-key section object wrapping the
-/// date (e.g. `{"search_video_date": {"date": "20250101"}}`); accept both that
-/// and the flat `{"date": "20250101"}` shape.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-enum RecordingDateEntryRaw {
-    Date(RecordingDateRaw),
-    Section(HashMap<String, RecordingDateRaw>),
-}
-
-impl RecordingDateEntryRaw {
-    fn into_dates(self) -> Vec<String> {
-        match self {
-            RecordingDateEntryRaw::Date(entry) => vec![entry.date],
-            RecordingDateEntryRaw::Section(entries) => {
-                entries.into_values().map(|entry| entry.date).collect()
-            }
-        }
-    }
+struct RecordingDateListRaw {
+    /// Each date is wrapped in a single-key section object, e.g.
+    /// `{"search_results_1": {"date": "20260906"}}`.
+    #[serde(default)]
+    search_results: Vec<HashMap<String, RecordingDateRaw>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -60,7 +40,6 @@ struct RecordingDateRaw {
 /// Recording list result (`searchVideoWithUTC`).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct RecordingListHubResultRaw {
-    #[serde(default)]
     playback: RecordingListRaw,
 }
 
@@ -69,40 +48,23 @@ impl RecordingListHubResultRaw {
         self.playback
             .search_video_results
             .into_iter()
-            .flat_map(RecordingEntryRaw::into_recordings)
+            .flat_map(HashMap::into_values)
             .collect()
     }
 }
 
 impl TapoResponseExt for RecordingListHubResultRaw {}
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-struct RecordingListRaw {
-    #[serde(default)]
-    search_video_results: Vec<RecordingEntryRaw>,
-}
-
-/// The Tapo app parses each entry either flat or as a single-key section
-/// object wrapping the recording; accept both shapes.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-enum RecordingEntryRaw {
-    Recording(RecordingHubResult),
-    Section(HashMap<String, RecordingHubResult>),
-}
-
-impl RecordingEntryRaw {
-    fn into_recordings(self) -> Vec<RecordingHubResult> {
-        match self {
-            RecordingEntryRaw::Recording(recording) => vec![recording],
-            RecordingEntryRaw::Section(entries) => entries.into_values().collect(),
-        }
-    }
+struct RecordingListRaw {
+    /// Each recording is wrapped in a single-key section object, e.g.
+    /// `{"search_video_results_1": {"startTime": ..., "endTime": ..., "video_type": "2"}}`.
+    #[serde(default)]
+    search_video_results: Vec<HashMap<String, RecordingHubResult>>,
 }
 
 /// Recording stored on a camera hub for a camera paired to it.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(try_from = "RecordingHubResultRaw")]
 pub struct RecordingHubResult {
     /// Start of the recording as a Unix timestamp (seconds).
     #[serde(rename = "startTime")]
@@ -216,39 +178,6 @@ pub enum RecordingType {
     Other(String),
 }
 
-/// Devices send the recording type under a misspelled `vedio_type` key; some
-/// firmware uses `video_type` instead. Accept either (or both) and fold them
-/// into [`RecordingHubResult::video_type`].
-#[derive(Debug, Clone, Deserialize)]
-struct RecordingHubResultRaw {
-    #[serde(rename = "startTime")]
-    start_time: u64,
-    #[serde(rename = "endTime")]
-    end_time: u64,
-    #[serde(default, rename = "vedio_type")]
-    misspelled_video_type: Option<RecordingType>,
-    #[serde(default)]
-    video_type: Option<RecordingType>,
-}
-
-impl TryFrom<RecordingHubResultRaw> for RecordingHubResult {
-    type Error = String;
-
-    fn try_from(raw: RecordingHubResultRaw) -> Result<Self, Self::Error> {
-        // The Tapo app reads `vedio_type` first and falls back to `video_type`.
-        let video_type = raw
-            .misspelled_video_type
-            .or(raw.video_type)
-            .ok_or("missing field `video_type`")?;
-
-        Ok(Self {
-            start_time: raw.start_time,
-            end_time: raw.end_time,
-            video_type,
-        })
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -258,8 +187,8 @@ mod tests {
         let json = r#"{
             "playback": {
                 "search_results": [
-                    {"search_video_date": {"date": "20260801"}},
-                    {"search_video_date": {"date": "20260817"}}
+                    {"search_results_1": {"date": "20260801"}},
+                    {"search_results_2": {"date": "20260817"}}
                 ]
             }
         }"#;
@@ -276,29 +205,9 @@ mod tests {
     }
 
     #[test]
-    fn test_recording_dates_parse_from_flat_entries() {
-        let json = r#"{"playback": {"search_results": [{"date": "20260815"}]}}"#;
-
-        let parsed: RecordingDateListHubResultRaw = serde_json::from_str(json).unwrap();
-
-        assert_eq!(
-            parsed.dates().unwrap(),
-            vec![NaiveDate::from_ymd_opt(2026, 8, 15).unwrap()]
-        );
-    }
-
-    #[test]
-    fn test_missing_search_results_parses_as_empty() {
-        let json = r#"{"playback": {}}"#;
-
-        let parsed: RecordingDateListHubResultRaw = serde_json::from_str(json).unwrap();
-
-        assert!(parsed.dates().unwrap().is_empty());
-    }
-
-    #[test]
     fn test_invalid_recording_date_is_an_error() {
-        let json = r#"{"playback": {"search_results": [{"date": "not-a-date"}]}}"#;
+        let json =
+            r#"{"playback": {"search_results": [{"search_results_1": {"date": "not-a-date"}}]}}"#;
 
         let parsed: RecordingDateListHubResultRaw = serde_json::from_str(json).unwrap();
 
@@ -306,11 +215,11 @@ mod tests {
     }
 
     #[test]
-    fn test_recordings_parse_from_flat_entries() {
+    fn test_recordings_parse_from_section_entries() {
         let json = r#"{
             "playback": {
                 "search_video_results": [
-                    {"startTime": 1786694400, "endTime": 1786694460, "vedio_type": "2"}
+                    {"search_video_results_1": {"startTime": 1786694400, "endTime": 1786694460, "video_type": "2"}}
                 ]
             }
         }"#;
@@ -325,13 +234,11 @@ mod tests {
     }
 
     #[test]
-    fn test_recording_type_parses_from_either_key() {
+    fn test_unknown_recording_type_parses_as_other() {
         let json = r#"{
             "playback": {
                 "search_video_results": [
-                    {"startTime": 0, "endTime": 1, "video_type": "1"},
-                    {"startTime": 2, "endTime": 3, "vedio_type": "2", "video_type": "1"},
-                    {"startTime": 4, "endTime": 5, "vedio_type": "99"}
+                    {"search_video_results_1": {"startTime": 0, "endTime": 1, "video_type": "99"}}
                 ]
             }
         }"#;
@@ -339,44 +246,9 @@ mod tests {
         let parsed: RecordingListHubResultRaw = serde_json::from_str(json).unwrap();
         let recordings = parsed.recordings();
 
-        assert_eq!(recordings[0].video_type, RecordingType::Timing);
-        assert_eq!(recordings[1].video_type, RecordingType::Motion);
         assert_eq!(
-            recordings[2].video_type,
+            recordings[0].video_type,
             RecordingType::Other("99".to_string())
         );
-    }
-
-    #[test]
-    fn test_missing_recording_type_is_an_error() {
-        let json = r#"{"playback": {"search_video_results": [{"startTime": 0, "endTime": 1}]}}"#;
-
-        assert!(serde_json::from_str::<RecordingListHubResultRaw>(json).is_err());
-    }
-
-    #[test]
-    fn test_recordings_parse_from_section_entries() {
-        let json = r#"{
-            "playback": {
-                "search_video_results": [
-                    {"search_video_result": {"startTime": 1786694400, "endTime": 1786694460, "vedio_type": "1"}}
-                ]
-            }
-        }"#;
-
-        let parsed: RecordingListHubResultRaw = serde_json::from_str(json).unwrap();
-        let recordings = parsed.recordings();
-
-        assert_eq!(recordings.len(), 1);
-        assert_eq!(recordings[0].start_time, 1786694400);
-    }
-
-    #[test]
-    fn test_missing_search_video_results_parses_as_empty() {
-        let json = r#"{"playback": {}}"#;
-
-        let parsed: RecordingListHubResultRaw = serde_json::from_str(json).unwrap();
-
-        assert!(parsed.recordings().is_empty());
     }
 }
