@@ -24,8 +24,9 @@
 //!
 //! Shapes and defaults follow the Tapo app (`GetVodParams`,
 //! `DoStopRequest`, and the `VodStreamConnection` read loop). Verified
-//! against an H200 on 2026-09-09: a 15 s clip arrived as 705 `video/mp2t`
-//! parts (7.9 MB) followed by `stream_status: finished`.
+//! against an H200 on 2026-09-12: an 11 s clip arrived as 332 `video/mp2t`
+//! parts (4.4 MB), and the download stopped once the MPEG-TS clock showed
+//! 12.5 s.
 
 use std::time::{Duration, Instant};
 
@@ -35,13 +36,12 @@ use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 
-use crate::api::protocol::crypto;
 use crate::error::{Error, TapoResponseError};
 use crate::responses::{RecordingDownloadOutcome, RecordingDownloadResult};
 
 use super::MediaStreamConnection;
 use super::cipher::{KeyExchange, MediaCipher};
-use super::mpeg_ts::PcrClock;
+use super::mpeg_ts::{PcrClock, looks_like_mpeg_ts};
 use super::multipart::{Frame, Part, PartParser, encode_client_part};
 
 const CONTENT_TYPE_JSON: (&str, &str) = ("Content-Type", "application/json");
@@ -54,9 +54,6 @@ const ACK_EVERY: u64 = 25;
 const DEFAULT_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(15);
 /// Spare capacity reserved before each socket read.
 const READ_CHUNK_SIZE: usize = 64 * 1024;
-/// MPEG-TS packets are 188 bytes and start with this sync byte.
-const MPEG_TS_PACKET_SIZE: usize = 188;
-const MPEG_TS_SYNC_BYTE: u8 = 0x47;
 /// Warn about at most this many HMAC mismatches; the count keeps growing.
 const HMAC_WARNINGS: u64 = 3;
 
@@ -94,7 +91,6 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
         buffered,
         session,
         password_hash,
-        password,
     } = connection;
     let (mut reader, mut writer) = stream.into_split();
     let mut parser = PartParser::new(buffered);
@@ -108,7 +104,7 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
         session_id: session.session_id.clone(),
         key_exchange: session.key_exchange.clone(),
         seq: 0,
-        secrets: candidate_secrets(&password_hash, &password),
+        secret: password_hash,
         cipher: None,
         pcr: PcrClock::default(),
         clip_length,
@@ -116,7 +112,6 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
         part_count: 0,
         duration_s: None,
         is_mpeg_ts: None,
-        hmac_verified: None,
         hmac_mismatch_count: 0,
         first_media_part_seen: false,
         outcome: RecordingDownloadOutcome::DurationElapsed,
@@ -211,25 +206,6 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
     state.finish(duration)
 }
 
-/// The secrets to try for the media cipher, most likely first: the Digest
-/// pre-hash (what the app uses), the other pre-hash, the raw password, and
-/// an empty secret.
-fn candidate_secrets(password_hash: &str, password: &str) -> Vec<(String, &'static str)> {
-    let mut secrets: Vec<(String, &'static str)> =
-        vec![(password_hash.to_string(), "Digest pre-hash")];
-    for (secret, label) in [
-        (crypto::sha256_hex(password.as_bytes()), "SHA-256 pre-hash"),
-        (crypto::md5_hex(password.as_bytes()), "MD5 pre-hash"),
-        (password.to_string(), "raw password"),
-        (String::new(), "empty secret"),
-    ] {
-        if !secrets.iter().any(|(known, _)| *known == secret) {
-            secrets.push((secret, label));
-        }
-    }
-    secrets
-}
-
 struct State {
     /// The session id echoed as `X-Session-Id` on client parts: the one
     /// issued for the playback once known, otherwise the one from the
@@ -238,7 +214,9 @@ struct State {
     /// The `Key-Exchange` header the media cipher is derived from.
     key_exchange: Option<String>,
     seq: u32,
-    secrets: Vec<(String, &'static str)>,
+    /// The media cipher secret: the password as pre-hashed for the Digest
+    /// round.
+    secret: String,
     /// Set up from the first encrypted media part.
     cipher: Option<MediaCipher>,
     pcr: PcrClock,
@@ -247,7 +225,6 @@ struct State {
     part_count: u64,
     duration_s: Option<f64>,
     is_mpeg_ts: Option<bool>,
-    hmac_verified: Option<bool>,
     hmac_mismatch_count: u64,
     first_media_part_seen: bool,
     outcome: RecordingDownloadOutcome,
@@ -258,13 +235,12 @@ impl State {
     /// explains why the download is not usable.
     fn finish(self, time_limit: Duration) -> Result<RecordingDownloadResult, Error> {
         debug!(
-            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, decrypted {}, HMAC verified {:?}, HMAC mismatches {}",
+            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, decrypted {}, HMAC mismatches {}",
             self.part_count,
             self.byte_count,
             self.duration_s,
             self.outcome,
             self.cipher.is_some(),
-            self.hmac_verified,
             self.hmac_mismatch_count,
         );
 
@@ -446,7 +422,7 @@ impl State {
         let cipher = match &self.cipher {
             Some(cipher) => cipher,
             None => {
-                let cipher = self.select_cipher(part)?;
+                let cipher = self.derive_cipher(part)?;
                 self.cipher.insert(cipher)
             }
         };
@@ -471,9 +447,9 @@ impl State {
         Ok(Some(cipher.decrypt(nonce, &part.body)?))
     }
 
-    /// Derives the media cipher from the session's `Key-Exchange`, letting the
-    /// part's `X-Data-Hmac` choose among the candidate secrets.
-    fn select_cipher(&mut self, part: &Part) -> Result<MediaCipher, Error> {
+    /// Derives the media cipher from the session's `Key-Exchange` and checks
+    /// it against the part's `X-Data-Hmac`, when there is one.
+    fn derive_cipher(&self, part: &Part) -> Result<MediaCipher, Error> {
         let key_exchange = self
             .key_exchange
             .as_deref()
@@ -489,34 +465,23 @@ impl State {
             .into());
         }
 
-        let hmac = part.header("x-data-hmac");
-        for (index, (secret, label)) in self.secrets.iter().enumerate() {
-            let cipher = MediaCipher::derive(&key_exchange, secret)
-                .context("derive the media stream keys")?;
+        let cipher = MediaCipher::derive(&key_exchange, &self.secret)
+            .context("derive the media stream keys")?;
 
-            match hmac {
-                Some(hmac) if cipher.verify_hmac(&part.body, hmac) => {
-                    debug!(
-                        "Media stream cipher ready: secret candidate {index} ({label}) matches the X-Data-Hmac"
-                    );
-                    self.hmac_verified = Some(true);
-                    return Ok(cipher);
-                }
-                Some(_) => continue,
-                None => {
-                    debug!(
-                        "Media stream cipher ready: secret candidate {index} ({label}), unverified (no X-Data-Hmac)"
-                    );
-                    return Ok(cipher);
-                }
+        match part.header("x-data-hmac") {
+            Some(hmac) if !cipher.verify_hmac(&part.body, hmac) => Err(anyhow!(
+                "cannot decrypt the recording: the media stream keys do not match the X-Data-Hmac of the media stream parts"
+            )
+            .into()),
+            Some(_) => {
+                debug!("Media stream cipher ready, verified by the X-Data-Hmac");
+                Ok(cipher)
+            }
+            None => {
+                debug!("Media stream cipher ready, unverified (no X-Data-Hmac)");
+                Ok(cipher)
             }
         }
-
-        Err(anyhow!(
-            "cannot decrypt the recording: none of the {} candidate secrets matches the X-Data-Hmac of the media stream parts",
-            self.secrets.len()
-        )
-        .into())
     }
 
     fn handle_playback_response(&mut self, params: serde_json::Value) -> Result<bool, Error> {
@@ -542,16 +507,6 @@ impl State {
 
         Ok(true)
     }
-}
-
-/// Whether `body` starts with MPEG-TS packets: a sync byte at every packet
-/// boundary that falls inside the body.
-fn looks_like_mpeg_ts(body: &[u8]) -> bool {
-    !body.is_empty()
-        && body
-            .iter()
-            .step_by(MPEG_TS_PACKET_SIZE)
-            .all(|byte| *byte == MPEG_TS_SYNC_BYTE)
 }
 
 enum ReadOutcome {
@@ -807,41 +762,6 @@ mod tests {
     }
 
     #[test]
-    fn test_candidate_secrets_are_distinct_and_ordered() {
-        let secrets = candidate_secrets(&crypto::sha256_hex(b"pw"), "pw");
-        let labels: Vec<&str> = secrets.iter().map(|(_, label)| *label).collect();
-        // The Digest pre-hash equals the SHA-256 pre-hash, which is dropped.
-        assert_eq!(
-            labels,
-            [
-                "Digest pre-hash",
-                "MD5 pre-hash",
-                "raw password",
-                "empty secret"
-            ]
-        );
-        assert_eq!(secrets[0].0, crypto::sha256_hex(b"pw"));
-        assert_eq!(secrets[2].0, "pw");
-        assert_eq!(secrets[3].0, "");
-    }
-
-    #[test]
-    fn test_looks_like_mpeg_ts() {
-        let mut packets = vec![0u8; 188 * 3];
-        for index in [0, 188, 376] {
-            packets[index] = 0x47;
-        }
-        assert!(looks_like_mpeg_ts(&packets));
-        // A partial trailing packet is still MPEG-TS.
-        assert!(looks_like_mpeg_ts(&packets[..300]));
-
-        assert!(!looks_like_mpeg_ts(&[]));
-        assert!(!looks_like_mpeg_ts(&[0x00; 188]));
-        packets[188] = 0x00;
-        assert!(!looks_like_mpeg_ts(&packets));
-    }
-
-    #[test]
     fn test_parse_notification_without_seq() {
         let message: ControlMessage = serde_json::from_str(
             r#"{"type":"notification","params":{"event_type":"stream_status","status":"finished"}}"#,
@@ -860,7 +780,7 @@ mod tests {
             session_id: None,
             key_exchange: None,
             seq: 0,
-            secrets: candidate_secrets("HASH", "pw"),
+            secret: "HASH".to_string(),
             cipher: None,
             pcr: PcrClock::default(),
             clip_length: None,
@@ -868,7 +788,6 @@ mod tests {
             part_count: 0,
             duration_s: None,
             is_mpeg_ts: None,
-            hmac_verified: None,
             hmac_mismatch_count: 0,
             first_media_part_seen: false,
             outcome: RecordingDownloadOutcome::DurationElapsed,

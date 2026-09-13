@@ -74,7 +74,8 @@ pub fn hmac_sha256(key: &[u8], data: &[u8]) -> [u8; 32] {
 }
 
 /// HKDF with HMAC-SHA256 (RFC 5869): extract with `salt`, then expand with
-/// `info` to `length` bytes (at most 255 * 32).
+/// `info` to `length` bytes. RFC 5869 caps `length` at 255 * 32 bytes, which
+/// is not checked here.
 pub fn hkdf_sha256(ikm: &[u8], salt: &[u8], info: &[u8], length: usize) -> Vec<u8> {
     let prk = hmac_sha256(salt, ikm);
 

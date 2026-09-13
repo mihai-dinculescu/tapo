@@ -14,10 +14,9 @@
 //!   `X-Data-Hmac` is the base64 HMAC-SHA256 of its ciphertext.
 //! - IV: the part's `X-Nonce` header, hex-decoded.
 //!
-//! The secret the app uses is the password as pre-hashed for the Digest
-//! handshake (upper-case hex SHA-256 on an `encrypt_type` 3 hub). Since that
-//! rests on the hub's default username matching `admin`, callers may offer
-//! several candidate secrets and let the HMAC pick the right one.
+//! The secret is the password as pre-hashed for the Digest handshake
+//! (upper-case hex SHA-256 on an `encrypt_type` 3 hub), which the app reuses
+//! for the media cipher.
 
 use std::collections::HashMap;
 
@@ -32,11 +31,9 @@ const AES_KEY_LENGTH: usize = 16;
 const HMAC_KEY_LENGTH: usize = 16;
 
 /// The parsed `Key-Exchange` header.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug)]
 pub(super) struct KeyExchange {
     pub cipher: Option<String>,
-    pub username: Option<String>,
-    pub padding: Option<String>,
     pub algorithm: Option<String>,
     pub nonce: String,
     pub salt: Option<String>,
@@ -62,8 +59,6 @@ impl KeyExchange {
 
         Ok(Self {
             cipher: params.remove("cipher"),
-            username: params.remove("username"),
-            padding: params.remove("padding"),
             algorithm: params.remove("algorithm"),
             nonce,
             salt: params.remove("salt"),
@@ -79,7 +74,6 @@ impl KeyExchange {
                 .cipher
                 .as_deref()
                 .is_none_or(|cipher| cipher.eq_ignore_ascii_case("AES_128_CBC"))
-            && self.salt.is_some()
     }
 }
 
@@ -91,7 +85,7 @@ pub(super) struct MediaCipher {
 }
 
 impl MediaCipher {
-    /// Derives the keys from the key exchange and a candidate secret.
+    /// Derives the keys from the key exchange and the secret.
     pub fn derive(key_exchange: &KeyExchange, secret: &str) -> anyhow::Result<Self> {
         let salt = key_exchange
             .salt
@@ -141,8 +135,6 @@ mod tests {
         let key_exchange = KeyExchange::parse(H200_KEY_EXCHANGE).unwrap();
 
         assert_eq!(key_exchange.cipher.as_deref(), Some("AES_128_CBC"));
-        assert_eq!(key_exchange.username.as_deref(), Some("admin"));
-        assert_eq!(key_exchange.padding.as_deref(), Some("PKCS7_16"));
         assert_eq!(key_exchange.algorithm.as_deref(), Some("HKDF"));
         assert_eq!(key_exchange.nonce, "4514f88f1148a6735bdc6a7d7b93b0b0");
         assert_eq!(
