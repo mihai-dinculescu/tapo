@@ -1,6 +1,7 @@
 from typing import List, Optional, Union
 
 from tapo import (
+    IrRemoteHandler,
     KE100Handler,
     S200Handler,
     S210Handler,
@@ -16,6 +17,7 @@ from tapo.requests import AlarmDuration, AlarmRingtone, AlarmVolume
 from tapo.responses import (
     ChildDeviceComponentList,
     DeviceInfoHubResult,
+    IrRemoteResult,
     KE100Result,
     OtherResult,
     S200Result,
@@ -27,7 +29,8 @@ from tapo.responses import (
 )
 
 class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
-    """Handler for the [H100](https://www.tapo.com/en/search/?q=H100) devices."""
+    """Handler for the [H100](https://www.tapo.com/en/search/?q=H100) and
+    [H110](https://www.tapo.com/en/search/?q=H110) devices."""
 
     def __init__(self, handler: object):
         """Private constructor.
@@ -41,13 +44,14 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
         try `HubHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoHubResult: Device info of Tapo H100.
+            DeviceInfoHubResult: Device info of Tapo H100 and H110.
         """
 
     async def get_child_device_list(
         self,
     ) -> List[
         Union[
+            IrRemoteResult,
             KE100Result,
             S200Result,
             S210Result,
@@ -58,7 +62,7 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
             OtherResult,
         ]
     ]:
-        """Returns *child device list* as `List[KE100Result | S200Result | S210Result | T100Result | T110Result | T300Result | T31XResult | OtherResult]`.
+        """Returns *child device list* as `List[IrRemoteResult | KE100Result | S200Result | S210Result | T100Result | T110Result | T300Result | T31XResult | OtherResult]`.
         It is not guaranteed to contain all the properties returned from the Tapo API
         or to support all the possible devices connected to the hub.
         If the deserialization fails, or if a property that you care about it's not present,
@@ -114,6 +118,36 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
 
     async def stop_alarm(self) -> None:
         """Stop playing the hub alarm, if it's currently playing."""
+
+    async def ir_remote(
+        self, device_id: Optional[str] = None, nickname: Optional[str] = None
+    ) -> IrRemoteHandler:
+        """Returns an `IrRemoteHandler` for the device matching the provided `device_id` or `nickname`.
+
+        IR remotes are only available on the [H110](https://www.tapo.com/en/search/?q=H110) hub,
+        and they must be configured in the Tapo app first.
+
+        Args:
+            device_id (Optional[str]): The Device ID of the device
+            nickname (Optional[str]): The Nickname of the device
+
+        Returns:
+            IrRemoteHandler: Handler for the IR remotes paired with a
+            [H110](https://www.tapo.com/en/search/?q=H110) hub.
+
+        Example:
+            ```python
+            # Connect to the hub
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            hub = await client.h110("192.168.1.100")
+
+            # Get a handler for the child device
+            device = await hub.ir_remote(nickname="Living Room TV")
+
+            # Send one of the keys stored on the remote
+            await device.send_ir_cmd_by_id("POWER")
+            ```
+        """
 
     async def ke100(
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
@@ -303,6 +337,15 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
             device_info = await device.get_device_info()
             print(f"Device info: {device_info.to_dict()}")
             ```
+        """
+
+    async def ir_remote_unchecked(self, device_id: str) -> IrRemoteHandler:
+        """Returns an `IrRemoteHandler` for the given `device_id` without first listing the hub's
+        children to verify the device exists or matches the requested model. The device id
+        is trusted; if it is wrong or refers to a different model, subsequent operations on
+        the returned handler will fail at request time. Use this when you already have a
+        valid device id (e.g. from a prior `HubHandler.get_child_device_list` call) to avoid
+        the extra validation round-trip performed by `HubHandler.ir_remote`.
         """
 
     async def ke100_unchecked(self, device_id: str) -> KE100Handler:

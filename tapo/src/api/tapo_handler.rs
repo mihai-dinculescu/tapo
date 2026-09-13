@@ -307,7 +307,9 @@ macro_rules! tapo_handler {
 /// }
 /// ```
 ///
-/// The `on_off` option is optional.
+/// The `on_off` and `camel_case_device_info` options are optional. The latter makes
+/// `get_device_info` and `get_device_info_json` use the camelCase `getDeviceInfo`
+/// method, which is how IR remotes are addressed.
 ///
 /// # Generated code
 ///
@@ -323,8 +325,17 @@ macro_rules! tapo_child_handler {
         $name:ident($device_info:ty),
         on_off,
     ) => {
-        tapo_child_handler!(@base $(#[$meta])* $name($device_info));
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info), GetDeviceInfo);
         tapo_child_handler!(@on_off $name);
+    };
+
+    // With a camelCase `getDeviceInfo` request
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        camel_case_device_info,
+    ) => {
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info), GetDeviceInfoCamelCase);
     };
 
     // No options
@@ -332,11 +343,11 @@ macro_rules! tapo_child_handler {
         $(#[$meta:meta])*
         $name:ident($device_info:ty),
     ) => {
-        tapo_child_handler!(@base $(#[$meta])* $name($device_info));
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info), GetDeviceInfo);
     };
 
     // Internal: base struct + core methods
-    (@base $(#[$meta:meta])* $name:ident($device_info:ty)) => {
+    (@base $(#[$meta:meta])* $name:ident($device_info:ty), $get_device_info:ident) => {
         $(#[$meta])*
         pub struct $name {
             client: std::sync::Arc<tokio::sync::RwLock<crate::api::ApiClient>>,
@@ -358,7 +369,7 @@ macro_rules! tapo_child_handler {
                 "try [`", stringify!($name), "::get_device_info_json`].",
             )]
             pub async fn get_device_info(&self) -> Result<$device_info, crate::error::Error> {
-                let request = crate::requests::TapoRequest::GetDeviceInfo(
+                let request = crate::requests::TapoRequest::$get_device_info(
                     crate::requests::TapoParams::new(crate::requests::EmptyParams),
                 );
 
@@ -379,7 +390,7 @@ macro_rules! tapo_child_handler {
             pub async fn get_device_info_json(
                 &self,
             ) -> Result<serde_json::Value, crate::error::Error> {
-                let request = crate::requests::TapoRequest::GetDeviceInfo(
+                let request = crate::requests::TapoRequest::$get_device_info(
                     crate::requests::TapoParams::new(crate::requests::EmptyParams),
                 );
 

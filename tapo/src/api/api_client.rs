@@ -680,6 +680,36 @@ impl ApiClient {
         Ok(HubHandler::new(Arc::new(RwLock::new(self))))
     }
 
+    /// Specializes the given [`ApiClient`] into an authenticated [`HubHandler`].
+    ///
+    /// The H110 speaks the same protocol as the H100, so this is an alias for
+    /// [`ApiClient::h100`]. In addition to the sensors that the H100 supports, the
+    /// H110 can have IR remotes as child devices, which are handled by
+    /// [`IrRemoteHandler`](crate::IrRemoteHandler).
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .h110("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let child_device_list = device.get_child_device_list().await?;
+    /// println!("Child device list: {child_device_list:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn h110(self, ip_address: impl Into<String>) -> Result<HubHandler, Error> {
+        self.h100(ip_address).await
+    }
+
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraPtzHandler`].
     ///
     /// # Arguments

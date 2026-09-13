@@ -7,8 +7,8 @@ use tapo::responses::{ChildDeviceComponentList, ChildDeviceHubResult, DeviceInfo
 use tapo::{Error, HubDevice, HubHandler};
 
 use crate::api::{
-    PyKE100Handler, PyS200Handler, PyS210Handler, PyT31XHandler, PyT100Handler, PyT110Handler,
-    PyT300Handler,
+    PyIrRemoteHandler, PyKE100Handler, PyS200Handler, PyS210Handler, PyT31XHandler, PyT100Handler,
+    PyT110Handler, PyT300Handler,
 };
 use crate::call_handler_method;
 use crate::requests::PyAlarmDuration;
@@ -50,6 +50,9 @@ impl PyHubHandler {
 
             for child in children {
                 match child {
+                    ChildDeviceHubResult::IrRemote(device) => {
+                        results.append(device.into_pyobject(py)?)?;
+                    }
                     ChildDeviceHubResult::KE100(device) => {
                         results.append(device.into_pyobject(py)?)?;
                     }
@@ -151,6 +154,23 @@ impl PyHubHandler {
     }
 
     #[pyo3(signature = (device_id=None, nickname=None))]
+    pub async fn ir_remote(
+        &self,
+        device_id: Option<String>,
+        nickname: Option<String>,
+    ) -> PyResult<PyIrRemoteHandler> {
+        let handler = self.inner.clone();
+        let identifier = PyHubHandler::parse_identifier(device_id, nickname)?;
+
+        let child_handler = call_handler_method!(
+            handler.read().await.deref(),
+            HubHandler::ir_remote,
+            identifier
+        )?;
+        Ok(PyIrRemoteHandler::new(child_handler))
+    }
+
+    #[pyo3(signature = (device_id=None, nickname=None))]
     pub async fn ke100(
         &self,
         device_id: Option<String>,
@@ -246,6 +266,12 @@ impl PyHubHandler {
         let child_handler =
             call_handler_method!(handler.read().await.deref(), HubHandler::t31x, identifier)?;
         Ok(PyT31XHandler::new(child_handler))
+    }
+
+    pub async fn ir_remote_unchecked(&self, device_id: String) -> PyResult<PyIrRemoteHandler> {
+        let handler = self.inner.clone();
+        let child = handler.read().await.ir_remote_unchecked(device_id);
+        Ok(PyIrRemoteHandler::new(child))
     }
 
     pub async fn ke100_unchecked(&self, device_id: String) -> PyResult<PyKE100Handler> {
