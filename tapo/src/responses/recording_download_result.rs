@@ -16,6 +16,7 @@ pub struct RecordingDownloadResult {
 
 /// Why a recording download stopped.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum RecordingDownloadOutcome {
     /// The media covered the requested time range. The hub plays on through
     /// the footage that follows, so this is the usual outcome.

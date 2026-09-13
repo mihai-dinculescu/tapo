@@ -1375,14 +1375,20 @@ impl ApiClient {
                 // The H200 wraps the child request directly in a controlChild
                 // envelope (no inner multipleRequest), and the reply nests the
                 // child's response under a snake_case `response_data` field.
+                // A refusal replaces that field with an `err_code`.
                 let params = SmartCamControlChildParams::new(device_id, child_request);
                 let request = TapoRequest::SmartCamControlChild(Box::new(TapoParams::new(params)));
 
-                let response = self
+                let result = self
                     .execute_smart_cam_multiple_request::<SmartCamControlChildResult<R>>(request)
                     .await?
-                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
-                    .response_data;
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+                validate_response(result.err_code)?;
+
+                let response = result
+                    .response_data
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
                 validate_response(response.error_code)?;
 
