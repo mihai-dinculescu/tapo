@@ -35,6 +35,8 @@ pub struct DeviceInfoHubResult {
     //
     // Unique to this device
     //
+    // `in_alarm`, `in_alarm_source` and `overheated` are only returned by the H100.
+    // The H110 omits them, so they default instead of failing the whole parse.
     #[serde(default)]
     pub in_alarm: bool,
     #[serde(default)]

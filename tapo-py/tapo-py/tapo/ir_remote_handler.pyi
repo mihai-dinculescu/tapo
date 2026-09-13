@@ -1,16 +1,23 @@
-class IrRemoteHandler:
+from tapo.debug_ext import DebugExt
+from tapo.responses import IrRemoteResult
+
+class IrRemoteHandler(DebugExt):
     """Handler for the IR remotes paired with a
     [H110](https://www.tapo.com/en/search/?q=H110) hub.
 
-    IR remotes are virtual child devices that are created by the Tapo app, so they
-    don't report device info of their own. Their properties, including the list of
-    keys that can be sent, are available from `HubHandler.get_child_device_list`
-    as `IrRemoteResult`.
+    IR remotes are virtual child devices that are created by the Tapo app, either by
+    picking an appliance from TP-Link's IR database or by learning the keys from a
+    physical remote.
     """
 
-    def __init__(self, handler: object):
-        """Private constructor.
-        It should not be called from outside the tapo library.
+    async def get_device_info(self) -> IrRemoteResult:
+        """Returns *device info* as `IrRemoteResult`.
+        It is not guaranteed to contain all the properties returned from the Tapo API.
+        If the deserialization fails, or if a property that you care about it's not present,
+        try `IrRemoteHandler.get_device_info_json`.
+
+        Returns:
+            IrRemoteResult: Device info of the IR remotes paired with a Tapo H110 hub.
         """
 
     async def send_ir_cmd_by_id(self, key_name: str) -> None:

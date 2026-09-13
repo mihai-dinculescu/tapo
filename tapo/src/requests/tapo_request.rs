@@ -46,6 +46,10 @@ pub(crate) enum TapoRequest {
     #[cfg(feature = "debug")]
     #[serde(rename = "get_support_alarm_type_list")]
     GetSupportedAlarmTypeList(TapoParams<EmptyParams>),
+    // IR remote requests. Unlike the other hub children, IR remotes are addressed
+    // with camelCase method names.
+    #[serde(rename = "getDeviceInfo")]
+    GetDeviceInfoCamelCase(TapoParams<EmptyParams>),
     #[serde(rename = "sendIrCmdById")]
     SendIrCmdById(TapoParams<SendIrCmdByIdParams>),
     // Smart Camera requests

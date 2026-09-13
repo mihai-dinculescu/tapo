@@ -58,6 +58,10 @@ async def main():
         print(f"Sending the '{key_name}' key on the '{remote_nickname}' remote...")
 
         remote = await hub.ir_remote(nickname=remote_nickname)
+
+        remote_info = await remote.get_device_info()
+        print(f"Remote info: {remote_info.to_dict()}")
+
         await remote.send_ir_cmd_by_id(key_name)
 
         print("The IR command has been sent.")

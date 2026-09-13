@@ -71,6 +71,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let remote = hub
                 .ir_remote(HubDevice::ByNickname(remote_nickname))
                 .await?;
+
+            let remote_info = remote.get_device_info().await?;
+            info!("Remote info: {remote_info:?}");
+
             remote.send_ir_cmd_by_id(key_name).await?;
 
             info!("The IR command has been sent.");
