@@ -56,6 +56,10 @@ use responses::{
 #[pymodule]
 #[pyo3(name = "tapo")]
 fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
+    // `tapo` uses reqwest's `rustls-no-provider` feature, so the provider is ours to
+    // pick. `ring` avoids the `aws-lc-sys` native build; install it before any client.
+    let _ = rustls::crypto::ring::default_provider().install_default();
+
     Logger::new(py, Caching::LoggersAndLevels)?
         .filter(LevelFilter::Trace)
         .install()
