@@ -7,8 +7,9 @@
 
 use std::time::Duration;
 
-pub(super) const PACKET_SIZE: usize = 188;
-pub(super) const SYNC_BYTE: u8 = 0x47;
+/// MPEG-TS packets are 188 bytes and start with this sync byte.
+const PACKET_SIZE: usize = 188;
+const SYNC_BYTE: u8 = 0x47;
 /// The PCR base ticks at 90 kHz and wraps after 33 bits.
 const PCR_HZ: u64 = 90_000;
 const PCR_MODULUS: u64 = 1 << 33;
@@ -24,7 +25,6 @@ pub(super) struct PcrClock {
     pending: Vec<u8>,
     last_base: Option<u64>,
     elapsed_ticks: u64,
-    seen: bool,
 }
 
 impl PcrClock {
@@ -50,7 +50,7 @@ impl PcrClock {
             offset += PACKET_SIZE;
         }
 
-        self.pending.drain(..offset.min(self.pending.len()));
+        self.pending.drain(..offset);
     }
 
     fn record(&mut self, base: u64, discontinuity: bool) {
@@ -63,14 +63,24 @@ impl PcrClock {
             }
         }
         self.last_base = Some(base);
-        self.seen = true;
     }
 
     /// The playback time covered so far, once a PCR has been seen.
     pub fn elapsed(&self) -> Option<Duration> {
-        self.seen
+        self.last_base
+            .is_some()
             .then(|| Duration::from_micros(self.elapsed_ticks * 1_000_000 / PCR_HZ))
     }
+}
+
+/// Whether `body` starts with MPEG-TS packets: a sync byte at every packet
+/// boundary that falls inside the body.
+pub(super) fn looks_like_mpeg_ts(body: &[u8]) -> bool {
+    !body.is_empty()
+        && body
+            .iter()
+            .step_by(PACKET_SIZE)
+            .all(|byte| *byte == SYNC_BYTE)
 }
 
 /// The 33-bit PCR base of a packet and its discontinuity indicator, when the
@@ -188,5 +198,21 @@ mod tests {
         clock.observe(&stream);
 
         assert_eq!(clock.elapsed(), Some(Duration::from_millis(500)));
+    }
+
+    #[test]
+    fn test_looks_like_mpeg_ts() {
+        let mut packets = vec![0u8; 188 * 3];
+        for index in [0, 188, 376] {
+            packets[index] = 0x47;
+        }
+        assert!(looks_like_mpeg_ts(&packets));
+        // A partial trailing packet is still MPEG-TS.
+        assert!(looks_like_mpeg_ts(&packets[..300]));
+
+        assert!(!looks_like_mpeg_ts(&[]));
+        assert!(!looks_like_mpeg_ts(&[0x00; 188]));
+        packets[188] = 0x00;
+        assert!(!looks_like_mpeg_ts(&packets));
     }
 }

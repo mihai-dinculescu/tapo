@@ -118,7 +118,6 @@ impl PartParser {
             if contains(line, DEVICE_BOUNDARY.as_bytes()) {
                 // The closing delimiter has two extra dashes after the boundary.
                 if line.ends_with(b"--")
-                    && line.len() >= DEVICE_BOUNDARY.len() + 2
                     && contains(&line[..line.len() - 2], DEVICE_BOUNDARY.as_bytes())
                 {
                     self.buffer.drain(..next);

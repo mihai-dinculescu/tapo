@@ -7,8 +7,8 @@
 //! `200` with the start of a `multipart/mixed` response whose body carries the
 //! control and media parts for the rest of the connection. Verified against an
 //! H200: the `200` is `HTTP/1.0`, advertises `X-Encrypt-Type: PLAIN` and a
-//! `Key-Exchange` header, and omits both `X-Session-Id` and `X-Hb`. The Tapo
-//! app tolerates the missing headers and judges success on the status alone.
+//! `Key-Exchange` header, and omits both `X-Session-Id` and `X-Hb`. Like the
+//! Tapo app, the handshake judges success on the status alone.
 //!
 //! This module implements the handshake. [`multipart`] frames the parts that
 //! flow in both directions afterwards and [`playback`] drives the control
@@ -54,14 +54,14 @@ const NONCE_COUNT: &str = "00000001";
 /// Upper bound on the size of an HTTP response head, so that a misbehaving
 /// peer cannot grow the read buffer without bound.
 const MAX_HEAD_SIZE: usize = 64 * 1024;
-/// Response bodies larger than this are not drained; the connection is
-/// re-established for the next request instead.
+/// Upper bound on a response body read ahead of the multipart stream, so that
+/// a misbehaving peer cannot force a large allocation.
 const MAX_DRAIN_SIZE: usize = 64 * 1024;
 
 /// What the hub reported when it accepted the session. Every field is
 /// optional: the Tapo app defaults a missing session id to an empty string
 /// and a missing heartbeat interval to 15 seconds, and an H200 sends neither.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug)]
 pub(crate) struct MediaStreamSession {
     /// The session identifier issued by the hub (`X-Session-Id`), echoed on
     /// later client parts.
@@ -87,8 +87,6 @@ pub(crate) struct MediaStreamConnection {
     /// The password as pre-hashed for the Digest round. The Tapo app uses the
     /// same value as the secret of the media cipher.
     pub password_hash: String,
-    /// The password as given, for fallback cipher secrets.
-    pub password: String,
 }
 
 /// What a media stream session is opened for: playback of a recording stored
@@ -123,7 +121,7 @@ impl SessionRequest {
 /// authentication handshake for the given [`SessionRequest`].
 ///
 /// `timeout` bounds the whole handshake: connecting, both request rounds,
-/// and a possible reconnect in between.
+/// and the reconnect in between.
 pub(crate) async fn authenticate(
     ip_address: &str,
     password: &str,
@@ -143,9 +141,6 @@ async fn handshake(
 ) -> Result<MediaStreamConnection, Error> {
     let uri = session_request.uri();
     let mut stream = connect(ip_address).await?;
-    // Assume the modern pre-hash until a challenge says otherwise; a hub that
-    // skips the challenge does not tell us its `encrypt_type`.
-    let mut password_hash = prehash_password(password, Some("3"));
 
     // Round 1: an unauthenticated request, which the hub answers with a
     // Digest challenge.
@@ -156,39 +151,30 @@ async fn handshake(
         .ok_or_else(|| anyhow!("the hub closed the connection without sending a challenge"))?;
     challenge_response.log("challenge");
 
-    let response = match challenge_response.status {
-        401 => {
-            let challenge = DigestChallenge::parse(&challenge_response)?;
-            debug!("Media stream Digest challenge: {challenge:?}");
+    // Like the Tapo app, give up on anything but a challenge.
+    if challenge_response.status != 401 {
+        return Err(Error::Tapo(TapoResponseError::HttpError {
+            status_code: challenge_response.status,
+            description: "The hub did not challenge the media stream request".to_string(),
+        }));
+    }
 
-            password_hash = prehash_password(password, challenge.encrypt_type.as_deref());
-            let cnonce = generate_nonce();
-            let authorization =
-                authorization_header(&challenge, USERNAME, &password_hash, &uri, &cnonce);
+    let challenge = DigestChallenge::parse(&challenge_response)?;
+    debug!("Media stream Digest challenge: {challenge:?}");
 
-            // Round 2: the same request, now carrying the Digest credentials.
-            // The hub may have closed the connection after the challenge, in
-            // which case the request is retried on a fresh one.
-            debug!("Sending the media stream Digest credentials...");
-            let request = build_request(ip_address, &uri, Some(&authorization));
-            let mut response = if challenge_response.keep_alive() {
-                exchange(&mut stream, &request).await?
-            } else {
-                None
-            };
-            if response.is_none() {
-                debug!("Reconnecting for the authenticated media stream request...");
-                stream = connect(ip_address).await?;
-                response = exchange(&mut stream, &request).await?;
-            }
+    let password_hash = prehash_password(password, challenge.encrypt_type.as_deref());
+    let cnonce = generate_nonce();
+    let authorization = authorization_header(&challenge, USERNAME, &password_hash, &uri, &cnonce);
 
-            response.ok_or_else(|| {
-                anyhow!("the hub closed the connection without answering the authenticated request")
-            })?
-        }
-        // No challenge: the hub accepted the request as-is.
-        _ => challenge_response,
-    };
+    // Round 2: the same request, now carrying the Digest credentials. The hub
+    // closes the connection after the challenge (`Connection: close`), so the
+    // request goes out on a fresh one.
+    debug!("Sending the media stream Digest credentials...");
+    stream = connect(ip_address).await?;
+    let request = build_request(ip_address, &uri, Some(&authorization));
+    let response = exchange(&mut stream, &request).await?.ok_or_else(|| {
+        anyhow!("the hub closed the connection without answering the authenticated request")
+    })?;
     response.log("authentication");
 
     match response.status {
@@ -213,7 +199,6 @@ async fn handshake(
                 buffered,
                 session,
                 password_hash,
-                password: password.to_string(),
             })
         }
         401 => Err(Error::Tapo(TapoResponseError::Unauthorized {
@@ -256,12 +241,11 @@ fn build_request(ip_address: &str, uri: &str, authorization: Option<&str>) -> St
     request
 }
 
-/// Sends one HTTP request and reads the response head, draining any
-/// `Content-Length` body so that the connection can be reused.
+/// Sends one HTTP request and reads the response head and its declared
+/// `Content-Length` body.
 ///
 /// Returns `None` when the peer closed the connection before sending any
-/// response bytes, which happens when the previous response was not
-/// keep-alive; the caller can then retry on a fresh connection.
+/// response bytes.
 async fn exchange(stream: &mut TcpStream, request: &str) -> anyhow::Result<Option<HttpResponse>> {
     trace!("Media stream request (raw):\n{request}");
 
@@ -313,17 +297,11 @@ async fn exchange(stream: &mut TcpStream, request: &str) -> anyhow::Result<Optio
 }
 
 async fn drain_body(stream: &mut TcpStream, response: &mut HttpResponse) -> anyhow::Result<()> {
-    if response.header("transfer-encoding").is_some() {
-        // Not worth parsing a chunked challenge body: reconnect instead.
-        response.reusable = false;
-        return Ok(());
-    }
-
     let content_length = response.content_length;
-
     if content_length > MAX_DRAIN_SIZE {
-        response.reusable = false;
-        return Ok(());
+        bail!(
+            "media stream response body of {content_length} bytes exceeds {MAX_DRAIN_SIZE} bytes"
+        );
     }
 
     let remaining = content_length.saturating_sub(response.body.len());
@@ -371,9 +349,6 @@ struct HttpResponse {
     body: Vec<u8>,
     /// The declared `Content-Length`, or 0.
     content_length: usize,
-    /// Whether the connection is still in a state where another request can
-    /// be sent on it.
-    reusable: bool,
 }
 
 impl HttpResponse {
@@ -416,7 +391,6 @@ impl HttpResponse {
             headers,
             body,
             content_length,
-            reusable: true,
         })
     }
 
@@ -425,18 +399,6 @@ impl HttpResponse {
             .iter()
             .find(|(header, _)| header == name)
             .map(|(_, value)| value.as_str())
-    }
-
-    fn keep_alive(&self) -> bool {
-        if !self.reusable {
-            return false;
-        }
-
-        match self.header("connection") {
-            Some(value) if value.eq_ignore_ascii_case("close") => false,
-            Some(value) if value.eq_ignore_ascii_case("keep-alive") => true,
-            _ => self.version.eq_ignore_ascii_case("HTTP/1.1"),
-        }
     }
 
     /// Logs the status line and every header, so that the exact shape of the
@@ -454,9 +416,6 @@ impl HttpResponse {
 
 impl From<&HttpResponse> for MediaStreamSession {
     fn from(response: &HttpResponse) -> Self {
-        // Every header is optional: the Tapo app defaults a missing session id
-        // to an empty string and a missing heartbeat interval to 15 seconds,
-        // and the H200 sends neither.
         let session_id = response.header("x-session-id").map(str::to_string);
 
         let heartbeat_interval_s = response
@@ -887,6 +846,37 @@ mod tests {
         assert_eq!(challenge.algorithm_token, None);
     }
 
+    /// The challenge an H200 (firmware 1.6.5) actually sends.
+    #[test]
+    fn test_digest_challenge_parse_h200() {
+        let response = HttpResponse::parse(
+            b"HTTP/1.1 401 Unauthorized\r\n\
+              Content-Length: 14\r\n\
+              Cache-Control: no-cache\r\n\
+              Connection: close\r\n\
+              WWW-Authenticate: Digest realm=\"TP-Link IP-Camera\",qop=\"auth\",nonce=\"fe4aeebd2a29d6f6b5fb962b41bbff90\",opaque=\"e34536e09a6eb618a5e12649897e7440\",algorithm=\"SHA-256\",encrypt_type=\"3\"\r\n\
+              Set-Cookie: TP_HTTP_COOKIE=fe4aeebd2a29d6f6b5fb962b41bbff90; path=/",
+            b"HTTP ERROR 401".to_vec(),
+        )
+        .unwrap();
+
+        assert_eq!(response.status, 401);
+        assert_eq!(response.content_length, 14);
+
+        let challenge = DigestChallenge::parse(&response).unwrap();
+
+        assert_eq!(challenge.realm, "TP-Link IP-Camera");
+        assert_eq!(challenge.nonce, "fe4aeebd2a29d6f6b5fb962b41bbff90");
+        assert_eq!(challenge.qop.as_deref(), Some("auth"));
+        assert_eq!(
+            challenge.opaque.as_deref(),
+            Some("e34536e09a6eb618a5e12649897e7440")
+        );
+        assert_eq!(challenge.algorithm, DigestAlgorithm::Sha256);
+        assert_eq!(challenge.algorithm_token.as_deref(), Some("SHA-256"));
+        assert_eq!(challenge.encrypt_type.as_deref(), Some("3"));
+    }
+
     #[test]
     fn test_digest_challenge_rejects_unsupported_algorithm_and_qop() {
         let response = HttpResponse::parse(
@@ -919,28 +909,11 @@ mod tests {
         assert_eq!(response.header("x-session-id"), Some("42"));
         assert_eq!(response.header("x-hb"), Some("10"));
         assert_eq!(response.body, b"body");
-        assert!(!response.keep_alive());
 
         let session = MediaStreamSession::from(&response);
         assert_eq!(session.session_id.as_deref(), Some("42"));
         assert_eq!(session.heartbeat_interval_s, Some(10));
         assert_eq!(session.key_exchange.as_deref(), Some("KEY"));
-    }
-
-    #[test]
-    fn test_http_response_keep_alive() {
-        let http11 = HttpResponse::parse(b"HTTP/1.1 401 Unauthorized", Vec::new()).unwrap();
-        assert!(http11.keep_alive());
-
-        let http10 = HttpResponse::parse(b"HTTP/1.0 401 Unauthorized", Vec::new()).unwrap();
-        assert!(!http10.keep_alive());
-
-        let http10_keep_alive = HttpResponse::parse(
-            b"HTTP/1.0 401 Unauthorized\r\nConnection: keep-alive",
-            Vec::new(),
-        )
-        .unwrap();
-        assert!(http10_keep_alive.keep_alive());
     }
 
     #[test]
