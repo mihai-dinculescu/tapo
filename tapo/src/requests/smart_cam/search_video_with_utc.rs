@@ -24,8 +24,8 @@ struct UtcFilterParams {
     child_device_id: String,
     child_device_mac: String,
     /// Identifies the client, so that the hub can tie a later playback of a
-    /// result (which sends the same id as `X-Client-UUID` and `player_id`
-    /// on the media stream) to this search.
+    /// result (which sends the same id as `playerId` in the stream URI and
+    /// `player_id` in the playback request) to this search.
     player_id: String,
 }
 
