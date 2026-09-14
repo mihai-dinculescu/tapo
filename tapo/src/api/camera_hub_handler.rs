@@ -8,9 +8,8 @@ use crate::requests::{
     SmartCamSearchVideoWithUtcParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
-    ChildDeviceHubResult, ChildDeviceListHubResult, DeviceInfoCameraHubResult,
-    GeneralDeviceHubResult, GeneralDeviceListHubResultRaw, RecordingDateListHubResultRaw,
-    RecordingHubResult, RecordingListHubResultRaw,
+    DeviceInfoCameraHubResult, GeneralDeviceHubResult, GeneralDeviceListHubResultRaw,
+    RecordingDateListHubResultRaw, RecordingHubResult, RecordingListHubResultRaw,
 };
 
 use crate::responses::RecordingDownloadResult;
@@ -28,51 +27,6 @@ tapo_handler! {
 
 /// Hub handler methods.
 impl CameraHubHandler {
-    /// Returns *child device list* as [`ChildDeviceHubResult`].
-    /// It is not guaranteed to contain all the properties returned from the Tapo API
-    /// or to support all the possible devices connected to the hub.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`CameraHubHandler::get_child_device_list_json`].
-    pub async fn get_child_device_list(&self) -> Result<Vec<ChildDeviceHubResult>, Error> {
-        let mut results = Vec::new();
-        let mut start_index = 0;
-        let mut fetch = true;
-
-        while fetch {
-            let devices = self
-                .client
-                .read()
-                .await
-                .get_child_device_list::<ChildDeviceListHubResult>(start_index)
-                .await
-                .map(|r| r.devices)?;
-
-            fetch = devices.len() == 10;
-            start_index += 10;
-            results.extend(devices);
-        }
-
-        Ok(results)
-    }
-
-    /// Returns *child device list* as [`serde_json::Value`].
-    /// It contains all the properties returned from the Tapo API.
-    ///
-    /// # Arguments
-    ///
-    /// * `start_index` - the index to start fetching the child device list.
-    ///   It should be `0` for the first page, `10` for the second, and so on.
-    #[cfg(feature = "debug")]
-    pub async fn get_child_device_list_json(
-        &self,
-        start_index: u64,
-    ) -> Result<serde_json::Value, Error> {
-        self.client
-            .read()
-            .await
-            .get_child_device_list(start_index)
-            .await
-    }
-
     /// Returns *general device list* as [`GeneralDeviceHubResult`].
     /// These are the standalone Wi-Fi cameras paired to the hub.
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
@@ -236,8 +190,8 @@ impl CameraHubHandler {
     /// the end of the footage), with twice the clip's length on top of the
     /// client's timeout as a backstop.
     ///
-    /// Fails if the hub sends no media, or if it sends encrypted media that
-    /// cannot be decrypted.
+    /// Fails if `end_time` is not after `start_time`, if the hub sends no
+    /// media, or if it sends encrypted media that cannot be decrypted.
     ///
     /// # Arguments
     ///
@@ -304,4 +258,9 @@ impl CameraHubHandler {
     }
 }
 
-hub_child_handlers!(CameraHubHandler, "h200");
+hub_child_handlers!(
+    CameraHubHandler,
+    "h200",
+    child_device_list_note = "Cameras paired to the hub are not included; use \
+        [`CameraHubHandler::get_general_device_list`] for those.",
+);

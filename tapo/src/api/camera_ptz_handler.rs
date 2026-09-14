@@ -77,54 +77,38 @@ impl CameraPtzHandler {
     ///
     /// If unsure of the value, `10` for both `pan` and `tilt` are good values for small nudges.
     pub async fn pan_tilt(&self, pan: i32, tilt: i32) -> Result<(), Error> {
-        let request = TapoRequest::SmartCamDo(SmartCamDoParams::motor_move(pan, tilt));
-
         self.client
             .read()
             .await
-            .execute_smart_cam_request::<serde_json::Value>(request)
-            .await?;
-
-        Ok(())
+            .execute_smart_cam_do(SmartCamDoParams::motor_move(pan, tilt))
+            .await
     }
 
     /// Saves the current camera position as a named preset.
     pub async fn save_preset(&self, name: &str) -> Result<(), Error> {
-        let request = TapoRequest::SmartCamDo(SmartCamDoParams::set_preset(name));
-
         self.client
             .read()
             .await
-            .execute_smart_cam_request::<serde_json::Value>(request)
-            .await?;
-
-        Ok(())
+            .execute_smart_cam_do(SmartCamDoParams::set_preset(name))
+            .await
     }
 
     /// Moves the camera to a saved preset position by its ID.
     pub async fn goto_preset(&self, id: &str) -> Result<(), Error> {
-        let request = TapoRequest::SmartCamDo(SmartCamDoParams::goto_preset(id));
-
         self.client
             .read()
             .await
-            .execute_smart_cam_request::<serde_json::Value>(request)
-            .await?;
-
-        Ok(())
+            .execute_smart_cam_do(SmartCamDoParams::goto_preset(id))
+            .await
     }
 
     /// Deletes a preset by its ID.
     pub async fn delete_preset(&self, id: &str) -> Result<(), Error> {
-        let request = TapoRequest::SmartCamDo(SmartCamDoParams::remove_preset(id));
-
         self.client
             .read()
             .await
-            .execute_smart_cam_request::<serde_json::Value>(request)
-            .await?;
-
-        Ok(())
+            .execute_smart_cam_do(SmartCamDoParams::remove_preset(id))
+            .await
     }
 
     /// Returns the list of saved PTZ presets.

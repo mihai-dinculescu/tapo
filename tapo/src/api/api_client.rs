@@ -14,8 +14,8 @@ use crate::requests::{
     EnergyDataInterval, GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams,
     GetScheduleRulesParams, LightingEffect, MultipleRequestParams, PlayAlarmParams,
     PowerDataInterval, RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRule,
-    ScheduleRuleRaw, SegmentEffect, SmartCamControlChildParams, SmartCamGetChildDeviceListParams,
-    SmartCamGetParams, TapoParams, TapoRequest,
+    ScheduleRuleRaw, SegmentEffect, SmartCamControlChildParams, SmartCamDoParams,
+    SmartCamGetChildDeviceListParams, SmartCamGetParams, TapoParams, TapoRequest,
 };
 #[cfg(feature = "debug")]
 use crate::responses::{
@@ -89,8 +89,9 @@ pub struct ApiClient {
     tapo_password: String,
     /// Identifies this client to camera hubs, the way the Tapo app's
     /// persistent terminal UUID does: it is sent as `player_id` in recording
-    /// searches and as `X-Client-UUID` on the media stream, which is how the
-    /// hub ties a playback session to the search that found the clip.
+    /// searches, and on the media stream as `playerId` in the stream URI and
+    /// `player_id` in the playback request, which is how the hub ties a
+    /// playback session to the search that found the clip.
     player_id: String,
     timeout: Option<Duration>,
     protocol: Option<TapoProtocol>,
@@ -1077,33 +1078,19 @@ impl ApiClient {
     ) -> Result<RecordingDownloadResult, Error> {
         debug!("Download recording...");
 
+        if end_time <= start_time {
+            return Err(Error::Validation {
+                field: "end_time".to_string(),
+                message: "Must be after start_time".to_string(),
+            });
+        }
+
         // The playback stops itself once the media covers the clip; the time
         // limit (twice the clip's length on top of the configured timeout) is
         // a backstop for a hub that streams slowly or a stream without PCR.
-        let clip_length = Duration::from_secs(end_time.saturating_sub(start_time));
+        let clip_length = Duration::from_secs(end_time - start_time);
         let time_limit = self.timeout() + clip_length * 2;
 
-        let (connection, request) = self
-            .open_recording_playback(ip_address, child_device_mac, start_time, end_time)
-            .await?;
-
-        media_stream::playback::play(connection, request, time_limit, Some(clip_length), writer)
-            .await
-    }
-
-    async fn open_recording_playback(
-        &self,
-        ip_address: &str,
-        child_device_mac: String,
-        start_time: u64,
-        end_time: u64,
-    ) -> Result<
-        (
-            media_stream::MediaStreamConnection,
-            media_stream::playback::PlaybackRequest,
-        ),
-        Error,
-    > {
         let session_request = media_stream::SessionRequest {
             camera_mac: child_device_mac.clone(),
             player_id: self.player_id.clone(),
@@ -1124,7 +1111,8 @@ impl ApiClient {
             end_time,
         };
 
-        Ok((connection, request))
+        media_stream::playback::play(connection, request, time_limit, Some(clip_length), writer)
+            .await
     }
 
     #[cfg(feature = "debug")]
@@ -1431,6 +1419,16 @@ impl ApiClient {
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
         self.protocol()?.execute_request(request).await
+    }
+
+    /// Executes a single SmartCam `do` request, discarding its result.
+    pub(crate) async fn execute_smart_cam_do(&self, params: SmartCamDoParams) -> Result<(), Error> {
+        let request = TapoRequest::SmartCamDo(params);
+
+        self.execute_smart_cam_request::<serde_json::Value>(request)
+            .await?;
+
+        Ok(())
     }
 
     /// Executes a single SmartCam request wrapped in a `multipleRequest`
