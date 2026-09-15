@@ -8,8 +8,8 @@ use super::{
     HandshakeParams, LightingEffect, LoginDeviceParams, MultipleRequestParams, PlayAlarmParams,
     RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams,
     SegmentEffect, SmartCamControlChildParams, SmartCamDoParams, SmartCamGetChildDeviceListParams,
-    SmartCamGetGeneralDeviceListParams, SmartCamGetParams, SmartCamSearchDateWithVideoParams,
-    SmartCamSearchVideoWithUtcParams,
+    SmartCamGetGeneralDeviceListParams, SmartCamGetParams, SmartCamGetTimezoneParams,
+    SmartCamSearchDateWithVideoParams, SmartCamSearchVideoWithUtcParams,
 };
 
 #[derive(Debug, Serialize)]
@@ -61,6 +61,8 @@ pub(crate) enum TapoRequest {
     SmartCamGetChildDeviceComponentList(TapoParams<SmartCamGetChildDeviceListParams>),
     #[serde(rename = "getGeneralDeviceList")]
     SmartCamGetGeneralDeviceList(TapoParams<SmartCamGetGeneralDeviceListParams>),
+    #[serde(rename = "getTimezone")]
+    SmartCamGetTimezone(TapoParams<SmartCamGetTimezoneParams>),
     #[serde(rename = "searchDateWithVideo")]
     SmartCamSearchDateWithVideo(TapoParams<SmartCamSearchDateWithVideoParams>),
     #[serde(rename = "searchVideoWithUTC")]
