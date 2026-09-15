@@ -4,12 +4,13 @@ use chrono::NaiveDate;
 
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
-    SmartCamGetGeneralDeviceListParams, SmartCamSearchDateWithVideoParams,
-    SmartCamSearchVideoWithUtcParams, TapoParams, TapoRequest,
+    SmartCamGetGeneralDeviceListParams, SmartCamGetTimezoneParams,
+    SmartCamSearchDateWithVideoParams, SmartCamSearchVideoWithUtcParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
     DeviceInfoCameraHubResult, GeneralDeviceHubResult, GeneralDeviceListHubResultRaw,
     RecordingDateListHubResultRaw, RecordingHubResult, RecordingListHubResultRaw,
+    TimezoneHubResult, TimezoneHubResultRaw,
 };
 
 use crate::responses::RecordingDownloadResult;
@@ -62,9 +63,24 @@ impl CameraHubHandler {
             .ok_or(Error::Tapo(TapoResponseError::EmptyResult))
     }
 
+    /// Returns the hub's *timezone* as [`TimezoneHubResult`].
+    pub async fn get_timezone(&self) -> Result<TimezoneHubResult, Error> {
+        let request =
+            TapoRequest::SmartCamGetTimezone(TapoParams::new(SmartCamGetTimezoneParams::new()));
+
+        self.client
+            .read()
+            .await
+            .execute_smart_cam_multiple_request::<TimezoneHubResultRaw>(request)
+            .await?
+            .map(|result| result.timezone())
+            .ok_or(Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
     /// Returns the dates that have recordings stored on the hub for the given camera,
     /// within the given date range, as [`Vec<chrono::NaiveDate>`].
-    /// The dates are calendar days in the hub's local timezone, not UTC.
+    /// The dates are calendar days in the hub's local timezone
+    /// (see [`CameraHubHandler::get_timezone`]), not UTC.
     ///
     /// # Arguments
     ///
