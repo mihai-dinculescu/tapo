@@ -2,10 +2,13 @@
 //! covers: the Program Clock Reference (PCR) carried in adaptation fields.
 //!
 //! The hub plays a recording on through the following footage rather than
-//! stopping at the requested end time, so a download has to stop itself once
-//! the clock has advanced by the clip's length.
+//! stopping at the requested end time, so a download has to stop itself: at
+//! the first jump of the clock, which is where the hub splices in the next
+//! recording, or once the clock has advanced by the clip's length.
 
 use std::time::Duration;
+
+use log::debug;
 
 /// MPEG-TS packets are 188 bytes and start with this sync byte.
 const PACKET_SIZE: usize = 188;
@@ -13,22 +16,33 @@ const SYNC_BYTE: u8 = 0x47;
 /// The PCR base ticks at 90 kHz and wraps after 33 bits.
 const PCR_HZ: u64 = 90_000;
 const PCR_MODULUS: u64 = 1 << 33;
-/// Forward steps above this (one hour) are treated as discontinuities and not
-/// counted, as are backward steps.
+/// Forward steps above this (one hour) are treated as splices, as are backward
+/// steps and packets flagged as discontinuities.
 const MAX_STEP_TICKS: u64 = 3600 * PCR_HZ;
 
 /// Accumulates the playback time covered by the PCR of a transport stream,
-/// fed in arbitrary chunks.
+/// fed in arbitrary chunks, until the clock jumps to another recording.
 #[derive(Debug, Default)]
 pub(super) struct PcrClock {
     /// Bytes of an incomplete packet left over from the previous chunk.
     pending: Vec<u8>,
     last_base: Option<u64>,
     elapsed_ticks: u64,
+    spliced: bool,
 }
 
 impl PcrClock {
-    pub fn observe(&mut self, data: &[u8]) {
+    /// Feeds the next chunk of the stream. Returns `None` while the chunk
+    /// continues the recording, or `Some(keep)` once the clock jumps: only the
+    /// first `keep` bytes of `data` belong to the recording, and the rest is
+    /// the one the hub spliced in after it. Every later call returns
+    /// `Some(0)`.
+    pub fn observe(&mut self, data: &[u8]) -> Option<usize> {
+        if self.spliced {
+            return Some(0);
+        }
+
+        let pending_before = self.pending.len();
         self.pending.extend_from_slice(data);
 
         let mut offset = 0;
@@ -44,33 +58,55 @@ impl PcrClock {
                 continue;
             }
 
-            if let Some((base, discontinuity)) = pcr_base(packet) {
-                self.record(base, discontinuity);
+            if let Some((base, discontinuity)) = pcr_base(packet)
+                && self.record(base, discontinuity)
+            {
+                self.spliced = true;
+                self.pending.clear();
+                // A packet that started in the previous chunk has already
+                // been handed out with it; the file then ends on a partial
+                // packet, which demuxers ignore.
+                return Some(offset.saturating_sub(pending_before));
             }
             offset += PACKET_SIZE;
         }
 
         self.pending.drain(..offset);
+        None
     }
 
-    fn record(&mut self, base: u64, discontinuity: bool) {
-        if let Some(last) = self.last_base
-            && !discontinuity
-        {
-            let delta = (base + PCR_MODULUS - last) % PCR_MODULUS;
-            if delta < MAX_STEP_TICKS {
-                self.elapsed_ticks += delta;
-            }
+    /// Adds the step from the previous PCR. Returns `true` when the step is
+    /// a jump to another recording instead.
+    fn record(&mut self, base: u64, discontinuity: bool) -> bool {
+        let Some(last) = self.last_base else {
+            self.last_base = Some(base);
+            return false;
+        };
+
+        let delta = (base + PCR_MODULUS - last) % PCR_MODULUS;
+        if discontinuity || delta >= MAX_STEP_TICKS {
+            debug!(
+                "The MPEG-TS clock jumped from {last} to {base} (discontinuity flag: {discontinuity}) after {:?}; another recording follows",
+                ticks_to_duration(self.elapsed_ticks)
+            );
+            return true;
         }
+
+        self.elapsed_ticks += delta;
         self.last_base = Some(base);
+        false
     }
 
     /// The playback time covered so far, once a PCR has been seen.
     pub fn elapsed(&self) -> Option<Duration> {
         self.last_base
             .is_some()
-            .then(|| Duration::from_micros(self.elapsed_ticks * 1_000_000 / PCR_HZ))
+            .then(|| ticks_to_duration(self.elapsed_ticks))
     }
+}
+
+fn ticks_to_duration(ticks: u64) -> Duration {
+    Duration::from_micros(ticks * 1_000_000 / PCR_HZ)
 }
 
 /// Whether `body` starts with MPEG-TS packets: a sync byte at every packet
@@ -164,28 +200,76 @@ mod tests {
 
         // Feed in chunks that do not align with packets.
         for chunk in stream.chunks(100) {
-            clock.observe(chunk);
+            assert_eq!(clock.observe(chunk), None);
         }
 
         assert_eq!(clock.elapsed(), Some(Duration::from_secs(3)));
     }
 
     #[test]
-    fn test_elapsed_handles_wrap_and_ignores_discontinuities_and_backward_steps() {
+    fn test_elapsed_handles_wrap() {
         let mut clock = PcrClock::default();
 
-        clock.observe(&packet_with_pcr((1 << 33) - 90_000, false));
-        clock.observe(&packet_with_pcr(90_000, false)); // wraps: +2 s
+        assert_eq!(
+            clock.observe(&packet_with_pcr((1 << 33) - 90_000, false)),
+            None
+        );
+        assert_eq!(clock.observe(&packet_with_pcr(90_000, false)), None); // wraps: +2 s
         assert_eq!(clock.elapsed(), Some(Duration::from_secs(2)));
+    }
 
-        clock.observe(&packet_with_pcr(90_000 * 5000, true)); // discontinuity: not counted
-        assert_eq!(clock.elapsed(), Some(Duration::from_secs(2)));
+    #[test]
+    fn test_observe_stops_at_a_flagged_discontinuity() {
+        let mut clock = PcrClock::default();
 
-        clock.observe(&packet_with_pcr(90_000 * 5001, false)); // +1 s after the jump
-        assert_eq!(clock.elapsed(), Some(Duration::from_secs(3)));
+        // A discontinuity flag on the first PCR seen is not a jump.
+        assert_eq!(clock.observe(&packet_with_pcr(0, true)), None);
+        assert_eq!(clock.observe(&packet_with_pcr(90_000, false)), None);
 
-        clock.observe(&packet_with_pcr(90_000 * 4000, false)); // backward: not counted
-        assert_eq!(clock.elapsed(), Some(Duration::from_secs(3)));
+        let mut chunk = Vec::new();
+        chunk.extend_from_slice(&packet_without_pcr());
+        chunk.extend_from_slice(&packet_with_pcr(90_000 * 2, true));
+        chunk.extend_from_slice(&packet_with_pcr(90_000 * 3, false));
+
+        // Only the packet before the flagged one belongs to the recording.
+        assert_eq!(clock.observe(&chunk), Some(PACKET_SIZE));
+        assert_eq!(clock.elapsed(), Some(Duration::from_secs(1)));
+
+        // Nothing after the splice is kept.
+        assert_eq!(clock.observe(&packet_with_pcr(90_000 * 4, false)), Some(0));
+        assert_eq!(clock.elapsed(), Some(Duration::from_secs(1)));
+    }
+
+    #[test]
+    fn test_observe_stops_at_backward_and_large_forward_steps() {
+        let mut clock = PcrClock::default();
+        assert_eq!(clock.observe(&packet_with_pcr(90_000 * 10, false)), None);
+        assert_eq!(clock.observe(&packet_with_pcr(90_000 * 11, false)), None);
+        assert_eq!(clock.observe(&packet_with_pcr(90_000 * 5, false)), Some(0)); // backward
+        assert_eq!(clock.elapsed(), Some(Duration::from_secs(1)));
+
+        let mut clock = PcrClock::default();
+        assert_eq!(clock.observe(&packet_with_pcr(0, false)), None);
+        assert_eq!(
+            clock.observe(&packet_with_pcr(MAX_STEP_TICKS, false)), // one hour ahead
+            Some(0)
+        );
+        assert_eq!(clock.elapsed(), Some(Duration::ZERO));
+    }
+
+    #[test]
+    fn test_observe_cuts_before_a_packet_that_started_in_the_previous_chunk() {
+        let mut clock = PcrClock::default();
+        let mut stream = Vec::new();
+        stream.extend_from_slice(&packet_with_pcr(0, false));
+        stream.extend_from_slice(&packet_with_pcr(90_000, false));
+        stream.extend_from_slice(&packet_with_pcr(45_000, false)); // backward: a splice
+
+        // The splicing packet is split across two chunks: its first 100 bytes
+        // go out with the first chunk, so the second chunk keeps nothing.
+        assert_eq!(clock.observe(&stream[..PACKET_SIZE * 2 + 100]), None);
+        assert_eq!(clock.observe(&stream[PACKET_SIZE * 2 + 100..]), Some(0));
+        assert_eq!(clock.elapsed(), Some(Duration::from_secs(1)));
     }
 
     #[test]
@@ -195,7 +279,7 @@ mod tests {
         stream.extend_from_slice(&packet_with_pcr(0, false));
         stream.extend_from_slice(&packet_with_pcr(45_000, false));
 
-        clock.observe(&stream);
+        assert_eq!(clock.observe(&stream), None);
 
         assert_eq!(clock.elapsed(), Some(Duration::from_millis(500)));
     }

@@ -19,8 +19,10 @@
 //!    `do` `stop` request when the client is done.
 //!
 //! The media parts are encrypted (`X-If-Encrypt: 1`); see [`super::cipher`].
-//! The hub does not stop at the requested `end_time`, so a download stops
-//! itself once the MPEG-TS clock has covered the clip (see [`super::mpeg_ts`]).
+//! The hub does not stop at the requested `end_time` but splices in the
+//! recording that follows, so a download stops itself at the first jump of
+//! the MPEG-TS clock, or once the clock has covered the clip (see
+//! [`super::mpeg_ts`]).
 //!
 //! Shapes and defaults follow the Tapo app (`GetVodParams`,
 //! `DoStopRequest`, and the `VodStreamConnection` read loop). Verified
@@ -72,8 +74,10 @@ pub(crate) struct PlaybackRequest {
 /// of every media part to `sink` in the order received. For an MPEG-TS stream
 /// the concatenation is a playable `.ts` file.
 ///
-/// With `clip_length`, playback also stops once the MPEG-TS clock shows that
-/// much media, since the hub itself plays on past the recording's end.
+/// The hub itself plays on past the recording's end, so playback of an
+/// MPEG-TS stream stops at the first jump of its clock, where the next
+/// recording is spliced in. With `clip_length`, it also stops once the clock
+/// shows that much media.
 ///
 /// Fails when the hub sent no media at all, or at the first encrypted media
 /// part that no cipher can be set up for. Everything else the hub reported
@@ -362,23 +366,30 @@ impl State {
         }
 
         self.part_count += 1;
-        self.byte_count += body.len() as u64;
-
-        sink.write_all(&body)
-            .await
-            .context("write a media part to the media sink")?;
 
         // Only a stream known to be MPEG-TS has a meaningful clock; ciphertext
         // would yield random "sync bytes" and a nonsense duration.
-        let elapsed = if self.is_mpeg_ts == Some(true) {
-            self.pcr.observe(&body);
-            self.pcr.elapsed()
+        let (splice, elapsed) = if self.is_mpeg_ts == Some(true) {
+            (self.pcr.observe(&body), self.pcr.elapsed())
         } else {
-            None
+            (None, None)
         };
         self.duration_s = elapsed.map(|elapsed| elapsed.as_secs_f64());
 
+        // Up to the splice, the part belongs to the recording.
+        let body = &body[..splice.unwrap_or(body.len())];
+        self.byte_count += body.len() as u64;
+        sink.write_all(body)
+            .await
+            .context("write a media part to the media sink")?;
+
         self.acknowledge(writer, sequence).await?;
+
+        if splice.is_some() {
+            debug!("The media moved on to the next recording; stopping the playback");
+            self.outcome = RecordingDownloadOutcome::ClipEndReached;
+            return Ok(false);
+        }
 
         if let (Some(clip_length), Some(elapsed)) = (self.clip_length, elapsed)
             && elapsed >= clip_length
