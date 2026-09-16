@@ -202,10 +202,10 @@ impl CameraHubHandler {
     /// decrypted with keys derived from the session's key exchange, so
     /// writing to a file with a `.ts` extension produces a playable clip. The
     /// hub plays on past the recording's end into the recording that follows,
-    /// so the method stops where the stream's clock jumps to that recording,
-    /// once the clock has covered the clip's length, or when the hub reports
-    /// the end of the footage, with twice the clip's length on top of the
-    /// client's timeout as a backstop.
+    /// so the method stops at the keyframe that starts that recording, once
+    /// the stream's clock has covered the clip's length, or when the hub
+    /// reports the end of the footage, with twice the clip's length on top of
+    /// the client's timeout as a backstop.
     ///
     /// Fails if `end_time` is not after `start_time`, if the hub sends no
     /// media, or if it sends encrypted media that cannot be decrypted.
