@@ -18,8 +18,9 @@ pub struct RecordingDownloadResult {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RecordingDownloadOutcome {
-    /// The media covered the requested time range. The hub plays on through
-    /// the footage that follows, so this is the usual outcome.
+    /// The media covered the requested time range, or moved on to the
+    /// recording that follows it. The hub plays on through the footage that
+    /// follows, so this is the usual outcome.
     ClipEndReached,
     /// The hub reported the end of the recording before the requested time
     /// range was covered, so the download may be shorter than asked for.
