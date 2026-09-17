@@ -141,15 +141,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             continue;
         }
 
-        let end_date = chrono::Utc::now().date_naive();
-        let start_date = end_date - chrono::Duration::days(7);
+        let end_time = chrono::Utc::now();
+        let start_time = end_time - chrono::Duration::days(7);
 
         let recording_dates = hub
-            .search_date_with_video(
-                start_date,
-                end_date,
+            .get_recording_dates(
                 general_device.device_id.clone(),
                 general_device.mac.clone(),
+                start_time,
+                end_time,
             )
             .await?;
         info!(
@@ -157,22 +157,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             general_device.alias
         );
 
-        if let Some(date) = recording_dates.last() {
-            let day_start = date.and_hms_opt(0, 0, 0).unwrap().and_utc();
-            let day_end = day_start + chrono::Duration::seconds(24 * 60 * 60 - 1);
-
+        if let Some(recording_date) = recording_dates.last() {
             let recordings = hub
                 .get_recordings(
                     general_device.device_id.clone(),
                     general_device.mac.clone(),
-                    day_start,
-                    day_end,
+                    recording_date.start_time,
+                    recording_date.end_time,
                 )
                 .await?;
             info!(
-                "{} has {} recordings on {date}. First: {:?}.",
+                "{} has {} recordings on {}. First: {:?}.",
                 general_device.alias,
                 recordings.len(),
+                recording_date.date,
                 recordings.first()
             );
 

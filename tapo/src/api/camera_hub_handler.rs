@@ -1,6 +1,6 @@
 use tokio::io::AsyncWrite;
 
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, Utc};
 
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
@@ -9,8 +9,8 @@ use crate::requests::{
 };
 use crate::responses::{
     DeviceInfoCameraHubResult, GeneralDeviceHubResult, GeneralDeviceListHubResultRaw,
-    RecordingDateListHubResultRaw, RecordingHubResult, RecordingListHubResultRaw,
-    TimezoneHubResult, TimezoneHubResultRaw,
+    RecordingDateHubResult, RecordingDateListHubResultRaw, RecordingHubResult,
+    RecordingListHubResultRaw, TimezoneHubResult, TimezoneHubResultRaw,
 };
 
 use crate::responses::RecordingDownloadResult;
@@ -83,28 +83,49 @@ impl CameraHubHandler {
             .ok_or(Error::Tapo(TapoResponseError::EmptyResult))
     }
 
-    /// Returns the dates that have recordings stored on the hub for the given camera,
-    /// within the given date range, as [`Vec<chrono::NaiveDate>`].
-    /// The dates are calendar days in the hub's local timezone
-    /// (see [`CameraHubHandler::get_timezone`]), not UTC.
+    /// Returns the days that have recordings stored on the hub for the given
+    /// camera (`searchDateWithVideo`), as [`Vec<RecordingDateHubResult>`].
+    /// Each day comes with the range of time it covers on the hub, ready to
+    /// pass to [`CameraHubHandler::get_recordings`].
+    ///
+    /// The hub searches its own calendar, so the search runs over the days
+    /// that the given range touches in the hub's timezone, whole. A range that
+    /// starts at 00:30 covers all of that day, and a returned day can reach
+    /// past the range at either end.
+    ///
+    /// Reading the hub's timezone takes one extra request
+    /// (see [`CameraHubHandler::get_timezone`]).
     ///
     /// # Arguments
     ///
-    /// * `start_date` - the first date of the search range.
-    /// * `end_date` - the last date of the search range (inclusive).
     /// * `child_device_id` - the `device_id` of a camera returned by [`CameraHubHandler::get_general_device_list`].
     /// * `child_device_mac` - the `mac` of a camera returned by [`CameraHubHandler::get_general_device_list`].
-    pub async fn search_date_with_video(
+    /// * `start_time` - the start of the search range.
+    /// * `end_time` - the end of the search range.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `end_time` is before `start_time`.
+    pub async fn get_recording_dates(
         &self,
-        start_date: NaiveDate,
-        end_date: NaiveDate,
         child_device_id: impl Into<String>,
         child_device_mac: impl Into<String>,
-    ) -> Result<Vec<NaiveDate>, Error> {
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+    ) -> Result<Vec<RecordingDateHubResult>, Error> {
+        if end_time < start_time {
+            return Err(Error::Validation {
+                field: "end_time".to_string(),
+                message: "Must not be before start_time".to_string(),
+            });
+        }
+
+        let timezone = self.get_timezone().await?.zone_id;
+
         let request = TapoRequest::SmartCamSearchDateWithVideo(TapoParams::new(
             SmartCamSearchDateWithVideoParams::new(
-                start_date,
-                end_date,
+                start_time.with_timezone(&timezone).date_naive(),
+                end_time.with_timezone(&timezone).date_naive(),
                 child_device_id.into(),
                 child_device_mac.into(),
             ),
@@ -117,8 +138,7 @@ impl CameraHubHandler {
             .execute_smart_cam_multiple_request::<RecordingDateListHubResultRaw>(request)
             .await?
             .ok_or(Error::Tapo(TapoResponseError::EmptyResult))?
-            .dates()
-            .map_err(anyhow::Error::from)?;
+            .dates(timezone)?;
 
         Ok(dates)
     }
