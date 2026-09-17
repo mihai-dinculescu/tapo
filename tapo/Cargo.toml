@@ -21,6 +21,7 @@ python = ["dep:pyo3"]
 anyhow = { workspace = true }
 async-trait = "0.1"
 chrono = { workspace = true, features = ["clock", "serde"] }
+chrono-tz = { workspace = true, features = ["serde"] }
 crc32fast = "1.5"
 itertools = "0.15"
 lazy_static = "1.5"
