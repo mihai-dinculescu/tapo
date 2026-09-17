@@ -65,6 +65,11 @@ impl CameraHubHandler {
     }
 
     /// Returns the hub's *timezone* as [`TimezoneHubResult`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the hub reports a timezone name that is not in the
+    /// IANA database.
     pub async fn get_timezone(&self) -> Result<TimezoneHubResult, Error> {
         let request =
             TapoRequest::SmartCamGetTimezone(TapoParams::new(SmartCamGetTimezoneParams::new()));
