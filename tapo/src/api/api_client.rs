@@ -3,6 +3,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use log::{debug, warn};
 use reqwest::Client;
 use serde::de::DeserializeOwned;
@@ -30,6 +31,7 @@ use crate::responses::{
     ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
     TapoResult, Timer, TimerListResultRaw, validate_response,
 };
+use crate::utils::unix_timestamp_seconds;
 
 use super::discovery::DeviceDiscovery;
 #[cfg(feature = "debug")]
@@ -1072,8 +1074,8 @@ impl ApiClient {
         &self,
         ip_address: &str,
         child_device_mac: String,
-        start_time: u64,
-        end_time: u64,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
         writer: &mut W,
     ) -> Result<RecordingDownloadResult, Error> {
         debug!("Download recording...");
@@ -1088,8 +1090,13 @@ impl ApiClient {
         // The playback stops itself once the media covers the clip; the time
         // limit (twice the clip's length on top of the configured timeout) is
         // a backstop for a hub that streams slowly or a stream without PCR.
-        let clip_length = Duration::from_secs(end_time - start_time);
+        let clip_length = (end_time - start_time)
+            .to_std()
+            .map_err(anyhow::Error::from)?;
         let time_limit = self.timeout() + clip_length * 2;
+
+        let start_time = unix_timestamp_seconds("start_time", start_time)?;
+        let end_time = unix_timestamp_seconds("end_time", end_time)?;
 
         let session_request = media_stream::SessionRequest {
             camera_mac: child_device_mac.clone(),

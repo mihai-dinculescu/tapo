@@ -1,6 +1,6 @@
 use tokio::io::AsyncWrite;
 
-use chrono::NaiveDate;
+use chrono::{DateTime, NaiveDate, Utc};
 
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
@@ -14,6 +14,7 @@ use crate::responses::{
 };
 
 use crate::responses::RecordingDownloadResult;
+use crate::utils::unix_timestamp_seconds;
 
 #[cfg(feature = "debug")]
 use crate::responses::ChildDeviceComponentList;
@@ -117,28 +118,31 @@ impl CameraHubHandler {
         Ok(dates)
     }
 
-    /// Returns the recordings stored on the hub for the given camera, within the
-    /// given time range, as [`Vec<RecordingHubResult>`]. Like the Tapo app, all
-    /// pages are fetched, up to 12,300 recordings.
+    /// Returns the recordings stored on the hub for the given camera, within
+    /// the given time range (`searchVideoWithUTC`), as
+    /// [`Vec<RecordingHubResult>`]. Like the Tapo app, all pages are fetched,
+    /// up to 12,300 recordings.
     ///
     /// # Arguments
     ///
-    /// * `start_time` - the start of the search range as a Unix timestamp (seconds).
-    /// * `end_time` - the end of the search range as a Unix timestamp (seconds).
     /// * `child_device_id` - the `device_id` of a camera returned by [`CameraHubHandler::get_general_device_list`].
     /// * `child_device_mac` - the `mac` of a camera returned by [`CameraHubHandler::get_general_device_list`].
-    pub async fn search_video_with_utc(
+    /// * `start_time` - the start of the search range.
+    /// * `end_time` - the end of the search range.
+    pub async fn get_recordings(
         &self,
-        start_time: u64,
-        end_time: u64,
         child_device_id: impl Into<String>,
         child_device_mac: impl Into<String>,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
     ) -> Result<Vec<RecordingHubResult>, Error> {
         // The Tapo app fetches pages of 100 (`start_index: 0`, `end_index: 99`)
         // and stops paging past a start index of 12288.
         const PAGE_SIZE: u64 = 100;
         const MAX_START_INDEX: u64 = 12288;
 
+        let start_time = unix_timestamp_seconds("start_time", start_time)?;
+        let end_time = unix_timestamp_seconds("end_time", end_time)?;
         let child_device_id = child_device_id.into();
         let child_device_mac = child_device_mac.into();
 
@@ -207,15 +211,18 @@ impl CameraHubHandler {
     /// reports the end of the footage, with twice the clip's length on top of
     /// the client's timeout as a backstop.
     ///
-    /// Fails if `end_time` is not after `start_time`, if the hub sends no
-    /// media, or if it sends encrypted media that cannot be decrypted.
-    ///
     /// # Arguments
     ///
     /// * `child_device_mac` - the `mac` of a camera returned by [`CameraHubHandler::get_general_device_list`].
-    /// * `start_time` - the `start_time` of a recording returned by [`CameraHubHandler::search_video_with_utc`].
+    /// * `start_time` - the `start_time` of a recording returned by [`CameraHubHandler::get_recordings`].
     /// * `end_time` - the `end_time` of that recording.
     /// * `writer` - where the media is written, e.g. a `Vec<u8>` or a `tokio::fs::File`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `end_time` is not after `start_time`, if the hub
+    /// sends no media, or if it sends encrypted media that cannot be
+    /// decrypted.
     ///
     /// # Example
     ///
@@ -234,10 +241,10 @@ impl CameraHubHandler {
     ///     .next()
     ///     .expect("no camera is paired to the hub");
     ///
-    /// let end_time = chrono::Utc::now().timestamp() as u64;
-    /// let start_time = end_time - 24 * 60 * 60;
+    /// let end_time = chrono::Utc::now();
+    /// let start_time = end_time - chrono::Duration::days(1);
     /// let recordings = hub
-    ///     .search_video_with_utc(start_time, end_time, camera.device_id, camera.mac.clone())
+    ///     .get_recordings(camera.device_id, camera.mac.clone(), start_time, end_time)
     ///     .await?;
     ///
     /// if let Some(recording) = recordings.first() {
@@ -257,8 +264,8 @@ impl CameraHubHandler {
     pub async fn download_recording<W: AsyncWrite + Unpin + Send>(
         &self,
         child_device_mac: impl Into<String>,
-        start_time: u64,
-        end_time: u64,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
         writer: &mut W,
     ) -> Result<RecordingDownloadResult, Error> {
         self.client
