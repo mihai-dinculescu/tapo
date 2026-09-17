@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chrono::NaiveDate;
+use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::responses::TapoResponseExt;
@@ -66,12 +66,18 @@ struct RecordingListRaw {
 /// Recording stored on a camera hub for a camera paired to it.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RecordingHubResult {
-    /// Start of the recording as a Unix timestamp (seconds).
-    #[serde(rename = "startTime")]
-    pub start_time: u64,
-    /// End of the recording as a Unix timestamp (seconds).
-    #[serde(rename = "endTime")]
-    pub end_time: u64,
+    /// Start of the recording.
+    #[serde(
+        rename = "startTime",
+        deserialize_with = "chrono::serde::ts_seconds::deserialize"
+    )]
+    pub start_time: DateTime<Utc>,
+    /// End of the recording.
+    #[serde(
+        rename = "endTime",
+        deserialize_with = "chrono::serde::ts_seconds::deserialize"
+    )]
+    pub end_time: DateTime<Utc>,
     /// The type of event that produced the recording.
     pub video_type: RecordingType,
 }
@@ -228,8 +234,14 @@ mod tests {
         let recordings = parsed.recordings();
 
         assert_eq!(recordings.len(), 1);
-        assert_eq!(recordings[0].start_time, 1786694400);
-        assert_eq!(recordings[0].end_time, 1786694460);
+        assert_eq!(
+            recordings[0].start_time,
+            "2026-08-14T08:00:00Z".parse::<DateTime<Utc>>().unwrap()
+        );
+        assert_eq!(
+            recordings[0].end_time,
+            "2026-08-14T08:01:00Z".parse::<DateTime<Utc>>().unwrap()
+        );
         assert_eq!(recordings[0].video_type, RecordingType::Motion);
     }
 

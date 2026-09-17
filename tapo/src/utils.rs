@@ -1,7 +1,9 @@
 use std::str::FromStr;
 
-use chrono::NaiveDateTime;
+use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::{Deserialize, Deserializer};
+
+use crate::error::Error;
 
 pub fn der_tapo_datetime_format<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
 where
@@ -51,4 +53,13 @@ where
         Some(serde_json::Value::Number(n)) => Ok(Some(n.as_i64().unwrap_or(0) != 0)),
         _ => Err(serde::de::Error::custom("expected bool, integer, or null")),
     }
+}
+
+/// Converts `time` to a Unix timestamp in seconds, as the camera hubs expect it.
+/// `field` names the argument in the error returned for a time before 1970.
+pub(crate) fn unix_timestamp_seconds(field: &str, time: DateTime<Utc>) -> Result<u64, Error> {
+    u64::try_from(time.timestamp()).map_err(|_| Error::Validation {
+        field: field.to_string(),
+        message: "Must not be before 1970-01-01T00:00:00Z".to_string(),
+    })
 }

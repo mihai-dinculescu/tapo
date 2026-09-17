@@ -158,15 +158,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
 
         if let Some(date) = recording_dates.last() {
-            let day_start = date.and_hms_opt(0, 0, 0).unwrap().and_utc().timestamp() as u64;
-            let day_end = day_start + 24 * 60 * 60 - 1;
+            let day_start = date.and_hms_opt(0, 0, 0).unwrap().and_utc();
+            let day_end = day_start + chrono::Duration::seconds(24 * 60 * 60 - 1);
 
             let recordings = hub
-                .search_video_with_utc(
-                    day_start,
-                    day_end,
+                .get_recordings(
                     general_device.device_id.clone(),
                     general_device.mac.clone(),
+                    day_start,
+                    day_end,
                 )
                 .await?;
             info!(
@@ -187,7 +187,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match recording_to_download {
         Some((mac, recording)) => {
-            let path = format!("recording_{mac}_{}.ts", recording.start_time);
+            let path = format!("recording_{mac}_{}.ts", recording.start_time.timestamp());
             info!(
                 "Downloading the recording from {} to {} of {mac} to {path}...",
                 recording.start_time, recording.end_time
