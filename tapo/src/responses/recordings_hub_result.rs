@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::{DateTime, Duration, MappedLocalTime, NaiveDate, NaiveTime, Offset, TimeZone, Utc};
+use chrono_tz::Tz;
 use serde::{Deserialize, Serialize};
 
 use crate::responses::TapoResponseExt;
@@ -12,12 +13,17 @@ pub(crate) struct RecordingDateListHubResultRaw {
 }
 
 impl RecordingDateListHubResultRaw {
-    pub fn dates(self) -> Result<Vec<NaiveDate>, chrono::ParseError> {
+    /// The hub reports days on its own calendar, so `timezone` is the hub's,
+    /// as reported by `getTimezone`.
+    pub fn dates(self, timezone: Tz) -> Result<Vec<RecordingDateHubResult>, anyhow::Error> {
         self.playback
             .search_results
             .into_iter()
             .flat_map(HashMap::into_values)
-            .map(|entry| NaiveDate::parse_from_str(&entry.date, "%Y%m%d"))
+            .map(|entry| {
+                let date = NaiveDate::parse_from_str(&entry.date, "%Y%m%d")?;
+                hub_day(date, timezone)
+            })
             .collect()
     }
 }
@@ -35,6 +41,53 @@ struct RecordingDateListRaw {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct RecordingDateRaw {
     date: String,
+}
+
+/// A day on a camera hub's calendar that has recordings for a camera paired to it.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RecordingDateHubResult {
+    /// The day, on the hub's calendar.
+    pub date: NaiveDate,
+    /// When the day starts on the hub, in UTC.
+    pub start_time: DateTime<Utc>,
+    /// The last second of the day on the hub, in UTC.
+    pub end_time: DateTime<Utc>,
+}
+
+/// Turns a day on the hub's calendar into the range of time it covers, from
+/// local midnight to a second before the next local midnight.
+fn hub_day(date: NaiveDate, timezone: Tz) -> Result<RecordingDateHubResult, anyhow::Error> {
+    let next_date = date
+        .succ_opt()
+        .ok_or_else(|| anyhow::anyhow!("{date} is the last date that can be represented"))?;
+
+    Ok(RecordingDateHubResult {
+        date,
+        start_time: local_midnight(date, timezone),
+        end_time: local_midnight(next_date, timezone) - Duration::seconds(1),
+    })
+}
+
+/// Local midnight of `date` in `timezone`, in UTC. A midnight that the clocks
+/// go back over happens twice; the earlier of the two starts the day. A
+/// midnight that the clocks jump forward over never happens, so the day starts
+/// where they jump.
+fn local_midnight(date: NaiveDate, timezone: Tz) -> DateTime<Utc> {
+    let midnight = date.and_time(NaiveTime::MIN);
+
+    match timezone.from_local_datetime(&midnight) {
+        MappedLocalTime::Single(time) => time.to_utc(),
+        MappedLocalTime::Ambiguous(earliest, _) => earliest.to_utc(),
+        MappedLocalTime::None => {
+            // Reading midnight with the offset from before the jump lands on
+            // the moment the clocks jumped.
+            let offset = timezone
+                .offset_from_utc_datetime(&(midnight - Duration::days(1)))
+                .fix();
+
+            (midnight - offset).and_utc()
+        }
+    }
 }
 
 /// Recording list result (`searchVideoWithUTC`).
@@ -188,6 +241,16 @@ pub enum RecordingType {
 mod tests {
     use super::*;
 
+    /// The day `date` covers on a hub in `timezone`, as `(start_time, end_time)`.
+    fn day_range(timezone: Tz, date: &str) -> (String, String) {
+        let date = date.parse::<NaiveDate>().unwrap();
+        let day = hub_day(date, timezone).unwrap();
+
+        assert_eq!(day.date, date);
+
+        (day.start_time.to_rfc3339(), day.end_time.to_rfc3339())
+    }
+
     #[test]
     fn test_recording_dates_parse_from_section_entries() {
         let json = r#"{
@@ -200,13 +263,22 @@ mod tests {
         }"#;
 
         let parsed: RecordingDateListHubResultRaw = serde_json::from_str(json).unwrap();
+        let dates = parsed.dates(Tz::Europe__Paris).unwrap();
 
         assert_eq!(
-            parsed.dates().unwrap(),
+            dates.iter().map(|day| day.date).collect::<Vec<_>>(),
             vec![
                 NaiveDate::from_ymd_opt(2026, 8, 1).unwrap(),
                 NaiveDate::from_ymd_opt(2026, 8, 17).unwrap()
             ]
+        );
+        assert_eq!(
+            dates[0].start_time,
+            "2026-07-31T22:00:00Z".parse::<DateTime<Utc>>().unwrap()
+        );
+        assert_eq!(
+            dates[0].end_time,
+            "2026-08-01T21:59:59Z".parse::<DateTime<Utc>>().unwrap()
         );
     }
 
@@ -217,7 +289,69 @@ mod tests {
 
         let parsed: RecordingDateListHubResultRaw = serde_json::from_str(json).unwrap();
 
-        assert!(parsed.dates().is_err());
+        assert!(parsed.dates(Tz::Europe__Paris).is_err());
+    }
+
+    #[test]
+    fn test_hub_day_covers_the_local_day() {
+        // Paris is two hours ahead of UTC in September.
+        assert_eq!(
+            day_range(Tz::Europe__Paris, "2026-09-08"),
+            (
+                "2026-09-07T22:00:00+00:00".to_string(),
+                "2026-09-08T21:59:59+00:00".to_string()
+            )
+        );
+    }
+
+    #[test]
+    fn test_hub_day_covers_a_day_the_clocks_go_back_on() {
+        // The clocks go back at 03:00 local on 2026-10-25, a 25 hour day.
+        assert_eq!(
+            day_range(Tz::Europe__Paris, "2026-10-25"),
+            (
+                "2026-10-24T22:00:00+00:00".to_string(),
+                "2026-10-25T22:59:59+00:00".to_string()
+            )
+        );
+    }
+
+    #[test]
+    fn test_hub_day_covers_a_day_the_clocks_go_forward_on() {
+        // The clocks go forward at 02:00 local on 2026-03-29, a 23 hour day.
+        assert_eq!(
+            day_range(Tz::Europe__Paris, "2026-03-29"),
+            (
+                "2026-03-28T23:00:00+00:00".to_string(),
+                "2026-03-29T21:59:59+00:00".to_string()
+            )
+        );
+    }
+
+    #[test]
+    fn test_hub_day_starts_where_a_skipped_midnight_jumps_to() {
+        // Chile's clocks go forward at midnight on 2026-09-06, so the day
+        // starts at 01:00 local, when they jump.
+        assert_eq!(
+            day_range(Tz::America__Santiago, "2026-09-06"),
+            (
+                "2026-09-06T04:00:00+00:00".to_string(),
+                "2026-09-07T02:59:59+00:00".to_string()
+            )
+        );
+    }
+
+    #[test]
+    fn test_hub_day_starts_at_the_first_of_two_midnights() {
+        // Cuba's clocks go back at 01:00 local on 2026-11-01, so midnight
+        // happens twice and the first one starts the day.
+        assert_eq!(
+            day_range(Tz::America__Havana, "2026-11-01"),
+            (
+                "2026-11-01T04:00:00+00:00".to_string(),
+                "2026-11-02T04:59:59+00:00".to_string()
+            )
+        );
     }
 
     #[test]
