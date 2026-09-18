@@ -178,6 +178,8 @@ macro_rules! tapo_handler {
     };
 
     // Internal: shared methods (refresh_session, get_device_info, etc.)
+    // Also called directly by handlers that declare their own struct, such
+    // as `CameraHubHandler`.
     (@methods $name:ident($device_info:ty)) => {
         impl $name {
             /// Refreshes the authentication session.
@@ -216,6 +218,8 @@ macro_rules! tapo_handler {
     };
 
     // Internal: HandlerExt impl
+    // Also called directly by handlers that declare their own struct, such
+    // as `CameraHubHandler`.
     (@handler_ext $name:ident) => {
         #[async_trait::async_trait]
         impl crate::api::HandlerExt for $name {
