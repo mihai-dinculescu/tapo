@@ -460,8 +460,9 @@ macro_rules! tapo_child_handler {
 }
 
 /// Generates the child device methods shared by hub handlers (H100, H200):
-/// `get_child_device_list`, which pages through the hub's children, and its
-/// `get_child_device_list_json` counterpart, the checked
+/// `get_child_device_list`, which pages through the hub's children, its
+/// `get_child_device_list_json` counterpart, `get_child_device_component_list`,
+/// the checked
 /// `ke100`/`s200`/.../`t31x` methods that resolve a [`HubDevice`] against that
 /// list, plus their `_unchecked` counterparts that trust a given `device_id`.
 ///
@@ -525,6 +526,19 @@ macro_rules! hub_child_handlers {
                     .read()
                     .await
                     .get_child_device_list(start_index)
+                    .await
+            }
+
+            /// Returns *child device component list* as [`Vec<ChildDeviceComponentList>`](crate::responses::ChildDeviceComponentList).
+            /// This information is useful in debugging or when investigating new functionality to add.
+            #[cfg(feature = "debug")]
+            pub async fn get_child_device_component_list(
+                &self,
+            ) -> Result<Vec<crate::responses::ChildDeviceComponentList>, crate::error::Error> {
+                self.client
+                    .read()
+                    .await
+                    .get_child_device_component_list()
                     .await
             }
         }
