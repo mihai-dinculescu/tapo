@@ -197,10 +197,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .await?;
             std::fs::write(&path, &media)?;
 
+            let duration = match result.duration_s {
+                Some(duration_s) => format!("{duration_s:.3} s"),
+                None => "an unknown length".to_string(),
+            };
             info!(
-                "Wrote {} bytes to {path}: {:?} of video, {:?}.",
+                "Wrote {} bytes to {path}: {duration} of video, {:?}.",
                 media.len(),
-                result.duration_s,
                 result.outcome
             );
         }

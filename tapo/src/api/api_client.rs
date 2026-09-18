@@ -1357,10 +1357,11 @@ impl ApiClient {
 
         match self.protocol()?.device_family() {
             DeviceFamily::SmartCam => {
-                // The H200 wraps the child request directly in a controlChild
-                // envelope (no inner multipleRequest), and the reply nests the
-                // child's response under a snake_case `response_data` field.
-                // A refusal replaces that field with an `err_code`.
+                // SmartCam hubs take the child request directly in a
+                // controlChild envelope (no inner multipleRequest), and nest
+                // the child's response under a snake_case `response_data`
+                // field (seen from the H500). A refusal replaces that field
+                // with an `err_code` (seen from the H200).
                 let params = SmartCamControlChildParams::new(device_id, child_request);
                 let request = TapoRequest::SmartCamControlChild(Box::new(TapoParams::new(params)));
 

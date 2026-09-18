@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
+use chrono::{DateTime, Utc};
 use tokio::io::AsyncWrite;
 use tokio::sync::RwLock;
-
-use chrono::{DateTime, Utc};
 
 use crate::api::ApiClient;
 use crate::error::{Error, TapoResponseError};
@@ -13,11 +12,9 @@ use crate::requests::{
 };
 use crate::responses::{
     DeviceInfoCameraHubResult, GeneralDeviceHubResult, GeneralDeviceListHubResultRaw,
-    RecordingDateHubResult, RecordingDateListHubResultRaw, RecordingHubResult,
-    RecordingListHubResultRaw, TimezoneHubResult, TimezoneHubResultRaw,
+    RecordingDateHubResult, RecordingDateListHubResultRaw, RecordingDownloadResult,
+    RecordingHubResult, RecordingListHubResultRaw, TimezoneHubResult, TimezoneHubResultRaw,
 };
-
-use crate::responses::RecordingDownloadResult;
 use crate::utils::unix_timestamp_seconds;
 
 /// Handler for camera hubs, such as the
@@ -28,8 +25,9 @@ pub struct CameraHubHandler {
     client: Arc<RwLock<ApiClient>>,
     ip_address: String,
     /// Identifies this handler to the hub, new for every handler. It is sent
-    /// as `player_id` in recording searches, and on the media stream as
-    /// `playerId` in the stream URI and `player_id` in the playback request.
+    /// as `player_id` in clip searches (`searchVideoWithUTC`), and on the
+    /// media stream as `playerId` in the stream URI and `player_id` in the
+    /// playback request.
     player_id: String,
 }
 
@@ -124,7 +122,8 @@ impl CameraHubHandler {
     ///
     /// # Errors
     ///
-    /// Returns an error if `end_time` is before `start_time`.
+    /// Returns an error if `end_time` is before `start_time`, or if the hub
+    /// reports a timezone name that is not in the IANA database.
     pub async fn get_recording_dates(
         &self,
         child_device_id: impl Into<String>,
@@ -173,6 +172,11 @@ impl CameraHubHandler {
     /// * `child_device_mac` - the `mac` of a camera returned by [`CameraHubHandler::get_general_device_list`].
     /// * `start_time` - the start of the search range.
     /// * `end_time` - the end of the search range.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `end_time` is before `start_time`, or if either is
+    /// before 1970.
     pub async fn get_recordings(
         &self,
         child_device_id: impl Into<String>,
@@ -184,6 +188,13 @@ impl CameraHubHandler {
         // and stops paging past a start index of 12288.
         const PAGE_SIZE: u64 = 100;
         const MAX_START_INDEX: u64 = 12288;
+
+        if end_time < start_time {
+            return Err(Error::Validation {
+                field: "end_time".to_string(),
+                message: "Must not be before start_time".to_string(),
+            });
+        }
 
         let start_time = unix_timestamp_seconds("start_time", start_time)?;
         let end_time = unix_timestamp_seconds("end_time", end_time)?;
@@ -250,9 +261,9 @@ impl CameraHubHandler {
     ///
     /// # Errors
     ///
-    /// Returns an error if `end_time` is not after `start_time`, if the hub
-    /// sends no media, or if it sends encrypted media that cannot be
-    /// decrypted.
+    /// Returns an error if `end_time` is not after `start_time`, if either is
+    /// before 1970, if the hub sends no media, or if it sends encrypted media
+    /// that cannot be decrypted.
     ///
     /// # Example
     ///

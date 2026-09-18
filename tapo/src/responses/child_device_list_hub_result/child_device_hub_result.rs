@@ -11,7 +11,7 @@ use crate::responses::{
 /// Hub child device list result.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct ChildDeviceListHubResult {
-    /// Hub child devices
+    /// Hub child devices.
     /// H200 firmware 1.6.5 omits the field entirely when the list is empty.
     #[serde(rename = "child_device_list", default)]
     pub devices: Vec<ChildDeviceHubResult>,
