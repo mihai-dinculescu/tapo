@@ -106,7 +106,7 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
         """Start playing the hub alarm.
 
         Args:
-            ringtone (AlarmRingtone): The ringtone of a H100 alarm.
+            ringtone (AlarmRingtone): The ringtone of an H100 alarm.
             volume (AlarmVolume): The volume of the alarm.
             duration (AlarmDuration): Controls how long the alarm plays for.
             seconds (Optional[int]): Play the alarm a number of seconds. Required if `duration` is `AlarmDuration.Seconds`.

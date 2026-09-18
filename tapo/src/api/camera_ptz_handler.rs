@@ -1,8 +1,8 @@
 use std::time::Duration;
 
 use crate::api::rtsp_snapshot::grab_mjpeg_frame;
-use crate::error::Error;
-use crate::requests::{SmartCamDoParams, SmartCamGetParams};
+use crate::error::{Error, TapoResponseError};
+use crate::requests::{SmartCamDoParams, SmartCamGetParams, TapoRequest};
 use crate::responses::{DeviceInfoCameraResult, Preset, PresetRaw, RtspStreamUrl, Snapshot};
 
 tapo_handler! {
@@ -113,12 +113,15 @@ impl CameraPtzHandler {
 
     /// Returns the list of saved PTZ presets.
     pub async fn get_presets(&self) -> Result<Vec<Preset>, Error> {
+        let request = TapoRequest::SmartCamGet(SmartCamGetParams::preset());
+
         let raw: PresetRaw = self
             .client
             .read()
             .await
-            .execute_smart_cam_get(SmartCamGetParams::preset())
-            .await?;
+            .execute_smart_cam_request(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
         Ok(raw.into_presets())
     }

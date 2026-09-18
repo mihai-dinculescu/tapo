@@ -21,6 +21,7 @@ python = ["dep:pyo3"]
 anyhow = { workspace = true }
 async-trait = "0.1"
 chrono = { workspace = true, features = ["clock", "serde"] }
+chrono-tz = { workspace = true, features = ["serde"] }
 crc32fast = "1.5"
 itertools = "0.15"
 lazy_static = "1.5"
@@ -31,7 +32,7 @@ serde = { workspace = true, features = ["derive", "serde_derive"] }
 serde_json = { workspace = true }
 serde_with = "3.20"
 thiserror = { workspace = true }
-tokio = { workspace = true, features = ["sync"] }
+tokio = { workspace = true, features = ["io-util", "net", "sync", "time"] }
 tokio-stream = "0.1"
 uuid = { version = "1.23", features = ["serde", "v4"] }
 
