@@ -1,18 +1,4 @@
-//! Media stream sessions with camera hubs.
-//!
-//! Camera hubs (H200, H500) serve live view and playback of hub-stored
-//! recordings over a proprietary, stateful media session on TCP port 8800.
-//! The session opens with a plain HTTP `POST /stream` request, which the hub
-//! challenges with RFC 2617 Digest authentication. On success, the hub answers
-//! `200` with the start of a `multipart/mixed` response whose body carries the
-//! control and media parts for the rest of the connection. Verified against an
-//! H200: the `200` is `HTTP/1.0`, advertises `X-Encrypt-Type: PLAIN` and a
-//! `Key-Exchange` header, and omits both `X-Session-Id` and `X-Hb`. Like the
-//! Tapo app, the handshake judges success on the status alone.
-//!
-//! This module implements the handshake. [`multipart`] frames the parts that
-//! flow in both directions afterwards and [`playback`] drives the control
-//! channel to play back a recording.
+//! The Digest authentication handshake that opens a media stream session.
 //!
 //! The request URI names what to stream
 //! (`/stream?camera_mac=…&type=sdvod&playerId=…&start_time=…`) and the Digest
@@ -25,11 +11,6 @@
 //! hub advertises `encrypt_type`, where `"3"` selects an upper-case hex SHA-256
 //! of the password and anything else falls back to upper-case hex MD5.
 
-mod cipher;
-mod mpeg_ts;
-mod multipart;
-pub(crate) mod playback;
-
 use std::collections::HashMap;
 use std::io::{self, ErrorKind};
 use std::time::Duration;
@@ -39,10 +20,9 @@ use log::{debug, trace};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
+use crate::api::protocol::aes_ssl_cipher::generate_nonce;
+use crate::api::protocol::crypto;
 use crate::error::{Error, TapoResponseError};
-
-use super::aes_ssl_cipher::generate_nonce;
-use super::crypto;
 
 const PORT: u16 = 8800;
 const METHOD: &str = "POST";
