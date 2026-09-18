@@ -1,7 +1,11 @@
+use std::sync::Arc;
+
 use tokio::io::AsyncWrite;
+use tokio::sync::RwLock;
 
 use chrono::{DateTime, Utc};
 
+use crate::api::ApiClient;
 use crate::error::{Error, TapoResponseError};
 use crate::requests::{
     SmartCamGetGeneralDeviceListParams, SmartCamGetTimezoneParams,
@@ -16,13 +20,31 @@ use crate::responses::{
 use crate::responses::RecordingDownloadResult;
 use crate::utils::unix_timestamp_seconds;
 
-tapo_handler! {
-    /// Handler for camera hubs, such as the
-    /// [H200](https://www.tapo.com/en/search/?q=H200) and
-    /// [H500](https://www.tapo.com/en/search/?q=H500).
-    CameraHubHandler(DeviceInfoCameraHubResult),
-    ip_address,
+/// Handler for camera hubs, such as the
+/// [H200](https://www.tapo.com/en/search/?q=H200) and
+/// [H500](https://www.tapo.com/en/search/?q=H500).
+#[derive(Debug)]
+pub struct CameraHubHandler {
+    client: Arc<RwLock<ApiClient>>,
+    ip_address: String,
+    /// Identifies this handler to the hub, new for every handler. It is sent
+    /// as `player_id` in recording searches, and on the media stream as
+    /// `playerId` in the stream URI and `player_id` in the playback request.
+    player_id: String,
 }
+
+impl CameraHubHandler {
+    pub(crate) fn new(client: Arc<RwLock<ApiClient>>, ip_address: String) -> Self {
+        Self {
+            client,
+            ip_address,
+            player_id: uuid::Uuid::new_v4().to_string(),
+        }
+    }
+}
+
+tapo_handler!(@methods CameraHubHandler(DeviceInfoCameraHubResult));
+tapo_handler!(@handler_ext CameraHubHandler);
 
 /// Hub handler methods.
 impl CameraHubHandler {
@@ -169,7 +191,6 @@ impl CameraHubHandler {
         let child_device_mac = child_device_mac.into();
 
         let client = self.client.read().await;
-        let player_id = client.player_id().to_string();
 
         let mut results = Vec::new();
         let mut start_index = 0;
@@ -183,7 +204,7 @@ impl CameraHubHandler {
                     start_index + PAGE_SIZE - 1,
                     child_device_id.clone(),
                     child_device_mac.clone(),
-                    player_id.clone(),
+                    self.player_id.clone(),
                 ),
             ));
 
@@ -282,6 +303,7 @@ impl CameraHubHandler {
             .await
             .download_recording(
                 &self.ip_address,
+                &self.player_id,
                 child_device_mac.into(),
                 start_time,
                 end_time,

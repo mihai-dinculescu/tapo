@@ -89,12 +89,6 @@ pub trait ApiClientExt: std::fmt::Debug + Send + Sync {
 pub struct ApiClient {
     tapo_username: String,
     tapo_password: String,
-    /// Identifies this client to camera hubs, the way the Tapo app's
-    /// persistent terminal UUID does: it is sent as `player_id` in recording
-    /// searches, and on the media stream as `playerId` in the stream URI and
-    /// `player_id` in the playback request, which is how the hub ties a
-    /// playback session to the search that found the clip.
-    player_id: String,
     timeout: Option<Duration>,
     protocol: Option<TapoProtocol>,
 }
@@ -116,14 +110,9 @@ impl ApiClient {
         Self {
             tapo_username: tapo_username.into(),
             tapo_password: tapo_password.into(),
-            player_id: uuid::Uuid::new_v4().to_string(),
             timeout: None,
             protocol: None,
         }
-    }
-
-    pub(crate) fn player_id(&self) -> &str {
-        &self.player_id
     }
 
     /// Changes the connection timeout from the default value to the given value.
@@ -1073,6 +1062,7 @@ impl ApiClient {
     pub(crate) async fn download_recording<W: tokio::io::AsyncWrite + Unpin + Send>(
         &self,
         ip_address: &str,
+        player_id: &str,
         child_device_mac: String,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
@@ -1100,7 +1090,7 @@ impl ApiClient {
 
         let session_request = media_stream::SessionRequest {
             camera_mac: child_device_mac.clone(),
-            player_id: self.player_id.clone(),
+            player_id: player_id.to_string(),
             start_time,
         };
         let connection = media_stream::authenticate(
@@ -1113,7 +1103,7 @@ impl ApiClient {
 
         let request = media_stream::playback::PlaybackRequest {
             camera_mac: child_device_mac,
-            player_id: self.player_id.clone(),
+            player_id: player_id.to_string(),
             start_time,
             end_time,
         };
