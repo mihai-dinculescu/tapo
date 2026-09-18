@@ -18,6 +18,6 @@ mod cipher;
 mod handshake;
 mod mpeg_ts;
 mod multipart;
-pub(crate) mod playback;
 
+pub(crate) mod playback;
 pub(crate) use handshake::*;

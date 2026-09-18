@@ -16,9 +16,6 @@ use crate::responses::{
 use crate::responses::RecordingDownloadResult;
 use crate::utils::unix_timestamp_seconds;
 
-#[cfg(feature = "debug")]
-use crate::responses::ChildDeviceComponentList;
-
 tapo_handler! {
     /// Handler for camera hubs, such as the
     /// [H200](https://www.tapo.com/en/search/?q=H200) and
@@ -209,19 +206,6 @@ impl CameraHubHandler {
         }
 
         Ok(results)
-    }
-
-    /// Returns *child device component list* as [`Vec<ChildDeviceComponentList>`].
-    /// This information is useful in debugging or when investigating new functionality to add.
-    #[cfg(feature = "debug")]
-    pub async fn get_child_device_component_list(
-        &self,
-    ) -> Result<Vec<ChildDeviceComponentList>, Error> {
-        self.client
-            .read()
-            .await
-            .get_child_device_component_list()
-            .await
     }
 
     /// Downloads a recording stored on the hub over the hub's media stream

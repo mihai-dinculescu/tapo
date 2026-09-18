@@ -2,9 +2,6 @@ use crate::error::Error;
 use crate::requests::{AlarmDuration, AlarmRingtone, AlarmVolume, PlayAlarmParams};
 use crate::responses::DeviceInfoHubResult;
 
-#[cfg(feature = "debug")]
-use crate::responses::ChildDeviceComponentList;
-
 tapo_handler! {
     /// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) devices.
     HubHandler(DeviceInfoHubResult),
@@ -13,19 +10,6 @@ tapo_handler! {
 
 /// Hub handler methods.
 impl HubHandler {
-    /// Returns *child device component list* as [`Vec<ChildDeviceComponentList>`].
-    /// This information is useful in debugging or when investigating new functionality to add.
-    #[cfg(feature = "debug")]
-    pub async fn get_child_device_component_list(
-        &self,
-    ) -> Result<Vec<ChildDeviceComponentList>, Error> {
-        self.client
-            .read()
-            .await
-            .get_child_device_component_list()
-            .await
-    }
-
     /// Returns a list of ringtones (alarm types) supported by the hub.
     /// Used for debugging only.
     #[cfg(feature = "debug")]
