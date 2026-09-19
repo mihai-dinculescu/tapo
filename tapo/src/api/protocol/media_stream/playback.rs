@@ -18,6 +18,12 @@
 //! 3. Heartbeat notifications every `X-Hb` seconds (default 15), and a
 //!    `do` `stop` request when the client is done.
 //!
+//! A `type=download` session, which the app uses to save a clip, runs the
+//! same exchange with a `get` `download` request in place of `get`
+//! `playback`, and the app expects it to end with a `stream_status`
+//! notification of `finished`. It is an experiment behind the `debug`
+//! feature, not yet tried on a device.
+//!
 //! The media parts are encrypted (`X-If-Encrypt: 1`); see [`super::cipher`].
 //! The hub does not stop at the requested `end_time` but plays on into the
 //! recording that follows, so a download stops itself at the keyframe that
@@ -47,7 +53,7 @@ use super::mpeg_ts::{StreamClock, looks_like_mpeg_ts};
 use super::multipart::{Frame, Part, PartParser, encode_client_part};
 
 const CONTENT_TYPE_JSON: (&str, &str) = ("Content-Type", "application/json");
-/// Requested by the Tapo app on the playback request.
+/// Requested by the Tapo app on the playback and download requests.
 const DATA_WINDOW_SIZE: &str = "50";
 /// The Tapo app acknowledges every 25th media part.
 const ACK_EVERY: u64 = 25;
@@ -59,10 +65,36 @@ const READ_CHUNK_SIZE: usize = 64 * 1024;
 /// Warn about at most this many HMAC mismatches; the count keeps growing.
 const HMAC_WARNINGS: u64 = 3;
 
+/// Selects the recording a session streams, and how.
+#[derive(Debug, Clone)]
+pub(crate) enum StreamRequest {
+    /// A `get` `playback` request.
+    Playback(PlaybackRequest),
+    /// A `get` `download` request.
+    #[cfg(feature = "debug")]
+    Download(DownloadRequest),
+}
+
 /// Selects the recording to play back.
 #[derive(Debug, Clone)]
 pub(crate) struct PlaybackRequest {
     pub camera_mac: String,
+    pub player_id: String,
+    /// Unix timestamp (seconds).
+    pub start_time: u64,
+    /// Unix timestamp (seconds).
+    pub end_time: u64,
+}
+
+/// Selects the recording to download.
+#[cfg(feature = "debug")]
+#[derive(Debug, Clone)]
+pub(crate) struct DownloadRequest {
+    /// Sent as `mac` when present. For a hub's camera, the app sends both
+    /// the mac and the device id.
+    pub camera_mac: Option<String>,
+    /// Sent as `dev_id`.
+    pub device_id: String,
     pub player_id: String,
     /// Unix timestamp (seconds).
     pub start_time: u64,
@@ -84,7 +116,7 @@ pub(crate) struct PlaybackRequest {
 /// messages and the cipher setup, `tapo=trace` every part.
 pub(crate) async fn play<W: AsyncWrite + Unpin>(
     connection: MediaStreamConnection,
-    request: PlaybackRequest,
+    request: StreamRequest,
     duration: Duration,
     clip_length: Option<Duration>,
     sink: &mut W,
@@ -121,14 +153,19 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
     };
 
     let request_seq = state.next_seq();
-    debug!("Requesting playback: {request:?}");
+    debug!("Requesting the recording: {request:?}");
+    let params = match request {
+        StreamRequest::Playback(request) => GetParams::Playback(GetPlaybackParams::new(request)),
+        #[cfg(feature = "debug")]
+        StreamRequest::Download(request) => GetParams::Download(GetDownloadParams::new(request)),
+    };
     send(
         &mut writer,
         &state.session_headers(&[("X-Data-Window-Size", DATA_WINDOW_SIZE), CONTENT_TYPE_JSON]),
         &ControlRequest {
             kind: "request",
             seq: request_seq,
-            params: GetPlaybackParams::new(request),
+            params,
         },
     )
     .await?;
@@ -501,14 +538,14 @@ impl State {
         if response.error_code != 0 {
             return Err(Error::Tapo(TapoResponseError::ResponseError {
                 description: format!(
-                    "The hub rejected the playback request with error code {}",
+                    "The hub rejected the recording request with error code {}",
                     response.error_code
                 ),
             }));
         }
 
         debug!(
-            "Playback accepted: session_id={:?}, speed={:?}",
+            "Recording request accepted: session_id={:?}, speed={:?}",
             response.session_id, response.speed
         );
         if response.session_id.is_some() {
@@ -569,6 +606,14 @@ struct ControlRequest<T> {
     params: T,
 }
 
+#[derive(Debug, Serialize)]
+#[serde(untagged)]
+enum GetParams {
+    Playback(GetPlaybackParams),
+    #[cfg(feature = "debug")]
+    Download(GetDownloadParams),
+}
+
 /// `{"method": "get", "playback": {...}}`, after the Tapo app's
 /// `GetPlaybackRequest` / `GetVodParams`. Fields the app leaves unset for
 /// plain hub playback (event filters, audio config, face ids) are omitted.
@@ -616,6 +661,60 @@ struct VodParams {
     auto_seek: u8,
     auto_switch_date: &'static str,
     camera_mac: String,
+}
+
+/// `{"method": "get", "download": {...}}`, after the Tapo app's
+/// `GetDownloadRequest` / `GetDownloadParams` as `ic0/a.java` fills them to
+/// save a clip. Fields the app leaves unset for a plain video clip (download
+/// type, event filters, audio config, `last_pts` for a resumed download) are
+/// omitted.
+#[cfg(feature = "debug")]
+#[derive(Debug, Serialize)]
+struct GetDownloadParams {
+    method: &'static str,
+    download: DownloadParams,
+}
+
+#[cfg(feature = "debug")]
+impl GetDownloadParams {
+    fn new(request: DownloadRequest) -> Self {
+        Self {
+            method: "get",
+            download: DownloadParams {
+                dev_id: request.device_id,
+                mac: request.camera_mac,
+                client_id: 1,
+                end_time: request.end_time.to_string(),
+                media_type: 0,
+                player_id: request.player_id,
+                start_time: request.start_time.to_string(),
+                channels: vec![0],
+                streams: Vec::new(),
+            },
+        }
+    }
+}
+
+#[cfg(feature = "debug")]
+#[derive(Debug, Serialize)]
+struct DownloadParams {
+    dev_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    mac: Option<String>,
+    /// The app always uses 1 when downloading from a camera hub.
+    client_id: u32,
+    /// Unix timestamps (seconds), as strings like the app sends them.
+    end_time: String,
+    /// `DownloadMediaType.VIDEO`.
+    media_type: u8,
+    /// The app sends it only to devices that report its sixth playback
+    /// protocol version, which is unknown for the H200. Hub playback always
+    /// carries it, and the H200 accepts it there.
+    player_id: String,
+    start_time: String,
+    channels: Vec<u8>,
+    /// Stream selectors for trajectory clips; empty for a plain clip.
+    streams: Vec<u8>,
 }
 
 /// `{"method": "do", "stop": "null"}`, after the Tapo app's `DoStopRequest`.
@@ -729,6 +828,51 @@ mod tests {
                 }
             })
         );
+    }
+
+    #[cfg(feature = "debug")]
+    #[test]
+    fn test_get_download_request_json() {
+        let download_request = |camera_mac: Option<&str>| DownloadRequest {
+            camera_mac: camera_mac.map(str::to_string),
+            device_id: "DEVICE".to_string(),
+            player_id: "PLAYER".to_string(),
+            start_time: 1_700_000_000,
+            end_time: 1_700_000_060,
+        };
+
+        let message = ControlRequest {
+            kind: "request",
+            seq: 1,
+            params: GetParams::Download(GetDownloadParams::new(download_request(Some(
+                "AA-BB-CC-DD-EE-FF",
+            )))),
+        };
+        assert_eq!(
+            serde_json::to_value(&message).unwrap(),
+            serde_json::json!({
+                "type": "request",
+                "seq": 1,
+                "params": {
+                    "method": "get",
+                    "download": {
+                        "dev_id": "DEVICE",
+                        "mac": "AA-BB-CC-DD-EE-FF",
+                        "client_id": 1,
+                        "end_time": "1700000060",
+                        "media_type": 0,
+                        "player_id": "PLAYER",
+                        "start_time": "1700000000",
+                        "channels": [0],
+                        "streams": [],
+                    }
+                }
+            })
+        );
+
+        let params = serde_json::to_value(GetDownloadParams::new(download_request(None))).unwrap();
+        assert_eq!(params["download"]["dev_id"], "DEVICE");
+        assert!(params["download"].get("mac").is_none());
     }
 
     #[test]

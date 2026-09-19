@@ -322,6 +322,61 @@ impl CameraHubHandler {
             )
             .await
     }
+
+    /// Experimental: downloads a recording like
+    /// [`CameraHubHandler::download_recording`], but over the hub's
+    /// `type=download` stream, which the Tapo app uses to save a clip,
+    /// instead of playback. It finds out whether the hub serves that stream,
+    /// whether it ends the clip on its own, and whether it accepts the
+    /// camera's device id in place of its mac.
+    ///
+    /// With `child_device_mac`, the request is the one the Tapo app sends for
+    /// a hub's camera: the mac in the stream URI, and both the mac and
+    /// `child_device_id` in the download request. Without it, the stream URI
+    /// names the camera by `deviceId` and the download request carries the
+    /// device id alone.
+    ///
+    /// Unlike [`CameraHubHandler::download_recording`], nothing stops the
+    /// download at the clip's end: it runs until the hub ends it, or until
+    /// twice the clip's length on top of the client's timeout has passed, so
+    /// the result shows where the hub stops.
+    ///
+    /// # Arguments
+    ///
+    /// * `child_device_id` - the `device_id` of a camera returned by [`CameraHubHandler::get_general_device_list`].
+    /// * `child_device_mac` - the `mac` of that camera, or `None` to leave it out.
+    /// * `start_time` - the `start_time` of a recording returned by [`CameraHubHandler::get_recordings`].
+    /// * `end_time` - the `end_time` of that recording.
+    /// * `writer` - where the media is written, e.g. a `Vec<u8>` or a `tokio::fs::File`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `end_time` is not after `start_time`, if either is
+    /// before 1970, if the hub rejects the request or sends no media, or if
+    /// it sends encrypted media that cannot be decrypted.
+    #[cfg(feature = "debug")]
+    pub async fn probe_recording_download<W: AsyncWrite + Unpin + Send>(
+        &self,
+        child_device_id: impl Into<String>,
+        child_device_mac: Option<String>,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+        writer: &mut W,
+    ) -> Result<RecordingDownloadResult, Error> {
+        self.client
+            .read()
+            .await
+            .probe_recording_download(
+                &self.ip_address,
+                &self.player_id,
+                child_device_id.into(),
+                child_device_mac,
+                start_time,
+                end_time,
+                writer,
+            )
+            .await
+    }
 }
 
 hub_child_handlers!(

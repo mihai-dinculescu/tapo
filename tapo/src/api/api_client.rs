@@ -37,6 +37,9 @@ use super::discovery::DeviceDiscovery;
 #[cfg(feature = "debug")]
 use super::discovery::DeviceDiscoveryRaw;
 use super::protocol::media_stream;
+#[cfg(feature = "debug")]
+use super::protocol::media_stream::playback::DownloadRequest;
+use super::protocol::media_stream::playback::{PlaybackRequest, StreamRequest};
 use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
 use super::{
     CameraHubHandler, CameraPtzHandler, ColorLightHandler, HubHandler, LightHandler,
@@ -1088,7 +1091,7 @@ impl ApiClient {
         let start_time = unix_timestamp_seconds("start_time", start_time)?;
         let end_time = unix_timestamp_seconds("end_time", end_time)?;
 
-        let session_request = media_stream::SessionRequest {
+        let session_request = media_stream::SessionRequest::Playback {
             camera_mac: child_device_mac.clone(),
             player_id: player_id.to_string(),
             start_time,
@@ -1101,15 +1104,71 @@ impl ApiClient {
         )
         .await?;
 
-        let request = media_stream::playback::PlaybackRequest {
+        let request = StreamRequest::Playback(PlaybackRequest {
             camera_mac: child_device_mac,
             player_id: player_id.to_string(),
             start_time,
             end_time,
-        };
+        });
 
         media_stream::playback::play(connection, request, time_limit, Some(clip_length), writer)
             .await
+    }
+
+    #[cfg(feature = "debug")]
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) async fn probe_recording_download<W: tokio::io::AsyncWrite + Unpin + Send>(
+        &self,
+        ip_address: &str,
+        player_id: &str,
+        child_device_id: String,
+        child_device_mac: Option<String>,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+        writer: &mut W,
+    ) -> Result<RecordingDownloadResult, Error> {
+        debug!("Probe recording download...");
+
+        if end_time <= start_time {
+            return Err(Error::Validation {
+                field: "end_time".to_string(),
+                message: "Must be after start_time".to_string(),
+            });
+        }
+
+        // Nothing stops the download at the clip's end, so that the result
+        // shows where the hub stops; the time limit is the same backstop as
+        // for playback.
+        let clip_length = (end_time - start_time)
+            .to_std()
+            .map_err(anyhow::Error::from)?;
+        let time_limit = self.timeout() + clip_length * 2;
+
+        let start_time = unix_timestamp_seconds("start_time", start_time)?;
+        let end_time = unix_timestamp_seconds("end_time", end_time)?;
+
+        let session_request = media_stream::SessionRequest::Download {
+            camera_mac: child_device_mac.clone(),
+            device_id: child_device_id.clone(),
+            player_id: player_id.to_string(),
+        };
+        let connection = media_stream::authenticate(
+            ip_address,
+            &self.tapo_password,
+            &session_request,
+            self.timeout(),
+        )
+        .await?;
+
+        let request = StreamRequest::Download(DownloadRequest {
+            camera_mac: child_device_mac,
+            device_id: child_device_id,
+            player_id: player_id.to_string(),
+            start_time,
+            end_time,
+        });
+
+        media_stream::playback::play(connection, request, time_limit, None, writer).await
     }
 
     #[cfg(feature = "debug")]

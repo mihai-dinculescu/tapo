@@ -1,8 +1,9 @@
 //! The Digest authentication handshake that opens a media stream session.
 //!
 //! The request URI names what to stream
-//! (`/stream?camera_mac=…&type=sdvod&playerId=…&start_time=…`) and the Digest
-//! `uri` covers path and query, the way the app's `HttpMediaClient` asks. The
+//! (`/stream?camera_mac=…&type=sdvod&playerId=…&start_time=…`, or
+//! `type=download` for the experimental download) and the Digest `uri` covers
+//! path and query, the way the app's `HttpMediaClient` asks. The
 //! app also has a pre-connected session it keeps idle (`X-Preconn: 1`, bare
 //! `/stream`), but an H200 accepted a playback request as JSON on such a
 //! session and never answered it, so it is of no use here.
@@ -69,31 +70,59 @@ pub(crate) struct MediaStreamConnection {
     pub password_hash: String,
 }
 
-/// What a media stream session is opened for: playback of a recording stored
-/// on the hub. The selection travels in the URI query (`hc0/d.java`), with
-/// the player identified by `playerId` rather than a header.
+/// What a media stream session is opened for. The selection travels in the
+/// URI query (`hc0/d.java`), with the player identified by `playerId` rather
+/// than a header.
 #[derive(Debug, Clone)]
-pub(crate) struct SessionRequest {
-    pub camera_mac: String,
-    pub player_id: String,
-    /// Unix timestamp (seconds).
-    pub start_time: u64,
+pub(crate) enum SessionRequest {
+    /// Playback of a recording stored on the hub (`type=sdvod`).
+    Playback {
+        camera_mac: String,
+        player_id: String,
+        /// Unix timestamp (seconds).
+        start_time: u64,
+    },
+    /// Download of a recording stored on the hub (`type=download`). Like the
+    /// app, the URI names the camera by `camera_mac` when there is one and
+    /// by `deviceId` otherwise.
+    #[cfg(feature = "debug")]
+    Download {
+        camera_mac: Option<String>,
+        device_id: String,
+        player_id: String,
+    },
 }
 
 impl SessionRequest {
     /// The request URI: path plus query. The Digest `uri` covers all of it.
     fn uri(&self) -> String {
-        let Self {
-            camera_mac,
-            player_id,
-            start_time,
-        } = self;
-        // `auto_seek` is `SeekMethod::NORMAL` and `vod_type` is
-        // `VodType::NORMAL`, the app's defaults for plain playback.
-        format!(
-            "{PATH}?camera_mac={camera_mac}&type=sdvod&playerId={player_id}\
-             &start_time={start_time}&auto_seek=0&vod_type=0"
-        )
+        match self {
+            Self::Playback {
+                camera_mac,
+                player_id,
+                start_time,
+            } => {
+                // `auto_seek` is `SeekMethod::NORMAL` and `vod_type` is
+                // `VodType::NORMAL`, the app's defaults for plain playback.
+                format!(
+                    "{PATH}?camera_mac={camera_mac}&type=sdvod&playerId={player_id}\
+                     &start_time={start_time}&auto_seek=0&vod_type=0"
+                )
+            }
+            #[cfg(feature = "debug")]
+            Self::Download {
+                camera_mac,
+                device_id,
+                player_id,
+            } => {
+                let camera = match camera_mac {
+                    Some(camera_mac) => format!("camera_mac={camera_mac}"),
+                    None => format!("deviceId={device_id}"),
+                };
+                // `media_type` is `DownloadMediaType.VIDEO`.
+                format!("{PATH}?{camera}&type=download&playerId={player_id}&media_type=0")
+            }
+        }
     }
 }
 
@@ -942,7 +971,7 @@ mod tests {
     /// app's `HttpMediaClient`.
     #[test]
     fn test_build_request() {
-        let session_request = SessionRequest {
+        let session_request = SessionRequest::Playback {
             camera_mac: "8C902D40A6AE".to_string(),
             player_id: "6d198157-565a-4adb-aaa5-85b81bc5c918".to_string(),
             start_time: 1_788_931_768,
@@ -966,6 +995,33 @@ mod tests {
                  Content-Length: 0\r\n\
                  \r\n"
             )
+        );
+    }
+
+    /// Like the app, a download names the camera by `camera_mac` when there
+    /// is one and by `deviceId` otherwise.
+    #[cfg(feature = "debug")]
+    #[test]
+    fn test_download_uri() {
+        let with_mac = SessionRequest::Download {
+            camera_mac: Some("8C902D40A4A4".to_string()),
+            device_id: "8021994BF385ABDD1B012E07585CA3A9238B7E15".to_string(),
+            player_id: "PLAYER".to_string(),
+        };
+        assert_eq!(
+            with_mac.uri(),
+            "/stream?camera_mac=8C902D40A4A4&type=download&playerId=PLAYER&media_type=0"
+        );
+
+        let without_mac = SessionRequest::Download {
+            camera_mac: None,
+            device_id: "8021994BF385ABDD1B012E07585CA3A9238B7E15".to_string(),
+            player_id: "PLAYER".to_string(),
+        };
+        assert_eq!(
+            without_mac.uri(),
+            "/stream?deviceId=8021994BF385ABDD1B012E07585CA3A9238B7E15\
+             &type=download&playerId=PLAYER&media_type=0"
         );
     }
 }
