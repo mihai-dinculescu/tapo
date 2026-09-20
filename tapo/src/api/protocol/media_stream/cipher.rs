@@ -1,17 +1,16 @@
 //! Decryption of encrypted media stream parts.
 //!
 //! When a part carries `X-If-Encrypt: 1`, its body is AES-128-CBC with PKCS7
-//! padding. The Tapo app (`hc0/b.java`, `qb0/c.java`, `if0/a.java`) derives
-//! the keys from the `Key-Exchange` header of the `200` response, e.g.
+//! padding. The Tapo app derives the keys from the `Key-Exchange` header of
+//! the `200` response, e.g.
 //! `cipher="AES_128_CBC" username="admin" padding="PKCS7_16" algorithm="HKDF"
 //! nonce="…" salt="…"`, and a secret:
 //!
 //! - AES key: `HKDF-SHA256(ikm = "<nonce>:<secret>", salt = "<salt>",
 //!   info = "stream_hkdf_aes_key", 16 bytes)`.
 //! - HMAC key: the same with `info = "stream_hkdf_hmac_key"`, also 16 bytes
-//!   (the app's `HKDFHelper.d()` relies on the default length; the `8` in
-//!   the decompiled call is Kotlin's default-argument mask). Each part's
-//!   `X-Data-Hmac` is the base64 HMAC-SHA256 of its ciphertext.
+//!   and not 8. Each part's `X-Data-Hmac` is the base64 HMAC-SHA256 of its
+//!   ciphertext.
 //! - IV: the part's `X-Nonce` header, hex-decoded.
 //!
 //! The secret is the password as pre-hashed for the Digest handshake

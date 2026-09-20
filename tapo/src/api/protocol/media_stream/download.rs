@@ -24,11 +24,11 @@
 //! [`super::mpeg_ts`]). The media parts are encrypted (`X-If-Encrypt: 1`);
 //! see [`super::cipher`].
 //!
-//! Shapes and defaults follow the Tapo app's clip save (`GetDownloadParams`
-//! as `ic0/a.java` fills it, `DoStopRequest`, and the `fj0/b.java` read
-//! loop). Verified against an H200 on 2026-09-20: a 9 s clip arrived as 224
-//! `video/mp2t` parts (2.7 MB) holding 8.428 s of media, and the hub ended it
-//! about 2 s after the request.
+//! Shapes and defaults follow the Tapo app's clip save: its
+//! `GetDownloadParams`, its `DoStopRequest`, and its read loop. Verified
+//! against an H200 on 2026-09-20: a 9 s clip arrived as 224 `video/mp2t`
+//! parts (2.7 MB) holding 8.428 s of media, and the hub ended it about 2 s
+//! after the request.
 
 use std::time::{Duration, Instant};
 
@@ -548,9 +548,9 @@ struct ControlRequest<T> {
 }
 
 /// `{"method": "get", "download": {...}}`, after the Tapo app's
-/// `GetDownloadRequest` / `GetDownloadParams` as `ic0/a.java` fills them to
-/// save a clip. Fields the app leaves unset for a plain video clip (download
-/// type, event filters, audio config, `last_pts` for a resumed download) are
+/// `GetDownloadRequest` / `GetDownloadParams` as it fills them to save a
+/// clip. Fields the app leaves unset for a plain video clip (download type,
+/// event filters, audio config, `last_pts` for a resumed download) are
 /// omitted.
 #[derive(Debug, Serialize)]
 struct GetDownloadParams {

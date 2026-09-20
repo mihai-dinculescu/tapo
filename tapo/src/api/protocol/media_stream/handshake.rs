@@ -70,8 +70,8 @@ pub(crate) struct MediaStreamConnection {
 }
 
 /// What a media stream session is opened for: the download of a recording
-/// stored on the hub. The selection travels in the URI query (`hc0/d.java`),
-/// with the player identified by `playerId` rather than a header.
+/// stored on the hub. The selection travels in the URI query, with the
+/// player identified by `playerId` rather than a header.
 #[derive(Debug, Clone)]
 pub(crate) struct SessionRequest {
     pub device_id: String,
