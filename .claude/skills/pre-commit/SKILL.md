@@ -59,6 +59,25 @@ Run the following checks if there are changes in the `tapo/` or `tapo-py/` direc
 
 - Verify that `SUPPORTED_DEVICES.md` is up to date: add, remove, or regroup rows/columns when a handler's public method list changed, a device model was added/removed, or a method's `#[cfg(feature = "debug")]` gating changed
 
+### Decompiled app checks
+
+Run these checks on every change, whatever directories it touches. Fix all issues found.
+
+The decompiled Tapo Android app is a private reverse-engineering aid that lives outside the repo, and its names are obfuscated per app release. Nothing committed may point at it.
+
+- Scan the files the change touches for references to the decompiled sources:
+
+  ```bash
+  git diff --name-only --diff-filter=d HEAD | xargs grep -nEi '\.(java|kt|smali)\b|decompil|base\.apk|apkmirror|jadx|com[./]tplink'
+  ```
+
+  Also read the change for obfuscated identifiers the pattern above misses: two/three-character package or class names (`zh0`, `ai0`, `p70/i3`), app-internal class and method names (`HKDFHelper.d()`, `CameraHubProtocolImpl`), and absolute paths into the decompiled tree.
+- Rewrite every hit to state what the app does, not where that was read. Keep wire-level names (JSON methods and fields, HTTP headers, request and response shapes as they travel); drop file, class, and line-number citations.
+  - Not OK: ``//! The Tapo app (`hc0/b.java`, `qb0/c.java`) derives the keys from the `Key-Exchange` header``
+  - OK: ``//! The Tapo app derives the keys from the `Key-Exchange` header``
+- The one intentional mention is the "Reverse Engineering the Tapo API" section in `CONTRIBUTING.md`, which describes the workflow without naming a file. Leave it as is.
+
+
 ## Code Review
 
 After fixing all issues found in the checks, review the code changes for correctness, readability, and maintainability and propose improvements.
