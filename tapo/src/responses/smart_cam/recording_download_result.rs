@@ -18,13 +18,10 @@ pub struct RecordingDownloadResult {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum RecordingDownloadOutcome {
-    /// The media covered the requested time range, or reached the keyframe
-    /// that starts the recording after it. The hub plays on through the
-    /// footage that follows, so this is the usual outcome.
-    ClipEndReached,
-    /// The hub reported that it had no more footage before the media covered
-    /// the requested time range, so the download may be shorter than asked
-    /// for.
+    /// The hub reported the end of the footage, which is the usual outcome:
+    /// it ends a download itself at the end of the recording. The media can
+    /// be a little shorter than the requested range, whose end the hub's
+    /// index rounds up to a whole second.
     Finished,
     /// The hub closed the session or the connection early.
     ClosedByHub,

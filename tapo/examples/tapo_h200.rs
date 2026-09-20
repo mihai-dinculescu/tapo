@@ -145,12 +145,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let start_time = end_time - chrono::Duration::days(7);
 
         let recording_dates = hub
-            .get_recording_dates(
-                general_device.device_id.clone(),
-                general_device.mac.clone(),
-                start_time,
-                end_time,
-            )
+            .get_recording_dates(general_device.device_id.clone(), start_time, end_time)
             .await?;
         info!(
             "{} has recordings stored on the hub on the following dates: {recording_dates:?}.",
@@ -161,7 +156,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let recordings = hub
                 .get_recordings(
                     general_device.device_id.clone(),
-                    general_device.mac.clone(),
                     recording_date.start_time,
                     recording_date.end_time,
                 )
@@ -178,22 +172,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 recording_to_download = recordings
                     .into_iter()
                     .next()
-                    .map(|recording| (general_device.mac.clone(), recording));
+                    .map(|recording| (general_device.device_id.clone(), recording));
             }
         }
     }
 
     match recording_to_download {
-        Some((mac, recording)) => {
-            let path = format!("recording_{mac}_{}.ts", recording.start_time.timestamp());
+        Some((device_id, recording)) => {
+            let path = format!(
+                "recording_{device_id}_{}.ts",
+                recording.start_time.timestamp()
+            );
             info!(
-                "Downloading the recording from {} to {} of {mac} to {path}...",
+                "Downloading the recording from {} to {} of {device_id} to {path}...",
                 recording.start_time, recording.end_time
             );
 
             let mut media = Vec::new();
             let result = hub
-                .download_recording(mac, recording.start_time, recording.end_time, &mut media)
+                .download_recording(
+                    device_id,
+                    recording.start_time,
+                    recording.end_time,
+                    &mut media,
+                )
                 .await?;
             std::fs::write(&path, &media)?;
 

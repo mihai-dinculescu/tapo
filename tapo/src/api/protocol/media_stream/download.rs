@@ -1,4 +1,4 @@
-//! Playback of hub-stored recordings over an authenticated media stream.
+//! Download of hub-stored recordings over an authenticated media stream.
 //!
 //! The control channel is JSON carried in multipart parts. The client sends
 //! `{"type": "request", "seq": N, "params": {...}}` and the hub answers with
@@ -8,8 +8,8 @@
 //!
 //! The exchange for a recording is:
 //!
-//! 1. `get` `playback`, scoped to the camera by `camera_mac` and to the clip
-//!    by `start_time`, as the first client part. It carries
+//! 1. `get` `download`, scoped to the camera by `dev_id` and to the clip by
+//!    `start_time` and `end_time`, as the first client part. It carries
 //!    `X-Data-Window-Size: 50`. The hub responds with an `error_code` and,
 //!    on success, a `session_id` that later client parts echo as
 //!    `X-Session-Id`.
@@ -18,23 +18,17 @@
 //! 3. Heartbeat notifications every `X-Hb` seconds (default 15), and a
 //!    `do` `stop` request when the client is done.
 //!
-//! A `type=download` session, which the app uses to save a clip, runs the
-//! same exchange with a `get` `download` request in place of `get`
-//! `playback`, and the app expects it to end with a `stream_status`
-//! notification of `finished`. It is an experiment behind the `debug`
-//! feature, not yet tried on a device.
+//! The hub ends the clip itself with a `stream_status` notification of
+//! `finished`, so nothing here has to work out where the footage stops. The
+//! MPEG-TS clock only measures how much media arrived (see
+//! [`super::mpeg_ts`]). The media parts are encrypted (`X-If-Encrypt: 1`);
+//! see [`super::cipher`].
 //!
-//! The media parts are encrypted (`X-If-Encrypt: 1`); see [`super::cipher`].
-//! The hub does not stop at the requested `end_time` but plays on into the
-//! recording that follows, so a download stops itself at the keyframe that
-//! starts the next recording, or once the MPEG-TS clock has covered the clip
-//! (see [`super::mpeg_ts`]).
-//!
-//! Shapes and defaults follow the Tapo app (`GetVodParams`,
-//! `DoStopRequest`, and the `VodStreamConnection` read loop). Verified
-//! against an H200 on 2026-09-12: an 11 s clip arrived as 332 `video/mp2t`
-//! parts (4.4 MB), and the download stopped once the MPEG-TS clock showed
-//! 12.5 s.
+//! Shapes and defaults follow the Tapo app's clip save (`GetDownloadParams`
+//! as `ic0/a.java` fills it, `DoStopRequest`, and the `fj0/b.java` read
+//! loop). Verified against an H200 on 2026-09-20: a 9 s clip arrived as 224
+//! `video/mp2t` parts (2.7 MB) holding 8.428 s of media, and the hub ended it
+//! about 2 s after the request.
 
 use std::time::{Duration, Instant};
 
@@ -53,7 +47,7 @@ use super::mpeg_ts::{StreamClock, looks_like_mpeg_ts};
 use super::multipart::{Frame, Part, PartParser, encode_client_part};
 
 const CONTENT_TYPE_JSON: (&str, &str) = ("Content-Type", "application/json");
-/// Requested by the Tapo app on the playback and download requests.
+/// Requested by the Tapo app on the download request.
 const DATA_WINDOW_SIZE: &str = "50";
 /// The Tapo app acknowledges every 25th media part.
 const ACK_EVERY: u64 = 25;
@@ -65,34 +59,9 @@ const READ_CHUNK_SIZE: usize = 64 * 1024;
 /// Warn about at most this many HMAC mismatches; the count keeps growing.
 const HMAC_WARNINGS: u64 = 3;
 
-/// Selects the recording a session streams, and how.
-#[derive(Debug, Clone)]
-pub(crate) enum StreamRequest {
-    /// A `get` `playback` request.
-    Playback(PlaybackRequest),
-    /// A `get` `download` request.
-    #[cfg(feature = "debug")]
-    Download(DownloadRequest),
-}
-
-/// Selects the recording to play back.
-#[derive(Debug, Clone)]
-pub(crate) struct PlaybackRequest {
-    pub camera_mac: String,
-    pub player_id: String,
-    /// Unix timestamp (seconds).
-    pub start_time: u64,
-    /// Unix timestamp (seconds).
-    pub end_time: u64,
-}
-
 /// Selects the recording to download.
-#[cfg(feature = "debug")]
 #[derive(Debug, Clone)]
 pub(crate) struct DownloadRequest {
-    /// Sent as `mac` when present. For a hub's camera, the app sends both
-    /// the mac and the device id.
-    pub camera_mac: Option<String>,
     /// Sent as `dev_id`.
     pub device_id: String,
     pub player_id: String,
@@ -102,23 +71,20 @@ pub(crate) struct DownloadRequest {
     pub end_time: u64,
 }
 
-/// Plays back the recording for up to `duration`, writing the decrypted body
-/// of every media part to `sink` in the order received. For an MPEG-TS stream
+/// Downloads the recording within `duration`, writing the decrypted body of
+/// every media part to `sink` in the order received. For an MPEG-TS stream
 /// the concatenation is a playable `.ts` file.
 ///
-/// The hub itself plays on past the recording's end. With `clip_length`,
-/// playback of an MPEG-TS stream stops at the keyframe that starts the next
-/// recording, or once the clock shows that much media.
+/// The hub ends the clip itself, so `duration` is only a backstop.
 ///
 /// Fails when the hub sent no media at all, or at the first encrypted media
 /// part that no cipher can be set up for. Everything else the hub reported
 /// is logged rather than returned; `RUST_LOG=tapo=debug` shows the control
 /// messages and the cipher setup, `tapo=trace` every part.
-pub(crate) async fn play<W: AsyncWrite + Unpin>(
+pub(crate) async fn download<W: AsyncWrite + Unpin>(
     connection: MediaStreamConnection,
-    request: StreamRequest,
+    request: DownloadRequest,
     duration: Duration,
-    clip_length: Option<Duration>,
     sink: &mut W,
 ) -> Result<RecordingDownloadResult, Error> {
     let MediaStreamConnection {
@@ -141,8 +107,7 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
         seq: 0,
         secret: password_hash,
         cipher: None,
-        clock: StreamClock::new(clip_length),
-        clip_length,
+        clock: StreamClock::default(),
         byte_count: 0,
         part_count: 0,
         duration_s: None,
@@ -154,18 +119,13 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
 
     let request_seq = state.next_seq();
     debug!("Requesting the recording: {request:?}");
-    let params = match request {
-        StreamRequest::Playback(request) => GetParams::Playback(GetPlaybackParams::new(request)),
-        #[cfg(feature = "debug")]
-        StreamRequest::Download(request) => GetParams::Download(GetDownloadParams::new(request)),
-    };
     send(
         &mut writer,
         &state.session_headers(&[("X-Data-Window-Size", DATA_WINDOW_SIZE), CONTENT_TYPE_JSON]),
         &ControlRequest {
             kind: "request",
             seq: request_seq,
-            params,
+            params: GetDownloadParams::new(request),
         },
     )
     .await?;
@@ -194,7 +154,7 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
 
         let now = Instant::now();
         if now >= deadline {
-            debug!("Playback time limit elapsed");
+            debug!("Download time limit elapsed");
             break;
         }
         if now >= next_heartbeat {
@@ -235,7 +195,7 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
     )
     .await
     {
-        debug!("Failed to send the playback stop request: {err:?}");
+        debug!("Failed to send the download stop request: {err:?}");
     }
     if let Err(err) = writer.shutdown().await {
         debug!("Failed to shut down the media stream: {err:?}");
@@ -248,7 +208,7 @@ pub(crate) async fn play<W: AsyncWrite + Unpin>(
 
 struct State {
     /// The session id echoed as `X-Session-Id` on client parts: the one
-    /// issued for the playback once known, otherwise the one from the
+    /// issued for the download once known, otherwise the one from the
     /// handshake, if any.
     session_id: Option<String>,
     /// The `Key-Exchange` header the media cipher is derived from.
@@ -260,7 +220,6 @@ struct State {
     /// Set up from the first encrypted media part.
     cipher: Option<MediaCipher>,
     clock: StreamClock,
-    clip_length: Option<Duration>,
     byte_count: u64,
     part_count: u64,
     duration_s: Option<f64>,
@@ -329,7 +288,7 @@ impl State {
             match message.kind.as_str() {
                 "response" => {
                     if message.seq == Some(i64::from(request_seq)) {
-                        return self.handle_playback_response(message.params);
+                        return self.handle_download_response(message.params);
                     }
                 }
                 "notification" => {
@@ -405,35 +364,17 @@ impl State {
 
         // Only a stream known to be MPEG-TS has a meaningful clock; ciphertext
         // would yield random "sync bytes" and a nonsense duration.
-        let (cut, elapsed) = if self.is_mpeg_ts == Some(true) {
-            (self.clock.observe(&body), self.clock.elapsed())
-        } else {
-            (None, None)
-        };
-        self.duration_s = elapsed.map(|elapsed| elapsed.as_secs_f64());
+        if self.is_mpeg_ts == Some(true) {
+            self.clock.observe(&body);
+            self.duration_s = self.clock.elapsed().map(|elapsed| elapsed.as_secs_f64());
+        }
 
-        // Up to the cut, the part belongs to the clip.
-        let body = &body[..cut.unwrap_or(body.len())];
         self.byte_count += body.len() as u64;
-        sink.write_all(body)
+        sink.write_all(&body)
             .await
             .context("write a media part to the media sink")?;
 
         self.acknowledge(writer, sequence).await?;
-
-        if cut.is_some() {
-            debug!("The media reached the next recording; stopping the playback");
-            self.outcome = RecordingDownloadOutcome::ClipEndReached;
-            return Ok(false);
-        }
-
-        if let (Some(clip_length), Some(elapsed)) = (self.clip_length, elapsed)
-            && elapsed >= clip_length
-        {
-            debug!("The media covers the clip's {clip_length:?}; stopping the playback");
-            self.outcome = RecordingDownloadOutcome::ClipEndReached;
-            return Ok(false);
-        }
 
         Ok(true)
     }
@@ -531,9 +472,9 @@ impl State {
         }
     }
 
-    fn handle_playback_response(&mut self, params: serde_json::Value) -> Result<bool, Error> {
-        let response: GetPlaybackResponse =
-            serde_json::from_value(params).context("invalid media stream playback response")?;
+    fn handle_download_response(&mut self, params: serde_json::Value) -> Result<bool, Error> {
+        let response: GetDownloadResponse =
+            serde_json::from_value(params).context("invalid media stream download response")?;
 
         if response.error_code != 0 {
             return Err(Error::Tapo(TapoResponseError::ResponseError {
@@ -545,8 +486,8 @@ impl State {
         }
 
         debug!(
-            "Recording request accepted: session_id={:?}, speed={:?}",
-            response.session_id, response.speed
+            "Recording request accepted: session_id={:?}",
+            response.session_id
         );
         if response.session_id.is_some() {
             self.session_id = response.session_id;
@@ -606,83 +547,23 @@ struct ControlRequest<T> {
     params: T,
 }
 
-#[derive(Debug, Serialize)]
-#[serde(untagged)]
-enum GetParams {
-    Playback(GetPlaybackParams),
-    #[cfg(feature = "debug")]
-    Download(GetDownloadParams),
-}
-
-/// `{"method": "get", "playback": {...}}`, after the Tapo app's
-/// `GetPlaybackRequest` / `GetVodParams`. Fields the app leaves unset for
-/// plain hub playback (event filters, audio config, face ids) are omitted.
-#[derive(Debug, Serialize)]
-struct GetPlaybackParams {
-    method: &'static str,
-    playback: VodParams,
-}
-
-impl GetPlaybackParams {
-    fn new(request: PlaybackRequest) -> Self {
-        Self {
-            method: "get",
-            playback: VodParams {
-                channels: vec![0],
-                client_id: 1,
-                scale: "1/1",
-                start_time: request.start_time.to_string(),
-                end_time: request.end_time.to_string(),
-                player_id: request.player_id,
-                vod_type: 0,
-                auto_seek: 0,
-                auto_switch_date: "0",
-                camera_mac: request.camera_mac,
-            },
-        }
-    }
-}
-
-#[derive(Debug, Serialize)]
-struct VodParams {
-    channels: Vec<u8>,
-    /// Distinguishes viewers on one connection. The app passes a small
-    /// per-player integer; a single viewer uses 1.
-    client_id: u32,
-    /// Playback speed (`VodScale`); `1/1` is real time.
-    scale: &'static str,
-    /// Unix timestamps (seconds), as strings like the app sends them.
-    start_time: String,
-    end_time: String,
-    player_id: String,
-    /// `VodType::NORMAL`.
-    vod_type: u8,
-    /// `SeekMethod::NORMAL`.
-    auto_seek: u8,
-    auto_switch_date: &'static str,
-    camera_mac: String,
-}
-
 /// `{"method": "get", "download": {...}}`, after the Tapo app's
 /// `GetDownloadRequest` / `GetDownloadParams` as `ic0/a.java` fills them to
 /// save a clip. Fields the app leaves unset for a plain video clip (download
 /// type, event filters, audio config, `last_pts` for a resumed download) are
 /// omitted.
-#[cfg(feature = "debug")]
 #[derive(Debug, Serialize)]
 struct GetDownloadParams {
     method: &'static str,
     download: DownloadParams,
 }
 
-#[cfg(feature = "debug")]
 impl GetDownloadParams {
     fn new(request: DownloadRequest) -> Self {
         Self {
             method: "get",
             download: DownloadParams {
                 dev_id: request.device_id,
-                mac: request.camera_mac,
                 client_id: 1,
                 end_time: request.end_time.to_string(),
                 media_type: 0,
@@ -695,21 +576,17 @@ impl GetDownloadParams {
     }
 }
 
-#[cfg(feature = "debug")]
 #[derive(Debug, Serialize)]
 struct DownloadParams {
+    /// The app sends the camera's mac as well, but an H200 finds the camera
+    /// from the device id alone.
     dev_id: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    mac: Option<String>,
     /// The app always uses 1 when downloading from a camera hub.
     client_id: u32,
     /// Unix timestamps (seconds), as strings like the app sends them.
     end_time: String,
     /// `DownloadMediaType.VIDEO`.
     media_type: u8,
-    /// The app sends it only to devices that report its sixth playback
-    /// protocol version, which is unknown for the H200. Hub playback always
-    /// carries it, and the H200 accepts it there.
     player_id: String,
     start_time: String,
     channels: Vec<u8>,
@@ -774,22 +651,20 @@ struct NotificationMessage {
 }
 
 #[derive(Debug, Deserialize)]
-struct GetPlaybackResponse {
+struct GetDownloadResponse {
     #[serde(default)]
     error_code: i64,
     #[serde(default)]
     session_id: Option<String>,
-    #[serde(default)]
-    speed: Option<String>,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn request() -> PlaybackRequest {
-        PlaybackRequest {
-            camera_mac: "AA-BB-CC-DD-EE-FF".to_string(),
+    fn request() -> DownloadRequest {
+        DownloadRequest {
+            device_id: "DEVICE".to_string(),
             player_id: "PLAYER".to_string(),
             start_time: 1_700_000_000,
             end_time: 1_700_000_060,
@@ -797,11 +672,11 @@ mod tests {
     }
 
     #[test]
-    fn test_get_playback_request_json() {
+    fn test_get_download_request_json() {
         let message = ControlRequest {
             kind: "request",
             seq: 1,
-            params: GetPlaybackParams::new(request()),
+            params: GetDownloadParams::new(request()),
         };
 
         let json = serde_json::to_value(&message).unwrap();
@@ -813,51 +688,8 @@ mod tests {
                 "seq": 1,
                 "params": {
                     "method": "get",
-                    "playback": {
-                        "channels": [0],
-                        "client_id": 1,
-                        "scale": "1/1",
-                        "start_time": "1700000000",
-                        "end_time": "1700000060",
-                        "player_id": "PLAYER",
-                        "vod_type": 0,
-                        "auto_seek": 0,
-                        "auto_switch_date": "0",
-                        "camera_mac": "AA-BB-CC-DD-EE-FF",
-                    }
-                }
-            })
-        );
-    }
-
-    #[cfg(feature = "debug")]
-    #[test]
-    fn test_get_download_request_json() {
-        let download_request = |camera_mac: Option<&str>| DownloadRequest {
-            camera_mac: camera_mac.map(str::to_string),
-            device_id: "DEVICE".to_string(),
-            player_id: "PLAYER".to_string(),
-            start_time: 1_700_000_000,
-            end_time: 1_700_000_060,
-        };
-
-        let message = ControlRequest {
-            kind: "request",
-            seq: 1,
-            params: GetParams::Download(GetDownloadParams::new(download_request(Some(
-                "AA-BB-CC-DD-EE-FF",
-            )))),
-        };
-        assert_eq!(
-            serde_json::to_value(&message).unwrap(),
-            serde_json::json!({
-                "type": "request",
-                "seq": 1,
-                "params": {
-                    "method": "get",
                     "download": {
                         "dev_id": "DEVICE",
-                        "mac": "AA-BB-CC-DD-EE-FF",
                         "client_id": 1,
                         "end_time": "1700000060",
                         "media_type": 0,
@@ -869,10 +701,6 @@ mod tests {
                 }
             })
         );
-
-        let params = serde_json::to_value(GetDownloadParams::new(download_request(None))).unwrap();
-        assert_eq!(params["download"]["dev_id"], "DEVICE");
-        assert!(params["download"].get("mac").is_none());
     }
 
     #[test]
@@ -901,18 +729,17 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_playback_response() {
+    fn test_parse_download_response() {
         let message: ControlMessage = serde_json::from_str(
-            r#"{"type":"response","seq":1,"params":{"error_code":0,"session_id":"42","speed":"1/1"}}"#,
+            r#"{"type":"response","seq":1,"params":{"error_code":0,"session_id":"42"}}"#,
         )
         .unwrap();
         assert_eq!(message.kind, "response");
         assert_eq!(message.seq, Some(1));
 
-        let response: GetPlaybackResponse = serde_json::from_value(message.params).unwrap();
+        let response: GetDownloadResponse = serde_json::from_value(message.params).unwrap();
         assert_eq!(response.error_code, 0);
         assert_eq!(response.session_id.as_deref(), Some("42"));
-        assert_eq!(response.speed.as_deref(), Some("1/1"));
     }
 
     #[test]
@@ -936,8 +763,7 @@ mod tests {
             seq: 0,
             secret: "HASH".to_string(),
             cipher: None,
-            clock: StreamClock::new(None),
-            clip_length: None,
+            clock: StreamClock::default(),
             byte_count: 0,
             part_count: 0,
             duration_s: None,

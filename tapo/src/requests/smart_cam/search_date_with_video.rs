@@ -21,16 +21,10 @@ struct DateFilterParams {
     /// `YYYYMMDD`
     end_date: String,
     child_device_id: String,
-    child_device_mac: String,
 }
 
 impl SmartCamSearchDateWithVideoParams {
-    pub fn new(
-        start_date: NaiveDate,
-        end_date: NaiveDate,
-        child_device_id: String,
-        child_device_mac: String,
-    ) -> Self {
+    pub fn new(start_date: NaiveDate, end_date: NaiveDate, child_device_id: String) -> Self {
         Self {
             playback: PlaybackParams {
                 search_year_utility: DateFilterParams {
@@ -38,7 +32,6 @@ impl SmartCamSearchDateWithVideoParams {
                     start_date: start_date.format("%Y%m%d").to_string(),
                     end_date: end_date.format("%Y%m%d").to_string(),
                     child_device_id,
-                    child_device_mac,
                 },
             },
         }

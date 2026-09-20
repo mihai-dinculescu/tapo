@@ -27,7 +27,7 @@ pub struct CameraHubHandler {
     /// Identifies this handler to the hub, new for every handler. It is sent
     /// as `player_id` in clip searches (`searchVideoWithUTC`), and on the
     /// media stream as `playerId` in the stream URI and `player_id` in the
-    /// playback request.
+    /// download request.
     player_id: String,
 }
 
@@ -116,7 +116,6 @@ impl CameraHubHandler {
     /// # Arguments
     ///
     /// * `child_device_id` - the `device_id` of a camera returned by [`CameraHubHandler::get_general_device_list`].
-    /// * `child_device_mac` - the `mac` of a camera returned by [`CameraHubHandler::get_general_device_list`].
     /// * `start_time` - the start of the search range.
     /// * `end_time` - the end of the search range.
     ///
@@ -127,7 +126,6 @@ impl CameraHubHandler {
     pub async fn get_recording_dates(
         &self,
         child_device_id: impl Into<String>,
-        child_device_mac: impl Into<String>,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
     ) -> Result<Vec<RecordingDateHubResult>, Error> {
@@ -145,7 +143,6 @@ impl CameraHubHandler {
                 start_time.with_timezone(&timezone).date_naive(),
                 end_time.with_timezone(&timezone).date_naive(),
                 child_device_id.into(),
-                child_device_mac.into(),
             ),
         ));
 
@@ -169,7 +166,6 @@ impl CameraHubHandler {
     /// # Arguments
     ///
     /// * `child_device_id` - the `device_id` of a camera returned by [`CameraHubHandler::get_general_device_list`].
-    /// * `child_device_mac` - the `mac` of a camera returned by [`CameraHubHandler::get_general_device_list`].
     /// * `start_time` - the start of the search range.
     /// * `end_time` - the end of the search range.
     ///
@@ -180,7 +176,6 @@ impl CameraHubHandler {
     pub async fn get_recordings(
         &self,
         child_device_id: impl Into<String>,
-        child_device_mac: impl Into<String>,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
     ) -> Result<Vec<RecordingHubResult>, Error> {
@@ -199,7 +194,6 @@ impl CameraHubHandler {
         let start_time = unix_timestamp_seconds("start_time", start_time)?;
         let end_time = unix_timestamp_seconds("end_time", end_time)?;
         let child_device_id = child_device_id.into();
-        let child_device_mac = child_device_mac.into();
 
         let client = self.client.read().await;
 
@@ -214,7 +208,6 @@ impl CameraHubHandler {
                     start_index,
                     start_index + PAGE_SIZE - 1,
                     child_device_id.clone(),
-                    child_device_mac.clone(),
                     self.player_id.clone(),
                 ),
             ));
@@ -246,15 +239,12 @@ impl CameraHubHandler {
     /// The hub streams the recording as encrypted MPEG-TS; the parts are
     /// decrypted with keys derived from the session's key exchange, so
     /// writing to a file with a `.ts` extension produces a playable clip. The
-    /// hub plays on past the recording's end into the recording that follows,
-    /// so the method stops at the keyframe that starts that recording, once
-    /// the stream's clock has covered the clip's length, or when the hub
-    /// reports the end of the footage, with twice the clip's length on top of
-    /// the client's timeout as a backstop.
+    /// hub ends the clip itself, with twice the clip's length on top of the
+    /// client's timeout as a backstop.
     ///
     /// # Arguments
     ///
-    /// * `child_device_mac` - the `mac` of a camera returned by [`CameraHubHandler::get_general_device_list`].
+    /// * `child_device_id` - the `device_id` of a camera returned by [`CameraHubHandler::get_general_device_list`].
     /// * `start_time` - the `start_time` of a recording returned by [`CameraHubHandler::get_recordings`].
     /// * `end_time` - the `end_time` of that recording.
     /// * `writer` - where the media is written, e.g. a `Vec<u8>` or a `tokio::fs::File`.
@@ -262,8 +252,8 @@ impl CameraHubHandler {
     /// # Errors
     ///
     /// Returns an error if `end_time` is not after `start_time`, if either is
-    /// before 1970, if the hub sends no media, or if it sends encrypted media
-    /// that cannot be decrypted.
+    /// before 1970, if the hub rejects the request or sends no media, or if it
+    /// sends encrypted media that cannot be decrypted.
     ///
     /// # Example
     ///
@@ -285,13 +275,13 @@ impl CameraHubHandler {
     /// let end_time = chrono::Utc::now();
     /// let start_time = end_time - chrono::Duration::days(1);
     /// let recordings = hub
-    ///     .get_recordings(camera.device_id, camera.mac.clone(), start_time, end_time)
+    ///     .get_recordings(camera.device_id.clone(), start_time, end_time)
     ///     .await?;
     ///
     /// if let Some(recording) = recordings.first() {
     ///     let mut media = Vec::new();
     ///     hub.download_recording(
-    ///         camera.mac,
+    ///         camera.device_id,
     ///         recording.start_time,
     ///         recording.end_time,
     ///         &mut media,
@@ -304,7 +294,7 @@ impl CameraHubHandler {
     /// ```
     pub async fn download_recording<W: AsyncWrite + Unpin + Send>(
         &self,
-        child_device_mac: impl Into<String>,
+        child_device_id: impl Into<String>,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
         writer: &mut W,
@@ -315,62 +305,7 @@ impl CameraHubHandler {
             .download_recording(
                 &self.ip_address,
                 &self.player_id,
-                child_device_mac.into(),
-                start_time,
-                end_time,
-                writer,
-            )
-            .await
-    }
-
-    /// Experimental: downloads a recording like
-    /// [`CameraHubHandler::download_recording`], but over the hub's
-    /// `type=download` stream, which the Tapo app uses to save a clip,
-    /// instead of playback. It finds out whether the hub serves that stream,
-    /// whether it ends the clip on its own, and whether it accepts the
-    /// camera's device id in place of its mac.
-    ///
-    /// With `child_device_mac`, the request is the one the Tapo app sends for
-    /// a hub's camera: the mac in the stream URI, and both the mac and
-    /// `child_device_id` in the download request. Without it, the stream URI
-    /// names the camera by `deviceId` and the download request carries the
-    /// device id alone.
-    ///
-    /// Unlike [`CameraHubHandler::download_recording`], nothing stops the
-    /// download at the clip's end: it runs until the hub ends it, or until
-    /// twice the clip's length on top of the client's timeout has passed, so
-    /// the result shows where the hub stops.
-    ///
-    /// # Arguments
-    ///
-    /// * `child_device_id` - the `device_id` of a camera returned by [`CameraHubHandler::get_general_device_list`].
-    /// * `child_device_mac` - the `mac` of that camera, or `None` to leave it out.
-    /// * `start_time` - the `start_time` of a recording returned by [`CameraHubHandler::get_recordings`].
-    /// * `end_time` - the `end_time` of that recording.
-    /// * `writer` - where the media is written, e.g. a `Vec<u8>` or a `tokio::fs::File`.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if `end_time` is not after `start_time`, if either is
-    /// before 1970, if the hub rejects the request or sends no media, or if
-    /// it sends encrypted media that cannot be decrypted.
-    #[cfg(feature = "debug")]
-    pub async fn probe_recording_download<W: AsyncWrite + Unpin + Send>(
-        &self,
-        child_device_id: impl Into<String>,
-        child_device_mac: Option<String>,
-        start_time: DateTime<Utc>,
-        end_time: DateTime<Utc>,
-        writer: &mut W,
-    ) -> Result<RecordingDownloadResult, Error> {
-        self.client
-            .read()
-            .await
-            .probe_recording_download(
-                &self.ip_address,
-                &self.player_id,
                 child_device_id.into(),
-                child_device_mac,
                 start_time,
                 end_time,
                 writer,

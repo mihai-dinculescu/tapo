@@ -22,9 +22,8 @@ struct UtcFilterParams {
     start_index: u64,
     end_index: u64,
     child_device_id: String,
-    child_device_mac: String,
     /// Identifies the client. A download of a result sends the same id as
-    /// `playerId` in the stream URI and `player_id` in the playback request.
+    /// `playerId` in the stream URI and `player_id` in the download request.
     player_id: String,
 }
 
@@ -35,7 +34,6 @@ impl SmartCamSearchVideoWithUtcParams {
         start_index: u64,
         end_index: u64,
         child_device_id: String,
-        child_device_mac: String,
         player_id: String,
     ) -> Self {
         Self {
@@ -47,7 +45,6 @@ impl SmartCamSearchVideoWithUtcParams {
                     start_index,
                     end_index,
                     child_device_id,
-                    child_device_mac,
                     player_id,
                 },
             },
