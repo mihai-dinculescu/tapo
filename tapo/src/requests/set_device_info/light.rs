@@ -4,7 +4,6 @@ use tokio::sync::RwLockReadGuard;
 use crate::api::ApiClientExt;
 use crate::error::Error;
 
-/// Builder that is used by the [`crate::LightHandler::set`] API to set multiple properties in a single request.
 #[derive(Debug, Serialize)]
 pub(crate) struct LightSetDeviceInfoParams<'a> {
     #[serde(skip)]

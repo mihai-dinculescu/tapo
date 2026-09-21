@@ -44,7 +44,7 @@ use crate::responses::{RecordingDownloadOutcome, RecordingDownloadResult};
 
 use super::MediaStreamConnection;
 use super::cipher::{KeyExchange, MediaCipher};
-use super::mpeg_ts::{StreamClock, looks_like_mpeg_ts};
+use super::mpeg_ts::StreamClock;
 use super::multipart::{Frame, Part, PartParser, encode_client_part};
 
 const CONTENT_TYPE_JSON: (&str, &str) = ("Content-Type", "application/json");
@@ -57,8 +57,6 @@ const ACK_EVERY: u64 = 25;
 const DEFAULT_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(15);
 /// Spare capacity reserved before each socket read.
 const READ_CHUNK_SIZE: usize = 64 * 1024;
-/// Warn about at most this many HMAC mismatches; the count keeps growing.
-const HMAC_WARNINGS: u64 = 3;
 /// Warn about at most this many gaps in `X-Data-Sequence`; the counts keep
 /// growing.
 const SEQUENCE_GAP_WARNINGS: u64 = 3;
@@ -81,10 +79,16 @@ pub(crate) struct DownloadRequest {
 ///
 /// The hub ends the clip itself, so `time_limit` is only a backstop.
 ///
-/// Fails when the hub sent no media at all, or at the first encrypted media
-/// part that no cipher can be set up for. Everything else the hub reported
-/// is logged rather than returned; `RUST_LOG=tapo=debug` shows the control
-/// messages and the cipher setup, `tapo=trace` every part.
+/// Fails when the hub rejects the request, sends no media at all, or sends
+/// something that cannot be read: a control message or part that does not
+/// parse, or an encrypted media part that cannot be decrypted or does not
+/// match its `X-Data-Hmac`. Also fails when reading from the hub, writing to
+/// it, or writing to `sink` fails.
+///
+/// Stopping early is not an error: when the time limit runs out or the hub
+/// closes the stream, the result's `outcome` says so. Gaps in
+/// `X-Data-Sequence` and control messages that need no action are only
+/// logged.
 pub(crate) async fn download<W: AsyncWrite + Unpin>(
     connection: MediaStreamConnection,
     request: DownloadRequest,
@@ -115,8 +119,6 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
         byte_count: 0,
         part_count: 0,
         duration_s: None,
-        is_mpeg_ts: None,
-        hmac_mismatch_count: 0,
         last_sequence: None,
         sequence_gap_count: 0,
         missing_part_count: 0,
@@ -230,8 +232,6 @@ struct State {
     byte_count: u64,
     part_count: u64,
     duration_s: Option<f64>,
-    is_mpeg_ts: Option<bool>,
-    hmac_mismatch_count: u64,
     /// The last `X-Data-Sequence` seen, which the hub numbers from 1 without
     /// gaps.
     last_sequence: Option<u64>,
@@ -248,13 +248,12 @@ impl State {
     /// explains why the download is not usable.
     fn finish(self, time_limit: Duration) -> Result<RecordingDownloadResult, Error> {
         debug!(
-            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, decrypted {}, HMAC mismatches {}, missing parts {}",
+            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, decrypted {}, missing parts {}",
             self.part_count,
             self.byte_count,
             self.duration_s,
             self.outcome,
             self.cipher.is_some(),
-            self.hmac_mismatch_count,
             self.missing_part_count,
         );
 
@@ -341,9 +340,9 @@ impl State {
             return Ok(true);
         }
 
-        let content_type = part.content_type().unwrap_or("").to_string();
         trace!(
-            "Media stream media part: {content_type} ({} bytes), headers: {:?}",
+            "Media stream media part: {} ({} bytes), headers: {:?}",
+            part.content_type().unwrap_or(""),
             part.body.len(),
             part.headers
         );
@@ -364,37 +363,15 @@ impl State {
             .header("x-if-encrypt")
             .is_some_and(|value| value.trim() == "1")
         {
-            match self.decrypt(&part)? {
-                Some(body) => body,
-                // Dropped (HMAC mismatch); still acknowledge the sequence.
-                None => {
-                    self.acknowledge(writer, sequence).await?;
-                    return Ok(true);
-                }
-            }
+            self.decrypt(&part)?
         } else {
             part.body
         };
 
-        if self.is_mpeg_ts.is_none() {
-            let is_mpeg_ts = looks_like_mpeg_ts(&body);
-            if !is_mpeg_ts {
-                warn!(
-                    "The media stream parts ({content_type}) do not look like MPEG-TS (decrypted: {})",
-                    self.cipher.is_some()
-                );
-            }
-            self.is_mpeg_ts = Some(is_mpeg_ts);
-        }
-
         self.part_count += 1;
 
-        // Only a stream known to be MPEG-TS has a meaningful clock; ciphertext
-        // would yield random "sync bytes" and a nonsense duration.
-        if self.is_mpeg_ts == Some(true) {
-            self.clock.observe(&body);
-            self.duration_s = self.clock.elapsed().map(|elapsed| elapsed.as_secs_f64());
-        }
+        self.clock.observe(&body);
+        self.duration_s = self.clock.elapsed().map(|elapsed| elapsed.as_secs_f64());
 
         self.byte_count += body.len() as u64;
         sink.write_all(&body)
@@ -450,14 +427,14 @@ impl State {
         Ok(())
     }
 
-    /// Decrypts an encrypted media part. Returns `None` when the part must be
-    /// dropped because its HMAC does not match, and fails when no cipher can
-    /// be set up for it.
-    fn decrypt(&mut self, part: &Part) -> Result<Option<Vec<u8>>, Error> {
+    /// Decrypts an encrypted media part after checking it against its
+    /// `X-Data-Hmac`, when it has one. Fails when no cipher can be set up for
+    /// it or when the HMAC does not match.
+    fn decrypt(&mut self, part: &Part) -> Result<Vec<u8>, Error> {
         let cipher = match &self.cipher {
             Some(cipher) => cipher,
             None => {
-                let cipher = self.derive_cipher(part)?;
+                let cipher = self.derive_cipher()?;
                 self.cipher.insert(cipher)
             }
         };
@@ -465,26 +442,22 @@ impl State {
         if let Some(hmac) = part.header("x-data-hmac")
             && !cipher.verify_hmac(&part.body, hmac)
         {
-            self.hmac_mismatch_count += 1;
-            if self.hmac_mismatch_count <= HMAC_WARNINGS {
-                warn!(
-                    "Dropping a media stream part whose X-Data-Hmac does not match (sequence {:?})",
-                    part.header("x-data-sequence")
-                );
-            }
-            return Ok(None);
+            return Err(anyhow!(
+                "cannot decrypt the recording: the X-Data-Hmac of media stream part {} does not match the media stream keys",
+                part.header("x-data-sequence").unwrap_or("?")
+            )
+            .into());
         }
 
         let Some(nonce) = part.header("x-nonce") else {
             return Err(anyhow!("encrypted media stream part without an X-Nonce").into());
         };
 
-        Ok(Some(cipher.decrypt(nonce, &part.body)?))
+        Ok(cipher.decrypt(nonce, &part.body)?)
     }
 
-    /// Derives the media cipher from the session's `Key-Exchange` and checks
-    /// it against the part's `X-Data-Hmac`, when there is one.
-    fn derive_cipher(&self, part: &Part) -> Result<MediaCipher, Error> {
+    /// Derives the media cipher from the session's `Key-Exchange`.
+    fn derive_cipher(&self) -> Result<MediaCipher, Error> {
         let key_exchange = self
             .key_exchange
             .as_deref()
@@ -502,21 +475,9 @@ impl State {
 
         let cipher = MediaCipher::derive(&key_exchange, &self.secret)
             .context("derive the media stream keys")?;
+        debug!("Media stream cipher ready");
 
-        match part.header("x-data-hmac") {
-            Some(hmac) if !cipher.verify_hmac(&part.body, hmac) => Err(anyhow!(
-                "cannot decrypt the recording: the media stream keys do not match the X-Data-Hmac of the media stream parts"
-            )
-            .into()),
-            Some(_) => {
-                debug!("Media stream cipher ready, verified by the X-Data-Hmac");
-                Ok(cipher)
-            }
-            None => {
-                debug!("Media stream cipher ready, unverified (no X-Data-Hmac)");
-                Ok(cipher)
-            }
-        }
+        Ok(cipher)
     }
 
     fn handle_download_response(&mut self, params: serde_json::Value) -> Result<bool, Error> {
@@ -812,8 +773,6 @@ mod tests {
             byte_count: 0,
             part_count: 0,
             duration_s: None,
-            is_mpeg_ts: None,
-            hmac_mismatch_count: 0,
             last_sequence: None,
             sequence_gap_count: 0,
             missing_part_count: 0,

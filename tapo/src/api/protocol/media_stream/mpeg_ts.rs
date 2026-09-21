@@ -76,16 +76,6 @@ fn ticks_to_duration(ticks: u64) -> Duration {
     Duration::from_micros(ticks * 1_000_000 / PCR_HZ)
 }
 
-/// Whether `body` starts with MPEG-TS packets: a sync byte at every packet
-/// boundary that falls inside the body.
-pub(super) fn looks_like_mpeg_ts(body: &[u8]) -> bool {
-    !body.is_empty()
-        && body
-            .iter()
-            .step_by(PACKET_SIZE)
-            .all(|byte| *byte == SYNC_BYTE)
-}
-
 /// The 33-bit PCR base of a packet and its discontinuity indicator, when the
 /// packet carries a PCR.
 fn pcr_base(packet: &[u8]) -> Option<(u64, bool)> {
@@ -201,21 +191,5 @@ mod tests {
         clock.observe(&stream);
 
         assert_eq!(clock.elapsed(), Some(Duration::from_millis(500)));
-    }
-
-    #[test]
-    fn test_looks_like_mpeg_ts() {
-        let mut packets = vec![0u8; 188 * 3];
-        for index in [0, 188, 376] {
-            packets[index] = 0x47;
-        }
-        assert!(looks_like_mpeg_ts(&packets));
-        // A partial trailing packet is still MPEG-TS.
-        assert!(looks_like_mpeg_ts(&packets[..300]));
-
-        assert!(!looks_like_mpeg_ts(&[]));
-        assert!(!looks_like_mpeg_ts(&[0x00; 188]));
-        packets[188] = 0x00;
-        assert!(!looks_like_mpeg_ts(&packets));
     }
 }

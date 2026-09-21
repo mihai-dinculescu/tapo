@@ -467,8 +467,9 @@ macro_rules! tapo_child_handler {
 /// H500): `get_child_device_list`, which pages through the hub's children,
 /// its `get_child_device_list_json` counterpart,
 /// `get_child_device_component_list`, the checked `ke100`/`s200`/.../`t31x`
-/// methods that resolve a [`HubDevice`] against that list, plus their
-/// `_unchecked` counterparts that trust a given `device_id`.
+/// methods that resolve a [`HubDevice`](crate::HubDevice) against that
+/// list, plus their `_unchecked` counterparts that trust a given
+/// `device_id`.
 ///
 /// The optional `child_device_list_note` is appended to the docs of
 /// `get_child_device_list`.
