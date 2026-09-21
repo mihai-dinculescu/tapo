@@ -14,8 +14,7 @@
 //! - IV: the part's `X-Nonce` header, hex-decoded.
 //!
 //! The secret is the password as pre-hashed for the Digest handshake
-//! (upper-case hex SHA-256 on an `encrypt_type` 3 hub), which the app reuses
-//! for the media cipher.
+//! (upper-case hex SHA-256), which the app reuses for the media cipher.
 
 use std::collections::HashMap;
 

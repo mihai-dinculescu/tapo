@@ -21,15 +21,12 @@ pub fn sha256_hex(data: &[u8]) -> String {
     base16ct::upper::encode_string(&sha256(data))
 }
 
-pub fn md5(data: &[u8]) -> [u8; 16] {
+pub fn md5_hex(data: &[u8]) -> String {
     use md5::Digest;
     let mut hasher = md5::Md5::new();
     hasher.update(data);
-    hasher.finalize().into()
-}
-
-pub fn md5_hex(data: &[u8]) -> String {
-    base16ct::upper::encode_string(&md5(data))
+    let hash = hasher.finalize();
+    base16ct::upper::encode_string(&hash)
 }
 
 pub fn aes128_cbc_encrypt(key: &[u8], iv: &[u8], data: &str) -> anyhow::Result<String> {

@@ -7,12 +7,12 @@
 //! an H200 accepted a recording request as JSON on such a session and never
 //! answered it, so it is of no use here.
 //!
-//! The password is pre-hashed before it enters the Digest computation: the
-//! hub advertises `encrypt_type`, where `"3"` selects an upper-case hex SHA-256
-//! of the password and anything else falls back to upper-case hex MD5.
+//! Only the challenge an H200 sends is supported: `algorithm="SHA-256"`,
+//! `qop="auth"` and `encrypt_type="3"`. The last is a non-standard parameter
+//! that selects how the password is pre-hashed before it enters the Digest
+//! computation, and `"3"` means upper-case hex SHA-256.
 
 use std::collections::HashMap;
-use std::io::{self, ErrorKind};
 use std::time::Duration;
 
 use anyhow::{Context, anyhow, bail};
@@ -30,6 +30,9 @@ const PATH: &str = "/stream";
 /// The media stream authenticates as the hub's local `admin` account.
 const USERNAME: &str = "admin";
 const CLIENT_BOUNDARY: &str = "--client-stream-boundary--";
+const ALGORITHM: &str = "SHA-256";
+const QOP: &str = "auth";
+const ENCRYPT_TYPE: &str = "3";
 const NONCE_COUNT: &str = "00000001";
 /// Upper bound on the size of an HTTP response head, so that a misbehaving
 /// peer cannot grow the read buffer without bound.
@@ -122,8 +125,8 @@ async fn handshake(
     debug!("Requesting the media stream Digest challenge for {uri}...");
     let request = build_request(ip_address, &uri, None);
     let challenge_response = exchange(&mut stream, &request)
-        .await?
-        .ok_or_else(|| anyhow!("the hub closed the connection without sending a challenge"))?;
+        .await
+        .context("request the media stream Digest challenge")?;
     challenge_response.log("challenge");
 
     // Like the Tapo app, give up on anything but a challenge.
@@ -137,7 +140,8 @@ async fn handshake(
     let challenge = DigestChallenge::parse(&challenge_response)?;
     debug!("Media stream Digest challenge: {challenge:?}");
 
-    let password_hash = prehash_password(password, challenge.encrypt_type.as_deref());
+    // `encrypt_type` 3, the only one the challenge accepts.
+    let password_hash = crypto::sha256_hex(password.as_bytes());
     let cnonce = generate_nonce();
     let authorization = authorization_header(&challenge, USERNAME, &password_hash, &uri, &cnonce);
 
@@ -147,9 +151,9 @@ async fn handshake(
     debug!("Sending the media stream Digest credentials...");
     stream = connect(ip_address).await?;
     let request = build_request(ip_address, &uri, Some(&authorization));
-    let response = exchange(&mut stream, &request).await?.ok_or_else(|| {
-        anyhow!("the hub closed the connection without answering the authenticated request")
-    })?;
+    let response = exchange(&mut stream, &request)
+        .await
+        .context("send the media stream Digest credentials")?;
     response.log("authentication");
 
     match response.status {
@@ -160,7 +164,7 @@ async fn handshake(
             // Skip the declared body; the bytes after it are the start of
             // the multipart stream.
             let mut body = response.body;
-            let skip = response.content_length.min(body.len());
+            let skip = response.content_length;
             if skip > 0 {
                 debug!(
                     "Media stream response body: {}",
@@ -218,18 +222,13 @@ fn build_request(ip_address: &str, uri: &str, authorization: Option<&str>) -> St
 
 /// Sends one HTTP request and reads the response head and its declared
 /// `Content-Length` body.
-///
-/// Returns `None` when the peer closed the connection before sending any
-/// response bytes.
-async fn exchange(stream: &mut TcpStream, request: &str) -> anyhow::Result<Option<HttpResponse>> {
+async fn exchange(stream: &mut TcpStream, request: &str) -> anyhow::Result<HttpResponse> {
     trace!("Media stream request (raw):\n{request}");
 
-    if let Err(err) = stream.write_all(request.as_bytes()).await {
-        if is_connection_closed(&err) {
-            return Ok(None);
-        }
-        return Err(anyhow::Error::new(err).context("write media stream request"));
-    }
+    stream
+        .write_all(request.as_bytes())
+        .await
+        .context("write media stream request")?;
 
     let mut buffer = Vec::with_capacity(4096);
     let head_end = loop {
@@ -241,14 +240,13 @@ async fn exchange(stream: &mut TcpStream, request: &str) -> anyhow::Result<Optio
         }
 
         let mut chunk = [0u8; 4096];
-        let read = match stream.read(&mut chunk).await {
-            Ok(read) => read,
-            Err(err) if buffer.is_empty() && is_connection_closed(&err) => return Ok(None),
-            Err(err) => return Err(anyhow::Error::new(err).context("read media stream response")),
-        };
+        let read = stream
+            .read(&mut chunk)
+            .await
+            .context("read media stream response")?;
         if read == 0 {
             if buffer.is_empty() {
-                return Ok(None);
+                bail!("the hub closed the connection without responding");
             }
             bail!("the hub closed the connection before the response head was complete");
         }
@@ -268,7 +266,7 @@ async fn exchange(stream: &mut TcpStream, request: &str) -> anyhow::Result<Optio
     // declared length is drained; whatever follows is left for the caller.
     drain_body(stream, &mut response).await?;
 
-    Ok(Some(response))
+    Ok(response)
 }
 
 async fn drain_body(stream: &mut TcpStream, response: &mut HttpResponse) -> anyhow::Result<()> {
@@ -292,7 +290,7 @@ async fn drain_body(stream: &mut TcpStream, response: &mut HttpResponse) -> anyh
     if content_length > 0 {
         trace!(
             "Media stream response body (raw):\n{}",
-            String::from_utf8_lossy(&response.body[..content_length.min(response.body.len())])
+            String::from_utf8_lossy(&response.body[..content_length])
         );
     }
 
@@ -301,16 +299,6 @@ async fn drain_body(stream: &mut TcpStream, response: &mut HttpResponse) -> anyh
 
 fn find_head_end(buffer: &[u8]) -> Option<usize> {
     buffer.windows(4).position(|window| window == b"\r\n\r\n")
-}
-
-fn is_connection_closed(err: &io::Error) -> bool {
-    matches!(
-        err.kind(),
-        ErrorKind::ConnectionReset
-            | ErrorKind::ConnectionAborted
-            | ErrorKind::BrokenPipe
-            | ErrorKind::UnexpectedEof
-    )
 }
 
 #[derive(Debug)]
@@ -376,8 +364,9 @@ impl HttpResponse {
             .map(|(_, value)| value.as_str())
     }
 
-    /// Logs the status line and every header, so that the exact shape of the
-    /// hub's responses is visible while the protocol is being explored.
+    /// Logs the status line and every header at debug level. At that level
+    /// they are the only record of the headers, since `exchange` logs the raw
+    /// head at trace level.
     fn log(&self, stage: &str) {
         debug!(
             "Media stream {stage} response: {} {}",
@@ -407,46 +396,11 @@ impl From<&HttpResponse> for MediaStreamSession {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum DigestAlgorithm {
-    Md5,
-    Sha256,
-}
-
-impl DigestAlgorithm {
-    fn parse(token: Option<&str>) -> anyhow::Result<Self> {
-        match token
-            .map(|token| token.trim().to_ascii_uppercase())
-            .as_deref()
-        {
-            None | Some("MD5") => Ok(Self::Md5),
-            Some("SHA-256") => Ok(Self::Sha256),
-            Some(other) => bail!("unsupported Digest algorithm `{other}`"),
-        }
-    }
-
-    /// Lower-case hex digest, as RFC 2617 requires.
-    fn hash_hex(self, data: &str) -> String {
-        match self {
-            Self::Md5 => base16ct::lower::encode_string(&crypto::md5(data.as_bytes())),
-            Self::Sha256 => base16ct::lower::encode_string(&crypto::sha256(data.as_bytes())),
-        }
-    }
-}
-
 #[derive(Debug)]
 struct DigestChallenge {
     realm: String,
     nonce: String,
-    /// The `qop` selected from the ones the hub offers, if any.
-    qop: Option<String>,
     opaque: Option<String>,
-    algorithm: DigestAlgorithm,
-    /// The `algorithm` token exactly as the hub sent it, echoed back.
-    algorithm_token: Option<String>,
-    /// The password pre-hash selector, which the hub sends as a non-standard
-    /// parameter of the Digest challenge.
-    encrypt_type: Option<String>,
 }
 
 impl DigestChallenge {
@@ -464,33 +418,33 @@ impl DigestChallenge {
             .remove("nonce")
             .ok_or_else(|| anyhow!("Digest challenge is missing the nonce"))?;
 
-        let qop = match params.remove("qop") {
-            None => None,
-            Some(offered) => {
-                let supported = offered
-                    .split(',')
-                    .map(str::trim)
-                    .find(|qop| qop.eq_ignore_ascii_case("auth"));
-                match supported {
-                    Some(qop) => Some(qop.to_string()),
-                    None => bail!("unsupported Digest qop `{offered}`"),
-                }
-            }
-        };
-
-        let algorithm_token = params.remove("algorithm");
-        let algorithm = DigestAlgorithm::parse(algorithm_token.as_deref())?;
+        match params.remove("algorithm") {
+            Some(algorithm) if algorithm.eq_ignore_ascii_case(ALGORITHM) => {}
+            Some(algorithm) => bail!("unsupported Digest algorithm `{algorithm}`"),
+            None => bail!("Digest challenge is missing the algorithm"),
+        }
+        match params.remove("qop") {
+            Some(qop) if qop.eq_ignore_ascii_case(QOP) => {}
+            Some(qop) => bail!("unsupported Digest qop `{qop}`"),
+            None => bail!("Digest challenge is missing the qop"),
+        }
+        match params.remove("encrypt_type") {
+            Some(encrypt_type) if encrypt_type == ENCRYPT_TYPE => {}
+            Some(encrypt_type) => bail!("unsupported Digest encrypt_type `{encrypt_type}`"),
+            None => bail!("Digest challenge is missing the encrypt_type"),
+        }
 
         Ok(Self {
             realm,
             nonce,
-            qop,
             opaque: params.remove("opaque"),
-            algorithm,
-            algorithm_token,
-            encrypt_type: params.remove("encrypt_type"),
         })
     }
+}
+
+/// Lower-case hex SHA-256, as RFC 7616 requires.
+fn hash_hex(data: &str) -> String {
+    base16ct::lower::encode_string(&crypto::sha256(data.as_bytes()))
 }
 
 /// Parses the parameters of a `Digest` challenge into a map with lower-cased
@@ -553,15 +507,6 @@ fn parse_digest_params(header: &str) -> anyhow::Result<HashMap<String, String>> 
     Ok(params)
 }
 
-/// Pre-hashes the password the way the hub expects it in the Digest
-/// computation.
-fn prehash_password(password: &str, encrypt_type: Option<&str>) -> String {
-    match encrypt_type.map(str::trim) {
-        Some("3") => crypto::sha256_hex(password.as_bytes()),
-        _ => crypto::md5_hex(password.as_bytes()),
-    }
-}
-
 fn digest_response(
     challenge: &DigestChallenge,
     username: &str,
@@ -570,17 +515,13 @@ fn digest_response(
     uri: &str,
     cnonce: &str,
 ) -> String {
-    let algorithm = challenge.algorithm;
-    let ha1 = algorithm.hash_hex(&format!("{username}:{}:{password}", challenge.realm));
-    let ha2 = algorithm.hash_hex(&format!("{method}:{uri}"));
+    let ha1 = hash_hex(&format!("{username}:{}:{password}", challenge.realm));
+    let ha2 = hash_hex(&format!("{method}:{uri}"));
 
-    match &challenge.qop {
-        Some(qop) => algorithm.hash_hex(&format!(
-            "{ha1}:{}:{NONCE_COUNT}:{cnonce}:{qop}:{ha2}",
-            challenge.nonce
-        )),
-        None => algorithm.hash_hex(&format!("{ha1}:{}:{ha2}", challenge.nonce)),
-    }
+    hash_hex(&format!(
+        "{ha1}:{}:{NONCE_COUNT}:{cnonce}:{QOP}:{ha2}",
+        challenge.nonce
+    ))
 }
 
 fn authorization_header(
@@ -596,17 +537,13 @@ fn authorization_header(
         format!("username=\"{username}\""),
         format!("realm=\"{}\"", challenge.realm),
         format!("uri=\"{uri}\""),
+        format!("algorithm={ALGORITHM}"),
+        format!("nonce=\"{}\"", challenge.nonce),
+        format!("nc={NONCE_COUNT}"),
+        format!("cnonce=\"{cnonce}\""),
+        format!("qop={QOP}"),
+        format!("response=\"{response}\""),
     ];
-    if let Some(algorithm) = &challenge.algorithm_token {
-        parts.push(format!("algorithm={algorithm}"));
-    }
-    parts.push(format!("nonce=\"{}\"", challenge.nonce));
-    if let Some(qop) = &challenge.qop {
-        parts.push(format!("nc={NONCE_COUNT}"));
-        parts.push(format!("cnonce=\"{cnonce}\""));
-        parts.push(format!("qop={qop}"));
-    }
-    parts.push(format!("response=\"{response}\""));
     if let Some(opaque) = &challenge.opaque {
         parts.push(format!("opaque=\"{opaque}\""));
     }
@@ -618,53 +555,20 @@ fn authorization_header(
 mod tests {
     use super::*;
 
-    /// The worked example of RFC 2617, section 3.5.
-    fn rfc2617_challenge() -> DigestChallenge {
-        DigestChallenge {
-            realm: "testrealm@host.com".to_string(),
-            nonce: "dcd98b7102dd2f0e8b11d0f600bfb0c093".to_string(),
-            qop: Some("auth".to_string()),
-            opaque: Some("5ccc069c403ebaf9f0171e9517f40e41".to_string()),
-            algorithm: DigestAlgorithm::Md5,
-            algorithm_token: Some("MD5".to_string()),
-            encrypt_type: None,
-        }
-    }
-
     /// The inputs of the worked example of RFC 7616, section 3.9.1.
-    fn rfc7616_challenge(algorithm: DigestAlgorithm, token: &str) -> DigestChallenge {
+    fn rfc7616_challenge() -> DigestChallenge {
         DigestChallenge {
             realm: "http-auth@example.org".to_string(),
             nonce: "7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v".to_string(),
-            qop: Some("auth".to_string()),
             opaque: Some("FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS".to_string()),
-            algorithm,
-            algorithm_token: Some(token.to_string()),
-            encrypt_type: None,
         }
     }
 
     const RFC7616_CNONCE: &str = "f2/wE4q74E6j5s5f8s/9XFUfoMmMU3f4uJc/j+9F5H/f7HQ";
 
     #[test]
-    fn test_digest_response_md5_matches_rfc2617() {
-        let challenge = rfc2617_challenge();
-
-        let response = digest_response(
-            &challenge,
-            "Mufasa",
-            "Circle Of Life",
-            "GET",
-            "/dir/index.html",
-            "0a4f113b",
-        );
-
-        assert_eq!(response, "6629fae49393a05397450978507c4ef1");
-    }
-
-    #[test]
     fn test_digest_response_sha256() {
-        let challenge = rfc7616_challenge(DigestAlgorithm::Sha256, "SHA-256");
+        let challenge = rfc7616_challenge();
 
         let response = digest_response(
             &challenge,
@@ -685,21 +589,8 @@ mod tests {
     }
 
     #[test]
-    fn test_digest_response_without_qop_uses_rfc2069_form() {
-        let mut challenge = rfc2617_challenge();
-        challenge.qop = None;
-
-        let response = digest_response(&challenge, "Mufasa", "Circle Of Life", "GET", "/", "x");
-
-        let ha1 = DigestAlgorithm::Md5.hash_hex("Mufasa:testrealm@host.com:Circle Of Life");
-        let ha2 = DigestAlgorithm::Md5.hash_hex("GET:/");
-        let expected = DigestAlgorithm::Md5.hash_hex(&format!("{ha1}:{}:{ha2}", challenge.nonce));
-        assert_eq!(response, expected);
-    }
-
-    #[test]
     fn test_authorization_header_lists_the_digest_fields_in_order() {
-        let challenge = rfc7616_challenge(DigestAlgorithm::Sha256, "SHA-256");
+        let challenge = rfc7616_challenge();
 
         let header = authorization_header(&challenge, "admin", "HASH", "/stream", "CNONCE");
 
@@ -717,48 +608,17 @@ mod tests {
     }
 
     #[test]
-    fn test_authorization_header_omits_absent_fields() {
-        let challenge = DigestChallenge {
-            realm: "hub".to_string(),
-            nonce: "NONCE".to_string(),
-            qop: None,
-            opaque: None,
-            algorithm: DigestAlgorithm::Md5,
-            algorithm_token: None,
-            encrypt_type: None,
-        };
+    fn test_authorization_header_omits_absent_opaque() {
+        let mut challenge = rfc7616_challenge();
+        challenge.opaque = None;
 
         let header = authorization_header(&challenge, "admin", "HASH", "/stream?a=1", "CNONCE");
 
-        assert!(header.starts_with(
-            "Digest username=\"admin\", realm=\"hub\", uri=\"/stream?a=1\", nonce=\"NONCE\", response=\""
-        ));
         // The digest covers the query too, like the app's URL-derived `uri`.
-        assert!(header.contains(&format!(
-            "response=\"{}\"",
-            digest_response(&challenge, "admin", "HASH", "POST", "/stream?a=1", "CNONCE")
-        )));
-        assert!(!header.contains("algorithm="));
-        assert!(!header.contains("nc="));
-        assert!(!header.contains("cnonce="));
-        assert!(!header.contains("qop="));
+        let expected_response =
+            digest_response(&challenge, "admin", "HASH", "POST", "/stream?a=1", "CNONCE");
+        assert!(header.ends_with(&format!(", response=\"{expected_response}\"")));
         assert!(!header.contains("opaque="));
-    }
-
-    #[test]
-    fn test_prehash_password() {
-        assert_eq!(
-            prehash_password("hello", Some("3")),
-            "2CF24DBA5FB0A30E26E83B2AC5B9E29E1B161E5C1FA7425E73043362938B9824"
-        );
-        assert_eq!(
-            prehash_password("hello", None),
-            "5D41402ABC4B2A76B9719D911017C592"
-        );
-        assert_eq!(
-            prehash_password("hello", Some("1")),
-            "5D41402ABC4B2A76B9719D911017C592"
-        );
     }
 
     #[test]
@@ -783,11 +643,10 @@ mod tests {
     }
 
     #[test]
-    fn test_digest_challenge_parse() {
+    fn test_digest_challenge_parse_without_opaque() {
         let response = HttpResponse::parse(
             b"HTTP/1.1 401 Unauthorized\r\n\
-              WWW-Authenticate: Digest realm=\"hub\", nonce=\"N\", qop=\"auth-int,auth\", opaque=\"O\", algorithm=MD5\r\n\
-              Content-Length: 0",
+              WWW-Authenticate: Digest realm=\"hub\", nonce=\"N\", qop=\"auth\", algorithm=SHA-256, encrypt_type=\"3\"",
             Vec::new(),
         )
         .unwrap();
@@ -796,29 +655,7 @@ mod tests {
 
         assert_eq!(challenge.realm, "hub");
         assert_eq!(challenge.nonce, "N");
-        assert_eq!(challenge.qop.as_deref(), Some("auth"));
-        assert_eq!(challenge.opaque.as_deref(), Some("O"));
-        assert_eq!(challenge.algorithm, DigestAlgorithm::Md5);
-        assert_eq!(challenge.algorithm_token.as_deref(), Some("MD5"));
-        assert_eq!(challenge.encrypt_type, None);
-    }
-
-    #[test]
-    fn test_digest_challenge_parse_minimal() {
-        let response = HttpResponse::parse(
-            b"HTTP/1.1 401 Unauthorized\r\n\
-              WWW-Authenticate: Digest realm=\"hub\", nonce=\"N\", encrypt_type=\"3\"",
-            Vec::new(),
-        )
-        .unwrap();
-
-        let challenge = DigestChallenge::parse(&response).unwrap();
-
-        assert_eq!(challenge.encrypt_type.as_deref(), Some("3"));
-        assert_eq!(challenge.qop, None);
         assert_eq!(challenge.opaque, None);
-        assert_eq!(challenge.algorithm, DigestAlgorithm::Md5);
-        assert_eq!(challenge.algorithm_token, None);
     }
 
     /// The challenge an H200 (firmware 1.6.5) actually sends.
@@ -842,33 +679,32 @@ mod tests {
 
         assert_eq!(challenge.realm, "TP-Link IP-Camera");
         assert_eq!(challenge.nonce, "fe4aeebd2a29d6f6b5fb962b41bbff90");
-        assert_eq!(challenge.qop.as_deref(), Some("auth"));
         assert_eq!(
             challenge.opaque.as_deref(),
             Some("e34536e09a6eb618a5e12649897e7440")
         );
-        assert_eq!(challenge.algorithm, DigestAlgorithm::Sha256);
-        assert_eq!(challenge.algorithm_token.as_deref(), Some("SHA-256"));
-        assert_eq!(challenge.encrypt_type.as_deref(), Some("3"));
     }
 
+    /// Only the `algorithm`, `qop` and `encrypt_type` an H200 sends are
+    /// accepted.
     #[test]
-    fn test_digest_challenge_rejects_unsupported_algorithm_and_qop() {
-        let response = HttpResponse::parse(
-            b"HTTP/1.1 401 Unauthorized\r\n\
-              WWW-Authenticate: Digest realm=\"hub\", nonce=\"N\", algorithm=MD5-sess",
-            Vec::new(),
-        )
-        .unwrap();
-        assert!(DigestChallenge::parse(&response).is_err());
+    fn test_digest_challenge_rejects_other_parameters() {
+        for params in [
+            "qop=\"auth\", encrypt_type=\"3\"",
+            "qop=\"auth\", algorithm=MD5, encrypt_type=\"3\"",
+            "algorithm=SHA-256, encrypt_type=\"3\"",
+            "qop=\"auth-int\", algorithm=SHA-256, encrypt_type=\"3\"",
+            "qop=\"auth\", algorithm=SHA-256",
+            "qop=\"auth\", algorithm=SHA-256, encrypt_type=\"1\"",
+        ] {
+            let head = format!(
+                "HTTP/1.1 401 Unauthorized\r\n\
+                 WWW-Authenticate: Digest realm=\"hub\", nonce=\"N\", {params}"
+            );
+            let response = HttpResponse::parse(head.as_bytes(), Vec::new()).unwrap();
 
-        let response = HttpResponse::parse(
-            b"HTTP/1.1 401 Unauthorized\r\n\
-              WWW-Authenticate: Digest realm=\"hub\", nonce=\"N\", qop=\"auth-int\"",
-            Vec::new(),
-        )
-        .unwrap();
-        assert!(DigestChallenge::parse(&response).is_err());
+            assert!(DigestChallenge::parse(&response).is_err(), "{params}");
+        }
     }
 
     #[test]
