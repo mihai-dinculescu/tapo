@@ -42,6 +42,10 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+### Added
+
+- `get_device_state`: added historical `EnergyData` and `PowerData` capabilities for P110/P110M/P115 plugs and P304M/P316M child plugs.
+
 ### Changed
 
 - Tool errors: error messages now include the full chain of causes, so a transport failure reports why it failed (e.g. `connection closed before message completed` or `operation timed out`) instead of stopping at the request URL.

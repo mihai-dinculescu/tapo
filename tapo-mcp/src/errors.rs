@@ -40,6 +40,9 @@ pub enum TapoMcpError {
 
     #[error("Capability '{capability}' must be invoked via the dedicated `{tool}` tool")]
     WrongTool { capability: String, tool: String },
+
+    #[error("Invalid {capability} interval: {reason}")]
+    InvalidInterval { capability: String, reason: String },
 }
 
 impl From<TapoMcpError> for McpError {
@@ -53,6 +56,7 @@ impl From<TapoMcpError> for McpError {
             TapoMcpError::Internal(_)
             | TapoMcpError::InternalDiscovery(_)
             | TapoMcpError::Serialization(_) => McpError::internal_error(message, data),
+            TapoMcpError::InvalidInterval { .. } => McpError::invalid_params(message, data),
             TapoMcpError::DeviceMismatch { .. } => McpError::invalid_params(message, data),
             TapoMcpError::DeviceNotFound { .. } => McpError::resource_not_found(message, data),
             TapoMcpError::WrongDeviceType { .. } => McpError::invalid_params(message, data),

@@ -1,11 +1,16 @@
+use chrono::{DateTime, NaiveDate, Utc};
 use rmcp::ErrorData as McpError;
 use rmcp::model::{CallToolResult, ContentBlock};
 use tapo::DiscoveryResult;
+use tapo::requests::{EnergyDataInterval, PowerDataInterval};
 use tapo::responses::ChildDeviceHubResult;
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
-use crate::models::{CheckDeviceParams, GetCapabilityRequest, GetDeviceStateParams};
+use crate::models::{
+    CheckDeviceParams, EnergyDataIntervalRequest, EnergyQuarter, GetCapabilityRequest,
+    GetDeviceStateParams, PowerDataIntervalRequest,
+};
 use crate::requests;
 use crate::requests::CheckedDevice;
 
@@ -35,10 +40,169 @@ pub async fn get_device_state(
         GetCapabilityRequest::TemperatureHumidityRecords => {
             get_temperature_humidity_records(&params.id, checked).await?
         }
+        GetCapabilityRequest::EnergyData { interval } => {
+            get_energy_data(&params.id, checked, interval).await?
+        }
+        GetCapabilityRequest::PowerData { interval } => {
+            get_power_data(&params.id, checked, interval).await?
+        }
     };
 
     let content = vec![ContentBlock::json(value)?];
     Ok(CallToolResult::success(content))
+}
+
+async fn get_energy_data(
+    id: &str,
+    checked: CheckedDevice,
+    interval: EnergyDataIntervalRequest,
+) -> Result<serde_json::Value, TapoMcpError> {
+    let interval = match interval {
+        EnergyDataIntervalRequest::Hourly {
+            start_date,
+            end_date,
+        } => {
+            let start_date = parse_date("EnergyData", &start_date)?;
+            let end_date = parse_date("EnergyData", &end_date)?;
+            let days = (end_date - start_date).num_days();
+            if days < 0 || days > 7 {
+                return Err(invalid_interval(
+                    "EnergyData",
+                    "hourly dates must be ordered and span no more than 8 days",
+                ));
+            }
+            EnergyDataInterval::Hourly {
+                start_date,
+                end_date,
+            }
+        }
+        EnergyDataIntervalRequest::Daily { year, quarter } => {
+            if year == 0 || year > 9999 {
+                return Err(invalid_interval(
+                    "EnergyData",
+                    "year must be between 1 and 9999",
+                ));
+            }
+            let month = match quarter {
+                EnergyQuarter::Q1 => 1,
+                EnergyQuarter::Q2 => 4,
+                EnergyQuarter::Q3 => 7,
+                EnergyQuarter::Q4 => 10,
+            };
+            let start_date = NaiveDate::from_ymd_opt(year.into(), month, 1)
+                .ok_or_else(|| invalid_interval("EnergyData", "year must be between 1 and 9999"))?;
+            EnergyDataInterval::Daily { start_date }
+        }
+        EnergyDataIntervalRequest::Monthly { year } => {
+            if year == 0 || year > 9999 {
+                return Err(invalid_interval(
+                    "EnergyData",
+                    "year must be between 1 and 9999",
+                ));
+            }
+            let start_date = NaiveDate::from_ymd_opt(year.into(), 1, 1)
+                .ok_or_else(|| invalid_interval("EnergyData", "year must be between 1 and 9999"))?;
+            EnergyDataInterval::Monthly { start_date }
+        }
+    };
+
+    let result = match checked {
+        CheckedDevice::Parent(DiscoveryResult::PlugEnergyMonitoring { handler, .. }) => {
+            handler.get_energy_data(interval).await?
+        }
+        CheckedDevice::PowerStripEnergyMonitoringChild { handler, child_id } => {
+            handler
+                .plug_unchecked(child_id)
+                .get_energy_data(interval)
+                .await?
+        }
+        _ => return Err(wrong_energy_device(id, "EnergyData")),
+    };
+    Ok(serde_json::to_value(result)?)
+}
+
+async fn get_power_data(
+    id: &str,
+    checked: CheckedDevice,
+    interval: PowerDataIntervalRequest,
+) -> Result<serde_json::Value, TapoMcpError> {
+    let interval = match interval {
+        PowerDataIntervalRequest::Every5Minutes {
+            start_date_time,
+            end_date_time,
+        } => PowerDataInterval::Every5Minutes {
+            start_date_time: parse_datetime("PowerData", &start_date_time)?,
+            end_date_time: parse_datetime("PowerData", &end_date_time)?,
+        },
+        PowerDataIntervalRequest::Hourly {
+            start_date_time,
+            end_date_time,
+        } => PowerDataInterval::Hourly {
+            start_date_time: parse_datetime("PowerData", &start_date_time)?,
+            end_date_time: parse_datetime("PowerData", &end_date_time)?,
+        },
+    };
+    let (start, end) = match &interval {
+        PowerDataInterval::Every5Minutes {
+            start_date_time,
+            end_date_time,
+        }
+        | PowerDataInterval::Hourly {
+            start_date_time,
+            end_date_time,
+        } => (start_date_time, end_date_time),
+    };
+    if end <= start {
+        return Err(invalid_interval(
+            "PowerData",
+            "end_date_time must be later than start_date_time",
+        ));
+    }
+    let result = match checked {
+        CheckedDevice::Parent(DiscoveryResult::PlugEnergyMonitoring { handler, .. }) => {
+            handler.get_power_data(interval).await?
+        }
+        CheckedDevice::PowerStripEnergyMonitoringChild { handler, child_id } => {
+            handler
+                .plug_unchecked(child_id)
+                .get_power_data(interval)
+                .await?
+        }
+        _ => return Err(wrong_energy_device(id, "PowerData")),
+    };
+    Ok(serde_json::to_value(result)?)
+}
+
+fn parse_date(capability: &str, value: &str) -> Result<NaiveDate, TapoMcpError> {
+    NaiveDate::parse_from_str(value, "%Y-%m-%d")
+        .map_err(|err| invalid_interval(capability, &format!("expected YYYY-MM-DD: {err}")))
+}
+
+fn parse_datetime(capability: &str, value: &str) -> Result<DateTime<Utc>, TapoMcpError> {
+    DateTime::parse_from_rfc3339(value)
+        .map(|date_time| date_time.with_timezone(&Utc))
+        .map_err(|err| {
+            invalid_interval(
+                capability,
+                &format!("expected an RFC 3339 date-time: {err}"),
+            )
+        })
+}
+
+fn invalid_interval(capability: &str, reason: &str) -> TapoMcpError {
+    TapoMcpError::InvalidInterval {
+        capability: capability.to_string(),
+        reason: reason.to_string(),
+    }
+}
+
+fn wrong_energy_device(id: &str, capability: &str) -> TapoMcpError {
+    TapoMcpError::WrongDeviceType {
+        id: id.to_string(),
+        capability: capability.to_string(),
+        expected: "an energy-monitoring plug (P110, P110M, P115) or P304M/P316M child plug"
+            .to_string(),
+    }
 }
 
 async fn get_device_info(checked: CheckedDevice) -> Result<serde_json::Value, TapoMcpError> {

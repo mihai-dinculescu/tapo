@@ -112,6 +112,9 @@ async fn process_device(device: DiscoveryResult) -> DeviceOutcome {
     if matches!(device, DiscoveryResult::CameraPtz { .. }) {
         get_capabilities.push(GetCapability::Snapshot);
     }
+    if matches!(device, DiscoveryResult::PlugEnergyMonitoring { .. }) {
+        get_capabilities.extend([GetCapability::EnergyData, GetCapability::PowerData]);
+    }
 
     tracing::debug!(name, model, ip, "Found device");
     DeviceOutcome::Device {
@@ -149,12 +152,19 @@ async fn fetch_children(
         DiscoveryResult::PowerStripEnergyMonitoring { handler, .. } => {
             handler.get_child_device_list().await.map(|list| {
                 list.into_iter()
-                    .map(|c| ChildDevice {
-                        id: c.device_id,
-                        name: c.nickname,
-                        model: c.model,
-                        set_capabilities: vec![SetCapability::OnOff],
-                        get_capabilities: vec![GetCapability::DeviceInfo],
+                    .map(|c| {
+                        let mut get_capabilities = vec![GetCapability::DeviceInfo];
+                        if matches!(c.model.as_str(), "P304M" | "P316M") {
+                            get_capabilities
+                                .extend([GetCapability::EnergyData, GetCapability::PowerData]);
+                        }
+                        ChildDevice {
+                            id: c.device_id,
+                            name: c.nickname,
+                            model: c.model,
+                            set_capabilities: vec![SetCapability::OnOff],
+                            get_capabilities,
+                        }
                     })
                     .collect()
             })
