@@ -34,6 +34,10 @@ pub enum GetCapability {
     TemperatureHumidityRecords,
     /// Read paginated trigger logs from a hub child sensor (S200, T100, T110, T300).
     TriggerLogs,
+    /// Read historical energy usage from an energy-monitoring plug (P110, P110M, P115) or P304M/P316M child plug.
+    EnergyData,
+    /// Read historical power usage from an energy-monitoring plug (P110, P110M, P115) or P304M/P316M child plug.
+    PowerData,
 }
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
@@ -135,6 +139,69 @@ pub enum GetCapabilityRequest {
         /// chronological order (newest first). Use `0` to get the most recent
         /// `page_size` logs.
         start_id: u64,
+    },
+    /// Read historical energy usage. Dates use YYYY-MM-DD in the device's local timezone.
+    EnergyData {
+        /// Requested aggregation period and date range.
+        interval: EnergyDataIntervalRequest,
+    },
+    /// Read historical power usage. Date-times must be RFC 3339 timestamps; data is returned in UTC.
+    PowerData {
+        /// Requested sampling period and exclusive date-time range.
+        interval: PowerDataIntervalRequest,
+    },
+}
+
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[serde(tag = "type")]
+pub enum EnergyDataIntervalRequest {
+    /// Hourly records; the inclusive date range may span at most 8 days.
+    Hourly {
+        /// Inclusive start date, YYYY-MM-DD.
+        start_date: String,
+        /// Inclusive end date, YYYY-MM-DD.
+        end_date: String,
+    },
+    /// Daily records for a quarter of the given year.
+    Daily {
+        /// Calendar year of the requested quarter.
+        #[schemars(range(min = 1, max = 9999))]
+        year: u16,
+        /// Quarter to read.
+        quarter: EnergyQuarter,
+    },
+    /// Monthly records for the given year.
+    Monthly {
+        /// Calendar year to read.
+        #[schemars(range(min = 1, max = 9999))]
+        year: u16,
+    },
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, JsonSchema)]
+pub enum EnergyQuarter {
+    Q1,
+    Q2,
+    Q3,
+    Q4,
+}
+
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[serde(tag = "type")]
+pub enum PowerDataIntervalRequest {
+    /// 5-minute records. The API returns at most 144 records (12 hours).
+    Every5Minutes {
+        /// Start boundary as an RFC 3339 date-time.
+        start_date_time: String,
+        /// Exclusive boundary end as an RFC 3339 date-time.
+        end_date_time: String,
+    },
+    /// Hourly records. The API returns at most 144 records (6 days).
+    Hourly {
+        /// Start boundary as an RFC 3339 date-time.
+        start_date_time: String,
+        /// Exclusive boundary end as an RFC 3339 date-time.
+        end_date_time: String,
     },
 }
 

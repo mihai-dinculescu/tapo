@@ -16,6 +16,8 @@ Tapo MCP is an HTTP server (Streamable HTTP transport) that exposes TP-Link Tapo
 | `control_device`   | Control a device by applying one or more set capabilities. Runs `check_device` first.          |
 | `take_snapshot`    | Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs `check_device` first.        |
 
+`get_device_state` supports historical `EnergyData` and `PowerData` queries for P110/P110M/P115 plugs and P304M/P316M child plugs. Energy dates use `YYYY-MM-DD` in the device/server local timezone; power dates use RFC 3339 date-times.
+
 ### Resources
 
 | URI              | Description                           |

@@ -48,6 +48,8 @@ You should see:
 | `control_device`   | Control a device                      | `id`, `ip`, `capabilities` |
 | `take_snapshot`    | Capture a JPEG snapshot from a camera | `id`, `ip`                 |
 
+`get_device_state` also accepts `EnergyData` and `PowerData` capabilities for supported energy-monitoring plugs. Use `YYYY-MM-DD` dates for energy intervals (device/server local timezone) and RFC 3339 date-times for power intervals (UTC results). See the examples in the [Tapo skill](../SKILL.md#get_device_state).
+
 ## Step 3: Test a tool call
 
 ```bash

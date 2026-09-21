@@ -70,6 +70,15 @@ npx mcporter call tapo.get_device_state id="<CHILD_ID>" ip="<HUB_IP>" capability
 
 # Last 24h temperature/humidity records (T310, T315 hub children)
 npx mcporter call tapo.get_device_state id="<CHILD_ID>" ip="<HUB_IP>" capability='{"type": "TemperatureHumidityRecords"}'
+
+# Historical energy data (P110, P110M, P115 plugs or P304M/P316M child plugs)
+npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "EnergyData", "interval": {"type": "Hourly", "start_date": "2026-09-01", "end_date": "2026-09-07"}}'
+
+# Daily energy for a quarter, with a valid start date constructed from year and quarter
+npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "EnergyData", "interval": {"type": "Daily", "year": 2026, "quarter": "Q3"}}'
+
+# Historical power data, timestamps are RFC 3339 and end_date_time is exclusive
+npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "PowerData", "interval": {"type": "Every5Minutes", "start_date_time": "2026-09-20T00:00:00Z", "end_date_time": "2026-09-20T06:00:00Z"}}'
 ```
 
 ### control_device

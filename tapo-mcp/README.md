@@ -25,6 +25,8 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 > "Show me the last 24 hours of temperature from the living room temperature and humidity sensor"
 >
 > "List the 5 most recent events on the smart button"
+>
+> "Show me hourly energy usage from the smart plug for the last week"
 
 ## Tools
 
@@ -62,6 +64,10 @@ Devices and child devices expose separate lists of set and get capabilities they
 | `Snapshot`                   | Capture a still JPEG snapshot. Served by the dedicated `take_snapshot` tool (binary, not JSON state) |
 | `TemperatureHumidityRecords` | Read the last 24 hours of temperature and humidity records (T310, T315) at 15 minute intervals       |
 | `TriggerLogs`                | Read paginated trigger logs from a hub child sensor (S200, T100, T110, T300)                         |
+| `EnergyData`                 | Read hourly, daily, or monthly historical energy usage (P110, P110M, P115, P304M/P316M child plugs)  |
+| `PowerData`                  | Read 5-minute or hourly historical power data (P110, P110M, P115, P304M/P316M child plugs)           |
+
+For hourly `EnergyData`, dates use `YYYY-MM-DD` in the device's local timezone; the inclusive range is limited to 8 days. Daily queries take a year and quarter (`Q1`–`Q4`), while monthly queries take a year, so those intervals always start on a valid boundary. `PowerData` dates use RFC 3339 date-times and an exclusive end; the API caps responses at 144 records (12 hours at 5-minute intervals or 6 days hourly). Energy timestamps are interpreted in the device/server local timezone, so configure the server's `TZ` to match the device when needed.
 
 ## Configuration
 
