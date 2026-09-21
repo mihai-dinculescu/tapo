@@ -97,13 +97,13 @@ impl MediaCipher {
                 salt.as_bytes(),
                 AES_KEY_INFO,
                 AES_KEY_LENGTH,
-            ),
+            )?,
             hmac_key: crypto::hkdf_sha256(
                 ikm.as_bytes(),
                 salt.as_bytes(),
                 HMAC_KEY_INFO,
                 HMAC_KEY_LENGTH,
-            ),
+            )?,
         })
     }
 

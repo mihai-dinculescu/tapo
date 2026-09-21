@@ -50,90 +50,28 @@ pub fn aes128_cbc_decrypt_bytes(key: &[u8], iv: &[u8], data: &[u8]) -> anyhow::R
 
 /// HMAC-SHA256 (RFC 2104).
 pub fn hmac_sha256(key: &[u8], data: &[u8]) -> [u8; 32] {
-    const BLOCK_SIZE: usize = 64;
-
-    let mut block = [0u8; BLOCK_SIZE];
-    if key.len() > BLOCK_SIZE {
-        block[..32].copy_from_slice(&sha256(key));
-    } else {
-        block[..key.len()].copy_from_slice(key);
-    }
-
-    let mut inner = Vec::with_capacity(BLOCK_SIZE + data.len());
-    inner.extend(block.iter().map(|byte| byte ^ 0x36));
-    inner.extend_from_slice(data);
-    let inner_hash = sha256(&inner);
-
-    let mut outer = Vec::with_capacity(BLOCK_SIZE + 32);
-    outer.extend(block.iter().map(|byte| byte ^ 0x5c));
-    outer.extend_from_slice(&inner_hash);
-    sha256(&outer)
+    use hmac::{Hmac, KeyInit, Mac};
+    use sha2::Sha256;
+    let mut mac = Hmac::<Sha256>::new_from_slice(key).expect("HMAC takes a key of any size");
+    mac.update(data);
+    mac.finalize().into_bytes().into()
 }
 
 /// HKDF with HMAC-SHA256 (RFC 5869): extract with `salt`, then expand with
-/// `info` to `length` bytes. RFC 5869 caps `length` at 255 * 32 bytes, which
-/// is not checked here.
-pub fn hkdf_sha256(ikm: &[u8], salt: &[u8], info: &[u8], length: usize) -> Vec<u8> {
-    let prk = hmac_sha256(salt, ikm);
-
-    let mut okm = Vec::with_capacity(length);
-    let mut previous: Vec<u8> = Vec::new();
-    let mut counter = 1u8;
-    while okm.len() < length {
-        let mut input = Vec::with_capacity(previous.len() + info.len() + 1);
-        input.extend_from_slice(&previous);
-        input.extend_from_slice(info);
-        input.push(counter);
-        let block = hmac_sha256(&prk, &input);
-        okm.extend_from_slice(&block);
-        previous = block.to_vec();
-        counter = counter.wrapping_add(1);
-    }
-    okm.truncate(length);
-    okm
+/// `info` to `length` bytes, which RFC 5869 caps at 255 * 32.
+pub fn hkdf_sha256(ikm: &[u8], salt: &[u8], info: &[u8], length: usize) -> anyhow::Result<Vec<u8>> {
+    use hkdf::Hkdf;
+    use sha2::Sha256;
+    let mut okm = vec![0u8; length];
+    Hkdf::<Sha256>::new(Some(salt), ikm)
+        .expand(info, &mut okm)
+        .map_err(|e| anyhow::anyhow!("HKDF-SHA256 cannot expand to {length} bytes: {e}"))?;
+    Ok(okm)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    /// RFC 4231, test case 2.
-    #[test]
-    fn test_hmac_sha256_rfc4231() {
-        let mac = hmac_sha256(b"Jefe", b"what do ya want for nothing?");
-        assert_eq!(
-            base16ct::lower::encode_string(&mac),
-            "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843"
-        );
-    }
-
-    /// RFC 4231, test case 6: a key longer than the block size is hashed.
-    #[test]
-    fn test_hmac_sha256_rfc4231_long_key() {
-        let mac = hmac_sha256(
-            &[0xaa; 131],
-            b"Test Using Larger Than Block-Size Key - Hash Key First",
-        );
-        assert_eq!(
-            base16ct::lower::encode_string(&mac),
-            "60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54"
-        );
-    }
-
-    /// RFC 5869, test case 1.
-    #[test]
-    fn test_hkdf_sha256_rfc5869() {
-        let okm = hkdf_sha256(
-            &[0x0b; 22],
-            &base16ct::lower::decode_vec("000102030405060708090a0b0c").unwrap(),
-            &base16ct::lower::decode_vec("f0f1f2f3f4f5f6f7f8f9").unwrap(),
-            42,
-        );
-        assert_eq!(
-            base16ct::lower::encode_string(&okm),
-            "3cb25f25faacd57a90434f64d0362f2a2d2d0a90cf1a5a4c5db02d56ecc4c5bf34007208d5b887185865"
-        );
-    }
 
     #[test]
     fn test_aes128_cbc_decrypt_bytes_round_trip() {
