@@ -67,4 +67,13 @@ mod tests {
 
         assert!(parsed.devices().is_empty());
     }
+
+    #[test]
+    fn test_missing_paired_general_device_list_parses_as_empty() {
+        let json = r#"{"general_camera_manage": {"current_bound": 0, "max_bound": 4}}"#;
+
+        let parsed: GeneralDeviceListHubResultRaw = serde_json::from_str(json).unwrap();
+
+        assert!(parsed.devices().is_empty());
+    }
 }
