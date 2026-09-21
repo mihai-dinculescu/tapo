@@ -2,10 +2,10 @@
 //!
 //! The request URI names what to stream
 //! (`/stream?deviceId=…&type=download&playerId=…&media_type=0`) and the Digest
-//! `uri` covers path and query, the way the app's `HttpMediaClient` asks. The
-//! app also has a pre-connected session it keeps idle (`X-Preconn: 1`, bare
-//! `/stream`), but an H200 accepted a recording request as JSON on such a
-//! session and never answered it, so it is of no use here.
+//! `uri` covers path and query, the way the app asks. The app also has a
+//! pre-connected session it keeps idle (`X-Preconn: 1`, bare `/stream`), but
+//! an H200 accepted a recording request as JSON on such a session and never
+//! answered it, so it is of no use here.
 //!
 //! The password is pre-hashed before it enters the Digest computation: the
 //! hub advertises `encrypt_type`, where `"3"` selects an upper-case hex SHA-256
@@ -87,7 +87,7 @@ impl SessionRequest {
         } = self;
         // The app names a hub's camera by `camera_mac` here and falls back to
         // `deviceId` for other sub-devices; an H200 accepts either.
-        // `media_type` is `DownloadMediaType.VIDEO`.
+        // `media_type` 0 selects video.
         format!("{PATH}?deviceId={device_id}&type=download&playerId={player_id}&media_type=0")
     }
 }
@@ -933,8 +933,8 @@ mod tests {
     }
 
     /// The request names the camera in the URI and identifies the player
-    /// there too, so it carries neither `X-Preconn` nor `X-Client-UUID`, like
-    /// the app's `HttpMediaClient`.
+    /// there too, so, like the app's request, it carries neither `X-Preconn`
+    /// nor `X-Client-UUID`.
     #[test]
     fn test_build_request() {
         let session_request = SessionRequest {

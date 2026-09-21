@@ -219,8 +219,7 @@ impl CameraHubHandler {
                 .recordings();
 
             // The H200 sends no `to_be_continued` flag, so like the Tapo app
-            // (`PlaybackHubRepository`) in that case, a full page means that
-            // another may follow.
+            // in that case, a full page means that another may follow.
             let page_is_full = recordings.len() as u64 >= PAGE_SIZE;
             results.extend(recordings);
 
