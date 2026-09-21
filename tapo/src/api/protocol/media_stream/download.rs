@@ -75,11 +75,11 @@ pub(crate) struct DownloadRequest {
     pub end_time: u64,
 }
 
-/// Downloads the recording within `duration`, writing the decrypted body of
+/// Downloads the recording within `time_limit`, writing the decrypted body of
 /// every media part to `sink` in the order received. For an MPEG-TS stream
 /// the concatenation is a playable `.ts` file.
 ///
-/// The hub ends the clip itself, so `duration` is only a backstop.
+/// The hub ends the clip itself, so `time_limit` is only a backstop.
 ///
 /// Fails when the hub sent no media at all, or at the first encrypted media
 /// part that no cipher can be set up for. Everything else the hub reported
@@ -88,7 +88,7 @@ pub(crate) struct DownloadRequest {
 pub(crate) async fn download<W: AsyncWrite + Unpin>(
     connection: MediaStreamConnection,
     request: DownloadRequest,
-    duration: Duration,
+    time_limit: Duration,
     sink: &mut W,
 ) -> Result<RecordingDownloadResult, Error> {
     let MediaStreamConnection {
@@ -106,8 +106,8 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
         .unwrap_or(DEFAULT_HEARTBEAT_INTERVAL);
 
     let mut state = State {
-        session_id: session.session_id.clone(),
-        key_exchange: session.key_exchange.clone(),
+        session_id: session.session_id,
+        key_exchange: session.key_exchange,
         seq: 0,
         secret: password_hash,
         cipher: None,
@@ -137,7 +137,7 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
     )
     .await?;
 
-    let deadline = Instant::now() + duration;
+    let deadline = Instant::now() + time_limit;
     let mut next_heartbeat = Instant::now() + heartbeat_interval;
 
     'session: loop {
@@ -210,7 +210,7 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
 
     sink.flush().await.context("flush the media sink")?;
 
-    state.finish(duration)
+    state.finish(time_limit)
 }
 
 struct State {
@@ -259,9 +259,18 @@ impl State {
         );
 
         if self.part_count == 0 {
-            return Err(
-                anyhow!("the hub sent no media for the recording within {time_limit:?}").into(),
-            );
+            return Err(match self.outcome {
+                RecordingDownloadOutcome::Finished => {
+                    anyhow!("the hub reported the end of the recording without sending any media")
+                }
+                RecordingDownloadOutcome::ClosedByHub => {
+                    anyhow!("the hub closed the stream without sending any media")
+                }
+                RecordingDownloadOutcome::DurationElapsed => {
+                    anyhow!("the hub sent no media for the recording within {time_limit:?}")
+                }
+            }
+            .into());
         }
 
         Ok(RecordingDownloadResult {
