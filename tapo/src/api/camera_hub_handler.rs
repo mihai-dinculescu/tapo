@@ -242,6 +242,11 @@ impl CameraHubHandler {
     /// hub ends the clip itself, with twice the clip's length on top of the
     /// client's timeout as a backstop.
     ///
+    /// The media is written exactly as the hub sent it, with nothing added or
+    /// re-muxed, so a player may log a one-off `TS discontinuity` warning for
+    /// the stream's PAT and PMT when it opens the file. It is harmless: both
+    /// tables are repeated throughout the stream and the clip plays in full.
+    ///
     /// # Arguments
     ///
     /// * `child_device_id` - the `device_id` of a camera returned by [`CameraHubHandler::get_general_device_list`].

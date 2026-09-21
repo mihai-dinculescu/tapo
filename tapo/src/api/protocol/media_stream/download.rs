@@ -13,8 +13,9 @@
 //!    `X-Data-Window-Size: 50`. The hub responds with an `error_code` and,
 //!    on success, a `session_id` that later client parts echo as
 //!    `X-Session-Id`.
-//! 2. Media parts. Every 25th `X-Data-Sequence` is acknowledged with a
-//!    `stream_sequence` notification carrying `X-Data-Received`.
+//! 2. Media parts. `X-Data-Sequence` counts them from 1 without gaps, and
+//!    every 25th is acknowledged with a `stream_sequence` notification
+//!    carrying `X-Data-Received`.
 //! 3. Heartbeat notifications every `X-Hb` seconds (default 15), and a
 //!    `do` `stop` request when the client is done.
 //!
@@ -58,6 +59,9 @@ const DEFAULT_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(15);
 const READ_CHUNK_SIZE: usize = 64 * 1024;
 /// Warn about at most this many HMAC mismatches; the count keeps growing.
 const HMAC_WARNINGS: u64 = 3;
+/// Warn about at most this many gaps in `X-Data-Sequence`; the counts keep
+/// growing.
+const SEQUENCE_GAP_WARNINGS: u64 = 3;
 
 /// Selects the recording to download.
 #[derive(Debug, Clone)]
@@ -113,6 +117,9 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
         duration_s: None,
         is_mpeg_ts: None,
         hmac_mismatch_count: 0,
+        last_sequence: None,
+        sequence_gap_count: 0,
+        missing_part_count: 0,
         first_media_part_seen: false,
         outcome: RecordingDownloadOutcome::DurationElapsed,
     };
@@ -225,6 +232,13 @@ struct State {
     duration_s: Option<f64>,
     is_mpeg_ts: Option<bool>,
     hmac_mismatch_count: u64,
+    /// The last `X-Data-Sequence` seen, which the hub numbers from 1 without
+    /// gaps.
+    last_sequence: Option<u64>,
+    sequence_gap_count: u64,
+    /// How many parts those gaps skipped: media the hub numbered but never
+    /// sent, which leaves a hole in the written stream.
+    missing_part_count: u64,
     first_media_part_seen: bool,
     outcome: RecordingDownloadOutcome,
 }
@@ -234,13 +248,14 @@ impl State {
     /// explains why the download is not usable.
     fn finish(self, time_limit: Duration) -> Result<RecordingDownloadResult, Error> {
         debug!(
-            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, decrypted {}, HMAC mismatches {}",
+            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, decrypted {}, HMAC mismatches {}, missing parts {}",
             self.part_count,
             self.byte_count,
             self.duration_s,
             self.outcome,
             self.cipher.is_some(),
             self.hmac_mismatch_count,
+            self.missing_part_count,
         );
 
         if self.part_count == 0 {
@@ -332,6 +347,9 @@ impl State {
         let sequence = part
             .header("x-data-sequence")
             .and_then(|value| value.trim().parse::<u64>().ok());
+        if let Some(sequence) = sequence {
+            self.record_sequence(sequence);
+        }
 
         let body = if part
             .header("x-if-encrypt")
@@ -379,7 +397,27 @@ impl State {
         Ok(true)
     }
 
-    /// Records the sequence and acknowledges every `ACK_EVERY`th one.
+    /// Notes the part's `X-Data-Sequence` and warns when the hub skipped
+    /// one, which the sink has no other way of showing: the written stream
+    /// stays a valid concatenation of the parts that did arrive, so a gap
+    /// only shows up as footage missing from the middle of the clip.
+    fn record_sequence(&mut self, sequence: u64) {
+        if let Some(previous) = self.last_sequence
+            && sequence > previous + 1
+        {
+            self.missing_part_count += sequence - previous - 1;
+            self.sequence_gap_count += 1;
+            if self.sequence_gap_count <= SEQUENCE_GAP_WARNINGS {
+                warn!(
+                    "The media stream sequence jumped from {previous} to {sequence}, so the recording is missing footage"
+                );
+            }
+        }
+
+        self.last_sequence = Some(sequence);
+    }
+
+    /// Acknowledges every `ACK_EVERY`th sequence.
     async fn acknowledge(
         &mut self,
         writer: &mut OwnedWriteHalf,
@@ -755,9 +793,8 @@ mod tests {
         assert_eq!(notification.status.as_deref(), Some("finished"));
     }
 
-    #[test]
-    fn test_session_headers_prepend_session_id() {
-        let mut state = State {
+    fn state() -> State {
+        State {
             session_id: None,
             key_exchange: None,
             seq: 0,
@@ -769,9 +806,17 @@ mod tests {
             duration_s: None,
             is_mpeg_ts: None,
             hmac_mismatch_count: 0,
+            last_sequence: None,
+            sequence_gap_count: 0,
+            missing_part_count: 0,
             first_media_part_seen: false,
             outcome: RecordingDownloadOutcome::DurationElapsed,
-        };
+        }
+    }
+
+    #[test]
+    fn test_session_headers_prepend_session_id() {
+        let mut state = state();
 
         assert_eq!(
             state.session_headers(&[CONTENT_TYPE_JSON]),
@@ -785,5 +830,31 @@ mod tests {
             state.session_headers(&[CONTENT_TYPE_JSON]),
             vec![("X-Session-Id", "42"), CONTENT_TYPE_JSON]
         );
+    }
+
+    #[test]
+    fn test_record_sequence_counts_the_parts_the_hub_skipped() {
+        let mut state = state();
+
+        for sequence in 1..=3 {
+            state.record_sequence(sequence);
+        }
+        assert_eq!(state.sequence_gap_count, 0);
+        assert_eq!(state.missing_part_count, 0);
+
+        // 4, 5 and 6 never arrived.
+        state.record_sequence(7);
+        assert_eq!(state.sequence_gap_count, 1);
+        assert_eq!(state.missing_part_count, 3);
+
+        // A repeated sequence is not a gap.
+        state.record_sequence(7);
+        state.record_sequence(8);
+        assert_eq!(state.sequence_gap_count, 1);
+        assert_eq!(state.missing_part_count, 3);
+
+        state.record_sequence(10);
+        assert_eq!(state.sequence_gap_count, 2);
+        assert_eq!(state.missing_part_count, 4);
     }
 }
