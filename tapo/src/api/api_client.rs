@@ -18,12 +18,6 @@ use crate::requests::{
     ScheduleRuleRaw, SegmentEffect, SmartCamControlChildParams, SmartCamDoParams,
     SmartCamGetChildDeviceListParams, SmartCamGetParams, TapoParams, TapoRequest,
 };
-#[cfg(feature = "debug")]
-use crate::responses::{
-    ChildDeviceComponentList, ChildDeviceComponentListResult, Component, ComponentListResult,
-    SupportedAlarmTypeListResult,
-};
-
 use crate::responses::{
     AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
     DecodableResultExt, EnergyDataResult, EnergyDataResultRaw, EnergyUsageResult, PowerDataResult,
@@ -33,9 +27,15 @@ use crate::responses::{
 };
 use crate::utils::unix_timestamp_seconds;
 
-use super::discovery::DeviceDiscovery;
 #[cfg(feature = "debug")]
-use super::discovery::DeviceDiscoveryRaw;
+use crate::requests::SmartCamGetAppComponentListParams;
+#[cfg(feature = "debug")]
+use crate::responses::{
+    AppComponentListResultRaw, ChildDeviceComponentList, ChildDeviceComponentListResult, Component,
+    ComponentListResult, SupportedAlarmTypeListResult,
+};
+
+use super::discovery::DeviceDiscovery;
 use super::protocol::media_stream;
 use super::protocol::media_stream::download::DownloadRequest;
 use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
@@ -44,6 +44,9 @@ use super::{
     PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
     RgbLightStripHandler, RgbicLightStripHandler,
 };
+
+#[cfg(feature = "debug")]
+use super::discovery::DeviceDiscoveryRaw;
 
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 /// Used when the caller does not set one via [`ApiClient::with_timeout`].
@@ -1146,15 +1149,29 @@ impl ApiClient {
     #[cfg(feature = "debug")]
     pub(crate) async fn get_component_list(&self) -> Result<Vec<Component>, Error> {
         debug!("Get Component list...");
-        let request = TapoRequest::ComponentNegotiation(TapoParams::new(EmptyParams));
 
-        let result: ComponentListResult = self
-            .protocol()?
-            .execute_request(request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+        match self.protocol()?.device_family() {
+            DeviceFamily::SmartCam => {
+                let request = TapoRequest::SmartCamGetAppComponentList(TapoParams::new(
+                    SmartCamGetAppComponentListParams::new(),
+                ));
 
-        Ok(result.component_list)
+                self.execute_smart_cam_multiple_request::<AppComponentListResultRaw>(request)
+                    .await
+                    .map(|result| result.components())
+            }
+            DeviceFamily::Smart => {
+                let request = TapoRequest::ComponentNegotiation(TapoParams::new(EmptyParams));
+
+                let result: ComponentListResult = self
+                    .protocol()?
+                    .execute_request(request)
+                    .await?
+                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+                Ok(result.component_list)
+            }
+        }
     }
 
     pub(crate) async fn get_device_info<R>(&self) -> Result<R, Error>

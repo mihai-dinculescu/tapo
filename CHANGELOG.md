@@ -21,6 +21,7 @@ file. This change log follows the conventions of
 
 ### Fixed
 
+- `CameraPtzHandler`: corrected `get_component_list` (behind `debug` feature) to send the camera's `getAppComponentList` request instead of the `component_nego` request that other devices use.
 - `get_child_device_component_list`: responses that omit the `child_component_list` field (e.g. H200 firmware 1.6.5 with no sensors attached) now deserialize as an empty list instead of failing with a missing field error.
 - `get_child_device_list`: responses that omit the `child_device_list` field (e.g. H200 firmware 1.6.5 with no sensors attached) now deserialize as an empty list instead of failing with a missing field error.
 - AES SSL protocol: an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an `Unauthorized` error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
@@ -42,6 +43,7 @@ file. This change log follows the conventions of
 
 ### Fixed
 
+- `CameraPtzHandler`: corrected `get_component_list` to send the camera's `getAppComponentList` request instead of the `component_nego` request that other devices use.
 - `get_child_device_component_list`: responses that omit the `child_component_list` field (e.g. H200 firmware 1.6.5 with no sensors attached) now deserialize as an empty list instead of failing with a missing field error.
 - `get_child_device_list`: responses that omit the `child_device_list` field (e.g. H200 firmware 1.6.5 with no sensors attached) now deserialize as an empty list instead of failing with a missing field error.
 - AES SSL protocol: an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an authentication error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.

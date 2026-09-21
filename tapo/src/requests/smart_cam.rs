@@ -7,6 +7,9 @@ mod get_timezone;
 mod search_date_with_video;
 mod search_video_with_utc;
 
+#[cfg(feature = "debug")]
+mod get_app_component_list;
+
 pub(crate) use control_child::*;
 pub(crate) use do_params::*;
 pub(crate) use get_child_device_list::*;
@@ -15,3 +18,6 @@ pub(crate) use get_params::*;
 pub(crate) use get_timezone::*;
 pub(crate) use search_date_with_video::*;
 pub(crate) use search_video_with_utc::*;
+
+#[cfg(feature = "debug")]
+pub(crate) use get_app_component_list::*;

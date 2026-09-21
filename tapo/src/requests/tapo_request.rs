@@ -12,6 +12,9 @@ use super::{
     SmartCamSearchDateWithVideoParams, SmartCamSearchVideoWithUtcParams,
 };
 
+#[cfg(feature = "debug")]
+use super::SmartCamGetAppComponentListParams;
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "method")]
@@ -59,6 +62,9 @@ pub(crate) enum TapoRequest {
     #[cfg(feature = "debug")]
     #[serde(rename = "getChildDeviceComponentList")]
     SmartCamGetChildDeviceComponentList(TapoParams<SmartCamGetChildDeviceListParams>),
+    #[cfg(feature = "debug")]
+    #[serde(rename = "getAppComponentList")]
+    SmartCamGetAppComponentList(TapoParams<SmartCamGetAppComponentListParams>),
     #[serde(rename = "getGeneralDeviceList")]
     SmartCamGetGeneralDeviceList(TapoParams<SmartCamGetGeneralDeviceListParams>),
     #[serde(rename = "getTimezone")]
