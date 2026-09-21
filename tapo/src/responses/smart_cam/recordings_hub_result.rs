@@ -120,16 +120,10 @@ struct RecordingListRaw {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RecordingHubResult {
     /// Start of the recording.
-    #[serde(
-        rename = "startTime",
-        deserialize_with = "chrono::serde::ts_seconds::deserialize"
-    )]
+    #[serde(rename = "startTime", with = "chrono::serde::ts_seconds")]
     pub start_time: DateTime<Utc>,
     /// End of the recording.
-    #[serde(
-        rename = "endTime",
-        deserialize_with = "chrono::serde::ts_seconds::deserialize"
-    )]
+    #[serde(rename = "endTime", with = "chrono::serde::ts_seconds")]
     pub end_time: DateTime<Utc>,
     /// The type of event that produced the recording.
     pub video_type: RecordingType,
