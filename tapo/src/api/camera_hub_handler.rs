@@ -5,7 +5,7 @@ use tokio::io::AsyncWrite;
 use tokio::sync::RwLock;
 
 use crate::api::ApiClient;
-use crate::error::{Error, TapoResponseError};
+use crate::error::Error;
 use crate::requests::{
     SmartCamGetGeneralDeviceListParams, SmartCamGetTimezoneParams,
     SmartCamSearchDateWithVideoParams, SmartCamSearchVideoWithUtcParams, TapoParams, TapoRequest,
@@ -59,9 +59,8 @@ impl CameraHubHandler {
             .read()
             .await
             .execute_smart_cam_multiple_request::<GeneralDeviceListHubResultRaw>(request)
-            .await?
+            .await
             .map(|result| result.devices())
-            .ok_or(Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     /// Returns *general device list* as [`serde_json::Value`].
@@ -77,8 +76,7 @@ impl CameraHubHandler {
             .read()
             .await
             .execute_smart_cam_multiple_request::<serde_json::Value>(request)
-            .await?
-            .ok_or(Error::Tapo(TapoResponseError::EmptyResult))
+            .await
     }
 
     /// Returns the hub's *timezone* as [`TimezoneHubResult`].
@@ -95,9 +93,8 @@ impl CameraHubHandler {
             .read()
             .await
             .execute_smart_cam_multiple_request::<TimezoneHubResultRaw>(request)
-            .await?
+            .await
             .map(|result| result.timezone())
-            .ok_or(Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     /// Returns the days that have recordings stored on the hub for the given
@@ -152,7 +149,6 @@ impl CameraHubHandler {
             .await
             .execute_smart_cam_multiple_request::<RecordingDateListHubResultRaw>(request)
             .await?
-            .ok_or(Error::Tapo(TapoResponseError::EmptyResult))?
             .dates(timezone)?;
 
         Ok(dates)
@@ -215,7 +211,6 @@ impl CameraHubHandler {
             let recordings = client
                 .execute_smart_cam_multiple_request::<RecordingListHubResultRaw>(request)
                 .await?
-                .ok_or(Error::Tapo(TapoResponseError::EmptyResult))?
                 .recordings();
 
             // The H200 sends no `to_be_continued` flag, so like the Tapo app

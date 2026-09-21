@@ -1165,11 +1165,8 @@ impl ApiClient {
 
         match self.protocol()?.device_family() {
             DeviceFamily::SmartCam => {
-                let request = TapoRequest::SmartCamGet(SmartCamGetParams::device_info());
-
-                self.execute_smart_cam_request::<R>(request)
-                    .await?
-                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+                self.execute_smart_cam_get(SmartCamGetParams::device_info())
+                    .await
             }
             DeviceFamily::Smart => {
                 let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
@@ -1297,8 +1294,7 @@ impl ApiClient {
 
                 self.execute_smart_cam_multiple_request::<R>(request)
                     .await?
-                    .map(|result| result.decode())
-                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+                    .decode()
             }
             DeviceFamily::Smart => {
                 let request = TapoRequest::GetChildDeviceList(TapoParams::new(
@@ -1326,9 +1322,7 @@ impl ApiClient {
                     SmartCamGetChildDeviceListParams::new(0),
                 ));
 
-                self.execute_smart_cam_multiple_request(request)
-                    .await?
-                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+                self.execute_smart_cam_multiple_request(request).await?
             }
             DeviceFamily::Smart => {
                 let request =
@@ -1366,8 +1360,7 @@ impl ApiClient {
 
                 let result = self
                     .execute_smart_cam_multiple_request::<SmartCamControlChildResult<R>>(request)
-                    .await?
-                    .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+                    .await?;
 
                 validate_response(result.err_code)?;
 
@@ -1407,22 +1400,26 @@ impl ApiClient {
         }
     }
 
-    /// Executes a single SmartCam request.
-    pub(crate) async fn execute_smart_cam_request<R>(
+    pub(crate) async fn execute_smart_cam_get<R>(
         &self,
-        request: TapoRequest,
-    ) -> Result<Option<R>, Error>
+        params: SmartCamGetParams,
+    ) -> Result<R, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
-        self.protocol()?.execute_request(request).await
+        let request = TapoRequest::SmartCamGet(params);
+
+        self.protocol()?
+            .execute_request(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
-    /// Executes a single SmartCam `do` request, discarding its result.
     pub(crate) async fn execute_smart_cam_do(&self, params: SmartCamDoParams) -> Result<(), Error> {
         let request = TapoRequest::SmartCamDo(params);
 
-        self.execute_smart_cam_request::<serde_json::Value>(request)
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
             .await?;
 
         Ok(())
@@ -1433,7 +1430,7 @@ impl ApiClient {
     pub(crate) async fn execute_smart_cam_multiple_request<R>(
         &self,
         request: TapoRequest,
-    ) -> Result<Option<R>, Error>
+    ) -> Result<R, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
@@ -1456,7 +1453,9 @@ impl ApiClient {
 
         validate_response(response.error_code)?;
 
-        Ok(response.result)
+        response
+            .result
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     pub(crate) async fn set_timer(
