@@ -28,8 +28,8 @@
 //! Shapes and defaults follow the Tapo app's clip save: its download
 //! request, its stop request, and its read loop. Verified against an H200
 //! on 2026-09-20: a 9 s clip arrived as 224 `video/mp2t` parts (2.7 MB)
-//! holding 8.428 s of media, and the hub ended it about 2 s after the
-//! request.
+//! with a clock reading of 8.428 s, and the hub ended it about 2 s after
+//! the request.
 
 use std::time::{Duration, Instant};
 
@@ -45,7 +45,7 @@ use crate::responses::{RecordingDownloadOutcome, RecordingDownloadResult};
 use super::MediaStreamConnection;
 use super::cipher::{KeyExchange, MediaCipher};
 use super::mpeg_ts::StreamClock;
-use super::multipart::{Frame, Part, PartParser, encode_client_part};
+use super::multipart::{Part, PartParser, encode_client_part};
 
 const CONTENT_TYPE_JSON: (&str, &str) = ("Content-Type", "application/json");
 /// Requested by the Tapo app on the download request.
@@ -143,21 +143,12 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
     let mut next_heartbeat = Instant::now() + heartbeat_interval;
 
     'session: loop {
-        while let Some(frame) = parser.next_frame()? {
-            match frame {
-                Frame::End => {
-                    debug!("The hub sent the closing delimiter");
-                    state.outcome = RecordingDownloadOutcome::ClosedByHub;
-                    break 'session;
-                }
-                Frame::Part(part) => {
-                    if !state
-                        .handle_part(&mut writer, sink, part, request_seq)
-                        .await?
-                    {
-                        break 'session;
-                    }
-                }
+        while let Some(part) = parser.next_part()? {
+            if !state
+                .handle_part(&mut writer, sink, part, request_seq)
+                .await?
+            {
+                break 'session;
             }
         }
 

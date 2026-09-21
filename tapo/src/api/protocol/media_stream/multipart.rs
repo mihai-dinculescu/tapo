@@ -56,13 +56,6 @@ impl Part {
     }
 }
 
-/// Something the hub sent: either a part or the closing delimiter.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(super) enum Frame {
-    Part(Part),
-    End,
-}
-
 /// Encodes one client part. `Content-Length` is added after the given
 /// headers.
 pub(super) fn encode_client_part(headers: &[(&str, &str)], body: &[u8]) -> Vec<u8> {
@@ -81,7 +74,7 @@ pub(super) fn encode_client_part(headers: &[(&str, &str)], body: &[u8]) -> Vec<u
 /// Incremental parser of the parts the hub sends.
 ///
 /// Bytes are appended to [`PartParser::buffer_mut`] as they arrive and
-/// complete frames are taken out with [`PartParser::next_frame`], so reads
+/// complete parts are taken out with [`PartParser::next_part`], so reads
 /// can be interrupted (e.g. to send a heartbeat) without losing a partially
 /// received part.
 #[derive(Debug)]
@@ -100,8 +93,8 @@ impl PartParser {
         &mut self.buffer
     }
 
-    /// Returns the next complete frame, or `None` when more bytes are needed.
-    pub fn next_frame(&mut self) -> anyhow::Result<Option<Frame>> {
+    /// Returns the next complete part, or `None` when more bytes are needed.
+    pub fn next_part(&mut self) -> anyhow::Result<Option<Part>> {
         let mut cursor = 0;
 
         // Skip empty lines and delimiter lines until the first header line.
@@ -116,13 +109,6 @@ impl PartParser {
             }
 
             if contains(line, DEVICE_BOUNDARY.as_bytes()) {
-                // The closing delimiter has two extra dashes after the boundary.
-                if line.ends_with(b"--")
-                    && contains(&line[..line.len() - 2], DEVICE_BOUNDARY.as_bytes())
-                {
-                    self.buffer.drain(..next);
-                    return Ok(Some(Frame::End));
-                }
                 cursor = next;
                 continue;
             }
@@ -177,10 +163,10 @@ impl PartParser {
         };
         self.buffer.drain(..body_end + trailer);
 
-        Ok(Some(Frame::Part(Part { headers, body })))
+        Ok(Some(Part { headers, body }))
     }
 
-    fn need_more(&self) -> anyhow::Result<Option<Frame>> {
+    fn need_more(&self) -> anyhow::Result<Option<Part>> {
         if self.buffer.len() > MAX_BUFFER_SIZE {
             bail!(
                 "no complete media stream part in the first {} buffered bytes",
@@ -257,14 +243,14 @@ mod tests {
 
         let mut parser = PartParser::new(bytes);
 
-        let Some(Frame::Part(json)) = parser.next_frame().unwrap() else {
+        let Some(json) = parser.next_part().unwrap() else {
             panic!("expected a JSON part");
         };
         assert!(json.is_json());
         assert_eq!(json.header("x-session-id"), Some("7"));
         assert_eq!(json.body, b"{\"type\":\"response\"}");
 
-        let Some(Frame::Part(media)) = parser.next_frame().unwrap() else {
+        let Some(media) = parser.next_part().unwrap() else {
             panic!("expected a media part");
         };
         assert_eq!(media.content_type(), Some("video/mp2t"));
@@ -272,7 +258,7 @@ mod tests {
         assert_eq!(media.body.len(), 188);
         assert!(!media.is_json());
 
-        assert_eq!(parser.next_frame().unwrap(), None);
+        assert_eq!(parser.next_part().unwrap(), None);
         assert!(parser.buffer_mut().is_empty());
     }
 
@@ -283,18 +269,18 @@ mod tests {
 
         for (index, byte) in bytes.iter().enumerate() {
             parser.buffer_mut().push(*byte);
-            let frame = parser.next_frame().unwrap();
+            let part = parser.next_part().unwrap();
             // The body's last byte is followed by the trailing CRLF, which
             // is not needed to complete the part.
             if index + 1 < bytes.len() - 2 {
-                assert_eq!(frame, None, "frame completed early at byte {index}");
+                assert_eq!(part, None, "part completed early at byte {index}");
             } else if index + 1 == bytes.len() - 2 {
-                let Some(Frame::Part(part)) = frame else {
+                let Some(part) = part else {
                     panic!("expected the part at byte {index}");
                 };
                 assert_eq!(part.body, b"0123456789");
             } else {
-                assert_eq!(frame, None);
+                assert_eq!(part, None);
             }
         }
     }
@@ -306,7 +292,7 @@ mod tests {
                 .to_vec(),
         );
 
-        let Some(Frame::Part(part)) = parser.next_frame().unwrap() else {
+        let Some(part) = parser.next_part().unwrap() else {
             panic!("expected a part");
         };
         assert_eq!(
@@ -321,16 +307,10 @@ mod tests {
         let mut parser =
             PartParser::new(b"--device-stream-boundary--\nContent-Length: 3\n\nabc\n".to_vec());
 
-        let Some(Frame::Part(part)) = parser.next_frame().unwrap() else {
+        let Some(part) = parser.next_part().unwrap() else {
             panic!("expected a part");
         };
         assert_eq!(part.body, b"abc");
-    }
-
-    #[test]
-    fn test_parse_closing_delimiter() {
-        let mut parser = PartParser::new(b"\r\n--device-stream-boundary----\r\n".to_vec());
-        assert_eq!(parser.next_frame().unwrap(), Some(Frame::End));
     }
 
     #[test]
@@ -338,7 +318,7 @@ mod tests {
         let mut parser = PartParser::new(
             b"--device-stream-boundary--\r\nContent-Type: video/mp2t\r\n\r\nabc\r\n".to_vec(),
         );
-        assert!(parser.next_frame().is_err());
+        assert!(parser.next_part().is_err());
     }
 
     #[test]
@@ -350,6 +330,6 @@ mod tests {
             )
             .into_bytes(),
         );
-        assert!(parser.next_frame().is_err());
+        assert!(parser.next_part().is_err());
     }
 }
