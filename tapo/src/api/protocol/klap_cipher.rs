@@ -55,8 +55,15 @@ impl KlapCipher {
     pub fn decrypt(&self, seq: i32, cipher_bytes: Vec<u8>) -> anyhow::Result<String> {
         let decryptor = Decryptor::<Aes128>::new_from_slices(&self.key, &self.iv_seq(seq))?;
 
+        let ciphertext = cipher_bytes.get(32..).ok_or_else(|| {
+            anyhow::anyhow!(
+                "Response of {} bytes is shorter than its 32-byte signature",
+                cipher_bytes.len()
+            )
+        })?;
+
         let decrypted_bytes = decryptor
-            .decrypt_padded_vec::<block_padding::Pkcs7>(&cipher_bytes[32..])
+            .decrypt_padded_vec::<block_padding::Pkcs7>(ciphertext)
             .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?;
         let decrypted = std::str::from_utf8(&decrypted_bytes)?.to_string();
 
@@ -92,5 +99,17 @@ impl KlapCipher {
         let mut iv_seq = self.iv.clone();
         iv_seq.extend_from_slice(&seq.to_be_bytes());
         iv_seq
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decrypt_rejects_a_response_shorter_than_the_signature() {
+        let cipher = KlapCipher::new(vec![0; 16], vec![0; 16], vec![0; 32]).unwrap();
+
+        assert!(cipher.decrypt(1, vec![0; 31]).is_err());
     }
 }

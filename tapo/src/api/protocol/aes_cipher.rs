@@ -38,7 +38,7 @@ pub(crate) struct AesCipher {
 
 impl AesCipher {
     pub fn new(key: &str, key_pair: &AesKeyPair) -> anyhow::Result<Self> {
-        debug!("Will decode handshake key {:?}...", &key[..5]);
+        debug!("Will decode handshake key...");
 
         let key_bytes = general_purpose::STANDARD.decode(key)?;
         let buf = key_pair.rsa.decrypt(Pkcs1v15Encrypt, &key_bytes)?;

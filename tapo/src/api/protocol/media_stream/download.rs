@@ -325,7 +325,7 @@ impl State {
     /// only shows up as footage missing from the middle of the clip.
     fn record_sequence(&mut self, sequence: u64) {
         if let Some(previous) = self.last_sequence
-            && sequence > previous + 1
+            && sequence.saturating_sub(previous) > 1
         {
             warn!(
                 "The media stream sequence jumped from {previous} to {sequence}, so the recording is missing footage"
@@ -696,5 +696,17 @@ mod tests {
             state.session_headers(&[CONTENT_TYPE_JSON]),
             vec![("X-Session-Id", "42"), CONTENT_TYPE_JSON]
         );
+    }
+
+    /// The sequence comes from the hub, so its largest value must not
+    /// overflow the gap check.
+    #[test]
+    fn test_record_sequence_after_the_largest_sequence() {
+        let mut state = state();
+
+        state.record_sequence(u64::MAX);
+        state.record_sequence(1);
+
+        assert_eq!(state.last_sequence, Some(1));
     }
 }
