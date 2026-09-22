@@ -22,6 +22,8 @@ file. This change log follows the conventions of
 ### Fixed
 
 - AES SSL protocol (cameras): an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an `Unauthorized` error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
+- `ApiClient`: logging in to a device no longer writes the password, a value derived from it, or the session token to the debug and trace logs.
+- `ApiClient`: the `Debug` output now obscures the password and leaves out the session state, so formatting a client or a device handler with `{:?}` no longer reveals the password.
 
 ## [Python Unreleased][Unreleased]
 
@@ -39,6 +41,7 @@ file. This change log follows the conventions of
 ### Fixed
 
 - AES SSL protocol (cameras): an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an authentication error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
+- `ApiClient`: logging in to a device no longer writes the password, a value derived from it, or the session token to the debug and trace logs.
 
 ## [MCP Unreleased][Unreleased]
 
