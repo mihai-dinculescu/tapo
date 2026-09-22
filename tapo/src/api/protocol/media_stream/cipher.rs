@@ -74,7 +74,6 @@ impl KeyExchange {
 }
 
 /// The keys derived for one media stream session.
-#[derive(Debug, Clone)]
 pub(super) struct MediaCipher {
     aes_key: Vec<u8>,
     hmac_key: Vec<u8>,

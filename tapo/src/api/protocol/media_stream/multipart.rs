@@ -25,7 +25,7 @@ const MAX_BODY_SIZE: usize = 8 * 1024 * 1024;
 const MAX_BUFFER_SIZE: usize = MAX_BODY_SIZE + 64 * 1024;
 
 /// A part received from the hub.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub(super) struct Part {
     /// Header names are lower-cased.
     pub headers: Vec<(String, String)>,

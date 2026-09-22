@@ -107,7 +107,6 @@ async fn handshake(
     }
 
     let challenge = DigestChallenge::parse(&challenge_response)?;
-    debug!("Media stream Digest challenge: {challenge:?}");
 
     // `encrypt_type` 3, the only one the challenge accepts.
     let password_hash = crypto::sha256_hex(password.as_bytes());
@@ -321,7 +320,6 @@ impl HttpResponse {
     }
 }
 
-#[derive(Debug)]
 struct DigestChallenge {
     realm: String,
     nonce: String,

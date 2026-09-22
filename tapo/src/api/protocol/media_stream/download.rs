@@ -60,7 +60,7 @@ const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(15);
 const READ_CHUNK_SIZE: usize = 64 * 1024;
 
 /// Selects the recording to download.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct DownloadRequest {
     /// Sent as `dev_id`.
     pub device_id: String,
@@ -77,16 +77,18 @@ pub(crate) struct DownloadRequest {
 ///
 /// The hub ends the clip itself, so `time_limit` is only a backstop.
 ///
-/// Fails when the hub rejects the request, sends no media at all, or sends
-/// something that cannot be read: a control message or part that does not
-/// parse, or an encrypted media part that cannot be decrypted or does not
-/// carry a matching `X-Data-Hmac`. Also fails when the hub closes the stream
-/// or the time limit runs out before the hub reports the end of the
-/// recording, leaving only part of it in `sink`, and when reading from the
-/// hub, writing to it, or writing to `sink` fails.
-///
 /// Gaps in `X-Data-Sequence` and control messages that need no action are
 /// only logged.
+///
+/// # Errors
+///
+/// Returns an error if the hub rejects the request, sends no media at all, or
+/// sends something that cannot be read: a control message or part that does
+/// not parse, or a media part that does not carry a matching `X-Data-Hmac` or
+/// cannot be decrypted. Also returns an error if the hub closes the stream or
+/// the time limit runs out before the hub reports the end of the recording,
+/// leaving only part of it in `sink`, and if reading from the hub, writing to
+/// it, or writing to `sink` fails.
 pub(crate) async fn download<W: AsyncWrite + Unpin>(
     connection: MediaStreamConnection,
     request: DownloadRequest,
@@ -127,23 +129,24 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
     let deadline = Instant::now() + time_limit;
     let mut next_heartbeat = Instant::now() + HEARTBEAT_INTERVAL;
 
-    let ended = 'session: loop {
+    'session: loop {
         while let Some(part) = parser.next_part()? {
             if !state
                 .handle_part(&mut writer, sink, part, request_seq)
                 .await?
             {
-                break 'session Ok(());
+                break 'session;
             }
         }
 
         let now = Instant::now();
         if now >= deadline {
             debug!("Download time limit elapsed");
-            break Err(anyhow!(
+            return Err(anyhow!(
                 "the recording did not finish downloading within {time_limit:?}, after {} bytes",
                 state.byte_count
-            ));
+            )
+            .into());
         }
         if now >= next_heartbeat {
             debug!("Sending a media stream heartbeat...");
@@ -164,15 +167,17 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
             ReadOutcome::TimedOut => {}
             ReadOutcome::Eof => {
                 debug!("The hub closed the media stream");
-                break Err(anyhow!(
+                return Err(anyhow!(
                     "the hub closed the media stream after {} bytes, before the end of the recording",
                     state.byte_count
-                ));
+                )
+                .into());
             }
         }
-    };
+    }
 
-    // Best effort: the session is being torn down either way.
+    // Best effort: the whole recording has arrived, so the session is over
+    // either way.
     let stop_seq = state.next_seq();
     if let Err(err) = send(
         &mut writer,
@@ -192,7 +197,6 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
     }
 
     sink.flush().await.context("flush the media sink")?;
-    ended?;
 
     state.finish()
 }
@@ -360,8 +364,11 @@ impl State {
     }
 
     /// Decrypts a media part after checking it against its `X-Data-Hmac`.
-    /// Fails when the part has no HMAC or nonce, or when the HMAC does not
-    /// match.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the part has no HMAC or nonce, if the HMAC does not
+    /// match, or if the body cannot be decrypted.
     fn decrypt(&self, part: &Part) -> Result<Vec<u8>, Error> {
         let Some(hmac) = part.header("x-data-hmac") else {
             return Err(anyhow!("media stream part without an X-Data-Hmac").into());
