@@ -89,12 +89,24 @@ pub trait ApiClientExt: std::fmt::Debug + Send + Sync {
 ///     Ok(())
 /// }
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ApiClient {
     tapo_username: String,
     tapo_password: String,
     timeout: Option<Duration>,
     protocol: Option<TapoProtocol>,
+}
+
+/// Obscures the password and leaves out the protocol, which holds the
+/// session keys and tokens.
+impl fmt::Debug for ApiClient {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ApiClient")
+            .field("tapo_username", &self.tapo_username)
+            .field("tapo_password", &"OBSCURED")
+            .field("timeout", &self.timeout)
+            .finish_non_exhaustive()
+    }
 }
 
 /// Tapo API Client constructor.
@@ -1712,5 +1724,20 @@ impl ApiClientExt for ApiClient {
             .await?;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_debug_obscures_the_password() {
+        let client = ApiClient::new("user@example.com", "hunter2");
+
+        assert_eq!(
+            format!("{client:?}"),
+            r#"ApiClient { tapo_username: "user@example.com", tapo_password: "OBSCURED", timeout: None, .. }"#
+        );
     }
 }

@@ -205,17 +205,11 @@ impl AesSslProtocol {
             }));
         }
 
-        // Read the raw body first so the payload is visible in trace logs even
-        // when deserialization fails (e.g. an unexpected handshake1 shape).
-        let response_text = response.text().await?;
-        trace!("Handshake1 response (raw): {response_text}");
-
         // The nonce and device_confirm fields accompany only the expected
         // -40413 error code, so the error code must be checked before
         // deserializing the payload.
-        let response_body =
-            serde_json::from_str::<TapoResponse<serde_json::Value>>(&response_text)?;
-        debug!("Handshake1 response: {response_body:?}");
+        let response_body = response.json::<TapoResponse<serde_json::Value>>().await?;
+        debug!("Handshake1 error code: {}", response_body.error_code);
 
         // -40413 (INVALID_NONCE) is the expected response indicating the device
         // is ready for a nonce-based handshake.
@@ -302,7 +296,7 @@ impl AesSslProtocol {
         }
 
         let response_body = response.json::<TapoResponse<Handshake2Result>>().await?;
-        debug!("Handshake2 response: {response_body:?}");
+        debug!("Handshake2 error code: {}", response_body.error_code);
 
         validate_response(response_body.error_code)?;
 
@@ -310,7 +304,7 @@ impl AesSslProtocol {
             .result
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
-        debug!("Handshake2 OK");
+        debug!("Handshake2 OK (start sequence {})", result.start_sequence);
 
         Ok(result)
     }
@@ -343,24 +337,23 @@ fn extract_error_code(response_body: &serde_json::Value) -> i64 {
         .unwrap_or(0)
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 struct Handshake1Response {
     data: Handshake1ResponseData,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 struct Handshake1ResponseData {
     nonce: String,
     device_confirm: String,
 }
 
-#[derive(Debug)]
 struct Handshake1Result {
     server_nonce: String,
     password_hash: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 struct Handshake2Result {
     #[serde(rename = "stok")]
     token: String,
