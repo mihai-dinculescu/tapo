@@ -25,6 +25,7 @@ file. This change log follows the conventions of
 - `ApiClient`: logging in to a device no longer writes the password, a value derived from it, or the session token to the debug and trace logs.
 - `Error::Http`: the message and `Debug` output now show `REDACTED` in place of the session token in the request URL, so a failed request to a camera or AES-protocol device no longer reveals it.
 - `ApiClient`: the `Debug` output now obscures the password and leaves out the session state, so formatting a client or a device handler with `{:?}` no longer reveals the password.
+- `ApiClient` and device handlers: a device reply too short to be valid now returns an error instead of panicking.
 
 ## [Python Unreleased][Unreleased]
 
@@ -44,6 +45,7 @@ file. This change log follows the conventions of
 - AES SSL protocol (cameras): an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an authentication error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
 - `ApiClient`: logging in to a device no longer writes the password, a value derived from it, or the session token to the debug and trace logs.
 - HTTP errors: the exception message now shows `REDACTED` in place of the session token in the request URL, so a failed request to a camera or AES-protocol device no longer reveals it.
+- `ApiClient` and device handlers: a device reply too short to be valid now raises an error instead of panicking.
 
 ## [MCP Unreleased][Unreleased]
 
