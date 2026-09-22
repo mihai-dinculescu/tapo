@@ -18,11 +18,13 @@
 
 use std::collections::HashMap;
 
-use anyhow::{Context, anyhow};
+use anyhow::{Context, anyhow, bail};
 use base64::{Engine as _, engine::general_purpose};
 
 use crate::api::protocol::crypto;
 
+const CIPHER: &str = "AES_128_CBC";
+const ALGORITHM: &str = "HKDF";
 const AES_KEY_INFO: &[u8] = b"stream_hkdf_aes_key";
 const HMAC_KEY_INFO: &[u8] = b"stream_hkdf_hmac_key";
 const AES_KEY_LENGTH: usize = 16;
@@ -31,15 +33,14 @@ const HMAC_KEY_LENGTH: usize = 16;
 /// The parsed `Key-Exchange` header.
 #[derive(Debug)]
 pub(super) struct KeyExchange {
-    pub cipher: Option<String>,
-    pub algorithm: Option<String>,
     pub nonce: String,
-    pub salt: Option<String>,
+    pub salt: String,
 }
 
 impl KeyExchange {
-    /// Parses the space-separated `name="value"` list the hub sends. Like the
-    /// app, only `nonce` is required.
+    /// Parses the space-separated `name="value"` list the hub sends. Only the
+    /// scheme an H200 sends is accepted: `cipher="AES_128_CBC"` and
+    /// `algorithm="HKDF"`.
     pub fn parse(value: &str) -> anyhow::Result<Self> {
         let mut params: HashMap<String, String> = HashMap::new();
         for token in value.split_whitespace() {
@@ -51,27 +52,25 @@ impl KeyExchange {
             }
         }
 
+        match params.remove("cipher") {
+            Some(cipher) if cipher.eq_ignore_ascii_case(CIPHER) => {}
+            Some(cipher) => bail!("unsupported Key-Exchange cipher `{cipher}`"),
+            None => bail!("Key-Exchange is missing the cipher"),
+        }
+        match params.remove("algorithm") {
+            Some(algorithm) if algorithm.eq_ignore_ascii_case(ALGORITHM) => {}
+            Some(algorithm) => bail!("unsupported Key-Exchange algorithm `{algorithm}`"),
+            None => bail!("Key-Exchange is missing the algorithm"),
+        }
+
         let nonce = params
             .remove("nonce")
             .ok_or_else(|| anyhow!("Key-Exchange is missing the nonce"))?;
+        let salt = params
+            .remove("salt")
+            .ok_or_else(|| anyhow!("Key-Exchange is missing the salt"))?;
 
-        Ok(Self {
-            cipher: params.remove("cipher"),
-            algorithm: params.remove("algorithm"),
-            nonce,
-            salt: params.remove("salt"),
-        })
-    }
-
-    /// Whether this is the HKDF / AES-128-CBC scheme implemented here.
-    pub fn is_supported(&self) -> bool {
-        self.algorithm
-            .as_deref()
-            .is_some_and(|algorithm| algorithm.eq_ignore_ascii_case("HKDF"))
-            && self
-                .cipher
-                .as_deref()
-                .is_none_or(|cipher| cipher.eq_ignore_ascii_case("AES_128_CBC"))
+        Ok(Self { nonce, salt })
     }
 }
 
@@ -85,10 +84,7 @@ pub(super) struct MediaCipher {
 impl MediaCipher {
     /// Derives the keys from the key exchange and the secret.
     pub fn derive(key_exchange: &KeyExchange, secret: &str) -> anyhow::Result<Self> {
-        let salt = key_exchange
-            .salt
-            .as_deref()
-            .ok_or_else(|| anyhow!("Key-Exchange is missing the salt"))?;
+        let salt = &key_exchange.salt;
         let ikm = format!("{}:{secret}", key_exchange.nonce);
 
         Ok(Self {
@@ -132,27 +128,25 @@ mod tests {
     fn test_key_exchange_parse() {
         let key_exchange = KeyExchange::parse(H200_KEY_EXCHANGE).unwrap();
 
-        assert_eq!(key_exchange.cipher.as_deref(), Some("AES_128_CBC"));
-        assert_eq!(key_exchange.algorithm.as_deref(), Some("HKDF"));
         assert_eq!(key_exchange.nonce, "4514f88f1148a6735bdc6a7d7b93b0b0");
-        assert_eq!(
-            key_exchange.salt.as_deref(),
-            Some("f9192a9ee24bc7db8df141bf2bd56af4")
-        );
-        assert!(key_exchange.is_supported());
+        assert_eq!(key_exchange.salt, "f9192a9ee24bc7db8df141bf2bd56af4");
     }
 
+    /// Only the `cipher` and `algorithm` an H200 sends are accepted, and both
+    /// `nonce` and `salt` are required.
     #[test]
-    fn test_key_exchange_parse_requires_nonce_and_flags_other_schemes() {
-        assert!(KeyExchange::parse("cipher=\"AES_128_CBC\" salt=\"x\"").is_err());
-
-        let legacy = KeyExchange::parse("username=\"admin\" nonce=\"N\"").unwrap();
-        assert!(!legacy.is_supported());
-
-        let other_cipher =
-            KeyExchange::parse("cipher=\"AES_256_GCM\" algorithm=\"HKDF\" nonce=\"N\" salt=\"S\"")
-                .unwrap();
-        assert!(!other_cipher.is_supported());
+    fn test_key_exchange_parse_rejects_other_schemes() {
+        for value in [
+            "algorithm=\"HKDF\" nonce=\"N\" salt=\"S\"",
+            "cipher=\"AES_256_GCM\" algorithm=\"HKDF\" nonce=\"N\" salt=\"S\"",
+            "cipher=\"AES_128_CBC\" nonce=\"N\" salt=\"S\"",
+            "cipher=\"AES_128_CBC\" algorithm=\"PBKDF2\" nonce=\"N\" salt=\"S\"",
+            "cipher=\"AES_128_CBC\" algorithm=\"HKDF\" salt=\"S\"",
+            "cipher=\"AES_128_CBC\" algorithm=\"HKDF\" nonce=\"N\"",
+            "username=\"admin\" nonce=\"N\"",
+        ] {
+            assert!(KeyExchange::parse(value).is_err(), "{value}");
+        }
     }
 
     #[test]

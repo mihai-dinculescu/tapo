@@ -1092,14 +1092,11 @@ impl ApiClient {
         let start_time = unix_timestamp_seconds("start_time", start_time)?;
         let end_time = unix_timestamp_seconds("end_time", end_time)?;
 
-        let session_request = media_stream::SessionRequest {
-            device_id: child_device_id.clone(),
-            player_id: player_id.to_string(),
-        };
         let connection = media_stream::authenticate(
             ip_address,
             &self.tapo_password,
-            &session_request,
+            &child_device_id,
+            player_id,
             self.timeout(),
         )
         .await?;

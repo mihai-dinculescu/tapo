@@ -24,6 +24,8 @@ use crate::api::protocol::aes_ssl_cipher::generate_nonce;
 use crate::api::protocol::crypto;
 use crate::error::{Error, TapoResponseError};
 
+use super::cipher::{KeyExchange, MediaCipher};
+
 const PORT: u16 = 8800;
 const METHOD: &str = "POST";
 const PATH: &str = "/stream";
@@ -37,93 +39,60 @@ const NONCE_COUNT: &str = "00000001";
 /// Upper bound on the size of an HTTP response head, so that a misbehaving
 /// peer cannot grow the read buffer without bound.
 const MAX_HEAD_SIZE: usize = 64 * 1024;
-/// Upper bound on a response body read ahead of the multipart stream, so that
-/// a misbehaving peer cannot force a large allocation.
-const MAX_DRAIN_SIZE: usize = 64 * 1024;
-
-/// What the hub reported when it accepted the session. Every field is
-/// optional: the Tapo app defaults a missing session id to an empty string
-/// and a missing heartbeat interval to 15 seconds, and an H200 sends neither.
-#[derive(Debug)]
-pub(crate) struct MediaStreamSession {
-    /// The session identifier issued by the hub (`X-Session-Id`), echoed on
-    /// later client parts.
-    pub session_id: Option<String>,
-    /// The heartbeat interval the hub asks for, in seconds (`X-Hb`).
-    pub heartbeat_interval_s: Option<u64>,
-    /// The `Key-Exchange` header, e.g. `cipher="AES_128_CBC" username="admin"
-    /// padding="PKCS7_16" algorithm="HKDF" nonce="…" salt="…"`. Its `nonce`
-    /// and `salt` are the key material for the media cipher.
-    pub key_exchange: Option<String>,
-}
 
 /// An authenticated media stream connection.
 pub(crate) struct MediaStreamConnection {
     /// The socket, positioned somewhere inside the multipart body that
     /// follows the `200 OK` head.
-    pub stream: TcpStream,
+    pub(super) stream: TcpStream,
     /// Body bytes that were read together with the `200 OK` head. They are
     /// the start of the multipart body and must be parsed before anything
     /// else read from `stream`.
-    pub buffered: Vec<u8>,
-    pub session: MediaStreamSession,
-    /// The password as pre-hashed for the Digest round. The Tapo app uses the
-    /// same value as the secret of the media cipher.
-    pub password_hash: String,
-}
-
-/// What a media stream session is opened for: the download of a recording
-/// stored on the hub. The selection travels in the URI query, with the
-/// player identified by `playerId` rather than a header.
-#[derive(Debug, Clone)]
-pub(crate) struct SessionRequest {
-    pub device_id: String,
-    pub player_id: String,
-}
-
-impl SessionRequest {
-    /// The request URI: path plus query. The Digest `uri` covers all of it.
-    fn uri(&self) -> String {
-        let Self {
-            device_id,
-            player_id,
-        } = self;
-        // The app names a hub's camera by `camera_mac` here and falls back to
-        // `deviceId` for other sub-devices; an H200 accepts either.
-        // `media_type` 0 selects video.
-        format!("{PATH}?deviceId={device_id}&type=download&playerId={player_id}&media_type=0")
-    }
+    pub(super) buffered: Vec<u8>,
+    /// The media cipher, derived from the `Key-Exchange` header of the
+    /// `200 OK`.
+    pub(super) cipher: MediaCipher,
 }
 
 /// Connects to the hub's media stream port and completes the Digest
-/// authentication handshake for the given [`SessionRequest`].
+/// authentication handshake for downloading from the camera `device_id`,
+/// with `player_id` identifying the player.
 ///
 /// `timeout` bounds the whole handshake: connecting, both request rounds,
 /// and the reconnect in between.
 pub(crate) async fn authenticate(
     ip_address: &str,
     password: &str,
-    request: &SessionRequest,
+    device_id: &str,
+    player_id: &str,
     timeout: Duration,
 ) -> Result<MediaStreamConnection, Error> {
-    match tokio::time::timeout(timeout, handshake(ip_address, password, request)).await {
+    let uri = stream_uri(device_id, player_id);
+    match tokio::time::timeout(timeout, handshake(ip_address, password, &uri)).await {
         Ok(result) => result,
         Err(_) => Err(anyhow!("media stream handshake timed out after {timeout:?}").into()),
     }
 }
 
+/// The request URI: path plus query. The Digest `uri` covers all of it.
+fn stream_uri(device_id: &str, player_id: &str) -> String {
+    // The app names a hub's camera by `camera_mac` here and falls back to
+    // `deviceId` for other sub-devices; an H200 accepts either.
+    // `media_type` 0 selects video.
+    format!("{PATH}?deviceId={device_id}&type=download&playerId={player_id}&media_type=0")
+}
+
 async fn handshake(
     ip_address: &str,
     password: &str,
-    session_request: &SessionRequest,
+    uri: &str,
 ) -> Result<MediaStreamConnection, Error> {
-    let uri = session_request.uri();
     let mut stream = connect(ip_address).await?;
 
     // Round 1: an unauthenticated request, which the hub answers with a
     // Digest challenge.
     debug!("Requesting the media stream Digest challenge for {uri}...");
-    let request = build_request(ip_address, &uri, None);
+    let request = build_request(ip_address, uri, None);
     let challenge_response = exchange(&mut stream, &request)
         .await
         .context("request the media stream Digest challenge")?;
@@ -143,14 +112,14 @@ async fn handshake(
     // `encrypt_type` 3, the only one the challenge accepts.
     let password_hash = crypto::sha256_hex(password.as_bytes());
     let cnonce = generate_nonce();
-    let authorization = authorization_header(&challenge, USERNAME, &password_hash, &uri, &cnonce);
+    let authorization = authorization_header(&challenge, USERNAME, &password_hash, uri, &cnonce);
 
     // Round 2: the same request, now carrying the Digest credentials. The hub
     // closes the connection after the challenge (`Connection: close`), so the
     // request goes out on a fresh one.
     debug!("Sending the media stream Digest credentials...");
     stream = connect(ip_address).await?;
-    let request = build_request(ip_address, &uri, Some(&authorization));
+    let request = build_request(ip_address, uri, Some(&authorization));
     let response = exchange(&mut stream, &request)
         .await
         .context("send the media stream Digest credentials")?;
@@ -158,26 +127,15 @@ async fn handshake(
 
     match response.status {
         200 => {
-            let session = MediaStreamSession::from(&response);
-            debug!("Media stream session established: {session:?}");
-
-            // Skip the declared body; the bytes after it are the start of
-            // the multipart stream.
-            let mut body = response.body;
-            let skip = response.content_length;
-            if skip > 0 {
-                debug!(
-                    "Media stream response body: {}",
-                    String::from_utf8_lossy(&body[..skip])
-                );
-            }
-            let buffered = body.split_off(skip);
+            // The Tapo app uses the pre-hashed password as the secret of the
+            // media cipher too.
+            let cipher = media_cipher(&response, &password_hash)?;
+            debug!("Media stream session established");
 
             Ok(MediaStreamConnection {
                 stream,
-                buffered,
-                session,
-                password_hash,
+                buffered: response.body,
+                cipher,
             })
         }
         401 => Err(Error::Tapo(TapoResponseError::Unauthorized {
@@ -220,8 +178,21 @@ fn build_request(ip_address: &str, uri: &str, authorization: Option<&str>) -> St
     request
 }
 
-/// Sends one HTTP request and reads the response head and its declared
-/// `Content-Length` body.
+/// Derives the media cipher from the `Key-Exchange` header of the `200 OK`,
+/// e.g. `cipher="AES_128_CBC" username="admin" padding="PKCS7_16"
+/// algorithm="HKDF" nonce="…" salt="…"`.
+fn media_cipher(response: &HttpResponse, secret: &str) -> anyhow::Result<MediaCipher> {
+    let key_exchange = response
+        .header("key-exchange")
+        .ok_or_else(|| anyhow!("the hub accepted the media stream but sent no Key-Exchange"))?;
+    let key_exchange =
+        KeyExchange::parse(key_exchange).context("invalid media stream Key-Exchange")?;
+
+    MediaCipher::derive(&key_exchange, secret).context("derive the media stream keys")
+}
+
+/// Sends one HTTP request and reads the response head. Bytes read past the
+/// head are kept as the start of the body.
 async fn exchange(stream: &mut TcpStream, request: &str) -> anyhow::Result<HttpResponse> {
     trace!("Media stream request (raw):\n{request}");
 
@@ -259,42 +230,7 @@ async fn exchange(stream: &mut TcpStream, request: &str) -> anyhow::Result<HttpR
         String::from_utf8_lossy(&buffer)
     );
 
-    let mut response = HttpResponse::parse(&buffer[..head_end], body)?;
-
-    // The challenge carries a short text body, and so may the `200` (an H200
-    // sends `Content-Length: 16` before the multipart stream). Only the
-    // declared length is drained; whatever follows is left for the caller.
-    drain_body(stream, &mut response).await?;
-
-    Ok(response)
-}
-
-async fn drain_body(stream: &mut TcpStream, response: &mut HttpResponse) -> anyhow::Result<()> {
-    let content_length = response.content_length;
-    if content_length > MAX_DRAIN_SIZE {
-        bail!(
-            "media stream response body of {content_length} bytes exceeds {MAX_DRAIN_SIZE} bytes"
-        );
-    }
-
-    let remaining = content_length.saturating_sub(response.body.len());
-    if remaining > 0 {
-        let mut rest = vec![0u8; remaining];
-        stream
-            .read_exact(&mut rest)
-            .await
-            .context("read media stream response body")?;
-        response.body.extend_from_slice(&rest);
-    }
-
-    if content_length > 0 {
-        trace!(
-            "Media stream response body (raw):\n{}",
-            String::from_utf8_lossy(&response.body[..content_length])
-        );
-    }
-
-    Ok(())
+    HttpResponse::parse(&buffer[..head_end], body)
 }
 
 fn find_head_end(buffer: &[u8]) -> Option<usize> {
@@ -307,11 +243,8 @@ struct HttpResponse {
     status: u16,
     /// Header names are lower-cased.
     headers: Vec<(String, String)>,
-    /// Bytes received after the head, i.e. the start of the body. May run
-    /// past `content_length` into whatever follows the body.
+    /// Bytes received after the head, i.e. the start of the body.
     body: Vec<u8>,
-    /// The declared `Content-Length`, or 0.
-    content_length: usize,
 }
 
 impl HttpResponse {
@@ -342,18 +275,11 @@ impl HttpResponse {
             })
             .collect();
 
-        let content_length = headers
-            .iter()
-            .find(|(name, _)| name == "content-length")
-            .and_then(|(_, value)| value.trim().parse::<usize>().ok())
-            .unwrap_or(0);
-
         Ok(Self {
             version,
             status,
             headers,
             body,
-            content_length,
         })
     }
 
@@ -378,29 +304,11 @@ impl HttpResponse {
     }
 }
 
-impl From<&HttpResponse> for MediaStreamSession {
-    fn from(response: &HttpResponse) -> Self {
-        let session_id = response.header("x-session-id").map(str::to_string);
-
-        let heartbeat_interval_s = response
-            .header("x-hb")
-            .and_then(|value| value.trim().parse().ok());
-
-        let key_exchange = response.header("key-exchange").map(str::to_string);
-
-        Self {
-            session_id,
-            heartbeat_interval_s,
-            key_exchange,
-        }
-    }
-}
-
 #[derive(Debug)]
 struct DigestChallenge {
     realm: String,
     nonce: String,
-    opaque: Option<String>,
+    opaque: String,
 }
 
 impl DigestChallenge {
@@ -417,6 +325,9 @@ impl DigestChallenge {
         let nonce = params
             .remove("nonce")
             .ok_or_else(|| anyhow!("Digest challenge is missing the nonce"))?;
+        let opaque = params
+            .remove("opaque")
+            .ok_or_else(|| anyhow!("Digest challenge is missing the opaque"))?;
 
         match params.remove("algorithm") {
             Some(algorithm) if algorithm.eq_ignore_ascii_case(ALGORITHM) => {}
@@ -437,7 +348,7 @@ impl DigestChallenge {
         Ok(Self {
             realm,
             nonce,
-            opaque: params.remove("opaque"),
+            opaque,
         })
     }
 }
@@ -533,7 +444,7 @@ fn authorization_header(
 ) -> String {
     let response = digest_response(challenge, username, password, METHOD, uri, cnonce);
 
-    let mut parts = vec![
+    let parts = [
         format!("username=\"{username}\""),
         format!("realm=\"{}\"", challenge.realm),
         format!("uri=\"{uri}\""),
@@ -543,10 +454,8 @@ fn authorization_header(
         format!("cnonce=\"{cnonce}\""),
         format!("qop={QOP}"),
         format!("response=\"{response}\""),
+        format!("opaque=\"{}\"", challenge.opaque),
     ];
-    if let Some(opaque) = &challenge.opaque {
-        parts.push(format!("opaque=\"{opaque}\""));
-    }
 
     format!("Digest {}", parts.join(", "))
 }
@@ -560,7 +469,7 @@ mod tests {
         DigestChallenge {
             realm: "http-auth@example.org".to_string(),
             nonce: "7ypf/xlj9XXwfDPEoM4URrv/xwf94BcCAzFZH4GiTo0v".to_string(),
-            opaque: Some("FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS".to_string()),
+            opaque: "FQhe/qaU925kfnzjCev0ciny7QMkPqMAFRtzCUYo5tdS".to_string(),
         }
     }
 
@@ -608,20 +517,6 @@ mod tests {
     }
 
     #[test]
-    fn test_authorization_header_omits_absent_opaque() {
-        let mut challenge = rfc7616_challenge();
-        challenge.opaque = None;
-
-        let header = authorization_header(&challenge, "admin", "HASH", "/stream?a=1", "CNONCE");
-
-        // The digest covers the query too, like the app's URL-derived `uri`.
-        let expected_response =
-            digest_response(&challenge, "admin", "HASH", "POST", "/stream?a=1", "CNONCE");
-        assert!(header.ends_with(&format!(", response=\"{expected_response}\"")));
-        assert!(!header.contains("opaque="));
-    }
-
-    #[test]
     fn test_parse_digest_params() {
         let params = parse_digest_params(
             "Digest realm=\"TP-Link IP-Camera\", nonce=\"abc,def\", qop=\"auth,auth-int\", \
@@ -642,22 +537,6 @@ mod tests {
         assert!(parse_digest_params("Basic realm=\"hub\"").is_err());
     }
 
-    #[test]
-    fn test_digest_challenge_parse_without_opaque() {
-        let response = HttpResponse::parse(
-            b"HTTP/1.1 401 Unauthorized\r\n\
-              WWW-Authenticate: Digest realm=\"hub\", nonce=\"N\", qop=\"auth\", algorithm=SHA-256, encrypt_type=\"3\"",
-            Vec::new(),
-        )
-        .unwrap();
-
-        let challenge = DigestChallenge::parse(&response).unwrap();
-
-        assert_eq!(challenge.realm, "hub");
-        assert_eq!(challenge.nonce, "N");
-        assert_eq!(challenge.opaque, None);
-    }
-
     /// The challenge an H200 (firmware 1.6.5) actually sends.
     #[test]
     fn test_digest_challenge_parse_h200() {
@@ -673,29 +552,26 @@ mod tests {
         .unwrap();
 
         assert_eq!(response.status, 401);
-        assert_eq!(response.content_length, 14);
 
         let challenge = DigestChallenge::parse(&response).unwrap();
 
         assert_eq!(challenge.realm, "TP-Link IP-Camera");
         assert_eq!(challenge.nonce, "fe4aeebd2a29d6f6b5fb962b41bbff90");
-        assert_eq!(
-            challenge.opaque.as_deref(),
-            Some("e34536e09a6eb618a5e12649897e7440")
-        );
+        assert_eq!(challenge.opaque, "e34536e09a6eb618a5e12649897e7440");
     }
 
     /// Only the `algorithm`, `qop` and `encrypt_type` an H200 sends are
-    /// accepted.
+    /// accepted, and `opaque` is required.
     #[test]
     fn test_digest_challenge_rejects_other_parameters() {
         for params in [
-            "qop=\"auth\", encrypt_type=\"3\"",
-            "qop=\"auth\", algorithm=MD5, encrypt_type=\"3\"",
-            "algorithm=SHA-256, encrypt_type=\"3\"",
-            "qop=\"auth-int\", algorithm=SHA-256, encrypt_type=\"3\"",
-            "qop=\"auth\", algorithm=SHA-256",
-            "qop=\"auth\", algorithm=SHA-256, encrypt_type=\"1\"",
+            "qop=\"auth\", encrypt_type=\"3\", opaque=\"O\"",
+            "qop=\"auth\", algorithm=MD5, encrypt_type=\"3\", opaque=\"O\"",
+            "algorithm=SHA-256, encrypt_type=\"3\", opaque=\"O\"",
+            "qop=\"auth-int\", algorithm=SHA-256, encrypt_type=\"3\", opaque=\"O\"",
+            "qop=\"auth\", algorithm=SHA-256, opaque=\"O\"",
+            "qop=\"auth\", algorithm=SHA-256, encrypt_type=\"1\", opaque=\"O\"",
+            "qop=\"auth\", algorithm=SHA-256, encrypt_type=\"3\"",
         ] {
             let head = format!(
                 "HTTP/1.1 401 Unauthorized\r\n\
@@ -710,21 +586,16 @@ mod tests {
     #[test]
     fn test_http_response_parse() {
         let response = HttpResponse::parse(
-            b"HTTP/1.1 200 OK\r\nX-Session-Id: 42\r\nx-hb: 10\r\nKey-Exchange: KEY\r\nConnection: close",
+            b"HTTP/1.1 200 OK\r\nKey-Exchange: KEY\r\nConnection: close",
             b"body".to_vec(),
         )
         .unwrap();
 
         assert_eq!(response.version, "HTTP/1.1");
         assert_eq!(response.status, 200);
-        assert_eq!(response.header("x-session-id"), Some("42"));
-        assert_eq!(response.header("x-hb"), Some("10"));
+        assert_eq!(response.header("key-exchange"), Some("KEY"));
+        assert_eq!(response.header("connection"), Some("close"));
         assert_eq!(response.body, b"body");
-
-        let session = MediaStreamSession::from(&response);
-        assert_eq!(session.session_id.as_deref(), Some("42"));
-        assert_eq!(session.heartbeat_interval_s, Some(10));
-        assert_eq!(session.key_exchange.as_deref(), Some("KEY"));
     }
 
     #[test]
@@ -733,10 +604,10 @@ mod tests {
         assert!(HttpResponse::parse(b"", Vec::new()).is_err());
     }
 
-    /// The `200` an H200 (firmware 1.6.5) actually sends: no session id, no
-    /// heartbeat interval, and a structured `Key-Exchange` value.
+    /// The `200` an H200 (firmware 1.6.5) actually sends, with the
+    /// `Key-Exchange` the media cipher is derived from.
     #[test]
-    fn test_media_stream_session_from_h200_response() {
+    fn test_media_cipher_from_h200_response() {
         let response = HttpResponse::parse(
             b"HTTP/1.0 200 OK\r\n\
               Server: streamd\r\n\
@@ -750,16 +621,15 @@ mod tests {
         )
         .unwrap();
 
-        let session = MediaStreamSession::from(&response);
+        assert!(media_cipher(&response, "HASH").is_ok());
+    }
 
-        assert_eq!(session.session_id, None);
-        assert_eq!(session.heartbeat_interval_s, None);
-        assert_eq!(
-            session.key_exchange.as_deref(),
-            Some(
-                "cipher=\"AES_128_CBC\" username=\"admin\" padding=\"PKCS7_16\" algorithm=\"HKDF\" nonce=\"4514f88f1148a6735bdc6a7d7b93b0b0\" salt=\"f9192a9ee24bc7db8df141bf2bd56af4\""
-            )
-        );
+    #[test]
+    fn test_media_cipher_requires_key_exchange() {
+        let response =
+            HttpResponse::parse(b"HTTP/1.0 200 OK\r\nConnection: close", Vec::new()).unwrap();
+
+        assert!(media_cipher(&response, "HASH").is_err());
     }
 
     #[test]
@@ -773,11 +643,10 @@ mod tests {
     /// nor `X-Client-UUID`.
     #[test]
     fn test_build_request() {
-        let session_request = SessionRequest {
-            device_id: "8021C49D25C63A54F99462569B4759D3238B6891".to_string(),
-            player_id: "6d198157-565a-4adb-aaa5-85b81bc5c918".to_string(),
-        };
-        let uri = session_request.uri();
+        let uri = stream_uri(
+            "8021C49D25C63A54F99462569B4759D3238B6891",
+            "6d198157-565a-4adb-aaa5-85b81bc5c918",
+        );
         assert_eq!(
             uri,
             "/stream?deviceId=8021C49D25C63A54F99462569B4759D3238B6891&type=download\

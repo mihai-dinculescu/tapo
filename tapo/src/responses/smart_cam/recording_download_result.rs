@@ -24,7 +24,7 @@ pub enum RecordingDownloadOutcome {
     /// The hub reported the end of the footage, which is the usual outcome:
     /// it ends a download itself at the end of the recording.
     Finished,
-    /// The hub closed the session or the connection early.
+    /// The hub closed the connection early.
     ClosedByHub,
     /// The time limit elapsed first, so the download is incomplete.
     DurationElapsed,

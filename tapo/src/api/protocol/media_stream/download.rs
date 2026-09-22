@@ -16,8 +16,8 @@
 //! 2. Media parts. `X-Data-Sequence` counts them from 1 without gaps, and
 //!    every 25th is acknowledged with a `stream_sequence` notification
 //!    carrying `X-Data-Received`.
-//! 3. Heartbeat notifications every `X-Hb` seconds (default 15), and a
-//!    `do` `stop` request when the client is done.
+//! 3. Heartbeat notifications every 15 seconds, and a `do` `stop` request
+//!    when the client is done.
 //!
 //! The hub ends the clip itself with a `stream_status` notification of
 //! `finished`, so nothing here has to work out where the footage stops. The
@@ -43,7 +43,7 @@ use crate::error::{Error, TapoResponseError};
 use crate::responses::{RecordingDownloadOutcome, RecordingDownloadResult};
 
 use super::MediaStreamConnection;
-use super::cipher::{KeyExchange, MediaCipher};
+use super::cipher::MediaCipher;
 use super::mpeg_ts::StreamClock;
 use super::multipart::{Part, PartParser, encode_client_part};
 
@@ -52,9 +52,9 @@ const CONTENT_TYPE_JSON: (&str, &str) = ("Content-Type", "application/json");
 const DATA_WINDOW_SIZE: &str = "50";
 /// The Tapo app acknowledges every 25th media part.
 const ACK_EVERY: u64 = 25;
-/// The heartbeat interval the Tapo app falls back to when the hub does not
-/// send `X-Hb`.
-const DEFAULT_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(15);
+/// The heartbeat interval the Tapo app uses when the hub does not ask for
+/// one, which an H200 never does.
+const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(15);
 /// Spare capacity reserved before each socket read.
 const READ_CHUNK_SIZE: usize = 64 * 1024;
 /// Warn about at most this many gaps in `X-Data-Sequence`; the counts keep
@@ -82,8 +82,8 @@ pub(crate) struct DownloadRequest {
 /// Fails when the hub rejects the request, sends no media at all, or sends
 /// something that cannot be read: a control message or part that does not
 /// parse, or an encrypted media part that cannot be decrypted or does not
-/// match its `X-Data-Hmac`. Also fails when reading from the hub, writing to
-/// it, or writing to `sink` fails.
+/// carry a matching `X-Data-Hmac`. Also fails when reading from the hub,
+/// writing to it, or writing to `sink` fails.
 ///
 /// Stopping early is not an error: when the time limit runs out or the hub
 /// closes the stream, the result's `outcome` says so. Gaps in
@@ -98,23 +98,15 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
     let MediaStreamConnection {
         stream,
         buffered,
-        session,
-        password_hash,
+        cipher,
     } = connection;
     let (mut reader, mut writer) = stream.into_split();
     let mut parser = PartParser::new(buffered);
 
-    let heartbeat_interval = session
-        .heartbeat_interval_s
-        .map(Duration::from_secs)
-        .unwrap_or(DEFAULT_HEARTBEAT_INTERVAL);
-
     let mut state = State {
-        session_id: session.session_id,
-        key_exchange: session.key_exchange,
+        session_id: None,
         seq: 0,
-        secret: password_hash,
-        cipher: None,
+        cipher,
         clock: StreamClock::default(),
         byte_count: 0,
         part_count: 0,
@@ -140,7 +132,7 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
     .await?;
 
     let deadline = Instant::now() + time_limit;
-    let mut next_heartbeat = Instant::now() + heartbeat_interval;
+    let mut next_heartbeat = Instant::now() + HEARTBEAT_INTERVAL;
 
     'session: loop {
         while let Some(part) = parser.next_part()? {
@@ -165,7 +157,7 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
                 &Notification::new("heartbeat"),
             )
             .await?;
-            next_heartbeat = now + heartbeat_interval;
+            next_heartbeat = now + HEARTBEAT_INTERVAL;
         }
 
         let wait = deadline.min(next_heartbeat).saturating_duration_since(now);
@@ -207,18 +199,11 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
 }
 
 struct State {
-    /// The session id echoed as `X-Session-Id` on client parts: the one
-    /// issued for the download once known, otherwise the one from the
-    /// handshake, if any.
+    /// The session id issued for the download, echoed as `X-Session-Id` on
+    /// client parts once known.
     session_id: Option<String>,
-    /// The `Key-Exchange` header the media cipher is derived from.
-    key_exchange: Option<String>,
     seq: u32,
-    /// The media cipher secret: the password as pre-hashed for the Digest
-    /// round.
-    secret: String,
-    /// Set up from the first encrypted media part.
-    cipher: Option<MediaCipher>,
+    cipher: MediaCipher,
     clock: StreamClock,
     byte_count: u64,
     part_count: u64,
@@ -239,12 +224,11 @@ impl State {
     /// explains why the download is not usable.
     fn finish(self, time_limit: Duration) -> Result<RecordingDownloadResult, Error> {
         debug!(
-            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, decrypted {}, missing parts {}",
+            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, missing parts {}",
             self.part_count,
             self.byte_count,
             self.duration_s,
             self.outcome,
-            self.cipher.is_some(),
             self.missing_part_count,
         );
 
@@ -309,19 +293,12 @@ impl State {
                     let notification: NotificationMessage = serde_json::from_value(message.params)
                         .context("invalid media stream notification")?;
                     let event_type = notification.event_type.unwrap_or_default();
-
-                    let outcome = match event_type.as_str() {
-                        "stream_finish" => Some(RecordingDownloadOutcome::Finished),
-                        "stream_status" if notification.status.as_deref() == Some("finished") => {
-                            Some(RecordingDownloadOutcome::Finished)
-                        }
-                        "connection_closed" => Some(RecordingDownloadOutcome::ClosedByHub),
-                        _ => None,
-                    };
                     debug!("Media stream notification: {event_type}");
 
-                    if let Some(outcome) = outcome {
-                        self.outcome = outcome;
+                    if event_type == "stream_status"
+                        && notification.status.as_deref() == Some("finished")
+                    {
+                        self.outcome = RecordingDownloadOutcome::Finished;
                         return Ok(false);
                     }
                 }
@@ -419,20 +396,13 @@ impl State {
     }
 
     /// Decrypts an encrypted media part after checking it against its
-    /// `X-Data-Hmac`, when it has one. Fails when no cipher can be set up for
-    /// it or when the HMAC does not match.
-    fn decrypt(&mut self, part: &Part) -> Result<Vec<u8>, Error> {
-        let cipher = match &self.cipher {
-            Some(cipher) => cipher,
-            None => {
-                let cipher = self.derive_cipher()?;
-                self.cipher.insert(cipher)
-            }
+    /// `X-Data-Hmac`. Fails when the part has no HMAC or nonce, or when the
+    /// HMAC does not match.
+    fn decrypt(&self, part: &Part) -> Result<Vec<u8>, Error> {
+        let Some(hmac) = part.header("x-data-hmac") else {
+            return Err(anyhow!("encrypted media stream part without an X-Data-Hmac").into());
         };
-
-        if let Some(hmac) = part.header("x-data-hmac")
-            && !cipher.verify_hmac(&part.body, hmac)
-        {
+        if !self.cipher.verify_hmac(&part.body, hmac) {
             return Err(anyhow!(
                 "cannot decrypt the recording: the X-Data-Hmac of media stream part {} does not match the media stream keys",
                 part.header("x-data-sequence").unwrap_or("?")
@@ -444,31 +414,7 @@ impl State {
             return Err(anyhow!("encrypted media stream part without an X-Nonce").into());
         };
 
-        Ok(cipher.decrypt(nonce, &part.body)?)
-    }
-
-    /// Derives the media cipher from the session's `Key-Exchange`.
-    fn derive_cipher(&self) -> Result<MediaCipher, Error> {
-        let key_exchange = self
-            .key_exchange
-            .as_deref()
-            .ok_or_else(|| anyhow!("the hub encrypts the recording but sent no Key-Exchange"))?;
-        let key_exchange =
-            KeyExchange::parse(key_exchange).context("invalid media stream Key-Exchange")?;
-        if !key_exchange.is_supported() {
-            return Err(anyhow!(
-                "unsupported media stream cipher: cipher={:?}, algorithm={:?}",
-                key_exchange.cipher,
-                key_exchange.algorithm
-            )
-            .into());
-        }
-
-        let cipher = MediaCipher::derive(&key_exchange, &self.secret)
-            .context("derive the media stream keys")?;
-        debug!("Media stream cipher ready");
-
-        Ok(cipher)
+        Ok(self.cipher.decrypt(nonce, &part.body)?)
     }
 
     fn handle_download_response(&mut self, params: serde_json::Value) -> Result<bool, Error> {
@@ -658,6 +604,7 @@ struct GetDownloadResponse {
 
 #[cfg(test)]
 mod tests {
+    use super::super::cipher::KeyExchange;
     use super::*;
 
     fn request() -> DownloadRequest {
@@ -754,12 +701,14 @@ mod tests {
     }
 
     fn state() -> State {
+        let key_exchange =
+            KeyExchange::parse("cipher=\"AES_128_CBC\" algorithm=\"HKDF\" nonce=\"N\" salt=\"S\"")
+                .unwrap();
+
         State {
             session_id: None,
-            key_exchange: None,
             seq: 0,
-            secret: "HASH".to_string(),
-            cipher: None,
+            cipher: MediaCipher::derive(&key_exchange, "HASH").unwrap(),
             clock: StreamClock::default(),
             byte_count: 0,
             part_count: 0,
