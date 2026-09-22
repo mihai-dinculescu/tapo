@@ -29,8 +29,6 @@ use super::cipher::{KeyExchange, MediaCipher};
 const PORT: u16 = 8800;
 const METHOD: &str = "POST";
 const PATH: &str = "/stream";
-/// The media stream authenticates as the hub's local `admin` account.
-const USERNAME: &str = "admin";
 const CLIENT_BOUNDARY: &str = "--client-stream-boundary--";
 const ALGORITHM: &str = "SHA-256";
 const QOP: &str = "auth";
@@ -62,13 +60,14 @@ pub(crate) struct MediaStreamConnection {
 /// and the reconnect in between.
 pub(crate) async fn authenticate(
     ip_address: &str,
+    username: &str,
     password: &str,
     device_id: &str,
     player_id: &str,
     timeout: Duration,
 ) -> Result<MediaStreamConnection, Error> {
     let uri = stream_uri(device_id, player_id);
-    match tokio::time::timeout(timeout, handshake(ip_address, password, &uri)).await {
+    match tokio::time::timeout(timeout, handshake(ip_address, username, password, &uri)).await {
         Ok(result) => result,
         Err(_) => Err(anyhow!("media stream handshake timed out after {timeout:?}").into()),
     }
@@ -84,6 +83,7 @@ fn stream_uri(device_id: &str, player_id: &str) -> String {
 
 async fn handshake(
     ip_address: &str,
+    username: &str,
     password: &str,
     uri: &str,
 ) -> Result<MediaStreamConnection, Error> {
@@ -111,7 +111,7 @@ async fn handshake(
     // `encrypt_type` 3, the only one the challenge accepts.
     let password_hash = crypto::sha256_hex(password.as_bytes());
     let cnonce = generate_nonce();
-    let authorization = authorization_header(&challenge, USERNAME, &password_hash, uri, &cnonce);
+    let authorization = authorization_header(&challenge, username, &password_hash, uri, &cnonce);
 
     // Round 2: the same request, now carrying the Digest credentials. The hub
     // closes the connection after the challenge (`Connection: close`), so the

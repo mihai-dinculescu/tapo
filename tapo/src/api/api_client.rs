@@ -51,8 +51,9 @@ use super::discovery::DeviceDiscoveryRaw;
 const TERMINAL_UUID: &str = "00-00-00-00-00-00";
 /// Used when the caller does not set one via [`ApiClient::with_timeout`].
 const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
-/// Camera hubs (H200, H500) authenticate the local session with this username
-/// and the TP-Link cloud password, rather than the cloud account username.
+/// Camera hubs (H200, H500) authenticate the local session and the media
+/// stream with this username and the TP-Link cloud password, rather than the
+/// cloud account username.
 const CAMERA_HUB_USERNAME: &str = "admin";
 
 /// Backstop against a firmware whose reported rule count never lets the
@@ -1106,6 +1107,7 @@ impl ApiClient {
 
         let connection = media_stream::authenticate(
             ip_address,
+            &self.tapo_username,
             &self.tapo_password,
             &child_device_id,
             player_id,
