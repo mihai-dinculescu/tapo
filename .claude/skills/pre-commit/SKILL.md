@@ -72,9 +72,9 @@ The decompiled Tapo Android app is a private reverse-engineering aid that lives 
   git diff --name-only --diff-filter=d HEAD -- . ':!.claude/skills/pre-commit/SKILL.md' | xargs grep -nE '`[A-Z][A-Za-z0-9]*\.([A-Z_]+|[a-z][A-Za-z0-9]*\(\))`|app(.s)?[^`]{0,30}`[A-Z][a-z]+[A-Z][A-Za-z]*`'
   ```
 
-  The second pattern works one line at a time, so it misses a class name that wraps onto the line after "app". Then read every comment in the touched files that mentions the app, not only the lines the diff changed, for what the patterns miss: two/three-character package or class names (`zh0`, `ai0`, `p70/i3`), app-internal class and method names (`HKDFHelper.d()`, `CameraHubProtocolImpl`), and absolute paths into the decompiled tree.
+  The second pattern works one line at a time, so it misses a class name that wraps onto the line after "app". Then read every comment in the touched files that mentions the app, not only the lines the diff changed, for what the patterns miss: two/three-character package or class names (`ab1`, `xy2`, `zz9/c1`), app-internal class and method names (`KeyMixer.d()`, `StreamGatewayImpl`), and absolute paths into the decompiled tree.
 - Rewrite every hit to state what the app does, not where that was read. Keep wire-level names (JSON methods and fields, HTTP headers, request and response shapes as they travel); drop file, class, and line-number citations.
-  - Not OK: ``//! The Tapo app (`hc0/b.java`, `qb0/c.java`) derives the keys from the `Key-Exchange` header``
+  - Not OK: ``//! The Tapo app (`ab1/c.java`, `xy2/b.java`) derives the keys from the `Key-Exchange` header``
   - OK: ``//! The Tapo app derives the keys from the `Key-Exchange` header``
 - The one intentional mention is the "Reverse Engineering the Tapo API" section in `CONTRIBUTING.md`, which describes the workflow without naming a file. Leave it as is.
 
