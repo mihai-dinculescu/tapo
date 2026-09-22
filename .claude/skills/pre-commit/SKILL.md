@@ -78,7 +78,6 @@ The decompiled Tapo Android app is a private reverse-engineering aid that lives 
   - OK: ``//! The Tapo app derives the keys from the `Key-Exchange` header``
 - The one intentional mention is the "Reverse Engineering the Tapo API" section in `CONTRIBUTING.md`, which describes the workflow without naming a file. Leave it as is.
 
-
 ## Code Review
 
 After fixing all issues found in the checks, review the code changes for correctness, readability, and maintainability and propose improvements.
