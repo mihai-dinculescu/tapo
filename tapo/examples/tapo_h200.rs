@@ -1,6 +1,6 @@
 //! H200 Example
 
-use log::info;
+use log::{error, info};
 use tapo::responses::ChildDeviceHubResult;
 use tapo::{ApiClient, HubDevice};
 
@@ -20,8 +20,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let device_info = hub.get_device_info().await?;
     info!("Device info: {device_info:?}");
 
-    let timezone = hub.get_timezone().await?;
-    info!("Timezone: {timezone:?}");
+    #[cfg(feature = "debug")]
+    {
+        let component_list = hub.get_component_list().await?;
+        info!("Component list: {component_list:?}");
+    }
 
     info!("Getting child devices...");
     let child_device_list = hub.get_child_device_list().await?;
@@ -125,8 +128,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let general_device_list = hub.get_general_device_list().await?;
 
-    // The first recording found, to download at the end.
-    let mut recording_to_download = None;
+    // The first recording found for each camera, to download at the end.
+    let mut recordings_to_download = Vec::new();
 
     for general_device in general_device_list {
         info!(
@@ -168,48 +171,51 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 recordings.first()
             );
 
-            if recording_to_download.is_none() {
-                recording_to_download = recordings
-                    .into_iter()
-                    .next()
-                    .map(|recording| (general_device.device_id.clone(), recording));
+            if let Some(recording) = recordings.into_iter().next() {
+                recordings_to_download.push((general_device.device_id, recording));
             }
         }
     }
 
-    match recording_to_download {
-        Some((device_id, recording)) => {
-            let path = format!(
-                "recording_{device_id}_{}.ts",
-                recording.start_time.timestamp()
-            );
-            info!(
-                "Downloading the recording from {} to {} of {device_id} to {path}...",
-                recording.start_time, recording.end_time
-            );
+    if recordings_to_download.is_empty() {
+        info!("No recording found to download.");
+    }
 
-            let mut media = Vec::new();
-            let result = hub
-                .download_recording(
-                    device_id,
-                    recording.start_time,
-                    recording.end_time,
-                    &mut media,
-                )
-                .await?;
-            std::fs::write(&path, &media)?;
+    for (device_id, recording) in recordings_to_download {
+        let path = format!(
+            "recording_{device_id}_{}.ts",
+            recording.start_time.timestamp()
+        );
+        info!(
+            "Downloading the recording from {} to {} of {device_id} to {path}...",
+            recording.start_time, recording.end_time
+        );
 
-            let duration = match result.duration_s {
-                Some(duration_s) => format!("{duration_s:.3} s"),
-                None => "an unknown length".to_string(),
-            };
-            info!(
-                "Wrote {} bytes to {path}: {duration} of video.",
-                media.len()
-            );
-        }
-        None => {
-            info!("No recording found to download.");
+        let mut media = Vec::new();
+        match hub
+            .download_recording(
+                device_id.clone(),
+                recording.start_time,
+                recording.end_time,
+                &mut media,
+            )
+            .await
+        {
+            Ok(result) => {
+                std::fs::write(&path, &media)?;
+
+                let duration = match result.duration_s {
+                    Some(duration_s) => format!("{duration_s:.3} s"),
+                    None => "an unknown length".to_string(),
+                };
+                info!(
+                    "Wrote {} bytes to {path}: {duration} of video.",
+                    media.len()
+                );
+            }
+            Err(err) => {
+                error!("Failed to download the recording of {device_id}: {err:?}");
+            }
         }
     }
 
