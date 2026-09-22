@@ -40,7 +40,7 @@ use tokio::io::{AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 
 use crate::error::{Error, TapoResponseError};
-use crate::responses::{RecordingDownloadOutcome, RecordingDownloadResult};
+use crate::responses::RecordingDownloadResult;
 
 use super::MediaStreamConnection;
 use super::cipher::MediaCipher;
@@ -79,13 +79,13 @@ pub(crate) struct DownloadRequest {
 /// Fails when the hub rejects the request, sends no media at all, or sends
 /// something that cannot be read: a control message or part that does not
 /// parse, or an encrypted media part that cannot be decrypted or does not
-/// carry a matching `X-Data-Hmac`. Also fails when reading from the hub,
-/// writing to it, or writing to `sink` fails.
+/// carry a matching `X-Data-Hmac`. Also fails when the hub closes the stream
+/// or the time limit runs out before the hub reports the end of the
+/// recording, leaving only part of it in `sink`, and when reading from the
+/// hub, writing to it, or writing to `sink` fails.
 ///
-/// Stopping early is not an error: when the time limit runs out or the hub
-/// closes the stream, the result's `outcome` says so. Gaps in
-/// `X-Data-Sequence` and control messages that need no action are only
-/// logged.
+/// Gaps in `X-Data-Sequence` and control messages that need no action are
+/// only logged.
 pub(crate) async fn download<W: AsyncWrite + Unpin>(
     connection: MediaStreamConnection,
     request: DownloadRequest,
@@ -108,7 +108,6 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
         byte_count: 0,
         part_count: 0,
         last_sequence: None,
-        outcome: RecordingDownloadOutcome::DurationElapsed,
     };
 
     let request_seq = state.next_seq();
@@ -127,20 +126,23 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
     let deadline = Instant::now() + time_limit;
     let mut next_heartbeat = Instant::now() + HEARTBEAT_INTERVAL;
 
-    'session: loop {
+    let ended = 'session: loop {
         while let Some(part) = parser.next_part()? {
             if !state
                 .handle_part(&mut writer, sink, part, request_seq)
                 .await?
             {
-                break 'session;
+                break 'session Ok(());
             }
         }
 
         let now = Instant::now();
         if now >= deadline {
             debug!("Download time limit elapsed");
-            break;
+            break Err(anyhow!(
+                "the recording did not finish downloading within {time_limit:?}, after {} bytes",
+                state.byte_count
+            ));
         }
         if now >= next_heartbeat {
             debug!("Sending a media stream heartbeat...");
@@ -161,11 +163,13 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
             ReadOutcome::TimedOut => {}
             ReadOutcome::Eof => {
                 debug!("The hub closed the media stream");
-                state.outcome = RecordingDownloadOutcome::ClosedByHub;
-                break;
+                break Err(anyhow!(
+                    "the hub closed the media stream after {} bytes, before the end of the recording",
+                    state.byte_count
+                ));
             }
         }
-    }
+    };
 
     // Best effort: the session is being torn down either way.
     let stop_seq = state.next_seq();
@@ -187,8 +191,9 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
     }
 
     sink.flush().await.context("flush the media sink")?;
+    ended?;
 
-    state.finish(time_limit)
+    state.finish()
 }
 
 struct State {
@@ -203,38 +208,28 @@ struct State {
     /// The last `X-Data-Sequence` seen, which the hub numbers from 1 without
     /// gaps.
     last_sequence: Option<u64>,
-    outcome: RecordingDownloadOutcome,
 }
 
 impl State {
-    /// Turns the bookkeeping into the caller's result, or into the error that
-    /// explains why the download is not usable.
-    fn finish(self, time_limit: Duration) -> Result<RecordingDownloadResult, Error> {
+    /// Turns the bookkeeping of a download the hub reported as finished into
+    /// the caller's result, or into an error when it sent no media.
+    fn finish(self) -> Result<RecordingDownloadResult, Error> {
         let duration_s = self.clock.elapsed().map(|elapsed| elapsed.as_secs_f64());
         debug!(
-            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}",
-            self.part_count, self.byte_count, duration_s, self.outcome,
+            "Download finished: {} parts, {} bytes, duration {:?}",
+            self.part_count, self.byte_count, duration_s,
         );
 
         if self.part_count == 0 {
-            return Err(match self.outcome {
-                RecordingDownloadOutcome::Finished => {
-                    anyhow!("the hub reported the end of the recording without sending any media")
-                }
-                RecordingDownloadOutcome::ClosedByHub => {
-                    anyhow!("the hub closed the stream without sending any media")
-                }
-                RecordingDownloadOutcome::DurationElapsed => {
-                    anyhow!("the hub sent no media for the recording within {time_limit:?}")
-                }
-            }
+            return Err(anyhow!(
+                "the hub reported the end of the recording without sending any media"
+            )
             .into());
         }
 
         Ok(RecordingDownloadResult {
             byte_count: self.byte_count,
             duration_s,
-            outcome: self.outcome,
         })
     }
 
@@ -282,7 +277,6 @@ impl State {
                     if event_type == "stream_status"
                         && notification.status.as_deref() == Some("finished")
                     {
-                        self.outcome = RecordingDownloadOutcome::Finished;
                         return Ok(false);
                     }
                 }
@@ -689,7 +683,6 @@ mod tests {
             byte_count: 0,
             part_count: 0,
             last_sequence: None,
-            outcome: RecordingDownloadOutcome::DurationElapsed,
         }
     }
 

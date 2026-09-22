@@ -204,9 +204,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 None => "an unknown length".to_string(),
             };
             info!(
-                "Wrote {} bytes to {path}: {duration} of video, {:?}.",
-                media.len(),
-                result.outcome
+                "Wrote {} bytes to {path}: {duration} of video.",
+                media.len()
             );
         }
         None => {
