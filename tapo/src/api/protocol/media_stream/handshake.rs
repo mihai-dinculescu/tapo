@@ -178,6 +178,23 @@ fn build_request(ip_address: &str, uri: &str, authorization: Option<&str>) -> St
     request
 }
 
+/// Returns the request with its `Authorization` value hidden, for logging.
+/// The Digest `response` in it, next to the realm and nonces sent with it,
+/// is enough for an offline dictionary attack on the password.
+fn redact_request(request: &str) -> String {
+    request
+        .split("\r\n")
+        .map(|line| {
+            if line.starts_with("Authorization:") {
+                "Authorization: <redacted>"
+            } else {
+                line
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\r\n")
+}
+
 /// Derives the media cipher from the `Key-Exchange` header of the `200 OK`,
 /// e.g. `cipher="AES_128_CBC" username="admin" padding="PKCS7_16"
 /// algorithm="HKDF" nonce="…" salt="…"`.
@@ -194,7 +211,7 @@ fn media_cipher(response: &HttpResponse, secret: &str) -> anyhow::Result<MediaCi
 /// Sends one HTTP request and reads the response head. Bytes read past the
 /// head are kept as the start of the body.
 async fn exchange(stream: &mut TcpStream, request: &str) -> anyhow::Result<HttpResponse> {
-    trace!("Media stream request (raw):\n{request}");
+    trace!("Media stream request:\n{}", redact_request(request));
 
     stream
         .write_all(request.as_bytes())
@@ -664,6 +681,26 @@ mod tests {
                  Content-Length: 0\r\n\
                  \r\n"
             )
+        );
+    }
+
+    #[test]
+    fn test_redact_request_hides_the_authorization() {
+        let request = build_request(
+            "192.168.1.100",
+            "/stream",
+            Some(r#"Digest username="admin", response="5a1d""#),
+        );
+
+        assert_eq!(
+            redact_request(&request),
+            "POST /stream HTTP/1.1\r\n\
+             Host: 192.168.1.100:8800\r\n\
+             Content-Type: multipart/mixed; boundary=--client-stream-boundary--\r\n\
+             X-Key-Exchange: 1\r\n\
+             Content-Length: 0\r\n\
+             Authorization: <redacted>\r\n\
+             \r\n"
         );
     }
 }

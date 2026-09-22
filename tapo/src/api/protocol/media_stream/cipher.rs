@@ -1,8 +1,8 @@
 //! Decryption of encrypted media stream parts.
 //!
-//! When a part carries `X-If-Encrypt: 1`, its body is AES-128-CBC with PKCS7
-//! padding. The Tapo app derives the keys from the `Key-Exchange` header of
-//! the `200` response, e.g.
+//! The hub encrypts every media part (`X-If-Encrypt: 1`) with AES-128-CBC and
+//! PKCS7 padding. The Tapo app derives the keys from the `Key-Exchange`
+//! header of the `200` response, e.g.
 //! `cipher="AES_128_CBC" username="admin" padding="PKCS7_16" algorithm="HKDF"
 //! nonce="…" salt="…"`, and a secret:
 //!

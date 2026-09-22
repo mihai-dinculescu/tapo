@@ -22,8 +22,9 @@
 //! The hub ends the clip itself with a `stream_status` notification of
 //! `finished`, so nothing here has to work out where the footage stops. The
 //! MPEG-TS clock only measures how much media arrived (see
-//! [`super::mpeg_ts`]). The media parts are encrypted (`X-If-Encrypt: 1`);
-//! see [`super::cipher`].
+//! [`super::mpeg_ts`]). The hub encrypts every media part, so each one is
+//! checked against its HMAC and decrypted, and a part without an HMAC ends
+//! the download with an error; see [`super::cipher`].
 //!
 //! Shapes and defaults follow the Tapo app's clip save: its download
 //! request, its stop request, and its read loop. Verified against an H200
@@ -304,14 +305,7 @@ impl State {
             self.record_sequence(sequence);
         }
 
-        let body = if part
-            .header("x-if-encrypt")
-            .is_some_and(|value| value.trim() == "1")
-        {
-            self.decrypt(&part)?
-        } else {
-            part.body
-        };
+        let body = self.decrypt(&part)?;
 
         self.part_count += 1;
         self.clock.observe(&body);
@@ -365,12 +359,12 @@ impl State {
         Ok(())
     }
 
-    /// Decrypts an encrypted media part after checking it against its
-    /// `X-Data-Hmac`. Fails when the part has no HMAC or nonce, or when the
-    /// HMAC does not match.
+    /// Decrypts a media part after checking it against its `X-Data-Hmac`.
+    /// Fails when the part has no HMAC or nonce, or when the HMAC does not
+    /// match.
     fn decrypt(&self, part: &Part) -> Result<Vec<u8>, Error> {
         let Some(hmac) = part.header("x-data-hmac") else {
-            return Err(anyhow!("encrypted media stream part without an X-Data-Hmac").into());
+            return Err(anyhow!("media stream part without an X-Data-Hmac").into());
         };
         if !self.cipher.verify_hmac(&part.body, hmac) {
             return Err(anyhow!(
