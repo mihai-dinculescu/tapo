@@ -57,9 +57,6 @@ const ACK_EVERY: u64 = 25;
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(15);
 /// Spare capacity reserved before each socket read.
 const READ_CHUNK_SIZE: usize = 64 * 1024;
-/// Warn about at most this many gaps in `X-Data-Sequence`; the counts keep
-/// growing.
-const SEQUENCE_GAP_WARNINGS: u64 = 3;
 
 /// Selects the recording to download.
 #[derive(Debug, Clone)]
@@ -110,11 +107,7 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
         clock: StreamClock::default(),
         byte_count: 0,
         part_count: 0,
-        duration_s: None,
         last_sequence: None,
-        sequence_gap_count: 0,
-        missing_part_count: 0,
-        first_media_part_seen: false,
         outcome: RecordingDownloadOutcome::DurationElapsed,
     };
 
@@ -207,15 +200,9 @@ struct State {
     clock: StreamClock,
     byte_count: u64,
     part_count: u64,
-    duration_s: Option<f64>,
     /// The last `X-Data-Sequence` seen, which the hub numbers from 1 without
     /// gaps.
     last_sequence: Option<u64>,
-    sequence_gap_count: u64,
-    /// How many parts those gaps skipped: media the hub numbered but never
-    /// sent, which leaves a hole in the written stream.
-    missing_part_count: u64,
-    first_media_part_seen: bool,
     outcome: RecordingDownloadOutcome,
 }
 
@@ -223,13 +210,10 @@ impl State {
     /// Turns the bookkeeping into the caller's result, or into the error that
     /// explains why the download is not usable.
     fn finish(self, time_limit: Duration) -> Result<RecordingDownloadResult, Error> {
+        let duration_s = self.clock.elapsed().map(|elapsed| elapsed.as_secs_f64());
         debug!(
-            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}, missing parts {}",
-            self.part_count,
-            self.byte_count,
-            self.duration_s,
-            self.outcome,
-            self.missing_part_count,
+            "Download finished: {} parts, {} bytes, duration {:?}, outcome {:?}",
+            self.part_count, self.byte_count, duration_s, self.outcome,
         );
 
         if self.part_count == 0 {
@@ -249,7 +233,7 @@ impl State {
 
         Ok(RecordingDownloadResult {
             byte_count: self.byte_count,
-            duration_s: self.duration_s,
+            duration_s,
             outcome: self.outcome,
         })
     }
@@ -315,8 +299,7 @@ impl State {
             part.headers
         );
 
-        if !self.first_media_part_seen {
-            self.first_media_part_seen = true;
+        if self.part_count == 0 {
             debug!("First media part headers: {:?}", part.headers);
         }
 
@@ -337,10 +320,7 @@ impl State {
         };
 
         self.part_count += 1;
-
         self.clock.observe(&body);
-        self.duration_s = self.clock.elapsed().map(|elapsed| elapsed.as_secs_f64());
-
         self.byte_count += body.len() as u64;
         sink.write_all(&body)
             .await
@@ -359,13 +339,9 @@ impl State {
         if let Some(previous) = self.last_sequence
             && sequence > previous + 1
         {
-            self.missing_part_count += sequence - previous - 1;
-            self.sequence_gap_count += 1;
-            if self.sequence_gap_count <= SEQUENCE_GAP_WARNINGS {
-                warn!(
-                    "The media stream sequence jumped from {previous} to {sequence}, so the recording is missing footage"
-                );
-            }
+            warn!(
+                "The media stream sequence jumped from {previous} to {sequence}, so the recording is missing footage"
+            );
         }
 
         self.last_sequence = Some(sequence);
@@ -712,11 +688,7 @@ mod tests {
             clock: StreamClock::default(),
             byte_count: 0,
             part_count: 0,
-            duration_s: None,
             last_sequence: None,
-            sequence_gap_count: 0,
-            missing_part_count: 0,
-            first_media_part_seen: false,
             outcome: RecordingDownloadOutcome::DurationElapsed,
         }
     }
@@ -737,31 +709,5 @@ mod tests {
             state.session_headers(&[CONTENT_TYPE_JSON]),
             vec![("X-Session-Id", "42"), CONTENT_TYPE_JSON]
         );
-    }
-
-    #[test]
-    fn test_record_sequence_counts_the_parts_the_hub_skipped() {
-        let mut state = state();
-
-        for sequence in 1..=3 {
-            state.record_sequence(sequence);
-        }
-        assert_eq!(state.sequence_gap_count, 0);
-        assert_eq!(state.missing_part_count, 0);
-
-        // 4, 5 and 6 never arrived.
-        state.record_sequence(7);
-        assert_eq!(state.sequence_gap_count, 1);
-        assert_eq!(state.missing_part_count, 3);
-
-        // A repeated sequence is not a gap.
-        state.record_sequence(7);
-        state.record_sequence(8);
-        assert_eq!(state.sequence_gap_count, 1);
-        assert_eq!(state.missing_part_count, 3);
-
-        state.record_sequence(10);
-        assert_eq!(state.sequence_gap_count, 2);
-        assert_eq!(state.missing_part_count, 4);
     }
 }
