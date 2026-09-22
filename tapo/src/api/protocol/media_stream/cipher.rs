@@ -8,9 +8,8 @@
 //!
 //! - AES key: `HKDF-SHA256(ikm = "<nonce>:<secret>", salt = "<salt>",
 //!   info = "stream_hkdf_aes_key", 16 bytes)`.
-//! - HMAC key: the same with `info = "stream_hkdf_hmac_key"`, also 16 bytes
-//!   and not 8. Each part's `X-Data-Hmac` is the base64 HMAC-SHA256 of its
-//!   ciphertext.
+//! - HMAC key: the same with `info = "stream_hkdf_hmac_key"`, also 16 bytes.
+//!   Each part's `X-Data-Hmac` is the base64 HMAC-SHA256 of its ciphertext.
 //! - IV: the part's `X-Nonce` header, hex-decoded.
 //!
 //! The secret is the password as pre-hashed for the Digest handshake
@@ -178,19 +177,23 @@ mod tests {
         assert!(cipher.decrypt("not hex", &ciphertext).is_err());
     }
 
-    /// The derivation is deterministic and differs per secret; pins the
-    /// current output so that later refactors cannot change it silently.
+    /// Pins the derived keys, computed separately with an RFC 5869 HKDF, so
+    /// that a change to the derivation (such as swapping the salt and the
+    /// ikm) cannot pass unnoticed. The keys also differ per secret.
     #[test]
-    fn test_media_cipher_derive_is_deterministic() {
+    fn test_media_cipher_derive_known_keys() {
         let key_exchange = KeyExchange::parse(H200_KEY_EXCHANGE).unwrap();
-        let a = MediaCipher::derive(&key_exchange, "SECRET").unwrap();
-        let b = MediaCipher::derive(&key_exchange, "SECRET").unwrap();
-        let c = MediaCipher::derive(&key_exchange, "secret").unwrap();
+        let cipher = MediaCipher::derive(&key_exchange, "SECRET").unwrap();
+        let other = MediaCipher::derive(&key_exchange, "secret").unwrap();
 
-        assert_eq!(a.aes_key, b.aes_key);
-        assert_eq!(a.hmac_key, b.hmac_key);
-        assert_ne!(a.aes_key, c.aes_key);
-        assert_eq!(a.aes_key.len(), 16);
-        assert_eq!(a.hmac_key.len(), 16);
+        assert_eq!(
+            base16ct::lower::encode_string(&cipher.aes_key),
+            "bb7cb3a56d64bd5238c8998f8c1dd7e8"
+        );
+        assert_eq!(
+            base16ct::lower::encode_string(&cipher.hmac_key),
+            "243f9ab129ce97a19e84f17b97a46fa5"
+        );
+        assert_ne!(cipher.aes_key, other.aes_key);
     }
 }

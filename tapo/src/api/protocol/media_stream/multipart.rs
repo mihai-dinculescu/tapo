@@ -178,8 +178,8 @@ impl PartParser {
 }
 
 /// Returns the line that starts at `start` (without its line ending) and the
-/// offset of the next line. Accepts both `\r\n` and bare `\n`, like the
-/// `DataInputStream::readLine` the Tapo app uses.
+/// offset of the next line. Accepts both `\r\n` and bare `\n`, as the Tapo
+/// app does.
 fn read_line(buffer: &[u8], start: usize) -> Option<(&[u8], usize)> {
     let newline = buffer[start..].iter().position(|byte| *byte == b'\n')?;
     let mut line = &buffer[start..start + newline];

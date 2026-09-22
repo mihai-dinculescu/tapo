@@ -537,7 +537,7 @@ mod tests {
         assert!(parse_digest_params("Basic realm=\"hub\"").is_err());
     }
 
-    /// The challenge an H200 (firmware 1.6.5) actually sends.
+    /// The challenge an H200 (firmware 1.7.5) actually sends.
     #[test]
     fn test_digest_challenge_parse_h200() {
         let response = HttpResponse::parse(
@@ -604,7 +604,7 @@ mod tests {
         assert!(HttpResponse::parse(b"", Vec::new()).is_err());
     }
 
-    /// The `200` an H200 (firmware 1.6.5) actually sends, with the
+    /// The `200` an H200 (firmware 1.7.5) actually sends, with the
     /// `Key-Exchange` the media cipher is derived from.
     #[test]
     fn test_media_cipher_from_h200_response() {
