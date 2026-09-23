@@ -12,21 +12,22 @@ use tapo::requests::{
     ScheduleRule, ScheduleTime, SegmentEffectPreset, SegmentEffectType,
 };
 use tapo::responses::{
-    AutoOffStatus, ColorLightState, Component, CurrentPowerResult, DefaultBrightnessState,
-    DefaultColorLightState, DefaultLightState, DefaultPlugState, DefaultPowerType,
-    DefaultRgbLightStripState, DefaultRgbicLightStripState, DefaultStateType,
-    DeviceInfoBasicResult, DeviceInfoCameraResult, DeviceInfoColorLightResult, DeviceInfoHubResult,
-    DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult,
-    DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
+    AiCameraSupport, AutoOffStatus, ColorLightState, Component, CurrentPowerResult,
+    DefaultBrightnessState, DefaultColorLightState, DefaultLightState, DefaultPlugState,
+    DefaultPowerType, DefaultRgbLightStripState, DefaultRgbicLightStripState, DefaultStateType,
+    DeviceInfoBasicResult, DeviceInfoCameraHubResult, DeviceInfoCameraResult,
+    DeviceInfoColorLightResult, DeviceInfoHubResult, DeviceInfoLightResult,
+    DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult, DeviceInfoPowerStripResult,
+    DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
     DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataIntervalResult,
     EnergyDataResult, EnergyUsageResult, KE100Result, OtherResult, OvercurrentStatus,
     OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
     PowerState, PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset,
-    RgbLightStripState, RgbicLightStripState, RtspStreamUrl, S200Log, S200Result,
-    S200RotationParams, S210Result, ScheduleRuleResult, Snapshot, Status, T31XResult, T100Log,
-    T100Result, T110Log, T110Result, T300Log, T300Result, TemperatureHumidityRecord,
-    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, Timer, UsageByPeriodResult,
-    WaterLeakStatus,
+    RecordingDateHubResult, RecordingDownloadResult, RgbLightStripState, RgbicLightStripState,
+    RtspStreamUrl, S200Log, S200Result, S200RotationParams, S210Result, ScheduleRuleResult,
+    Snapshot, Status, T31XResult, T100Log, T100Result, T110Log, T110Result, T300Log, T300Result,
+    TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100,
+    Timer, TimezoneHubResult, UsageByPeriodResult, WaterLeakStatus,
 };
 use tapo::{DeviceType, DiscoveryRawResult};
 
@@ -44,6 +45,7 @@ use requests::{
     PyPowerDataInterval, PySegmentEffect,
 };
 use responses::{
+    PyBackupWifi, PyGeneralDeviceHubResult, PyRecordingHubResult, PyRecordingType,
     TriggerLogsS200Result, TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
 };
 
@@ -62,6 +64,7 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
     register_requests(&requests)?;
     register_responses(&responses)?;
     register_responses_hub(&responses)?;
+    register_responses_camera_hub(&responses)?;
     register_responses_power_strip(&responses)?;
 
     module.add_submodule(&requests)?;
@@ -226,6 +229,20 @@ fn register_responses_hub(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<TriggerLogsT110Result>()?;
     module.add_class::<TriggerLogsT300Result>()?;
     module.add_class::<WaterLeakStatus>()?;
+
+    Ok(())
+}
+
+fn register_responses_camera_hub(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
+    module.add_class::<DeviceInfoCameraHubResult>()?;
+    module.add_class::<AiCameraSupport>()?;
+    module.add_class::<PyBackupWifi>()?;
+    module.add_class::<PyGeneralDeviceHubResult>()?;
+    module.add_class::<TimezoneHubResult>()?;
+    module.add_class::<RecordingDateHubResult>()?;
+    module.add_class::<PyRecordingHubResult>()?;
+    module.add_class::<PyRecordingType>()?;
+    module.add_class::<RecordingDownloadResult>()?;
 
     Ok(())
 }

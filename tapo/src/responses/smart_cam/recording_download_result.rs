@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 /// The result of downloading a recording stored on a camera hub with
 /// [`CameraHubHandler::download_recording`](crate::CameraHubHandler::download_recording).
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct RecordingDownloadResult {
     /// The number of media bytes written, after decryption.
     pub byte_count: u64,
@@ -14,3 +15,6 @@ pub struct RecordingDownloadResult {
     /// the download is unknown.
     pub duration_s: Option<f64>,
 }
+
+#[cfg(feature = "python")]
+crate::impl_to_dict!(RecordingDownloadResult);

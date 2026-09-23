@@ -45,6 +45,7 @@ struct RecordingDateRaw {
 
 /// A day on a camera hub's calendar that has recordings for a camera paired to it.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct RecordingDateHubResult {
     /// The day, on the hub's calendar.
     pub date: NaiveDate,
@@ -53,6 +54,9 @@ pub struct RecordingDateHubResult {
     /// The last second of the day on the hub, in UTC.
     pub end_time: DateTime<Utc>,
 }
+
+#[cfg(feature = "python")]
+crate::impl_to_dict!(RecordingDateHubResult);
 
 /// Turns a day on the hub's calendar into the range of time it covers, from
 /// local midnight to a second before the next local midnight.
@@ -120,10 +124,10 @@ struct RecordingListRaw {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RecordingHubResult {
     /// Start of the recording.
-    #[serde(rename = "startTime", with = "chrono::serde::ts_seconds")]
+    #[serde(alias = "startTime", with = "chrono::serde::ts_seconds")]
     pub start_time: DateTime<Utc>,
     /// End of the recording.
-    #[serde(rename = "endTime", with = "chrono::serde::ts_seconds")]
+    #[serde(alias = "endTime", with = "chrono::serde::ts_seconds")]
     pub end_time: DateTime<Utc>,
     /// The type of event that produced the recording.
     pub video_type: RecordingType,
@@ -131,100 +135,101 @@ pub struct RecordingHubResult {
 
 /// The type of event that produced a recording. The wire values are numeric
 /// strings; the names follow the Tapo app's playback event table.
+/// It serializes as the variant name and deserializes from either form.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RecordingType {
     /// `1`: continuous (timing) recording.
-    #[serde(rename = "1")]
+    #[serde(alias = "1")]
     Timing,
     /// `2`: motion detection.
-    #[serde(rename = "2")]
+    #[serde(alias = "2")]
     Motion,
     /// `3`: camera tampering.
-    #[serde(rename = "3")]
+    #[serde(alias = "3")]
     Tamper,
     /// `4`: line crossing detection.
-    #[serde(rename = "4")]
+    #[serde(alias = "4")]
     LineCrossing,
     /// `5`: area intrusion detection.
-    #[serde(rename = "5")]
+    #[serde(alias = "5")]
     AreaIntrusion,
     /// `6`: person detection.
-    #[serde(rename = "6")]
+    #[serde(alias = "6")]
     Person,
     /// `7`: baby cry detection.
-    #[serde(rename = "7")]
+    #[serde(alias = "7")]
     BabyCry,
     /// `8`: vehicle detection.
-    #[serde(rename = "8")]
+    #[serde(alias = "8")]
     Vehicle,
     /// `9`: pet detection.
-    #[serde(rename = "9")]
+    #[serde(alias = "9")]
     Pet,
     /// `10`: ring alarm.
-    #[serde(rename = "10")]
+    #[serde(alias = "10")]
     RingAlarm,
     /// `11`: bark detection.
-    #[serde(rename = "11")]
+    #[serde(alias = "11")]
     Bark,
     /// `12`: meow detection.
-    #[serde(rename = "12")]
+    #[serde(alias = "12")]
     Meow,
     /// `13`: glass breaking detection.
-    #[serde(rename = "13")]
+    #[serde(alias = "13")]
     GlassBreaking,
     /// `14`: smoke alarm detection.
-    #[serde(rename = "14")]
+    #[serde(alias = "14")]
     Smoke,
     /// `15`: package delivered.
-    #[serde(rename = "15")]
+    #[serde(alias = "15")]
     PackageDelivered,
     /// `16`: package picked up.
-    #[serde(rename = "16")]
+    #[serde(alias = "16")]
     PackagePickedUp,
     /// `17`: missed doorbell ring.
-    #[serde(rename = "17")]
+    #[serde(alias = "17")]
     MissedDoorbellRing,
     /// `18`: answered doorbell ring.
-    #[serde(rename = "18")]
+    #[serde(alias = "18")]
     AnsweredDoorbellRing,
     /// `19`: anti-theft alarm.
-    #[serde(rename = "19")]
+    #[serde(alias = "19")]
     AntiTheft,
     /// `20`: face detection.
-    #[serde(rename = "20")]
+    #[serde(alias = "20")]
     Face,
     /// `21`: unfamiliar face detection.
-    #[serde(rename = "21")]
+    #[serde(alias = "21")]
     UnfamiliarFace,
     /// `22`: unfamiliar person detection.
-    #[serde(rename = "22")]
+    #[serde(alias = "22")]
     UnfamiliarPerson,
     /// `23`: baby leaving detection.
-    #[serde(rename = "23")]
+    #[serde(alias = "23")]
     BabyLeave,
     /// `24`: baby caregiver detection.
-    #[serde(rename = "24")]
+    #[serde(alias = "24")]
     BabyCaregiver,
     /// `25`: baby asleep detection.
-    #[serde(rename = "25")]
+    #[serde(alias = "25")]
     BabyAsleep,
     /// `26`: baby waking up detection.
-    #[serde(rename = "26")]
+    #[serde(alias = "26")]
     BabyAwake,
     /// `27`: covered face detection.
-    #[serde(rename = "27")]
+    #[serde(alias = "27")]
     FaceCover,
     /// `28`: leaving the safety fence detection.
-    #[serde(rename = "28")]
+    #[serde(alias = "28")]
     SafeFenceOut,
     /// `30`: baby motion detection.
-    #[serde(rename = "30")]
+    #[serde(alias = "30")]
     BabyMotion,
     /// `31`: panoramic video.
-    #[serde(rename = "31")]
+    #[serde(alias = "31")]
     PanoramicVideo,
     /// `33`: animal detection.
-    #[serde(rename = "33")]
+    #[serde(alias = "33")]
     Animal,
     /// A recording type this library does not know yet, as its raw wire value.
     #[serde(untagged)]
@@ -371,6 +376,28 @@ mod tests {
             "2026-08-14T08:01:00Z".parse::<DateTime<Utc>>().unwrap()
         );
         assert_eq!(recordings[0].video_type, RecordingType::Motion);
+    }
+
+    #[test]
+    fn test_recording_round_trips_through_its_own_json() {
+        let recording = RecordingHubResult {
+            start_time: "2026-08-14T08:00:00Z".parse::<DateTime<Utc>>().unwrap(),
+            end_time: "2026-08-14T08:01:00Z".parse::<DateTime<Utc>>().unwrap(),
+            video_type: RecordingType::Motion,
+        };
+
+        let json = serde_json::to_string(&recording).unwrap();
+
+        assert_eq!(
+            json,
+            r#"{"start_time":1786694400,"end_time":1786694460,"video_type":"Motion"}"#
+        );
+
+        let parsed: RecordingHubResult = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(parsed.start_time, recording.start_time);
+        assert_eq!(parsed.end_time, recording.end_time);
+        assert_eq!(parsed.video_type, recording.video_type);
     }
 
     #[test]

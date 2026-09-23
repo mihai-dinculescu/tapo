@@ -24,6 +24,7 @@ struct TimezoneSystemRaw {
 
 /// The timezone configured on a camera hub.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct TimezoneHubResult {
     /// The hub's standard UTC offset as a label, e.g. `UTC+01:00`.
     /// It does not follow daylight saving, so it can be an hour off the
@@ -32,6 +33,9 @@ pub struct TimezoneHubResult {
     /// The hub's timezone, from the IANA name it reports, e.g. `Europe/Paris`.
     pub zone_id: Tz,
 }
+
+#[cfg(feature = "python")]
+crate::impl_to_dict!(TimezoneHubResult);
 
 #[cfg(test)]
 mod tests {

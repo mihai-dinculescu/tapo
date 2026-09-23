@@ -6,6 +6,7 @@ use crate::utils::bool_from_int_or_bool;
 
 /// Device info of Tapo camera hubs (H200, H500).
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct DeviceInfoCameraHubResult {
     pub avatar: String,
@@ -38,6 +39,9 @@ pub struct DeviceInfoCameraHubResult {
     #[serde(alias = "device_type")]
     pub r#type: String,
 }
+
+#[cfg(feature = "python")]
+crate::impl_to_dict!(DeviceInfoCameraHubResult);
 
 impl TapoResponseExt for DeviceInfoCameraHubResult {}
 
