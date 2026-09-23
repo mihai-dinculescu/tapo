@@ -12,6 +12,10 @@
 //!   Each part's `X-Data-Hmac` is the base64 HMAC-SHA256 of its ciphertext.
 //! - IV: the part's `X-Nonce` header, hex-decoded.
 //!
+//! The `nonce` may be empty, which makes the ikm `":<secret>"`. An H200 on
+//! firmware 1.7.5 sent `nonce=""` on every connection on 2026-09-22, and a
+//! 32-hex nonce on every earlier one.
+//!
 //! The secret is the password as pre-hashed for the Digest handshake
 //! (upper-case hex SHA-256), which the app reuses for the media cipher.
 
@@ -121,6 +125,8 @@ mod tests {
     use super::*;
 
     const H200_KEY_EXCHANGE: &str = "cipher=\"AES_128_CBC\" username=\"admin\" padding=\"PKCS7_16\" algorithm=\"HKDF\" nonce=\"4514f88f1148a6735bdc6a7d7b93b0b0\" salt=\"f9192a9ee24bc7db8df141bf2bd56af4\"";
+    /// Sent by an H200 (firmware 1.7.5) on 2026-09-22.
+    const H200_KEY_EXCHANGE_EMPTY_NONCE: &str = "cipher=\"AES_128_CBC\" username=\"admin\" padding=\"PKCS7_16\" algorithm=\"HKDF\" nonce=\"\" salt=\"fd1a82ca71cb9e00be85f57ac69360f9\"";
 
     #[test]
     fn test_key_exchange_parse() {
@@ -194,5 +200,24 @@ mod tests {
             "243f9ab129ce97a19e84f17b97a46fa5"
         );
         assert_ne!(cipher.aes_key, other.aes_key);
+    }
+
+    /// An empty `nonce` parses, and the keys derive from the ikm `":<secret>"`
+    /// (pinned the same way as above).
+    #[test]
+    fn test_media_cipher_derive_empty_nonce() {
+        let key_exchange = KeyExchange::parse(H200_KEY_EXCHANGE_EMPTY_NONCE).unwrap();
+        assert_eq!(key_exchange.nonce, "");
+        assert_eq!(key_exchange.salt, "fd1a82ca71cb9e00be85f57ac69360f9");
+
+        let cipher = MediaCipher::derive(&key_exchange, "SECRET").unwrap();
+        assert_eq!(
+            base16ct::lower::encode_string(&cipher.aes_key),
+            "bfcb321cbf40361ed342ea3f0a9d7203"
+        );
+        assert_eq!(
+            base16ct::lower::encode_string(&cipher.hmac_key),
+            "81ced300ae4ea0fa865d2c1dc074aec7"
+        );
     }
 }

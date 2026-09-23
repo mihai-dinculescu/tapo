@@ -28,9 +28,9 @@
 //!
 //! Shapes and defaults follow the Tapo app's clip save: its download
 //! request, its stop request, and its read loop. Verified against an H200
-//! on 2026-09-20: a 9 s clip arrived as 224 `video/mp2t` parts (2.7 MB)
-//! with a clock reading of 8.428 s, and the hub ended it about 2 s after
-//! the request.
+//! (firmware 1.7.5) on 2026-09-22: a 12 s and a 31 s clip from two cameras
+//! arrived as 299 and 779 `video/mp2t` parts, and the hub ended each with a
+//! `stream_status` of `finished`.
 
 use std::time::{Duration, Instant};
 
@@ -276,10 +276,9 @@ impl State {
                 "notification" => {
                     let notification: NotificationMessage = serde_json::from_value(message.params)
                         .context("invalid media stream notification")?;
-                    let event_type = notification.event_type.unwrap_or_default();
-                    debug!("Media stream notification: {event_type}");
+                    debug!("Media stream notification: {}", notification.event_type);
 
-                    if event_type == "stream_status"
+                    if notification.event_type == "stream_status"
                         && notification.status.as_deref() == Some("finished")
                     {
                         return Ok(false);
@@ -382,7 +381,7 @@ impl State {
         }
 
         let Some(nonce) = part.header("x-nonce") else {
-            return Err(anyhow!("encrypted media stream part without an X-Nonce").into());
+            return Err(anyhow!("media stream part without an X-Nonce").into());
         };
 
         Ok(self.cipher.decrypt(nonce, &part.body)?)
@@ -550,7 +549,6 @@ struct NotificationParams {
 struct ControlMessage {
     #[serde(rename = "type")]
     kind: String,
-    #[serde(default)]
     seq: Option<i64>,
     #[serde(default)]
     params: serde_json::Value,
@@ -558,18 +556,14 @@ struct ControlMessage {
 
 #[derive(Debug, Deserialize)]
 struct NotificationMessage {
-    #[serde(default)]
-    event_type: Option<String>,
+    event_type: String,
     /// Carried by `stream_status` notifications.
-    #[serde(default)]
     status: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 struct GetDownloadResponse {
-    #[serde(default)]
     error_code: i64,
-    #[serde(default)]
     session_id: Option<String>,
 }
 
@@ -667,7 +661,7 @@ mod tests {
         assert_eq!(message.seq, None);
 
         let notification: NotificationMessage = serde_json::from_value(message.params).unwrap();
-        assert_eq!(notification.event_type.as_deref(), Some("stream_status"));
+        assert_eq!(notification.event_type, "stream_status");
         assert_eq!(notification.status.as_deref(), Some("finished"));
     }
 
