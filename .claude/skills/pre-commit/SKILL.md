@@ -24,6 +24,7 @@ Link-free checks (`check`, `clippy`) take `--workspace` so they cover `tapo-py` 
 - No `unsafe` in non-test code without a `// SAFETY:` comment
 - No unnecessary clones
 - No deeply nested `use` (max one level of `{}` nesting)
+- If a protocol puts a session token or other secret into a request URL in a new place, update `redact_session_token` in `tapo/src/error.rs` and its tests, because reqwest prints the full URL in its errors
 - Module layout, for every module added or touched by the change:
   - A module with submodules is declared by `module_name.rs` next to the `module_name/` folder, never by `module_name/mod.rs`
   - `module_name.rs` holds only its `mod` declarations and `use`/`pub use` re-exports (plus `//!` docs and attributes such as `#[cfg(...)]` on them). Move any types, functions, impls, constants, or tests into a submodule file
