@@ -66,11 +66,11 @@ Run these checks on every change, whatever directories it touches. Fix all issue
 
 The decompiled Tapo Android app is a private reverse-engineering aid that lives outside the repo, and its names are obfuscated per app release. Nothing committed may point at it.
 
-- Scan the files the change touches for references to the decompiled sources, and for app class names written the Java way (`Type.CONSTANT`, `Type.method()`) or right after "app's":
+- Scan the files the change touches, including new untracked ones, for references to the decompiled sources, and for app class names written the Java way (`Type.CONSTANT`, `Type.method()`) or right after "app's":
 
   ```bash
-  git diff --name-only --diff-filter=d HEAD -- . ':!.claude/skills/pre-commit/SKILL.md' | xargs grep -nEi '\.(java|kt|smali)\b|decompil|base\.apk|apkmirror|jadx|com[./]tplink'
-  git diff --name-only --diff-filter=d HEAD -- . ':!.claude/skills/pre-commit/SKILL.md' | xargs grep -nE '`[A-Z][A-Za-z0-9]*\.([A-Z_]+|[a-z][A-Za-z0-9]*\(\))`|app(.s)?[^`]{0,30}`[A-Z][a-z]+[A-Z][A-Za-z]*`'
+  { git diff --name-only --diff-filter=d HEAD -- . ':!.claude/skills/pre-commit/SKILL.md'; git ls-files -o --exclude-standard -- . ':!.claude/skills/pre-commit/SKILL.md'; } | xargs grep -nEi '\.(java|kt|smali)\b|decompil|base\.apk|apkmirror|jadx|com[./]tplink'
+  { git diff --name-only --diff-filter=d HEAD -- . ':!.claude/skills/pre-commit/SKILL.md'; git ls-files -o --exclude-standard -- . ':!.claude/skills/pre-commit/SKILL.md'; } | xargs grep -nE '`[A-Z][A-Za-z0-9]*\.([A-Z_]+|[a-z][A-Za-z0-9]*\(\))`|app(.s)?[^`]{0,30}`[A-Z][a-z]+[A-Z][A-Za-z]*`'
   ```
 
   The second pattern works one line at a time, so it misses a class name that wraps onto the line after "app". Then read every comment in the touched files that mentions the app, not only the lines the diff changed, for what the patterns miss: two/three-character package or class names (`ab1`, `xy2`, `zz9/c1`), app-internal class and method names (`KeyMixer.d()`, `StreamGatewayImpl`), and absolute paths into the decompiled tree.
