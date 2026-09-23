@@ -14,14 +14,12 @@ use crate::{Error, TapoResponseError};
 use super::crypto;
 use super::klap_cipher::KlapCipher;
 
-#[derive(Debug)]
 struct KlapSession {
     url: String,
     cookie: String,
     cipher: KlapCipher,
 }
 
-#[derive(Debug)]
 pub(super) struct KlapProtocol {
     client: Client,
     session: Option<KlapSession>,

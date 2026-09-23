@@ -14,14 +14,12 @@ use super::aes_ssl_cipher::{
 };
 use super::crypto;
 
-#[derive(Debug)]
 struct AesSslSession {
     cipher: AesSslCipher,
     url_with_token: String,
     url: String,
 }
 
-#[derive(Debug)]
 pub(super) struct AesSslProtocol {
     client: Client,
     session: Option<AesSslSession>,

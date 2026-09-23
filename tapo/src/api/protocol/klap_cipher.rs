@@ -6,7 +6,6 @@ use cbc::{Decryptor, Encryptor};
 
 use super::crypto;
 
-#[derive(Debug)]
 pub(super) struct KlapCipher {
     key: Vec<u8>,
     iv: Vec<u8>,
@@ -33,7 +32,7 @@ impl KlapCipher {
     }
 
     pub fn encrypt(&self, data: String) -> anyhow::Result<(Vec<u8>, i32)> {
-        let seq = self.seq.fetch_add(1, Ordering::Relaxed) + 1;
+        let seq = self.seq.fetch_add(1, Ordering::Relaxed).wrapping_add(1);
         let encryptor = Encryptor::<Aes128>::new_from_slices(&self.key, &self.iv_seq(seq))?;
 
         let cipher_bytes = encryptor.encrypt_padded_vec::<block_padding::Pkcs7>(data.as_bytes());
