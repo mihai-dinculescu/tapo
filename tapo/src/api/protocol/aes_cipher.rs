@@ -6,7 +6,7 @@ use rsa::{Pkcs1v15Encrypt, RsaPrivateKey};
 
 use super::crypto;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub(crate) struct AesKeyPair {
     rsa: RsaPrivateKey,
 }
@@ -30,7 +30,6 @@ impl AesKeyPair {
     }
 }
 
-#[derive(Debug)]
 pub(crate) struct AesCipher {
     key: Vec<u8>,
     iv: Vec<u8>,

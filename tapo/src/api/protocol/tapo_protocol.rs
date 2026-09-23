@@ -36,14 +36,12 @@ pub(crate) enum AuthProtocol {
     Unknown,
 }
 
-#[derive(Debug)]
 enum ActiveProtocol {
     Aes(AesProtocol),
     AesSsl(AesSslProtocol),
     Klap(KlapProtocol),
 }
 
-#[derive(Debug)]
 pub(crate) struct TapoProtocol {
     client: Client,
     device_family: DeviceFamily,

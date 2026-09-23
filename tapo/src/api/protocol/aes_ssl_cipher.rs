@@ -2,7 +2,6 @@ use std::sync::atomic::{AtomicI32, Ordering};
 
 use super::crypto;
 
-#[derive(Debug)]
 pub(super) struct AesSslCipher {
     key: Vec<u8>,
     iv: Vec<u8>,

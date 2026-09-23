@@ -17,14 +17,12 @@ use crate::{Error, TapoResponseError};
 
 use super::aes_cipher::{AesCipher, AesKeyPair};
 
-#[derive(Debug)]
 pub(super) struct AesProtocol {
     client: Client,
     key_pair: AesKeyPair,
     session: Option<Session>,
 }
 
-#[derive(Debug)]
 struct Session {
     url: String,
     cookie: String,
