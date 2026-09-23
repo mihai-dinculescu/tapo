@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::responses::{AiCameraSupport, BackupWifi, TapoResponseExt};
 
 /// General device list result.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub(crate) struct GeneralDeviceListHubResultRaw {
     general_camera_manage: GeneralCameraManageResultRaw,
 }
@@ -16,7 +16,7 @@ impl GeneralDeviceListHubResultRaw {
 
 impl TapoResponseExt for GeneralDeviceListHubResultRaw {}
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 struct GeneralCameraManageResultRaw {
     /// H200 firmware 1.6.5 omits its other lists when they are empty, so a
     /// missing list is taken to mean no paired cameras.

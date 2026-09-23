@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::responses::{Component, TapoResponseExt};
 
 /// App component list result (`getAppComponentList`).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub(crate) struct AppComponentListResultRaw {
     app_component: AppComponentRaw,
 }
@@ -23,12 +23,12 @@ impl AppComponentListResultRaw {
 
 impl TapoResponseExt for AppComponentListResultRaw {}
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 struct AppComponentRaw {
     app_component_list: Vec<AppComponentItemRaw>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 struct AppComponentItemRaw {
     name: String,
     version: u8,

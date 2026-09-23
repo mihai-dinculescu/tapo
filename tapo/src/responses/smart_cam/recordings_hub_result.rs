@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::responses::TapoResponseExt;
 
 /// Recording date list result (`searchDateWithVideo`).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub(crate) struct RecordingDateListHubResultRaw {
     playback: RecordingDateListRaw,
 }
@@ -30,7 +30,7 @@ impl RecordingDateListHubResultRaw {
 
 impl TapoResponseExt for RecordingDateListHubResultRaw {}
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RecordingDateListRaw {
     /// Each date is wrapped in a single-key section object, e.g.
     /// `{"search_results_1": {"date": "20260906"}}`.
@@ -38,7 +38,7 @@ struct RecordingDateListRaw {
     search_results: Vec<HashMap<String, RecordingDateRaw>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RecordingDateRaw {
     date: String,
 }
@@ -91,7 +91,7 @@ fn local_midnight(date: NaiveDate, timezone: Tz) -> DateTime<Utc> {
 }
 
 /// Recording list result (`searchVideoWithUTC`).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub(crate) struct RecordingListHubResultRaw {
     playback: RecordingListRaw,
 }
@@ -108,7 +108,7 @@ impl RecordingListHubResultRaw {
 
 impl TapoResponseExt for RecordingListHubResultRaw {}
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 struct RecordingListRaw {
     /// Each recording is wrapped in a single-key section object, e.g.
     /// `{"search_video_results_1": {"startTime": ..., "endTime": ..., "video_type": "2"}}`.

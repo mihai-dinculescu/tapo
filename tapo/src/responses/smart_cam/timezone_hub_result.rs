@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::responses::TapoResponseExt;
 
 /// Timezone result (`getTimezone`).
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 pub(crate) struct TimezoneHubResultRaw {
     system: TimezoneSystemRaw,
 }
@@ -17,7 +17,7 @@ impl TimezoneHubResultRaw {
 
 impl TapoResponseExt for TimezoneHubResultRaw {}
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Deserialize)]
 struct TimezoneSystemRaw {
     basic: TimezoneHubResult,
 }
