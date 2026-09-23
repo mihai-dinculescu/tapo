@@ -24,6 +24,7 @@ file. This change log follows the conventions of
 - `CameraPtzHandler`: `get_component_list` (behind `debug` feature) now correctly returns the camera's component list rather than an error.
 - AES SSL protocol: an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an `Unauthorized` error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
 - `ApiClient`: logging in to a device no longer writes the password, a value derived from it, or the session token to the debug and trace logs.
+- `Error::Http`: the message and `Debug` output now show `REDACTED` in place of the session token in the request URL, so a failed request to a camera, camera hub or AES-protocol device no longer reveals it.
 - `ApiClient`: the `Debug` output now obscures the password and leaves out the session state, so formatting a client or a device handler with `{:?}` no longer reveals the password.
 - `ApiClient` and device handlers: a device reply too short to be valid now returns an error instead of panicking.
 
@@ -45,6 +46,7 @@ file. This change log follows the conventions of
 - `CameraPtzHandler`: `get_component_list` now correctly returns the camera's component list rather than raising an exception.
 - AES SSL protocol: an unexpected `handshake1` error code (e.g. `-40401` SESSION_EXPIRED) now surfaces as an authentication error that reports the received code, instead of a confusing deserialization error about a missing `nonce` field.
 - `ApiClient`: logging in to a device no longer writes the password, a value derived from it, or the session token to the debug and trace logs.
+- HTTP errors: the exception message now shows `REDACTED` in place of the session token in the request URL, so a failed request to a camera, camera hub or AES-protocol device no longer reveals it.
 - `ApiClient` and device handlers: a device reply too short to be valid now raises an error instead of panicking.
 
 ## [MCP Unreleased][Unreleased]
@@ -52,6 +54,10 @@ file. This change log follows the conventions of
 ### Changed
 
 - Tool errors: error messages now include the full chain of causes, so a transport failure reports why it failed (e.g. `connection closed before message completed` or `operation timed out`) instead of stopping at the request URL.
+
+### Fixed
+
+- Device errors: the server's logs and the error data it returns to MCP clients no longer include the device's session token when a request to a camera, camera hub or AES-protocol device fails.
 
 ## [MCP v0.5.0][tapo-mcp-v0.5.0] - 2026-07-11
 
