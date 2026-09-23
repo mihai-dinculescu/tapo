@@ -305,3 +305,167 @@ macro_rules! py_child_handler {
         }
     };
 }
+
+/// Generates the hub child device methods for a handler created with
+/// [`py_handler!`], mirroring `hub_child_handlers!` in the `tapo` crate.
+///
+/// # Usage
+///
+/// ```ignore
+/// py_hub_child_handlers!(PyHubHandler, HubHandler);
+/// ```
+///
+/// # Generated code
+///
+/// * `get_child_device_list()` method (returns a `Py<PyList>` of typed child results)
+/// * `get_child_device_list_json(start_index)` method (returns `Py<PyDict>`)
+/// * `get_child_device_component_list()` method
+/// * `ke100()`, `s200()`, `s210()`, `t100()`, `t110()`, `t300()` and `t31x()`
+///   child handler builders, taking a `device_id` or a `nickname`
+/// * the `_unchecked` counterparts, taking a `device_id`
+macro_rules! py_hub_child_handlers {
+    ($py_name:ident, $handler:ident) => {
+        py_hub_child_handlers!(
+            @impl $py_name, $handler,
+            (ke100, ke100_unchecked, PyKE100Handler),
+            (s200, s200_unchecked, PyS200Handler),
+            (s210, s210_unchecked, PyS210Handler),
+            (t100, t100_unchecked, PyT100Handler),
+            (t110, t110_unchecked, PyT110Handler),
+            (t300, t300_unchecked, PyT300Handler),
+            (t31x, t31x_unchecked, PyT31XHandler),
+        );
+    };
+
+    (
+        @impl $py_name:ident, $handler:ident,
+        $(($method:ident, $unchecked:ident, $py_handler:ident),)*
+    ) => {
+        impl $py_name {
+            fn parse_identifier(
+                device_id: Option<String>,
+                nickname: Option<String>,
+            ) -> pyo3::prelude::PyResult<tapo::HubDevice> {
+                match (device_id, nickname) {
+                    (Some(device_id), _) => Ok(tapo::HubDevice::ByDeviceId(device_id)),
+                    (None, Some(nickname)) => Ok(tapo::HubDevice::ByNickname(nickname)),
+                    _ => Err(tapo::Error::Validation {
+                        field: "identifier".to_string(),
+                        message: "Either a device_id or nickname must be provided".to_string(),
+                    }
+                    .into()),
+                }
+            }
+        }
+
+        #[pyo3::pymethods]
+        impl $py_name {
+            pub async fn get_child_device_list(
+                &self,
+            ) -> pyo3::prelude::PyResult<pyo3::Py<pyo3::types::PyList>> {
+                use pyo3::prelude::*;
+                use std::ops::Deref;
+                use tapo::responses::ChildDeviceHubResult;
+
+                let handler = self.inner.clone();
+                let children = $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_child_device_list
+                )?;
+
+                Python::attach(|py| {
+                    let results = pyo3::types::PyList::empty(py);
+
+                    for child in children {
+                        match child {
+                            ChildDeviceHubResult::KE100(device) => {
+                                results.append(device.into_pyobject(py)?)?;
+                            }
+                            ChildDeviceHubResult::S200(device) => {
+                                results.append(device.into_pyobject(py)?)?;
+                            }
+                            ChildDeviceHubResult::S210(device) => {
+                                results.append(device.into_pyobject(py)?)?;
+                            }
+                            ChildDeviceHubResult::T100(device) => {
+                                results.append(device.into_pyobject(py)?)?;
+                            }
+                            ChildDeviceHubResult::T110(device) => {
+                                results.append(device.into_pyobject(py)?)?;
+                            }
+                            ChildDeviceHubResult::T300(device) => {
+                                results.append(device.into_pyobject(py)?)?;
+                            }
+                            ChildDeviceHubResult::T31X(device) => {
+                                results.append(device.into_pyobject(py)?)?;
+                            }
+                            ChildDeviceHubResult::Other(device) => {
+                                results.append(device.into_pyobject(py)?)?;
+                            }
+                        }
+                    }
+
+                    Ok(results.into())
+                })
+            }
+
+            pub async fn get_child_device_list_json(
+                &self,
+                start_index: u64,
+            ) -> pyo3::prelude::PyResult<pyo3::Py<pyo3::types::PyDict>> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                let result = $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_child_device_list_json,
+                    start_index
+                )?;
+                pyo3::prelude::Python::attach(|py| {
+                    tapo::python::serde_object_to_py_dict(py, &result)
+                })
+            }
+
+            pub async fn get_child_device_component_list(
+                &self,
+            ) -> pyo3::prelude::PyResult<Vec<tapo::responses::ChildDeviceComponentList>> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_child_device_component_list
+                )
+            }
+
+            $(
+                #[pyo3(signature = (device_id=None, nickname=None))]
+                pub async fn $method(
+                    &self,
+                    device_id: Option<String>,
+                    nickname: Option<String>,
+                ) -> pyo3::prelude::PyResult<$crate::api::$py_handler> {
+                    use std::ops::Deref;
+                    let handler = self.inner.clone();
+                    let identifier = $py_name::parse_identifier(device_id, nickname)?;
+
+                    let child_handler = $crate::call_handler_method!(
+                        handler.read().await.deref(),
+                        $handler::$method,
+                        identifier
+                    )?;
+                    Ok($crate::api::$py_handler::new(child_handler))
+                }
+            )*
+
+            $(
+                pub async fn $unchecked(
+                    &self,
+                    device_id: String,
+                ) -> pyo3::prelude::PyResult<$crate::api::$py_handler> {
+                    let handler = self.inner.clone();
+                    let child = handler.read().await.$unchecked(device_id);
+                    Ok($crate::api::$py_handler::new(child))
+                }
+            )*
+        }
+    };
+}
