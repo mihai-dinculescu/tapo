@@ -1,4 +1,5 @@
 from .api_client import *
+from .camera_hub_handler import *
 from .camera_ptz_handler import *
 from .color_light_handler import *
 from .device_discovery import *
