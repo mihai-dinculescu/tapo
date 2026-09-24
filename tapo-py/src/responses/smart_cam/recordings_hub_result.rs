@@ -46,8 +46,8 @@ tapo::impl_to_dict!(PyRecordingHubResult);
 /// enum that mixes unit variants with a data-carrying one, so this plain enum
 /// mirrors [`RecordingType`], with every unknown wire value folded into
 /// `Other`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[pyclass(name = "RecordingType", from_py_object, eq, eq_int)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[pyclass(name = "RecordingType", from_py_object, eq, eq_int, hash, frozen)]
 #[allow(missing_docs)]
 pub enum PyRecordingType {
     Timing,

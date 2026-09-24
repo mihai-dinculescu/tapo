@@ -96,8 +96,8 @@ tapo::impl_to_dict!(PyGeneralDeviceHubResult);
 /// expose a Rust enum that mixes unit variants with a data-carrying one, so
 /// this enum mirrors [`BackupWifi`] with struct variants. `None` becomes
 /// `Disabled` because `BackupWifi.None` is not valid Python.
-#[derive(Debug, Clone, PartialEq, Eq)]
-#[pyclass(name = "BackupWifi", from_py_object, eq, frozen)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[pyclass(name = "BackupWifi", from_py_object, eq, hash, frozen)]
 #[allow(missing_docs)]
 pub enum PyBackupWifi {
     Auto {},
