@@ -47,7 +47,8 @@ class GeneralDeviceHubResult(ToDictExt):
     """General device (standalone Wi-Fi camera) paired to a camera hub."""
 
     ai_camera_support: AiCameraSupport
-    """The AI detection types the camera runs itself."""
+    """The AI detection types the camera runs itself. In ``to_dict`` it is the raw
+    bitmask, an ``int``."""
 
     alias: str
 

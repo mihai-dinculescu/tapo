@@ -5,6 +5,7 @@ use chrono_tz::Tz;
 use serde::{Deserialize, Serialize};
 
 use crate::responses::TapoResponseExt;
+use crate::utils::datetime_from_unix_seconds_or_rfc3339;
 
 /// Recording date list result (`searchDateWithVideo`).
 #[derive(Debug, Deserialize)]
@@ -124,10 +125,16 @@ struct RecordingListRaw {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RecordingHubResult {
     /// Start of the recording.
-    #[serde(alias = "startTime", with = "chrono::serde::ts_seconds")]
+    #[serde(
+        alias = "startTime",
+        deserialize_with = "datetime_from_unix_seconds_or_rfc3339"
+    )]
     pub start_time: DateTime<Utc>,
     /// End of the recording.
-    #[serde(alias = "endTime", with = "chrono::serde::ts_seconds")]
+    #[serde(
+        alias = "endTime",
+        deserialize_with = "datetime_from_unix_seconds_or_rfc3339"
+    )]
     pub end_time: DateTime<Utc>,
     /// The type of event that produced the recording.
     pub video_type: RecordingType,
@@ -390,7 +397,7 @@ mod tests {
 
         assert_eq!(
             json,
-            r#"{"start_time":1786694400,"end_time":1786694460,"video_type":"Motion"}"#
+            r#"{"start_time":"2026-08-14T08:00:00Z","end_time":"2026-08-14T08:01:00Z","video_type":"Motion"}"#
         );
 
         let parsed: RecordingHubResult = serde_json::from_str(&json).unwrap();

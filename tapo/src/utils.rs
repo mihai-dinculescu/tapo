@@ -39,6 +39,28 @@ where
     }
 }
 
+/// Deserialize a UTC time from either a Unix timestamp in seconds or an RFC 3339 string.
+pub(crate) fn datetime_from_unix_seconds_or_rfc3339<'de, D>(
+    deserializer: D,
+) -> Result<DateTime<Utc>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = serde_json::Value::deserialize(deserializer)?;
+    match value {
+        serde_json::Value::Number(n) => n
+            .as_i64()
+            .and_then(|seconds| DateTime::from_timestamp(seconds, 0))
+            .ok_or_else(|| serde::de::Error::custom("Unix timestamp out of range")),
+        serde_json::Value::String(s) => DateTime::parse_from_rfc3339(&s)
+            .map(|time| time.to_utc())
+            .map_err(serde::de::Error::custom),
+        _ => Err(serde::de::Error::custom(
+            "expected Unix timestamp or RFC 3339 string",
+        )),
+    }
+}
+
 /// Deserialize an optional boolean from either a JSON bool, an integer (0/1), or absence.
 pub(crate) fn option_bool_from_int_or_bool<'de, D>(
     deserializer: D,

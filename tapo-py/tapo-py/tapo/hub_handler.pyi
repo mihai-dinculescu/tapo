@@ -65,7 +65,7 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
         try `HubHandler.get_child_device_list_json`.
 
         Returns:
-            dict: Device info as a dictionary.
+            List[KE100Result | S200Result | S210Result | T100Result | T110Result | T300Result | T31XResult | OtherResult]: The child devices paired to the hub.
         """
 
     async def get_child_device_list_json(self, start_index: int) -> dict:
@@ -74,10 +74,10 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
 
         Args:
             start_index (int): the index to start fetching the child device list.
-            It should be `0` for the first page, `10` for the second, and so on.
+                It should be `0` for the first page, `10` for the second, and so on.
 
         Returns:
-            dict: Device info as a dictionary.
+            dict: Child device list as a dictionary.
         """
 
     async def get_child_device_component_list(self) -> List[ChildDeviceComponentList]:
@@ -282,6 +282,7 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
         self, device_id: Optional[str] = None, nickname: Optional[str] = None
     ) -> T31XHandler:
         """Returns a `T31XHandler` for the device matching the provided `device_id` or `nickname`.
+
         Args:
             device_id (Optional[str]): The Device ID of the device
             nickname (Optional[str]): The Nickname of the device
