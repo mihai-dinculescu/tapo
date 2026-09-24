@@ -177,10 +177,10 @@ class CameraHubHandler(RefreshSessionExt, DebugExt):
             Exception: If `end_time` is not after `start_time`, if either is
                 before 1970, if the file cannot be created, if the hub rejects
                 the request or sends no media, if it sends encrypted media that
-                cannot be decrypted, or if the hub closes the connection or the
-                backstop runs out before the hub reports the end of the recording.
-                In that last case the file holds only the part of the recording
-                that arrived.
+                cannot be decrypted, if writing to the file fails, or if the
+                hub closes the connection or the backstop runs out before the
+                hub reports the end of the recording. In that last case the
+                file holds only the part of the recording that arrived.
 
         Example:
             ```python

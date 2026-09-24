@@ -93,15 +93,15 @@ impl PyCameraHubHandler {
                     .await
                     .map_err(|err| Error::Other(anyhow::Error::from(err)))?;
 
-                let result = handler
+                let download = handler
                     .read()
                     .await
                     .download_recording(child_device_id, start_time.0, end_time.0, &mut file)
-                    .await?;
+                    .await;
+                let flush = file.flush().await;
 
-                file.flush()
-                    .await
-                    .map_err(|err| Error::Other(anyhow::Error::from(err)))?;
+                let result = download?;
+                flush.map_err(|err| Error::Other(anyhow::Error::from(err)))?;
 
                 Ok::<_, Error>(result)
             })

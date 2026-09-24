@@ -252,9 +252,9 @@ impl CameraHubHandler {
     ///
     /// Returns an error if `end_time` is not after `start_time`, if either is
     /// before 1970, if the hub rejects the request or sends no media, if it
-    /// sends encrypted media that cannot be decrypted, or if the hub closes
-    /// the connection or the backstop runs out before the hub reports the end
-    /// of the recording. In that last case `writer` holds only the part of
+    /// sends encrypted media that cannot be decrypted, if writing to `writer`
+    /// fails, or if the hub closes the connection or the backstop runs out
+    /// before the hub reports the end of the recording. In that last case `writer` holds only the part of
     /// the recording that arrived.
     ///
     /// # Example
