@@ -1,7 +1,6 @@
 use std::ops::Deref;
 use std::path::PathBuf;
 
-use chrono::{DateTime, Utc};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use tapo::responses::{
@@ -12,6 +11,7 @@ use tokio::io::AsyncWriteExt;
 
 use crate::call_handler_method;
 use crate::responses::{PyGeneralDeviceHubResult, PyRecordingHubResult};
+use crate::utc_date_time::UtcDateTime;
 
 py_handler! {
     PyCameraHubHandler(CameraHubHandler, DeviceInfoCameraHubResult),
@@ -48,32 +48,32 @@ impl PyCameraHubHandler {
     pub async fn get_recording_dates(
         &self,
         child_device_id: String,
-        start_time: DateTime<Utc>,
-        end_time: DateTime<Utc>,
+        start_time: UtcDateTime,
+        end_time: UtcDateTime,
     ) -> PyResult<Vec<RecordingDateHubResult>> {
         let handler = self.inner.clone();
         call_handler_method!(
             handler.read().await.deref(),
             CameraHubHandler::get_recording_dates,
             child_device_id,
-            start_time,
-            end_time
+            start_time.0,
+            end_time.0
         )
     }
 
     pub async fn get_recordings(
         &self,
         child_device_id: String,
-        start_time: DateTime<Utc>,
-        end_time: DateTime<Utc>,
+        start_time: UtcDateTime,
+        end_time: UtcDateTime,
     ) -> PyResult<Vec<PyRecordingHubResult>> {
         let handler = self.inner.clone();
         let recordings = call_handler_method!(
             handler.read().await.deref(),
             CameraHubHandler::get_recordings,
             child_device_id,
-            start_time,
-            end_time
+            start_time.0,
+            end_time.0
         )?;
         Ok(recordings.into_iter().map(Into::into).collect())
     }
@@ -81,8 +81,8 @@ impl PyCameraHubHandler {
     pub async fn download_recording(
         &self,
         child_device_id: String,
-        start_time: DateTime<Utc>,
-        end_time: DateTime<Utc>,
+        start_time: UtcDateTime,
+        end_time: UtcDateTime,
         path: PathBuf,
     ) -> PyResult<RecordingDownloadResult> {
         let handler = self.inner.clone();
@@ -96,7 +96,7 @@ impl PyCameraHubHandler {
                 let result = handler
                     .read()
                     .await
-                    .download_recording(child_device_id, start_time, end_time, &mut file)
+                    .download_recording(child_device_id, start_time.0, end_time.0, &mut file)
                     .await?;
 
                 file.flush()
