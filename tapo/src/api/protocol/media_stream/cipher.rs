@@ -107,8 +107,9 @@ impl MediaCipher {
 
     /// Whether `hmac_base64` (the part's `X-Data-Hmac`) matches `ciphertext`.
     pub fn verify_hmac(&self, ciphertext: &[u8], hmac_base64: &str) -> bool {
-        let expected = crypto::hmac_sha256(&self.hmac_key, ciphertext);
-        general_purpose::STANDARD.encode(expected) == hmac_base64.trim()
+        general_purpose::STANDARD
+            .decode(hmac_base64.trim())
+            .is_ok_and(|tag| crypto::hmac_sha256_verify(&self.hmac_key, ciphertext, &tag))
     }
 
     /// Decrypts a part's body with the IV from its `X-Nonce` header.
@@ -122,6 +123,9 @@ impl MediaCipher {
 
 #[cfg(test)]
 mod tests {
+    use hmac::{Hmac, KeyInit, Mac};
+    use sha2::Sha256;
+
     use super::*;
 
     const H200_KEY_EXCHANGE: &str = "cipher=\"AES_128_CBC\" username=\"admin\" padding=\"PKCS7_16\" algorithm=\"HKDF\" nonce=\"4514f88f1148a6735bdc6a7d7b93b0b0\" salt=\"f9192a9ee24bc7db8df141bf2bd56af4\"";
@@ -170,10 +174,13 @@ mod tests {
         .unwrap();
         let ciphertext = general_purpose::STANDARD.decode(ciphertext_base64).unwrap();
 
-        let hmac =
-            general_purpose::STANDARD.encode(crypto::hmac_sha256(&cipher.hmac_key, &ciphertext));
+        let mut mac = Hmac::<Sha256>::new_from_slice(&cipher.hmac_key).unwrap();
+        mac.update(&ciphertext);
+        let hmac = general_purpose::STANDARD.encode(mac.finalize().into_bytes());
         assert!(cipher.verify_hmac(&ciphertext, &hmac));
+        assert!(cipher.verify_hmac(&ciphertext, &format!(" {hmac} ")));
         assert!(!cipher.verify_hmac(&ciphertext, "AAAA"));
+        assert!(!cipher.verify_hmac(&ciphertext, "not base64"));
 
         let other = MediaCipher::derive(&key_exchange, "OTHER").unwrap();
         assert!(!other.verify_hmac(&ciphertext, &hmac));

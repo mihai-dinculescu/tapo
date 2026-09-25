@@ -95,6 +95,22 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
     time_limit: Duration,
     sink: &mut W,
 ) -> Result<RecordingDownloadResult, Error> {
+    let result = run_session(connection, request, time_limit, sink).await;
+    // Flushed on every outcome, so that after an error `sink` holds all of the
+    // partial recording rather than missing a chunk still in flight (as with
+    // a `tokio::fs::File`). The session's error takes precedence.
+    let flush = sink.flush().await.context("flush the media sink");
+    let result = result?;
+    flush?;
+    Ok(result)
+}
+
+async fn run_session<W: AsyncWrite + Unpin>(
+    connection: MediaStreamConnection,
+    request: DownloadRequest,
+    time_limit: Duration,
+    sink: &mut W,
+) -> Result<RecordingDownloadResult, Error> {
     let MediaStreamConnection {
         stream,
         buffered,
@@ -195,8 +211,6 @@ pub(crate) async fn download<W: AsyncWrite + Unpin>(
     if let Err(err) = writer.shutdown().await {
         debug!("Failed to shut down the media stream: {err:?}");
     }
-
-    sink.flush().await.context("flush the media sink")?;
 
     state.finish()
 }

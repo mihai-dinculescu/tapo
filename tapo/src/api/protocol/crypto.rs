@@ -48,13 +48,14 @@ pub fn aes128_cbc_decrypt_bytes(key: &[u8], iv: &[u8], data: &[u8]) -> anyhow::R
         .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))
 }
 
-/// HMAC-SHA256 (RFC 2104).
-pub fn hmac_sha256(key: &[u8], data: &[u8]) -> [u8; 32] {
+/// Whether `tag` is the HMAC-SHA256 of `data` under `key`, compared in
+/// constant time.
+pub fn hmac_sha256_verify(key: &[u8], data: &[u8], tag: &[u8]) -> bool {
     use hmac::{Hmac, KeyInit, Mac};
     use sha2::Sha256;
     let mut mac = Hmac::<Sha256>::new_from_slice(key).expect("HMAC takes a key of any size");
     mac.update(data);
-    mac.finalize().into_bytes().into()
+    mac.verify_slice(tag).is_ok()
 }
 
 /// HKDF with HMAC-SHA256 (RFC 5869): extract with `salt`, then expand with

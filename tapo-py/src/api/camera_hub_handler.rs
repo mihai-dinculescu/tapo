@@ -7,7 +7,6 @@ use tapo::responses::{
     DeviceInfoCameraHubResult, RecordingDateHubResult, RecordingDownloadResult, TimezoneHubResult,
 };
 use tapo::{CameraHubHandler, Error};
-use tokio::io::AsyncWriteExt;
 
 use crate::call_handler_method;
 use crate::responses::{PyGeneralDeviceHubResult, PyRecordingHubResult};
@@ -87,23 +86,36 @@ impl PyCameraHubHandler {
     ) -> PyResult<RecordingDownloadResult> {
         let handler = self.inner.clone();
 
+        // Rejects invalid arguments before the file is truncated, so a bad
+        // call leaves an existing file at `path` untouched.
+        if end_time.0 <= start_time.0 {
+            return Err(Error::Validation {
+                field: "end_time".to_string(),
+                message: "Must be after start_time".to_string(),
+            }
+            .into());
+        }
+        for (field, time) in [("start_time", &start_time), ("end_time", &end_time)] {
+            if time.0.timestamp() < 0 {
+                return Err(Error::Validation {
+                    field: field.to_string(),
+                    message: "Must not be before 1970-01-01T00:00:00Z".to_string(),
+                }
+                .into());
+            }
+        }
+
         let result = crate::runtime::tokio()
             .spawn(async move {
                 let mut file = tokio::fs::File::create(&path)
                     .await
                     .map_err(|err| Error::Other(anyhow::Error::from(err)))?;
 
-                let download = handler
+                handler
                     .read()
                     .await
                     .download_recording(child_device_id, start_time.0, end_time.0, &mut file)
-                    .await;
-                let flush = file.flush().await;
-
-                let result = download?;
-                flush.map_err(|err| Error::Other(anyhow::Error::from(err)))?;
-
-                Ok::<_, Error>(result)
+                    .await
             })
             .await
             .map_err(anyhow::Error::from)??;
