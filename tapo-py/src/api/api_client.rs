@@ -185,6 +185,12 @@ impl PyApiClient {
         Ok(PyHubHandler::new(handler))
     }
 
+    pub async fn h110(&self, ip_address: String) -> PyResult<PyHubHandler> {
+        let handler: HubHandler =
+            call_handler_constructor!(self, tapo::ApiClient::h110, ip_address);
+        Ok(PyHubHandler::new(handler))
+    }
+
     pub async fn c210(&self, ip_address: String) -> PyResult<PyCameraPtzHandler> {
         let handler: CameraPtzHandler =
             call_handler_constructor!(self, tapo::ApiClient::c210, ip_address);

@@ -1,7 +1,7 @@
 """Tapo API Client.
 
 Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115),
-power strips (P300, P304M, P306, P316M), hubs (H100), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
+power strips (P300, P304M, P306, P316M), hubs (H100, H110), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
 and cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
 
 Example:
@@ -42,7 +42,7 @@ class ApiClient:
     """Tapo API Client.
 
     Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115),
-    power strips (P300, P304M, P306, P316M), hubs (H100), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
+    power strips (P300, P304M, P306, P316M), hubs (H100, H110), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
     and cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
 
     Example:
@@ -484,6 +484,30 @@ class ApiClient:
             ```python
             client = ApiClient("tapo-username@example.com", "tapo-password")
             hub = await client.h100("192.168.1.100")
+
+            child_device_list = await hub.get_child_device_list()
+            print(f"Child device list: {child_device_list.to_dict()}")
+            ```
+        """
+
+    async def h110(self, ip_address: str) -> HubHandler:
+        """Specializes the given `ApiClient` into an authenticated `HubHandler`.
+
+        The H110 speaks the same protocol as the H100, so this is an alias for
+        `ApiClient.h100`. In addition to the sensors that the H100 supports, the
+        H110 can have IR remotes as child devices, which are handled by
+        `IrRemoteHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            HubHandler: Handler for the [H110](https://www.tapo.com/en/search/?q=H110) hubs.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            hub = await client.h110("192.168.1.100")
 
             child_device_list = await hub.get_child_device_list()
             print(f"Child device list: {child_device_list.to_dict()}")

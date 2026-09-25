@@ -86,11 +86,12 @@ pub enum DiscoveryResult {
         /// [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
         handler: PowerStripEnergyMonitoringHandler,
     },
-    /// Tapo H100 devices.
+    /// Tapo H100 and H110 devices.
     Hub {
-        /// Device info of Tapo H100.
+        /// Device info of Tapo H100 and H110.
         device_info: Box<DeviceInfoHubResult>,
-        /// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) devices.
+        /// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) and
+        /// [H110](https://www.tapo.com/en/search/?q=H110) devices.
         handler: HubHandler,
     },
     /// Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70).
