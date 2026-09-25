@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use pyo3::prelude::*;
 use tapo::{
-    ApiClient, CameraPtzHandler, ColorLightHandler, DeviceDiscovery, DeviceDiscoveryRaw, Error,
-    HubHandler, LightHandler, PlugEnergyMonitoringHandler, PlugHandler,
+    ApiClient, CameraHubHandler, CameraPtzHandler, ColorLightHandler, DeviceDiscovery,
+    DeviceDiscoveryRaw, Error, HubHandler, LightHandler, PlugEnergyMonitoringHandler, PlugHandler,
     PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
     RgbicLightStripHandler,
 };
@@ -11,10 +11,10 @@ use tapo::{
 use crate::call_handler_constructor;
 
 use super::{
-    PyCameraPtzHandler, PyColorLightHandler, PyDeviceDiscovery, PyDeviceDiscoveryRaw, PyHubHandler,
-    PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler,
-    PyPowerStripEnergyMonitoringHandler, PyPowerStripHandler, PyRgbLightStripHandler,
-    PyRgbicLightStripHandler,
+    PyCameraHubHandler, PyCameraPtzHandler, PyColorLightHandler, PyDeviceDiscovery,
+    PyDeviceDiscoveryRaw, PyHubHandler, PyLightHandler, PyPlugEnergyMonitoringHandler,
+    PyPlugHandler, PyPowerStripEnergyMonitoringHandler, PyPowerStripHandler,
+    PyRgbLightStripHandler, PyRgbicLightStripHandler,
 };
 
 #[pyclass(name = "ApiClient")]
@@ -183,6 +183,18 @@ impl PyApiClient {
         let handler: HubHandler =
             call_handler_constructor!(self, tapo::ApiClient::h100, ip_address);
         Ok(PyHubHandler::new(handler))
+    }
+
+    pub async fn h200(&self, ip_address: String) -> PyResult<PyCameraHubHandler> {
+        let handler: CameraHubHandler =
+            call_handler_constructor!(self, tapo::ApiClient::h200, ip_address);
+        Ok(PyCameraHubHandler::new(handler))
+    }
+
+    pub async fn h500(&self, ip_address: String) -> PyResult<PyCameraHubHandler> {
+        let handler: CameraHubHandler =
+            call_handler_constructor!(self, tapo::ApiClient::h500, ip_address);
+        Ok(PyCameraHubHandler::new(handler))
     }
 
     pub async fn c210(&self, ip_address: String) -> PyResult<PyCameraPtzHandler> {

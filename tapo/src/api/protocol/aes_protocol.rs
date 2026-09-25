@@ -17,14 +17,12 @@ use crate::{Error, TapoResponseError};
 
 use super::aes_cipher::{AesCipher, AesKeyPair};
 
-#[derive(Debug)]
 pub(super) struct AesProtocol {
     client: Client,
     key_pair: AesKeyPair,
     session: Option<Session>,
 }
 
-#[derive(Debug)]
 struct Session {
     url: String,
     cookie: String,
@@ -64,16 +62,35 @@ impl AesProtocol {
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
+        let request_string = serde_json::to_string(&request)?;
+        debug!("Request to passthrough: {request_string}");
+
+        let inner_response_decrypted = self.passthrough(&request_string).await?;
+
+        trace!("Device inner response (raw): {inner_response_decrypted}");
+
+        let inner_response: TapoResponse<R> = serde_json::from_str(&inner_response_decrypted)?;
+
+        debug!("Device inner response: {inner_response:?}");
+
+        validate_response(inner_response.error_code)?;
+
+        let result = inner_response.result;
+
+        Ok(result)
+    }
+
+    /// Sends a request through `securePassthrough` and returns the decrypted
+    /// inner response. Logs neither the request nor the decrypted response, so
+    /// that the login can use it.
+    async fn passthrough(&self, request_string: &str) -> Result<String, Error> {
         let session = self.session()?;
         let url = match &session.token {
             Some(token) => format!("{}?token={token}", session.url),
             None => session.url.clone(),
         };
 
-        let request_string = serde_json::to_string(&request)?;
-        debug!("Request to passthrough: {request_string}");
-
-        let request_encrypted = session.cipher.encrypt(&request_string)?;
+        let request_encrypted = session.cipher.encrypt(request_string)?;
 
         let secure_passthrough_params = SecurePassthroughParams::new(&request_encrypted);
         let secure_passthrough_request =
@@ -103,17 +120,7 @@ impl AesProtocol {
 
         let inner_response_decrypted = session.cipher.decrypt(&inner_response_encrypted)?;
 
-        trace!("Device inner response (raw): {inner_response_decrypted}");
-
-        let inner_response: TapoResponse<R> = serde_json::from_str(&inner_response_decrypted)?;
-
-        debug!("Device inner response: {inner_response:?}");
-
-        validate_response(inner_response.error_code)?;
-
-        let result = inner_response.result;
-
-        Ok(result)
+        Ok(inner_response_decrypted)
     }
 
     fn session(&self) -> Result<&Session, Error> {
@@ -161,22 +168,31 @@ impl AesProtocol {
     }
 
     async fn login_request(&mut self, username: String, password: String) -> Result<(), Error> {
+        debug!("Performing login...");
+
         let username_digest = AesCipher::sha1_digest_username(username);
-        debug!("Username digest: {username_digest}");
 
         let username = general_purpose::STANDARD.encode(username_digest);
         let password = general_purpose::STANDARD.encode(password);
-
-        debug!("Will login with username '{username}'...");
 
         let params = TapoParams::new(LoginDeviceParams::new(&username, &password))
             .set_request_time_mils()?;
         let request = TapoRequest::LoginDevice(params);
 
-        let result = self
-            .execute_request::<TokenResult>(request)
-            .await?
+        // Not through `execute_request`, which logs the request and the
+        // response: the request carries the password, the response the
+        // session token.
+        let request_string = serde_json::to_string(&request)?;
+        let response = self.passthrough(&request_string).await?;
+        let response: TapoResponse<TokenResult> = serde_json::from_str(&response)?;
+
+        validate_response(response.error_code)?;
+
+        let result = response
+            .result
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        debug!("Login OK");
 
         let session = self.session_mut()?;
         session.token.replace(result.token);

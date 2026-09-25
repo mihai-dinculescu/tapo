@@ -32,7 +32,7 @@ impl AlarmVolume {
     }
 }
 
-/// The ringtone of a H100 alarm.
+/// The ringtone of an H100 alarm.
 #[derive(Debug, Clone, Copy, PartialEq, Default, Serialize)]
 #[cfg_attr(
     feature = "python",
@@ -140,7 +140,7 @@ impl Serialize for AlarmDuration {
     }
 }
 
-/// Parameters for playing the alarm on a H100 hub.
+/// Parameters for playing the alarm on an H100 hub.
 #[derive(Debug, Serialize)]
 pub(crate) struct PlayAlarmParams {
     #[serde(skip_serializing_if = "AlarmRingtone::is_default")]

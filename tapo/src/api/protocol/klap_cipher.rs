@@ -6,7 +6,6 @@ use cbc::{Decryptor, Encryptor};
 
 use super::crypto;
 
-#[derive(Debug)]
 pub(super) struct KlapCipher {
     key: Vec<u8>,
     iv: Vec<u8>,
@@ -33,7 +32,7 @@ impl KlapCipher {
     }
 
     pub fn encrypt(&self, data: String) -> anyhow::Result<(Vec<u8>, i32)> {
-        let seq = self.seq.fetch_add(1, Ordering::Relaxed) + 1;
+        let seq = self.seq.fetch_add(1, Ordering::Relaxed).wrapping_add(1);
         let encryptor = Encryptor::<Aes128>::new_from_slices(&self.key, &self.iv_seq(seq))?;
 
         let cipher_bytes = encryptor.encrypt_padded_vec::<block_padding::Pkcs7>(data.as_bytes());
@@ -55,8 +54,15 @@ impl KlapCipher {
     pub fn decrypt(&self, seq: i32, cipher_bytes: Vec<u8>) -> anyhow::Result<String> {
         let decryptor = Decryptor::<Aes128>::new_from_slices(&self.key, &self.iv_seq(seq))?;
 
+        let ciphertext = cipher_bytes.get(32..).ok_or_else(|| {
+            anyhow::anyhow!(
+                "Response of {} bytes is shorter than its 32-byte signature",
+                cipher_bytes.len()
+            )
+        })?;
+
         let decrypted_bytes = decryptor
-            .decrypt_padded_vec::<block_padding::Pkcs7>(&cipher_bytes[32..])
+            .decrypt_padded_vec::<block_padding::Pkcs7>(ciphertext)
             .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))?;
         let decrypted = std::str::from_utf8(&decrypted_bytes)?.to_string();
 
@@ -92,5 +98,17 @@ impl KlapCipher {
         let mut iv_seq = self.iv.clone();
         iv_seq.extend_from_slice(&seq.to_be_bytes());
         iv_seq
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_decrypt_rejects_a_response_shorter_than_the_signature() {
+        let cipher = KlapCipher::new(vec![0; 16], vec![0; 16], vec![0; 32]).unwrap();
+
+        assert!(cipher.decrypt(1, vec![0; 31]).is_err());
     }
 }

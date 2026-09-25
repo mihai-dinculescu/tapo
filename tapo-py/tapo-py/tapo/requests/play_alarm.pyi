@@ -23,7 +23,7 @@ class AlarmVolume(str, Enum):
     """Highest volume."""
 
 class AlarmRingtone(str, Enum):
-    """The ringtone of a H100 alarm."""
+    """The ringtone of an H100 alarm."""
 
     Alarm1 = "Alarm1"
     """Alarm 1"""

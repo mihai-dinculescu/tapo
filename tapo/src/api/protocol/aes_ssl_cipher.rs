@@ -2,7 +2,6 @@ use std::sync::atomic::{AtomicI32, Ordering};
 
 use super::crypto;
 
-#[derive(Debug)]
 pub(super) struct AesSslCipher {
     key: Vec<u8>,
     iv: Vec<u8>,
@@ -35,6 +34,10 @@ impl AesSslCipher {
 
     pub fn encrypt(&self, data: &str) -> anyhow::Result<String> {
         crypto::aes128_cbc_encrypt(&self.key, &self.iv, data)
+    }
+
+    pub fn decrypt(&self, cipher_base64: &str) -> anyhow::Result<String> {
+        crypto::aes128_cbc_decrypt(&self.key, &self.iv, cipher_base64)
     }
 
     pub fn generate_tag(&self, request_body: &str, sequence: i32) -> String {
@@ -77,12 +80,6 @@ pub(super) fn compute_password_digest(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    impl AesSslCipher {
-        fn decrypt(&self, cipher_base64: &str) -> anyhow::Result<String> {
-            crypto::aes128_cbc_decrypt(&self.key, &self.iv, cipher_base64)
-        }
-    }
 
     #[test]
     fn test_nonce_generation() {

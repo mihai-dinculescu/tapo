@@ -14,14 +14,12 @@ use super::aes_ssl_cipher::{
 };
 use super::crypto;
 
-#[derive(Debug)]
 struct AesSslSession {
     cipher: AesSslCipher,
     url_with_token: String,
     url: String,
 }
 
-#[derive(Debug)]
 pub(super) struct AesSslProtocol {
     client: Client,
     session: Option<AesSslSession>,
@@ -94,30 +92,40 @@ impl AesSslProtocol {
         let response_body: serde_json::Value = response.json().await?;
         trace!("Device responded with (raw): {response_body}");
 
-        let error_code = response_body
-            .get("error_code")
-            .and_then(|v| v.as_i64())
-            .unwrap_or(-1);
+        validate_response(extract_error_code(&response_body))?;
 
-        validate_response(error_code)?;
+        // SmartCam hubs (e.g. H500) encrypt the reply inside the
+        // securePassthrough envelope; cameras respond to single requests in
+        // plain text.
+        let response_body = match response_body
+            .pointer("/result/response")
+            .and_then(|v| v.as_str())
+        {
+            Some(response_encrypted) => {
+                let response_decrypted = session.cipher.decrypt(response_encrypted)?;
+                let response_body: serde_json::Value = serde_json::from_str(&response_decrypted)?;
+                trace!("Device responded with (decrypted): {response_body}");
 
-        // SmartCam responses place data under a single section key
-        // (e.g. "device_info": {"basic_info": {...}}).
-        // Extract the leaf object and deserialize R from it.
-        let leaf = response_body
-            .as_object()
-            .and_then(|obj| {
-                obj.iter()
-                    .find(|(k, _)| *k != "error_code")
-                    .and_then(|(_, section)| section.as_object())
-            })
-            .and_then(|section| section.values().next().and_then(|v| v.as_object()));
+                validate_response(extract_error_code(&response_body))?;
 
-        let Some(leaf) = leaf else {
-            return Ok(None);
+                response_body
+            }
+            None => response_body,
         };
 
-        let result: R = serde_json::from_value(serde_json::Value::Object(leaf.clone()))?;
+        // Only SmartCam get responses nest the data under a section key that
+        // needs unwrapping; other responses (e.g. multipleRequest) deserialize
+        // from the full body.
+        let payload = if matches!(request, TapoRequest::SmartCamGet(_)) {
+            match extract_section_leaf(response_body) {
+                Some(leaf) => leaf,
+                None => return Ok(None),
+            }
+        } else {
+            response_body
+        };
+
+        let result: R = serde_json::from_value(payload)?;
         debug!("Device responded with: {result:?}");
 
         Ok(Some(result))
@@ -195,17 +203,11 @@ impl AesSslProtocol {
             }));
         }
 
-        // Read the raw body first so the payload is visible in trace logs even
-        // when deserialization fails (e.g. an unexpected handshake1 shape).
-        let response_text = response.text().await?;
-        trace!("Handshake1 response (raw): {response_text}");
-
         // The nonce and device_confirm fields accompany only the expected
         // -40413 error code, so the error code must be checked before
         // deserializing the payload.
-        let response_body =
-            serde_json::from_str::<TapoResponse<serde_json::Value>>(&response_text)?;
-        debug!("Handshake1 response: {response_body:?}");
+        let response_body = response.json::<TapoResponse<serde_json::Value>>().await?;
+        debug!("Handshake1 error code: {}", response_body.error_code);
 
         // -40413 (INVALID_NONCE) is the expected response indicating the device
         // is ready for a nonce-based handshake.
@@ -292,7 +294,7 @@ impl AesSslProtocol {
         }
 
         let response_body = response.json::<TapoResponse<Handshake2Result>>().await?;
-        debug!("Handshake2 response: {response_body:?}");
+        debug!("Handshake2 error code: {}", response_body.error_code);
 
         validate_response(response_body.error_code)?;
 
@@ -300,30 +302,56 @@ impl AesSslProtocol {
             .result
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
-        debug!("Handshake2 OK");
+        debug!("Handshake2 OK (start sequence {})", result.start_sequence);
 
         Ok(result)
     }
 }
 
-#[derive(Debug, Deserialize)]
+fn extract_section_leaf(response_body: serde_json::Value) -> Option<serde_json::Value> {
+    // SmartCam get responses place data under a single section key
+    // (e.g. "device_info": {"basic_info": {...}}). Extract the leaf object.
+    let serde_json::Value::Object(body) = response_body else {
+        return None;
+    };
+
+    let (_, section) = body.into_iter().find(|(key, _)| key != "error_code")?;
+
+    let serde_json::Value::Object(section) = section else {
+        return None;
+    };
+
+    let leaf = section.into_values().next()?;
+    leaf.is_object().then_some(leaf)
+}
+
+fn extract_error_code(response_body: &serde_json::Value) -> i64 {
+    // Successful responses may omit the error code entirely (e.g. the H200
+    // hub). Errors are reported under either "error_code" or "err_code".
+    response_body
+        .get("error_code")
+        .or_else(|| response_body.get("err_code"))
+        .and_then(|v| v.as_i64())
+        .unwrap_or(0)
+}
+
+#[derive(Deserialize)]
 struct Handshake1Response {
     data: Handshake1ResponseData,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 struct Handshake1ResponseData {
     nonce: String,
     device_confirm: String,
 }
 
-#[derive(Debug)]
 struct Handshake1Result {
     server_nonce: String,
     password_hash: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 struct Handshake2Result {
     #[serde(rename = "stok")]
     token: String,

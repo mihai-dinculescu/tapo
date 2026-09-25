@@ -14,14 +14,12 @@ use crate::{Error, TapoResponseError};
 use super::crypto;
 use super::klap_cipher::KlapCipher;
 
-#[derive(Debug)]
 struct KlapSession {
     url: String,
     cookie: String,
     cipher: KlapCipher,
 }
 
-#[derive(Debug)]
 pub(super) struct KlapProtocol {
     client: Client,
     session: Option<KlapSession>,
@@ -177,7 +175,14 @@ impl KlapProtocol {
 
         let response_body = response.bytes().await.map_err(anyhow::Error::from)?;
 
-        let (remote_seed, server_hash) = response_body.split_at(16);
+        let Some((remote_seed, server_hash)) = response_body.split_at_checked(16) else {
+            return Err(Error::Tapo(TapoResponseError::ResponseError {
+                description: format!(
+                    "Handshake1 response of {} bytes is shorter than its 16-byte seed",
+                    response_body.len()
+                ),
+            }));
+        };
         let local_hash = crypto::sha256(&[local_seed, remote_seed, auth_hash].concat());
 
         if local_hash != server_hash {
