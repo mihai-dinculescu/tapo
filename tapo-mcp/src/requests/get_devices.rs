@@ -163,6 +163,10 @@ async fn fetch_children(
             .get_child_device_list()
             .await
             .map(|list| list.into_iter().map(hub_child_to_child_device).collect()),
+        DiscoveryResult::CameraHub { handler, .. } => handler
+            .get_child_device_list()
+            .await
+            .map(|list| list.into_iter().map(hub_child_to_child_device).collect()),
         _ => return (vec![], None),
     };
 

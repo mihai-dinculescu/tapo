@@ -1,15 +1,15 @@
 use anyhow::Context;
 
 use crate::responses::{
-    DecodableResultExt, DeviceInfoBasicResult, DeviceInfoCameraResult, DeviceInfoColorLightResult,
-    DeviceInfoHubResult, DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult,
-    DeviceInfoPlugResult, DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult,
-    DeviceInfoRgbicLightStripResult,
+    DecodableResultExt, DeviceInfoBasicResult, DeviceInfoCameraHubResult, DeviceInfoCameraResult,
+    DeviceInfoColorLightResult, DeviceInfoHubResult, DeviceInfoLightResult,
+    DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult, DeviceInfoPowerStripResult,
+    DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
 };
 use crate::{
-    ApiClient, CameraPtzHandler, ColorLightHandler, Error, HubHandler, LightHandler,
-    PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
-    RgbLightStripHandler, RgbicLightStripHandler,
+    ApiClient, CameraHubHandler, CameraPtzHandler, ColorLightHandler, Error, HubHandler,
+    LightHandler, PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler,
+    PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
 };
 
 use crate::api::protocol::DeviceFamily;
@@ -93,6 +93,14 @@ pub enum DiscoveryResult {
         /// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) devices.
         handler: HubHandler,
     },
+    /// Tapo H200 and H500 devices.
+    CameraHub {
+        /// Device info of Tapo H200 and H500.
+        device_info: Box<DeviceInfoCameraHubResult>,
+        /// Handler for the [H200](https://www.tapo.com/en/search/?q=H200) and
+        /// [H500](https://www.tapo.com/en/search/?q=H500) devices.
+        handler: CameraHubHandler,
+    },
     /// Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70).
     CameraPtz {
         /// Device info of Tapo cameras (C100, C110, C210, C220, C225, C325WB, C520WS, C720, TC40, TC65, TC70, etc.).
@@ -144,6 +152,10 @@ impl DiscoveryResult {
     ) -> Result<Self, Error> {
         let device_family = raw_result.device_family();
         let auth_protocol = raw_result.auth_protocol();
+
+        if raw_result.is_camera_hub() {
+            client.use_camera_hub_account();
+        }
 
         client
             .login(raw_result.ip.to_string(), device_family, auth_protocol)
@@ -234,6 +246,12 @@ impl DiscoveryResult {
             DeviceType::Hub => {
                 map_device_model!(Hub, DeviceInfoHubResult, HubHandler, device_info, client)
             }
+            DeviceType::CameraHub => DiscoveryResult::CameraHub {
+                device_info: Box::new(serde_json::from_value::<DeviceInfoCameraHubResult>(
+                    device_info,
+                )?),
+                handler: CameraHubHandler::new(client.clone(), raw_result.ip.to_string()),
+            },
             DeviceType::CameraPtz => DiscoveryResult::CameraPtz {
                 device_info: Box::new(serde_json::from_value::<DeviceInfoCameraResult>(
                     device_info,
@@ -271,6 +289,7 @@ impl DiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring
             }
             DiscoveryResult::Hub { .. } => DeviceType::Hub,
+            DiscoveryResult::CameraHub { .. } => DeviceType::CameraHub,
             DiscoveryResult::CameraPtz { .. } => DeviceType::CameraPtz,
             DiscoveryResult::Other { .. } => DeviceType::Other,
         }
@@ -288,6 +307,7 @@ impl DiscoveryResult {
             DiscoveryResult::PowerStrip { device_info, .. } => &device_info.model,
             DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.model,
             DiscoveryResult::Hub { device_info, .. } => &device_info.model,
+            DiscoveryResult::CameraHub { device_info, .. } => &device_info.model,
             DiscoveryResult::CameraPtz { device_info, .. } => &device_info.model,
             DiscoveryResult::Other { device_info, .. } => &device_info.model,
         }
@@ -305,6 +325,7 @@ impl DiscoveryResult {
             DiscoveryResult::PowerStrip { device_info, .. } => &device_info.ip,
             DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.ip,
             DiscoveryResult::Hub { device_info, .. } => &device_info.ip,
+            DiscoveryResult::CameraHub { device_info, .. } => &device_info.ip,
             DiscoveryResult::CameraPtz { ip, .. } => ip,
             DiscoveryResult::Other { ip, .. } => ip,
         }
@@ -324,6 +345,7 @@ impl DiscoveryResult {
                 &device_info.device_id
             }
             DiscoveryResult::Hub { device_info, .. } => &device_info.device_id,
+            DiscoveryResult::CameraHub { device_info, .. } => &device_info.device_id,
             DiscoveryResult::CameraPtz { device_info, .. } => &device_info.device_id,
             DiscoveryResult::Other { device_info, .. } => &device_info.device_id,
         }
@@ -345,6 +367,7 @@ impl DiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring.as_str()
             }
             DiscoveryResult::Hub { device_info, .. } => &device_info.nickname,
+            DiscoveryResult::CameraHub { device_info, .. } => &device_info.nickname,
             DiscoveryResult::CameraPtz { device_info, .. } => &device_info.nickname,
             DiscoveryResult::Other { device_info, .. } => device_info
                 .nickname

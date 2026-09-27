@@ -70,6 +70,10 @@ async def main():
                     print(
                         f"Found '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."
                     )
+                case DiscoveryResult.CameraHub(device_info, _handler):
+                    print(
+                        f"Found '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."
+                    )
                 case DiscoveryResult.Other(device_info, ip):
                     print(
                         f"Found device without a dedicated handler '{device_info.nickname}' of model '{device_info.model}' at IP address '{ip}'."
