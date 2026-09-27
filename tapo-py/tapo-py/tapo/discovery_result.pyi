@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Protocol, Type, Union
 
 from tapo import (
+    CameraHubHandler,
     CameraPtzHandler,
     ColorLightHandler,
     HubHandler,
@@ -16,6 +17,7 @@ from tapo import (
 from tapo.device_type import DeviceType
 from tapo.responses import (
     DeviceInfoBasicResult,
+    DeviceInfoCameraHubResult,
     DeviceInfoCameraResult,
     DeviceInfoColorLightResult,
     DeviceInfoHubResult,
@@ -225,6 +227,22 @@ class Hub(DiscoveryResultExt):
     )
 
 @dataclass
+class CameraHub(DiscoveryResultExt):
+    """Tapo H200 and H500 devices."""
+
+    device_info: DeviceInfoCameraHubResult
+    """Device info of Tapo H200 and H500."""
+
+    handler: CameraHubHandler
+    """Handler for the [H200](https://www.tapo.com/en/search/?q=H200) and
+    [H500](https://www.tapo.com/en/search/?q=H500) devices."""
+
+    __match_args__ = (
+        "device_info",
+        "handler",
+    )
+
+@dataclass
 class CameraPtz(DiscoveryResultExt):
     """Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70)."""
 
@@ -264,6 +282,7 @@ class MaybeDiscoveryResult:
         PowerStrip,
         PowerStripEnergyMonitoring,
         Hub,
+        CameraHub,
         CameraPtz,
         Other,
     ]:
@@ -281,5 +300,6 @@ class DiscoveryResult(DiscoveryResultExt):
     PowerStrip: Type[PowerStrip] = PowerStrip
     PowerStripEnergyMonitoring: Type[PowerStripEnergyMonitoring] = PowerStripEnergyMonitoring
     Hub: Type[Hub] = Hub
+    CameraHub: Type[CameraHub] = CameraHub
     CameraPtz: Type[CameraPtz] = CameraPtz
     Other: Type[Other] = Other

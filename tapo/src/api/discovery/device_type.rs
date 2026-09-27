@@ -30,6 +30,8 @@ pub enum DeviceType {
     PowerStripEnergyMonitoring,
     /// Tapo H100 — smart hub.
     Hub,
+    /// Tapo H200, H500 — camera hubs.
+    CameraHub,
     /// Tapo C210, C220, C225, C325WB, C520WS, TC40, TC70 — smart cameras with PTZ.
     CameraPtz,
     /// A Tapo device without a specific handler implementation.
@@ -51,6 +53,7 @@ impl DeviceType {
             "P300" | "P306" => DeviceType::PowerStrip,
             "P304M" | "P316M" => DeviceType::PowerStripEnergyMonitoring,
             "H100" => DeviceType::Hub,
+            "H200" | "H500" => DeviceType::CameraHub,
             "C210" | "C220" | "C225" | "C325WB" | "C520WS" | "TC40" | "TC70" => {
                 DeviceType::CameraPtz
             }
@@ -72,6 +75,7 @@ impl DeviceType {
             DeviceType::PowerStrip => "Power Strip",
             DeviceType::PowerStripEnergyMonitoring => "Power Strip with Energy Monitoring",
             DeviceType::Hub => "Hub",
+            DeviceType::CameraHub => "Camera Hub",
             DeviceType::CameraPtz => "Smart Camera with PTZ",
             DeviceType::Other => "Other",
         }
@@ -149,6 +153,12 @@ mod tests {
     #[test]
     fn from_model_hub() {
         assert_eq!(DeviceType::from_model("H100"), DeviceType::Hub);
+    }
+
+    #[test]
+    fn from_model_camera_hub() {
+        assert_eq!(DeviceType::from_model("H200"), DeviceType::CameraHub);
+        assert_eq!(DeviceType::from_model("H500"), DeviceType::CameraHub);
     }
 
     #[test]

@@ -29,6 +29,6 @@ pyo3-async-runtimes = { version = "0.29", features = ["attributes", "tokio-runti
 pyo3-log = { version = "0.13" }
 serde = { workspace = true }
 serde_json = { workspace = true }
-tokio = { workspace = true, features = ["rt-multi-thread", "sync"] }
+tokio = { workspace = true, features = ["fs", "rt-multi-thread", "sync"] }
 
 tapo = { path = "../tapo", features = ["python", "debug"] }

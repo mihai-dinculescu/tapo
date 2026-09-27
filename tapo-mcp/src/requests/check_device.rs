@@ -1,6 +1,6 @@
 use tapo::{
-    ApiClient, DiscoveryResult, HubHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
-    StreamExt as _, responses::ChildDeviceHubResult,
+    ApiClient, CameraHubHandler, DiscoveryResult, HubHandler, PowerStripEnergyMonitoringHandler,
+    PowerStripHandler, StreamExt as _, responses::ChildDeviceHubResult,
 };
 
 use crate::config::AppConfig;
@@ -18,10 +18,16 @@ pub enum CheckedDevice {
         child_id: String,
     },
     HubChild {
-        handler: HubHandler,
+        hub: HubParent,
         child_id: String,
         child: ChildDeviceHubResult,
     },
+}
+
+/// The hub a [`CheckedDevice::HubChild`] is paired to.
+pub enum HubParent {
+    Hub(HubHandler),
+    CameraHub(CameraHubHandler),
 }
 
 pub async fn check_device(
@@ -98,7 +104,17 @@ async fn find_child(
             .into_iter()
             .find(|c| c.device_id() == target_id)
             .map(|c| CheckedDevice::HubChild {
-                handler,
+                hub: HubParent::Hub(handler),
+                child_id: c.device_id().to_string(),
+                child: c,
+            })),
+        DiscoveryResult::CameraHub { handler, .. } => Ok(handler
+            .get_child_device_list()
+            .await?
+            .into_iter()
+            .find(|c| c.device_id() == target_id)
+            .map(|c| CheckedDevice::HubChild {
+                hub: HubParent::CameraHub(handler),
                 child_id: c.device_id().to_string(),
                 child: c,
             })),

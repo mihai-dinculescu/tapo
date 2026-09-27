@@ -32,3 +32,9 @@ class DeviceType(enum.Enum):
 
     Hub = ...
     """Tapo H100 — smart hub."""
+
+    CameraHub = ...
+    """Tapo H200, H500 — camera hubs."""
+
+    CameraPtz = ...
+    """Tapo C210, C220, C225, C325WB, C520WS, TC40, TC70 — smart cameras with PTZ."""

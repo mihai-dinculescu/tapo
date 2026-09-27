@@ -47,7 +47,7 @@ List all Tapo devices on the network.
 npx mcporter call tapo.list_devices
 ```
 
-Returns each device's `id`, `name`, `model`, `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips and the H100 hub).
+Returns each device's `id`, `name`, `model`, `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips and the H100, H200 and H500 hubs).
 
 ### check_device
 
@@ -105,4 +105,4 @@ npx mcporter call tapo.take_snapshot id="<DEVICE_ID>" ip="<IP>"
 
 1. Always run `list_devices` first if you don't have a recent device list. Cache results for up to 30 minutes.
 2. Use the device `id` and `ip` from the list — never guess or hardcopy these values.
-3. For power strips (e.g. P304M) and the H100 hub, children have their own `id`. Use the child `id` with the parent's `ip`.
+3. For power strips (e.g. P304M) and the H100, H200 and H500 hubs, children have their own `id`. Use the child `id` with the parent's `ip`.

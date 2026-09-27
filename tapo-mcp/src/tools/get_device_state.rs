@@ -7,7 +7,7 @@ use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
 use crate::models::{CheckDeviceParams, GetCapabilityRequest, GetDeviceStateParams};
 use crate::requests;
-use crate::requests::CheckedDevice;
+use crate::requests::{CheckedDevice, HubParent};
 
 pub async fn get_device_state(
     config: &AppConfig,
@@ -65,6 +65,9 @@ async fn get_device_info(checked: CheckedDevice) -> Result<serde_json::Value, Ta
                 Ok(serde_json::to_value(&*device_info)?)
             }
             DiscoveryResult::Hub { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
+            DiscoveryResult::CameraHub { device_info, .. } => {
+                Ok(serde_json::to_value(&*device_info)?)
+            }
             DiscoveryResult::CameraPtz { device_info, .. } => {
                 Ok(serde_json::to_value(&*device_info)?)
             }
@@ -91,7 +94,7 @@ async fn get_trigger_logs(
     start_id: u64,
 ) -> Result<serde_json::Value, TapoMcpError> {
     let CheckedDevice::HubChild {
-        handler,
+        hub,
         child_id,
         child,
     } = checked
@@ -105,7 +108,10 @@ async fn get_trigger_logs(
 
     macro_rules! trigger_logs {
         ($constructor:ident) => {{
-            let h = handler.$constructor(child_id);
+            let h = match hub {
+                HubParent::Hub(hub) => hub.$constructor(child_id),
+                HubParent::CameraHub(hub) => hub.$constructor(child_id),
+            };
             Ok(serde_json::to_value(
                 &h.get_trigger_logs(page_size, start_id).await?,
             )?)
@@ -130,7 +136,7 @@ async fn get_temperature_humidity_records(
     checked: CheckedDevice,
 ) -> Result<serde_json::Value, TapoMcpError> {
     let CheckedDevice::HubChild {
-        handler,
+        hub,
         child_id,
         child,
     } = checked
@@ -144,7 +150,10 @@ async fn get_temperature_humidity_records(
 
     match child {
         ChildDeviceHubResult::T31X(_) => {
-            let h = handler.t31x_unchecked(child_id);
+            let h = match hub {
+                HubParent::Hub(hub) => hub.t31x_unchecked(child_id),
+                HubParent::CameraHub(hub) => hub.t31x_unchecked(child_id),
+            };
             Ok(serde_json::to_value(
                 &h.get_temperature_humidity_records().await?,
             )?)

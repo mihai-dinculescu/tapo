@@ -7,8 +7,13 @@ use super::{
     GetEnergyDataParams, GetPowerDataParams, GetScheduleRulesParams, GetTriggerLogsParams,
     HandshakeParams, LightingEffect, LoginDeviceParams, MultipleRequestParams, PlayAlarmParams,
     RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams,
-    SegmentEffect, SmartCamDoParams, SmartCamGetParams,
+    SegmentEffect, SmartCamControlChildParams, SmartCamDoParams, SmartCamGetChildDeviceListParams,
+    SmartCamGetGeneralDeviceListParams, SmartCamGetParams, SmartCamGetTimezoneParams,
+    SmartCamSearchDateWithVideoParams, SmartCamSearchVideoWithUtcParams,
 };
+
+#[cfg(feature = "debug")]
+use super::SmartCamGetAppComponentListParams;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -51,6 +56,25 @@ pub(crate) enum TapoRequest {
     SmartCamGet(SmartCamGetParams),
     #[serde(rename = "do")]
     SmartCamDo(SmartCamDoParams),
+    #[serde(rename = "getChildDeviceList")]
+    SmartCamGetChildDeviceList(TapoParams<SmartCamGetChildDeviceListParams>),
+    // Shares the `childControl` pagination payload with `getChildDeviceList`.
+    #[cfg(feature = "debug")]
+    #[serde(rename = "getChildDeviceComponentList")]
+    SmartCamGetChildDeviceComponentList(TapoParams<SmartCamGetChildDeviceListParams>),
+    #[cfg(feature = "debug")]
+    #[serde(rename = "getAppComponentList")]
+    SmartCamGetAppComponentList(TapoParams<SmartCamGetAppComponentListParams>),
+    #[serde(rename = "getGeneralDeviceList")]
+    SmartCamGetGeneralDeviceList(TapoParams<SmartCamGetGeneralDeviceListParams>),
+    #[serde(rename = "getTimezone")]
+    SmartCamGetTimezone(TapoParams<SmartCamGetTimezoneParams>),
+    #[serde(rename = "searchDateWithVideo")]
+    SmartCamSearchDateWithVideo(TapoParams<SmartCamSearchDateWithVideoParams>),
+    #[serde(rename = "searchVideoWithUTC")]
+    SmartCamSearchVideoWithUtc(TapoParams<SmartCamSearchVideoWithUtcParams>),
+    #[serde(rename = "controlChild")]
+    SmartCamControlChild(Box<TapoParams<SmartCamControlChildParams>>),
     // Plug "Timer" (countdown) requests
     AddCountdownRule(TapoParams<AddTimerParams>),
     GetCountdownRules(TapoParams<EmptyObjectParams>),
