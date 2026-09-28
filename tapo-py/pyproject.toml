@@ -40,6 +40,7 @@ build-backend = "maturin"
 python-source = "tapo-py"
 bindings = 'pyo3'
 features = ["pyo3/extension-module"]
+strip = true
 include = ["README.md", "CHANGELOG.md", "LICENSE", "tapo-py/tapo-py/tapo/*"]
 
 [tool.black]
