@@ -6,11 +6,11 @@ use crate::error::Error;
 use crate::responses::{DecodableResultExt, Status, TapoResponseExt, decode_value};
 
 /// Temperature unit.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
 )]
 #[allow(missing_docs)]
 pub enum TemperatureUnit {

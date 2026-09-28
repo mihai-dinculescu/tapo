@@ -4,11 +4,11 @@ use crate::error::Error;
 use crate::responses::{DecodableResultExt, Status, TapoResponseExt, decode_value};
 
 /// Water leak status.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
 )]
 #[allow(missing_docs)]
 pub enum WaterLeakStatus {

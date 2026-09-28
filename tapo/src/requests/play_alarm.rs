@@ -3,11 +3,11 @@ use serde::{Serialize, Serializer};
 
 /// The volume of the alarm.
 /// For the H100, this is a fixed list of volume levels.
-#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize)]
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
 )]
 pub enum AlarmVolume {
     /// Use the default volume for the hub.
@@ -33,10 +33,10 @@ impl AlarmVolume {
 }
 
 /// The ringtone of an H100 alarm.
-#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize)]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
 )]
 pub enum AlarmRingtone {
     /// Use the default ringtone for the hub.

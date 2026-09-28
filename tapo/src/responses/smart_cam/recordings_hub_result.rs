@@ -143,7 +143,7 @@ pub struct RecordingHubResult {
 /// The type of event that produced a recording. The wire values are numeric
 /// strings; the names follow the Tapo app's playback event table.
 /// It serializes as the variant name and deserializes from either form.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum RecordingType {
     /// `1`: continuous (timing) recording.
     #[serde(alias = "1")]

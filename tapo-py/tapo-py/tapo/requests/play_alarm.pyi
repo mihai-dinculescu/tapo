@@ -1,94 +1,94 @@
-from enum import Enum
+from typing import Final
 
-class AlarmVolume(str, Enum):
+class AlarmVolume:
     """The volume of the alarm.
     For the H100, this is a fixed list of volume levels."""
 
-    Default = "Default"
+    Default: Final[AlarmVolume]
     """Use the default volume for the hub."""
 
-    Mute = "Mute"
+    Mute: Final[AlarmVolume]
     """Mute the audio output from the alarm.
     This causes the alarm to be shown as triggered in the Tapo App
     without an audible sound, and makes the `in_alarm` property
     in `DeviceInfoHubResult` return as `True`."""
 
-    Low = "Low"
+    Low: Final[AlarmVolume]
     """Lowest volume."""
 
-    Normal = "Normal"
+    Normal: Final[AlarmVolume]
     """Normal volume. This is the default."""
 
-    High = "High"
+    High: Final[AlarmVolume]
     """Highest volume."""
 
-class AlarmRingtone(str, Enum):
+class AlarmRingtone:
     """The ringtone of an H100 alarm."""
 
-    Alarm1 = "Alarm1"
+    Alarm1: Final[AlarmRingtone]
     """Alarm 1"""
 
-    Alarm2 = "Alarm2"
+    Alarm2: Final[AlarmRingtone]
     """Alarm 2"""
 
-    Alarm3 = "Alarm3"
+    Alarm3: Final[AlarmRingtone]
     """Alarm 3"""
 
-    Alarm4 = "Alarm4"
+    Alarm4: Final[AlarmRingtone]
     """Alarm 4"""
 
-    Alarm5 = "Alarm5"
+    Alarm5: Final[AlarmRingtone]
     """Alarm 5"""
 
-    Connection1 = "Connection1"
+    Connection1: Final[AlarmRingtone]
     """Connection 1"""
 
-    Connection2 = "Connection2"
+    Connection2: Final[AlarmRingtone]
     """Connection 2"""
 
-    DoorbellRing1 = "DoorbellRing1"
+    DoorbellRing1: Final[AlarmRingtone]
     """Doorbell Ring 1"""
 
-    DoorbellRing2 = "DoorbellRing2"
+    DoorbellRing2: Final[AlarmRingtone]
     """Doorbell Ring 2"""
 
-    DoorbellRing3 = "DoorbellRing3"
+    DoorbellRing3: Final[AlarmRingtone]
     """Doorbell Ring 3"""
 
-    DoorbellRing4 = "DoorbellRing4"
+    DoorbellRing4: Final[AlarmRingtone]
     """Doorbell Ring 4"""
 
-    DoorbellRing5 = "DoorbellRing5"
+    DoorbellRing5: Final[AlarmRingtone]
     """Doorbell Ring 5"""
 
-    DoorbellRing6 = "DoorbellRing6"
+    DoorbellRing6: Final[AlarmRingtone]
     """Doorbell Ring 6"""
 
-    DoorbellRing7 = "DoorbellRing7"
+    DoorbellRing7: Final[AlarmRingtone]
     """Doorbell Ring 7"""
 
-    DoorbellRing8 = "DoorbellRing8"
+    DoorbellRing8: Final[AlarmRingtone]
     """Doorbell Ring 8"""
 
-    DoorbellRing9 = "DoorbellRing9"
+    DoorbellRing9: Final[AlarmRingtone]
     """Doorbell Ring 9"""
 
-    DoorbellRing10 = "DoorbellRing10"
+    DoorbellRing10: Final[AlarmRingtone]
     """Doorbell Ring 10"""
 
-    DrippingTap = "DrippingTap"
+    DrippingTap: Final[AlarmRingtone]
     """Dripping Tap"""
 
-    PhoneRing = "PhoneRing"
+    PhoneRing: Final[AlarmRingtone]
     """Phone Ring"""
 
-class AlarmDuration(str, Enum):
+class AlarmDuration:
     """Controls how long the alarm plays for."""
 
-    Continuous = "Continuous"
+    Continuous: Final[AlarmDuration]
     """Play the alarm continuously until stopped."""
 
-    Once = "Once"
+    Once: Final[AlarmDuration]
     """Play the alarm once.
     This is useful for previewing the audio.
 
@@ -99,5 +99,5 @@ class AlarmDuration(str, Enum):
 
     Has no observable affect when used in conjunction with `AlarmVolume.Mute`."""
 
-    Seconds = "Seconds"
+    Seconds: Final[AlarmDuration]
     """Play the alarm a number of seconds."""

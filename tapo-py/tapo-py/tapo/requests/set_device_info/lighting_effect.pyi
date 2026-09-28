@@ -1,12 +1,11 @@
-from enum import Enum
-from typing import List, Optional, Tuple
+from typing import Final, List, Optional, Tuple
 from tapo.to_dict_ext import ToDictExt
 
-class LightingEffectType(str, Enum):
-    Sequence = "Sequence"
-    Random = "Random"
-    Pulse = "Pulse"
-    Static = "Static"
+class LightingEffectType:
+    Sequence: Final[LightingEffectType]
+    Random: Final[LightingEffectType]
+    Pulse: Final[LightingEffectType]
+    Static: Final[LightingEffectType]
 
 class LightingEffect(ToDictExt):
     brightness: int
@@ -73,21 +72,21 @@ class LightingEffect(ToDictExt):
     def with_transition_range(self, transition_range: Tuple[int, int]) -> LightingEffect: ...
     def with_transition_sequence(self, transition_sequence: List[int]) -> LightingEffect: ...
 
-class LightingEffectPreset(str, Enum):
-    Aurora = "Aurora"
-    BubblingCauldron = "BubblingCauldron"
-    CandyCane = "CandyCane"
-    Christmas = "Christmas"
-    Flicker = "Flicker"
-    GrandmasChristmasLights = "GrandmasChristmasLights"
-    Hanukkah = "Hanukkah"
-    HauntedMansion = "HauntedMansion"
-    Icicle = "Icicle"
-    Lightning = "Lightning"
-    Ocean = "Ocean"
-    Rainbow = "Rainbow"
-    Raindrop = "Raindrop"
-    Spring = "Spring"
-    Sunrise = "Sunrise"
-    Sunset = "Sunset"
-    Valentines = "Valentines"
+class LightingEffectPreset:
+    Aurora: Final[LightingEffectPreset]
+    BubblingCauldron: Final[LightingEffectPreset]
+    CandyCane: Final[LightingEffectPreset]
+    Christmas: Final[LightingEffectPreset]
+    Flicker: Final[LightingEffectPreset]
+    GrandmasChristmasLights: Final[LightingEffectPreset]
+    Hanukkah: Final[LightingEffectPreset]
+    HauntedMansion: Final[LightingEffectPreset]
+    Icicle: Final[LightingEffectPreset]
+    Lightning: Final[LightingEffectPreset]
+    Ocean: Final[LightingEffectPreset]
+    Rainbow: Final[LightingEffectPreset]
+    Raindrop: Final[LightingEffectPreset]
+    Spring: Final[LightingEffectPreset]
+    Sunrise: Final[LightingEffectPreset]
+    Sunset: Final[LightingEffectPreset]
+    Valentines: Final[LightingEffectPreset]

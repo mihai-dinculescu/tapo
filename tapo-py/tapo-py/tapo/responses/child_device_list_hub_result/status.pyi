@@ -1,7 +1,7 @@
-from enum import Enum
+from typing import Final
 
-class Status(str, Enum):
+class Status:
     """Device status."""
 
-    Online = "Online"
-    Offline = "Offline"
+    Online: Final[Status]
+    Offline: Final[Status]

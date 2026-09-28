@@ -1,4 +1,4 @@
-from enum import Enum
+from typing import Final
 from tapo.responses.child_device_list_hub_result.hub_result import HubResultBase
 
 class T300Result(HubResultBase):
@@ -15,9 +15,9 @@ class T300Result(HubResultBase):
     status_follow_edge: bool
     water_leak_status: WaterLeakStatus
 
-class WaterLeakStatus(str, Enum):
+class WaterLeakStatus:
     """Water leak status."""
 
-    Normal = "Normal"
-    WaterDry = "WaterDry"
-    WaterLeak = "WaterLeak"
+    Normal: Final[WaterLeakStatus]
+    WaterDry: Final[WaterLeakStatus]
+    WaterLeak: Final[WaterLeakStatus]

@@ -1,50 +1,49 @@
-from enum import Enum
-from typing import Tuple
+from typing import Final, Tuple
 
-class Color(str, Enum):
+class Color:
     """List of preset colors as defined in the Google Home app."""
 
-    CoolWhite = "CoolWhite"
-    Daylight = "Daylight"
-    Ivory = "Ivory"
-    WarmWhite = "WarmWhite"
-    Incandescent = "Incandescent"
-    Candlelight = "Candlelight"
-    Snow = "Snow"
-    GhostWhite = "GhostWhite"
-    AliceBlue = "AliceBlue"
-    LightGoldenrod = "LightGoldenrod"
-    LemonChiffon = "LemonChiffon"
-    AntiqueWhite = "AntiqueWhite"
-    Gold = "Gold"
-    Peru = "Peru"
-    Chocolate = "Chocolate"
-    SandyBrown = "SandyBrown"
-    Coral = "Coral"
-    Pumpkin = "Pumpkin"
-    Tomato = "Tomato"
-    Vermilion = "Vermilion"
-    OrangeRed = "OrangeRed"
-    Pink = "Pink"
-    Crimson = "Crimson"
-    DarkRed = "DarkRed"
-    HotPink = "HotPink"
-    Smitten = "Smitten"
-    MediumPurple = "MediumPurple"
-    BlueViolet = "BlueViolet"
-    Indigo = "Indigo"
-    LightSkyBlue = "LightSkyBlue"
-    CornflowerBlue = "CornflowerBlue"
-    Ultramarine = "Ultramarine"
-    DeepSkyBlue = "DeepSkyBlue"
-    Azure = "Azure"
-    NavyBlue = "NavyBlue"
-    LightTurquoise = "LightTurquoise"
-    Aquamarine = "Aquamarine"
-    Turquoise = "Turquoise"
-    LightGreen = "LightGreen"
-    Lime = "Lime"
-    ForestGreen = "ForestGreen"
+    CoolWhite: Final[Color]
+    Daylight: Final[Color]
+    Ivory: Final[Color]
+    WarmWhite: Final[Color]
+    Incandescent: Final[Color]
+    Candlelight: Final[Color]
+    Snow: Final[Color]
+    GhostWhite: Final[Color]
+    AliceBlue: Final[Color]
+    LightGoldenrod: Final[Color]
+    LemonChiffon: Final[Color]
+    AntiqueWhite: Final[Color]
+    Gold: Final[Color]
+    Peru: Final[Color]
+    Chocolate: Final[Color]
+    SandyBrown: Final[Color]
+    Coral: Final[Color]
+    Pumpkin: Final[Color]
+    Tomato: Final[Color]
+    Vermilion: Final[Color]
+    OrangeRed: Final[Color]
+    Pink: Final[Color]
+    Crimson: Final[Color]
+    DarkRed: Final[Color]
+    HotPink: Final[Color]
+    Smitten: Final[Color]
+    MediumPurple: Final[Color]
+    BlueViolet: Final[Color]
+    Indigo: Final[Color]
+    LightSkyBlue: Final[Color]
+    CornflowerBlue: Final[Color]
+    Ultramarine: Final[Color]
+    DeepSkyBlue: Final[Color]
+    Azure: Final[Color]
+    NavyBlue: Final[Color]
+    LightTurquoise: Final[Color]
+    Aquamarine: Final[Color]
+    Turquoise: Final[Color]
+    LightGreen: Final[Color]
+    Lime: Final[Color]
+    ForestGreen: Final[Color]
 
     def get_color_config(self) -> Tuple[int, int, int]:
         """Get the `hue`, `saturation`, and `color_temperature` of the color."""

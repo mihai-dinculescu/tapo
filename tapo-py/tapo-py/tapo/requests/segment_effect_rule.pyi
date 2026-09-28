@@ -1,13 +1,12 @@
-from enum import Enum
-from typing import List, Optional, Tuple
+from typing import Final, List, Optional, Tuple
 
-class SegmentEffectType(str, Enum):
-    Circulating = "Circulating"
-    Breathe = "Breathe"
-    Chasing = "Chasing"
-    Flicker = "Flicker"
-    Bloom = "Bloom"
-    Stacking = "Stacking"
+class SegmentEffectType:
+    Circulating: Final[SegmentEffectType]
+    Breathe: Final[SegmentEffectType]
+    Chasing: Final[SegmentEffectType]
+    Flicker: Final[SegmentEffectType]
+    Bloom: Final[SegmentEffectType]
+    Stacking: Final[SegmentEffectType]
 
 class SegmentEffect:
     brightness: int
@@ -43,59 +42,59 @@ class SegmentEffect:
     def with_segments(self, segments: List[int]) -> SegmentEffect: ...
     def with_states(self, states: List[Tuple[int, int, int, int]]) -> SegmentEffect: ...
 
-class SegmentEffectPreset(str, Enum):
-    Birthday = "Birthday"
-    Blue = "Blue"
-    Bonfire = "Bonfire"
-    Candlelight = "Candlelight"
-    Carnival = "Carnival"
-    Cyan = "Cyan"
-    Dancing = "Dancing"
-    Dating = "Dating"
-    Disco = "Disco"
-    Dreamland = "Dreamland"
-    ElectroDance = "ElectroDance"
-    Energetic = "Energetic"
-    Excited = "Excited"
-    Fall = "Fall"
-    Family = "Family"
-    Fireworks = "Fireworks"
-    FlowerField = "FlowerField"
-    Forest = "Forest"
-    Game = "Game"
-    Green = "Green"
-    Halloween = "Halloween"
-    Happy = "Happy"
-    Jazz = "Jazz"
-    Lake = "Lake"
-    LightGreen = "LightGreen"
-    Lyric = "Lyric"
-    Moonlight = "Moonlight"
-    Morning = "Morning"
-    Movie = "Movie"
-    NewYear = "NewYear"
-    Night = "Night"
-    Orange = "Orange"
-    Pink = "Pink"
-    Purple = "Purple"
-    Quiet = "Quiet"
-    Red = "Red"
-    Relaxed = "Relaxed"
-    Rock = "Rock"
-    Siren = "Siren"
-    Sleep = "Sleep"
-    Snow = "Snow"
-    Star = "Star"
-    Study = "Study"
-    Summer = "Summer"
-    Sunny = "Sunny"
-    Sweet = "Sweet"
-    Tense = "Tense"
-    Thinking = "Thinking"
-    Universe = "Universe"
-    Volcano = "Volcano"
-    Warm = "Warm"
-    White = "White"
-    Winter = "Winter"
-    Work = "Work"
-    Yellow = "Yellow"
+class SegmentEffectPreset:
+    Birthday: Final[SegmentEffectPreset]
+    Blue: Final[SegmentEffectPreset]
+    Bonfire: Final[SegmentEffectPreset]
+    Candlelight: Final[SegmentEffectPreset]
+    Carnival: Final[SegmentEffectPreset]
+    Cyan: Final[SegmentEffectPreset]
+    Dancing: Final[SegmentEffectPreset]
+    Dating: Final[SegmentEffectPreset]
+    Disco: Final[SegmentEffectPreset]
+    Dreamland: Final[SegmentEffectPreset]
+    ElectroDance: Final[SegmentEffectPreset]
+    Energetic: Final[SegmentEffectPreset]
+    Excited: Final[SegmentEffectPreset]
+    Fall: Final[SegmentEffectPreset]
+    Family: Final[SegmentEffectPreset]
+    Fireworks: Final[SegmentEffectPreset]
+    FlowerField: Final[SegmentEffectPreset]
+    Forest: Final[SegmentEffectPreset]
+    Game: Final[SegmentEffectPreset]
+    Green: Final[SegmentEffectPreset]
+    Halloween: Final[SegmentEffectPreset]
+    Happy: Final[SegmentEffectPreset]
+    Jazz: Final[SegmentEffectPreset]
+    Lake: Final[SegmentEffectPreset]
+    LightGreen: Final[SegmentEffectPreset]
+    Lyric: Final[SegmentEffectPreset]
+    Moonlight: Final[SegmentEffectPreset]
+    Morning: Final[SegmentEffectPreset]
+    Movie: Final[SegmentEffectPreset]
+    NewYear: Final[SegmentEffectPreset]
+    Night: Final[SegmentEffectPreset]
+    Orange: Final[SegmentEffectPreset]
+    Pink: Final[SegmentEffectPreset]
+    Purple: Final[SegmentEffectPreset]
+    Quiet: Final[SegmentEffectPreset]
+    Red: Final[SegmentEffectPreset]
+    Relaxed: Final[SegmentEffectPreset]
+    Rock: Final[SegmentEffectPreset]
+    Siren: Final[SegmentEffectPreset]
+    Sleep: Final[SegmentEffectPreset]
+    Snow: Final[SegmentEffectPreset]
+    Star: Final[SegmentEffectPreset]
+    Study: Final[SegmentEffectPreset]
+    Summer: Final[SegmentEffectPreset]
+    Sunny: Final[SegmentEffectPreset]
+    Sweet: Final[SegmentEffectPreset]
+    Tense: Final[SegmentEffectPreset]
+    Thinking: Final[SegmentEffectPreset]
+    Universe: Final[SegmentEffectPreset]
+    Volcano: Final[SegmentEffectPreset]
+    Warm: Final[SegmentEffectPreset]
+    White: Final[SegmentEffectPreset]
+    Winter: Final[SegmentEffectPreset]
+    Work: Final[SegmentEffectPreset]
+    Yellow: Final[SegmentEffectPreset]

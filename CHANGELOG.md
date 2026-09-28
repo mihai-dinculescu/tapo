@@ -6,7 +6,19 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Changed
+
+- Enums: `AlarmVolume`, `AlarmRingtone`, `LightingEffectType`, `LightingEffectPreset`, `SegmentEffectType`, `SegmentEffectPreset`, `Status`, `TemperatureUnit`, `TemperatureUnitKE100`, `WaterLeakStatus`, `AutoOffStatus`, `DefaultStateType`, `DefaultPowerType`, `ChargingStatus`, `OvercurrentStatus`, `OverheatStatus`, `PowerProtectionStatus`, `PowerState`, and `RecordingType` now derive `Eq` and `Hash`, so they can be used as `HashMap` keys and in `HashSet`s.
+
 ## [Python Unreleased][Unreleased]
+
+### Changed
+
+- Enums: every enum (`DeviceType`, `Color`, `Status`, `PowerState`, `EnergyDataInterval`, `AlarmDuration`, and the rest) is now hashable, so its values can be used as `dict` keys, in `set`s, and with `Counter`.
+
+### Fixed
+
+- Type stubs: the enums are no longer declared as `(str, Enum)` or `Enum` subclasses, which they never were at runtime. Each variant is now typed as an instance of its class, so type checkers reject comparing a value with a string or reading `.name` / `.value`, which never worked.
 
 ## [MCP Unreleased][Unreleased]
 

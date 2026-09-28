@@ -1,18 +1,18 @@
-from enum import Enum
+from typing import Final
 
-class ChargingStatus(str, Enum):
-    Finished = "finished"
-    Normal = "normal"
+class ChargingStatus:
+    Finished: Final[ChargingStatus]
+    Normal: Final[ChargingStatus]
 
-class OvercurrentStatus(str, Enum):
-    Lifted = "lifted"
-    Normal = "normal"
+class OvercurrentStatus:
+    Lifted: Final[OvercurrentStatus]
+    Normal: Final[OvercurrentStatus]
 
-class OverheatStatus(str, Enum):
-    CoolDown = "cool_down"
-    Normal = "normal"
-    Overheated = "overheated"
+class OverheatStatus:
+    CoolDown: Final[OverheatStatus]
+    Normal: Final[OverheatStatus]
+    Overheated: Final[OverheatStatus]
 
-class PowerProtectionStatus(str, Enum):
-    Normal = "normal"
-    Overloaded = "overloaded"
+class PowerProtectionStatus:
+    Normal: Final[PowerProtectionStatus]
+    Overloaded: Final[PowerProtectionStatus]

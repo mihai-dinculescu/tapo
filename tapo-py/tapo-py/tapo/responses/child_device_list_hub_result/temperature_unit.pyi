@@ -1,7 +1,7 @@
-from enum import Enum
+from typing import Final
 
-class TemperatureUnit(str, Enum):
+class TemperatureUnit:
     """Temperature unit."""
 
-    Celsius = "Celsius"
-    Fahrenheit = "Fahrenheit"
+    Celsius: Final[TemperatureUnit]
+    Fahrenheit: Final[TemperatureUnit]

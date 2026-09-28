@@ -1,4 +1,4 @@
-from enum import Enum
+from typing import Final
 from tapo.to_dict_ext import ToDictExt
 
 class DefaultBrightnessState(ToDictExt):
@@ -7,14 +7,14 @@ class DefaultBrightnessState(ToDictExt):
     type: DefaultStateType
     value: int
 
-class DefaultStateType(str, Enum):
+class DefaultStateType:
     """The type of the default state."""
 
-    Custom = "custom"
-    LastStates = "last_states"
+    Custom: Final[DefaultStateType]
+    LastStates: Final[DefaultStateType]
 
-class DefaultPowerType(str, Enum):
+class DefaultPowerType:
     """The type of the default power state."""
 
-    AlwaysOn = "always_on"
-    LastStates = "last_states"
+    AlwaysOn: Final[DefaultPowerType]
+    LastStates: Final[DefaultPowerType]

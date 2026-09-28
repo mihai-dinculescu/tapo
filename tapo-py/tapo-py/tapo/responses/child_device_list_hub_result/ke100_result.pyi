@@ -1,4 +1,4 @@
-from enum import Enum
+from typing import Final
 
 from tapo.responses.child_device_list_hub_result.hub_result import HubResultBase
 
@@ -20,9 +20,9 @@ class KE100Result(HubResultBase):
     temperature_offset: int
     temperature_unit: TemperatureUnitKE100
 
-class TemperatureUnitKE100(str, Enum):
+class TemperatureUnitKE100:
     """Temperature unit for KE100 devices.
     Currently *Celsius* is the only unit supported by KE100.
     """
 
-    Celsius = "Celsius"
+    Celsius: Final[TemperatureUnitKE100]

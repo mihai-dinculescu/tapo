@@ -1,15 +1,15 @@
-from enum import Enum
+from typing import Final
 
-class EnergyDataInterval(str, Enum):
+class EnergyDataInterval:
     """Energy data interval."""
 
-    Hourly = "Hourly"
+    Hourly: Final[EnergyDataInterval]
     """Hourly interval. `start_date` and `end_date` are an inclusive interval
     that must not be greater than 8 days.
     """
 
-    Daily = "Daily"
+    Daily: Final[EnergyDataInterval]
     """Daily interval. `start_date` must be the first day of a quarter."""
 
-    Monthly = "Monthly"
+    Monthly: Final[EnergyDataInterval]
     """Monthly interval. `start_date` must be the first day of a year."""

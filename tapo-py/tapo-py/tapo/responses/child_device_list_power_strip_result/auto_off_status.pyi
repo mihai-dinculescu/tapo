@@ -1,5 +1,5 @@
-from enum import Enum
+from typing import Final
 
-class AutoOffStatus(str, Enum):
-    On = "on"
-    Off = "off"
+class AutoOffStatus:
+    On: Final[AutoOffStatus]
+    Off: Final[AutoOffStatus]

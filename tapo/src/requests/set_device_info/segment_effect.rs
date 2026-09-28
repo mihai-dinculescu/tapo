@@ -3,10 +3,10 @@ use serde_with::{BoolFromInt, serde_as};
 
 use crate::error::Error;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
 )]
 #[serde(rename_all = "snake_case")]
 #[allow(missing_docs)]
@@ -180,10 +180,10 @@ impl SegmentEffect {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
 )]
 #[non_exhaustive]
 #[allow(missing_docs)]

@@ -1,12 +1,12 @@
-from enum import Enum
+from typing import Final
 
 from tapo.to_dict_ext import ToDictExt
 
-class PowerState(str, Enum):
+class PowerState:
     """The power state of a device."""
 
-    On = "on"
-    Off = "off"
+    On: Final[PowerState]
+    Off: Final[PowerState]
 
 class Timer(ToDictExt):
     """A pending "Timer" countdown on a Tapo plug."""

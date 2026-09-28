@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from enum import Enum
+from typing import Final
 
 from tapo.to_dict_ext import ToDictExt
 
@@ -15,74 +15,74 @@ class RecordingDateHubResult(ToDictExt):
     end_time: datetime
     """The last second of the day on the hub, in UTC."""
 
-class RecordingType(str, Enum):
+class RecordingType:
     """The type of event that produced a recording. The names follow the
     Tapo app's playback event table. A type this library does not know yet
     is ``Other``; its raw wire value is still in ``to_dict()["video_type"]``."""
 
-    Timing = "Timing"
+    Timing: Final[RecordingType]
     """Continuous (timing) recording."""
-    Motion = "Motion"
+    Motion: Final[RecordingType]
     """Motion detection."""
-    Tamper = "Tamper"
+    Tamper: Final[RecordingType]
     """Camera tampering."""
-    LineCrossing = "LineCrossing"
+    LineCrossing: Final[RecordingType]
     """Line crossing detection."""
-    AreaIntrusion = "AreaIntrusion"
+    AreaIntrusion: Final[RecordingType]
     """Area intrusion detection."""
-    Person = "Person"
+    Person: Final[RecordingType]
     """Person detection."""
-    BabyCry = "BabyCry"
+    BabyCry: Final[RecordingType]
     """Baby cry detection."""
-    Vehicle = "Vehicle"
+    Vehicle: Final[RecordingType]
     """Vehicle detection."""
-    Pet = "Pet"
+    Pet: Final[RecordingType]
     """Pet detection."""
-    RingAlarm = "RingAlarm"
+    RingAlarm: Final[RecordingType]
     """Ring alarm."""
-    Bark = "Bark"
+    Bark: Final[RecordingType]
     """Bark detection."""
-    Meow = "Meow"
+    Meow: Final[RecordingType]
     """Meow detection."""
-    GlassBreaking = "GlassBreaking"
+    GlassBreaking: Final[RecordingType]
     """Glass breaking detection."""
-    Smoke = "Smoke"
+    Smoke: Final[RecordingType]
     """Smoke alarm detection."""
-    PackageDelivered = "PackageDelivered"
+    PackageDelivered: Final[RecordingType]
     """Package delivered."""
-    PackagePickedUp = "PackagePickedUp"
+    PackagePickedUp: Final[RecordingType]
     """Package picked up."""
-    MissedDoorbellRing = "MissedDoorbellRing"
+    MissedDoorbellRing: Final[RecordingType]
     """Missed doorbell ring."""
-    AnsweredDoorbellRing = "AnsweredDoorbellRing"
+    AnsweredDoorbellRing: Final[RecordingType]
     """Answered doorbell ring."""
-    AntiTheft = "AntiTheft"
+    AntiTheft: Final[RecordingType]
     """Anti-theft alarm."""
-    Face = "Face"
+    Face: Final[RecordingType]
     """Face detection."""
-    UnfamiliarFace = "UnfamiliarFace"
+    UnfamiliarFace: Final[RecordingType]
     """Unfamiliar face detection."""
-    UnfamiliarPerson = "UnfamiliarPerson"
+    UnfamiliarPerson: Final[RecordingType]
     """Unfamiliar person detection."""
-    BabyLeave = "BabyLeave"
+    BabyLeave: Final[RecordingType]
     """Baby leaving detection."""
-    BabyCaregiver = "BabyCaregiver"
+    BabyCaregiver: Final[RecordingType]
     """Baby caregiver detection."""
-    BabyAsleep = "BabyAsleep"
+    BabyAsleep: Final[RecordingType]
     """Baby asleep detection."""
-    BabyAwake = "BabyAwake"
+    BabyAwake: Final[RecordingType]
     """Baby waking up detection."""
-    FaceCover = "FaceCover"
+    FaceCover: Final[RecordingType]
     """Covered face detection."""
-    SafeFenceOut = "SafeFenceOut"
+    SafeFenceOut: Final[RecordingType]
     """Leaving the safety fence detection."""
-    BabyMotion = "BabyMotion"
+    BabyMotion: Final[RecordingType]
     """Baby motion detection."""
-    PanoramicVideo = "PanoramicVideo"
+    PanoramicVideo: Final[RecordingType]
     """Panoramic video."""
-    Animal = "Animal"
+    Animal: Final[RecordingType]
     """Animal detection."""
-    Other = "Other"
+    Other: Final[RecordingType]
     """A recording type this library does not know yet."""
 
 class RecordingHubResult(ToDictExt):
