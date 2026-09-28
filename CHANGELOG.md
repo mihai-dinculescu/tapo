@@ -6,6 +6,24 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [MCP Unreleased][Unreleased]
+
+### Added
+
+- `list_devices`: H200 and H500 camera hubs are now listed as devices instead of discovery errors, and `get_device_state` returns their device info. The sensors paired to them are listed as children and support `TriggerLogs` and `TemperatureHumidityRecords`, the same as on the H100.
+
+### Changed
+
+- Tool errors: error messages now include the full chain of causes, so a transport failure reports why it failed (e.g. `connection closed before message completed` or `operation timed out`) instead of stopping at the request URL.
+
+### Fixed
+
+- Device errors: the server's logs and the error data it returns to MCP clients no longer include the device's session token when a request to a camera, camera hub or AES-protocol device fails.
+
+## [Rust v0.10.0][v0.10.0] - 2026-09-28
+
 ### Added
 
 - `CameraHubHandler`: added handler for the H200 and H500 camera hubs. `get_general_device_list` lists the cameras paired to the hub, `get_timezone` reads the hub's timezone, `get_recording_dates` and `get_recordings` find the days and the recordings stored for a camera within a UTC time range, and `download_recording` saves a recording as a playable MPEG-TS clip to any `AsyncWrite`. The sensors and switches paired to the hub work the same way as on the H100, through `get_child_device_list` and the typed child handlers (`t100`, `t31x`, and the rest). Use `h200` or `h500` on the `ApiClient` to create it. (thanks to @dominiquefournier and @supermimai for testing)
@@ -30,7 +48,7 @@ file. This change log follows the conventions of
 - `ApiClient`: the `Debug` output now obscures the password and leaves out the session state, so formatting a client or a device handler with `{:?}` no longer reveals the password.
 - `ApiClient` and device handlers: a device reply too short to be valid now returns an error instead of panicking.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.10.0][v0.10.0] - 2026-09-28
 
 ### Added
 
@@ -52,20 +70,6 @@ file. This change log follows the conventions of
 - `ApiClient`: logging in to a device no longer writes the password, a value derived from it, or the session token to the debug and trace logs.
 - HTTP errors: the exception message now shows `REDACTED` in place of the session token in the request URL, so a failed request to a camera, camera hub or AES-protocol device no longer reveals it.
 - `ApiClient` and device handlers: a device reply too short to be valid now raises an error instead of panicking.
-
-## [MCP Unreleased][Unreleased]
-
-### Added
-
-- `list_devices`: H200 and H500 camera hubs are now listed as devices instead of discovery errors, and `get_device_state` returns their device info. The sensors paired to them are listed as children and support `TriggerLogs` and `TemperatureHumidityRecords`, the same as on the H100.
-
-### Changed
-
-- Tool errors: error messages now include the full chain of causes, so a transport failure reports why it failed (e.g. `connection closed before message completed` or `operation timed out`) instead of stopping at the request URL.
-
-### Fixed
-
-- Device errors: the server's logs and the error data it returns to MCP clients no longer include the device's session token when a request to a camera, camera hub or AES-protocol device fails.
 
 ## [MCP v0.5.0][tapo-mcp-v0.5.0] - 2026-07-11
 
@@ -1041,6 +1045,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.10.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.10.0
 [tapo-mcp-v0.5.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.0
 [tapo-mcp-v0.4.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.4.0
 [tapo-mcp-v0.3.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.3.1
