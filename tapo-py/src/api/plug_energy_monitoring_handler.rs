@@ -1,7 +1,7 @@
 use std::ops::Deref;
 use std::time::Duration;
 
-use chrono::{DateTime, NaiveDate, Utc};
+use chrono::NaiveDate;
 use pyo3::prelude::*;
 use tapo::PlugEnergyMonitoringHandler;
 use tapo::requests::{EnergyDataInterval, PowerDataInterval, ScheduleRule};
@@ -12,6 +12,7 @@ use tapo::responses::{
 
 use crate::call_handler_method;
 use crate::requests::{PyEnergyDataInterval, PyPowerDataInterval};
+use crate::utc_date_time::UtcDateTime;
 
 py_handler! {
     PyPlugEnergyMonitoringHandler(PlugEnergyMonitoringHandler, DeviceInfoPlugEnergyMonitoringResult),
@@ -67,17 +68,17 @@ impl PyPlugEnergyMonitoringHandler {
     pub async fn get_power_data(
         &self,
         interval: PyPowerDataInterval,
-        start_date_time: DateTime<Utc>,
-        end_date_time: DateTime<Utc>,
+        start_date_time: UtcDateTime,
+        end_date_time: UtcDateTime,
     ) -> PyResult<PowerDataResult> {
         let interval = match interval {
             PyPowerDataInterval::Every5Minutes => PowerDataInterval::Every5Minutes {
-                start_date_time,
-                end_date_time,
+                start_date_time: start_date_time.0,
+                end_date_time: end_date_time.0,
             },
             PyPowerDataInterval::Hourly => PowerDataInterval::Hourly {
-                start_date_time,
-                end_date_time,
+                start_date_time: start_date_time.0,
+                end_date_time: end_date_time.0,
             },
         };
 

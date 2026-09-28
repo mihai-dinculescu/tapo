@@ -83,6 +83,14 @@ class PlugEnergyMonitoringHandler(
     ) -> PowerDataResult:
         """Returns *power data* as `PowerDataResult`.
 
+        Args:
+            interval (PowerDataInterval): The interval between data points.
+            start_date_time (datetime): The start of the range. Must be timezone-aware.
+            end_date_time (datetime): The end of the range. Must be timezone-aware.
+
         Returns:
             PowerDataResult: Power data result for the requested `PowerDataInterval`.
+
+        Raises:
+            TypeError: If `start_date_time` or `end_date_time` is a naive datetime.
         """

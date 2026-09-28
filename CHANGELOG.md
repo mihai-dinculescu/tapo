@@ -18,6 +18,7 @@ file. This change log follows the conventions of
 
 ### Fixed
 
+- `PlugEnergyMonitoringHandler.get_power_data`, `PowerStripPlugEnergyMonitoringHandler.get_power_data`: `start_date_time` and `end_date_time` now accept a timezone-aware `datetime` in any timezone, instead of raising `ValueError` for anything other than `timezone.utc`. A naive `datetime` raises `TypeError`.
 - Type stubs: the enums are no longer declared as `(str, Enum)` or `Enum` subclasses, which they never were at runtime. Each variant is now typed as an instance of its class, so type checkers reject comparing a value with a string or reading `.name` / `.value`, which never worked.
 
 ## [MCP Unreleased][Unreleased]
