@@ -10,6 +10,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.5.1][tapo-mcp-v0.5.1] - 2026-09-28
+
 ### Added
 
 - `list_devices`: H200 and H500 camera hubs are now listed as devices instead of discovery errors, and `get_device_state` returns their device info. The sensors paired to them are listed as children and support `TriggerLogs` and `TemperatureHumidityRecords`, the same as on the H100.
@@ -1045,6 +1047,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.5.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.1
 [v0.10.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.10.0
 [tapo-mcp-v0.5.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.0
 [tapo-mcp-v0.4.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.4.0
