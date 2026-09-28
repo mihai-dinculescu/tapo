@@ -22,7 +22,7 @@ env:
 jobs:
   checks:
     name: Rust / Checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -42,7 +42,7 @@ jobs:
 
   checks_min_ver:
     name: Rust / Checks on minimum supported version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: dtolnay/rust-toolchain@stable
         with:
