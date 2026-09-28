@@ -39,7 +39,7 @@ class PowerStripEnergyMonitoringHandler(DeviceManagementExt, RefreshSessionExt, 
         try `PowerStripEnergyMonitoringHandler.get_child_device_list_json`.
 
         Returns:
-            dict: Device info as a dictionary.
+            List[PowerStripPlugEnergyMonitoringResult]: The child plugs of the power strip.
         """
 
     async def get_child_device_list_json(self) -> dict:
@@ -47,7 +47,7 @@ class PowerStripEnergyMonitoringHandler(DeviceManagementExt, RefreshSessionExt, 
         It contains all the properties returned from the Tapo API.
 
         Returns:
-            dict: Device info as a dictionary.
+            dict: Child device list as a dictionary.
         """
 
     async def get_child_device_component_list(self) -> List[ChildDeviceComponentList]:
