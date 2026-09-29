@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import List
 
 from tapo.responses import HubResultBase, TemperatureUnit
-from tapo.responses import TemperatureUnit
 from tapo.to_dict_ext import ToDictExt
 
 class T31XResult(HubResultBase):
@@ -20,13 +19,13 @@ class T31XResult(HubResultBase):
     will be the difference between the current humidity and the lower or upper bound of the comfort zone.
     """
     current_humidity: int
-    current_temperature_exception: int
+    current_temperature_exception: float
     """
     This value will be `0.0` when the current temperature is within the comfort zone.
     When the current temperature value falls outside the comfort zone, this value
     will be the difference between the current temperature and the lower or upper bound of the comfort zone.
     """
-    current_temperature: int
+    current_temperature: float
     last_onboarding_timestamp: int
     report_interval: int
     """The time in seconds between each report."""
@@ -36,16 +35,18 @@ class T31XResult(HubResultBase):
 class TemperatureHumidityRecords(ToDictExt):
     """Temperature and Humidity records for the last 24 hours at 15 minute intervals."""
 
-    datetime: datetime
-    """The datetime in UTC of when this response was generated."""
+    retrieved_at: datetime
+    """The time on the hub when the records were retrieved, in UTC.
+    The last record covers the 15 minute interval this time falls in,
+    unless the hub has no data for that interval yet."""
     records: List[TemperatureHumidityRecord]
     temperature_unit: TemperatureUnit
 
 class TemperatureHumidityRecord(ToDictExt):
     """Temperature and Humidity record as an average over a 15 minute interval."""
 
-    datetime: datetime
-    """Record's DateTime in UTC."""
+    recorded_at: datetime
+    """The start of the 15 minute interval this record covers, in UTC."""
     humidity_exception: int
     """This value will be `0` when the current humidity is within the comfort zone.
     When the current humidity value falls outside the comfort zone, this value

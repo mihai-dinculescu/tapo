@@ -1,4 +1,4 @@
-use chrono::{DateTime, Duration, Timelike, Utc};
+use chrono::{DateTime, Duration, DurationRound, Utc};
 use itertools::izip;
 use serde::{Deserialize, Serialize};
 
@@ -100,8 +100,8 @@ impl TapoResponseExt for TemperatureHumidityRecordsRaw {}
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct TemperatureHumidityRecord {
-    /// Record's DateTime in UTC.
-    pub datetime: DateTime<Utc>,
+    /// The start of the 15 minute interval this record covers, in UTC.
+    pub recorded_at: DateTime<Utc>,
     /// This value will be `0` when the current humidity is within the comfort zone.
     /// When the current humidity value falls outside the comfort zone, this value
     /// will be the difference between the current humidity and the lower or upper bound of the comfort zone.
@@ -122,8 +122,10 @@ crate::impl_to_dict!(TemperatureHumidityRecord);
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]
 pub struct TemperatureHumidityRecords {
-    /// The datetime in UTC of when this response was generated.
-    pub datetime: DateTime<Utc>,
+    /// The time on the hub when the records were retrieved, in UTC.
+    /// The last record covers the 15 minute interval this time falls in,
+    /// unless the hub has no data for that interval yet.
+    pub retrieved_at: DateTime<Utc>,
     pub records: Vec<TemperatureHumidityRecord>,
     pub temperature_unit: TemperatureUnit,
 }
@@ -135,23 +137,13 @@ impl TryFrom<TemperatureHumidityRecordsRaw> for TemperatureHumidityRecords {
     type Error = anyhow::Error;
 
     fn try_from(raw: TemperatureHumidityRecordsRaw) -> Result<Self, Self::Error> {
-        let datetime = DateTime::from_timestamp(raw.local_time, 0).unwrap_or_default();
+        let retrieved_at = DateTime::from_timestamp(raw.local_time, 0)
+            .ok_or_else(|| anyhow::anyhow!("local_time {} is out of range", raw.local_time))?;
 
-        let interval_minute = if datetime.minute() >= 45 {
-            45
-        } else if datetime.minute() >= 30 {
-            30
-        } else if datetime.minute() >= 15 {
-            15
-        } else {
-            0
-        };
+        // safe: 15 minutes is always a valid Duration (only overflows for extremely large values)
+        let interval = Duration::try_minutes(15).unwrap();
 
-        let mut interval_time = datetime
-            .with_minute(interval_minute)
-            .unwrap_or_default()
-            .with_second(0)
-            .unwrap_or_default();
+        let mut interval_time = retrieved_at.duration_trunc(interval)?;
 
         let mut records = Vec::with_capacity(raw.past24h_temp.len());
 
@@ -172,22 +164,21 @@ impl TryFrom<TemperatureHumidityRecordsRaw> for TemperatureHumidityRecords {
                 records.push(TemperatureHumidityRecord {
                     humidity_exception: humidity_exception as i8,
                     humidity: humidity as u8,
-                    datetime: interval_time,
+                    recorded_at: interval_time,
                     temperature_exception: temperature_exception as f32 / 10.0,
                     temperature: temperature as f32 / 10.0,
                 });
             }
 
             interval_time = interval_time
-                // safe: 15 minutes is always a valid Duration (only overflows for extremely large values)
-                .checked_sub_signed(Duration::try_minutes(15).unwrap())
+                .checked_sub_signed(interval)
                 .ok_or_else(|| anyhow::anyhow!("Failed to subtract from interval"))?;
         }
 
         records.reverse();
 
         Ok(Self {
-            datetime,
+            retrieved_at,
             temperature_unit: raw.temp_unit,
             records,
         })
@@ -214,7 +205,7 @@ mod tests {
         let parsed = TemperatureHumidityRecords::try_from(raw).unwrap();
 
         assert_eq!(
-            parsed.datetime,
+            parsed.retrieved_at,
             NaiveDateTime::parse_from_str("2023-05-29 14:52:24", "%Y-%m-%d %H:%M:%S")
                 .unwrap()
                 .and_utc()
@@ -226,9 +217,12 @@ mod tests {
             TemperatureHumidityRecord {
                 humidity_exception: 0,
                 humidity: 49,
-                datetime: NaiveDateTime::parse_from_str("2023-05-29 13:30:00", "%Y-%m-%d %H:%M:%S")
-                    .unwrap()
-                    .and_utc(),
+                recorded_at: NaiveDateTime::parse_from_str(
+                    "2023-05-29 13:30:00",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                .unwrap()
+                .and_utc(),
                 temperature_exception: 0.0,
                 temperature: 19.6,
             }
@@ -238,9 +232,12 @@ mod tests {
             TemperatureHumidityRecord {
                 humidity_exception: 0,
                 humidity: 50,
-                datetime: NaiveDateTime::parse_from_str("2023-05-29 13:45:00", "%Y-%m-%d %H:%M:%S")
-                    .unwrap()
-                    .and_utc(),
+                recorded_at: NaiveDateTime::parse_from_str(
+                    "2023-05-29 13:45:00",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                .unwrap()
+                .and_utc(),
                 temperature_exception: 0.0,
                 temperature: 19.5,
             }
@@ -250,9 +247,12 @@ mod tests {
             TemperatureHumidityRecord {
                 humidity_exception: 0,
                 humidity: 50,
-                datetime: NaiveDateTime::parse_from_str("2023-05-29 14:00:00", "%Y-%m-%d %H:%M:%S")
-                    .unwrap()
-                    .and_utc(),
+                recorded_at: NaiveDateTime::parse_from_str(
+                    "2023-05-29 14:00:00",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                .unwrap()
+                .and_utc(),
                 temperature_exception: 0.0,
                 temperature: 19.4,
             }
@@ -262,9 +262,12 @@ mod tests {
             TemperatureHumidityRecord {
                 humidity_exception: 0,
                 humidity: 55,
-                datetime: NaiveDateTime::parse_from_str("2023-05-29 14:15:00", "%Y-%m-%d %H:%M:%S")
-                    .unwrap()
-                    .and_utc(),
+                recorded_at: NaiveDateTime::parse_from_str(
+                    "2023-05-29 14:15:00",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                .unwrap()
+                .and_utc(),
                 temperature_exception: 0.0,
                 temperature: 16.2,
             }
@@ -274,9 +277,12 @@ mod tests {
             TemperatureHumidityRecord {
                 humidity_exception: 0,
                 humidity: 53,
-                datetime: NaiveDateTime::parse_from_str("2023-05-29 14:30:00", "%Y-%m-%d %H:%M:%S")
-                    .unwrap()
-                    .and_utc(),
+                recorded_at: NaiveDateTime::parse_from_str(
+                    "2023-05-29 14:30:00",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                .unwrap()
+                .and_utc(),
                 temperature_exception: 0.0,
                 temperature: 16.4,
             }
@@ -286,9 +292,12 @@ mod tests {
             TemperatureHumidityRecord {
                 humidity_exception: 0,
                 humidity: 52,
-                datetime: NaiveDateTime::parse_from_str("2023-05-29 14:45:00", "%Y-%m-%d %H:%M:%S")
-                    .unwrap()
-                    .and_utc(),
+                recorded_at: NaiveDateTime::parse_from_str(
+                    "2023-05-29 14:45:00",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                .unwrap()
+                .and_utc(),
                 temperature_exception: 0.0,
                 temperature: 16.5,
             }
@@ -309,7 +318,7 @@ mod tests {
         let parsed = TemperatureHumidityRecords::try_from(raw).unwrap();
 
         assert_eq!(
-            parsed.datetime,
+            parsed.retrieved_at,
             NaiveDateTime::parse_from_str("2023-05-29 14:52:24", "%Y-%m-%d %H:%M:%S")
                 .unwrap()
                 .and_utc()
@@ -321,9 +330,12 @@ mod tests {
             TemperatureHumidityRecord {
                 humidity_exception: 0,
                 humidity: 49,
-                datetime: NaiveDateTime::parse_from_str("2023-05-29 13:30:00", "%Y-%m-%d %H:%M:%S")
-                    .unwrap()
-                    .and_utc(),
+                recorded_at: NaiveDateTime::parse_from_str(
+                    "2023-05-29 13:30:00",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                .unwrap()
+                .and_utc(),
                 temperature_exception: 0.0,
                 temperature: 19.6,
             }
@@ -333,9 +345,12 @@ mod tests {
             TemperatureHumidityRecord {
                 humidity_exception: 0,
                 humidity: 50,
-                datetime: NaiveDateTime::parse_from_str("2023-05-29 13:45:00", "%Y-%m-%d %H:%M:%S")
-                    .unwrap()
-                    .and_utc(),
+                recorded_at: NaiveDateTime::parse_from_str(
+                    "2023-05-29 13:45:00",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                .unwrap()
+                .and_utc(),
                 temperature_exception: 0.0,
                 temperature: 19.5,
             }
@@ -345,9 +360,12 @@ mod tests {
             TemperatureHumidityRecord {
                 humidity_exception: 0,
                 humidity: 50,
-                datetime: NaiveDateTime::parse_from_str("2023-05-29 14:00:00", "%Y-%m-%d %H:%M:%S")
-                    .unwrap()
-                    .and_utc(),
+                recorded_at: NaiveDateTime::parse_from_str(
+                    "2023-05-29 14:00:00",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                .unwrap()
+                .and_utc(),
                 temperature_exception: 0.0,
                 temperature: 19.4,
             }
@@ -357,9 +375,12 @@ mod tests {
             TemperatureHumidityRecord {
                 humidity_exception: 0,
                 humidity: 55,
-                datetime: NaiveDateTime::parse_from_str("2023-05-29 14:15:00", "%Y-%m-%d %H:%M:%S")
-                    .unwrap()
-                    .and_utc(),
+                recorded_at: NaiveDateTime::parse_from_str(
+                    "2023-05-29 14:15:00",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                .unwrap()
+                .and_utc(),
                 temperature_exception: 0.0,
                 temperature: 16.2,
             }
@@ -369,12 +390,29 @@ mod tests {
             TemperatureHumidityRecord {
                 humidity_exception: 0,
                 humidity: 53,
-                datetime: NaiveDateTime::parse_from_str("2023-05-29 14:30:00", "%Y-%m-%d %H:%M:%S")
-                    .unwrap()
-                    .and_utc(),
+                recorded_at: NaiveDateTime::parse_from_str(
+                    "2023-05-29 14:30:00",
+                    "%Y-%m-%d %H:%M:%S"
+                )
+                .unwrap()
+                .and_utc(),
                 temperature_exception: 0.0,
                 temperature: 16.4,
             }
         );
+    }
+
+    #[test]
+    fn test_out_of_range_local_time_is_an_error() {
+        let raw = TemperatureHumidityRecordsRaw {
+            local_time: i64::MAX,
+            past24h_humidity_exception: vec![0],
+            past24h_humidity: vec![49],
+            past24h_temp_exception: vec![0],
+            past24h_temp: vec![196],
+            temp_unit: TemperatureUnit::Celsius,
+        };
+
+        assert!(TemperatureHumidityRecords::try_from(raw).is_err());
     }
 }
