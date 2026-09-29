@@ -147,6 +147,15 @@ impl ApiClient {
 impl ApiClient {
     /// Discovers one or more devices located at a specified unicast or broadcast IP address.
     ///
+    #[cfg_attr(
+        feature = "debug",
+        doc = "To get each device's raw discovery JSON instead, use [`ApiClient::discover_devices_raw`] (requires the `debug` feature)."
+    )]
+    #[cfg_attr(
+        not(feature = "debug"),
+        doc = "To get each device's raw discovery JSON instead, use `ApiClient::discover_devices_raw` (requires the `debug` feature)."
+    )]
+    ///
     /// # Arguments
     /// * `target` - The IP address at which the discovery will take place.
     ///   This address can be either a unicast (e.g. `192.168.1.10`) or a

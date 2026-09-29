@@ -19,7 +19,14 @@ impl PowerStripEnergyMonitoringHandler {
     /// Returns *child device list* as [`Vec<PowerStripPlugEnergyMonitoringResult>`].
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
     /// If the deserialization fails, or if a property that you care about it's not present,
-    /// try [`PowerStripEnergyMonitoringHandler::get_child_device_list_json`].
+    #[cfg_attr(
+        feature = "debug",
+        doc = "try [`PowerStripEnergyMonitoringHandler::get_child_device_list_json`] (requires the `debug` feature)."
+    )]
+    #[cfg_attr(
+        not(feature = "debug"),
+        doc = "try `PowerStripEnergyMonitoringHandler::get_child_device_list_json` (requires the `debug` feature)."
+    )]
     pub async fn get_child_device_list(
         &self,
     ) -> Result<Vec<PowerStripPlugEnergyMonitoringResult>, Error> {

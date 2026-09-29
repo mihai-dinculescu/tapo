@@ -100,6 +100,8 @@ class ApiClient:
     async def discover_devices(self, target: str, timeout_s: int = 10) -> DeviceDiscovery:
         """Discovers one or more devices located at a specified unicast or broadcast IP address.
 
+        To get each device's raw discovery JSON instead, use `ApiClient.discover_devices_raw`.
+
         Args:
             target (str): The IP address at which the discovery will take place.
                 This address can be either a unicast (e.g. `192.168.1.10`) or a

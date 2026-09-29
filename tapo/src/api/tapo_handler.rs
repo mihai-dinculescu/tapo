@@ -191,9 +191,14 @@ macro_rules! tapo_handler {
             #[doc = concat!(
                 "Returns *device info* as [`", stringify!($device_info), "`].\n",
                 "It is not guaranteed to contain all the properties returned from the Tapo API.\n",
-                "If the deserialization fails, or if a property that you care about it's not present, ",
-                "try [`", stringify!($name), "::get_device_info_json`].",
+                "If the deserialization fails, or if a property that you care about it's not present,",
             )]
+            #[cfg_attr(feature = "debug", doc = concat!(
+                "try [`", stringify!($name), "::get_device_info_json`] (requires the `debug` feature).",
+            ))]
+            #[cfg_attr(not(feature = "debug"), doc = concat!(
+                "try `", stringify!($name), "::get_device_info_json` (requires the `debug` feature).",
+            ))]
             pub async fn get_device_info(&self) -> Result<$device_info, crate::error::Error> {
                 self.client.read().await.get_device_info().await
             }
@@ -208,6 +213,7 @@ macro_rules! tapo_handler {
             }
 
             /// Returns the *component list* of the device.
+            /// This information is useful in debugging or when investigating new functionality to add.
             #[cfg(feature = "debug")]
             pub async fn get_component_list(
                 &self,
@@ -358,9 +364,14 @@ macro_rules! tapo_child_handler {
             #[doc = concat!(
                 "Returns *device info* as [`", stringify!($device_info), "`].\n",
                 "It is not guaranteed to contain all the properties returned from the Tapo API.\n",
-                "If the deserialization fails, or if a property that you care about it's not present, ",
-                "try [`", stringify!($name), "::get_device_info_json`].",
+                "If the deserialization fails, or if a property that you care about it's not present,",
             )]
+            #[cfg_attr(feature = "debug", doc = concat!(
+                "try [`", stringify!($name), "::get_device_info_json`] (requires the `debug` feature).",
+            ))]
+            #[cfg_attr(not(feature = "debug"), doc = concat!(
+                "try `", stringify!($name), "::get_device_info_json` (requires the `debug` feature).",
+            ))]
             pub async fn get_device_info(&self) -> Result<$device_info, crate::error::Error> {
                 let request = crate::requests::TapoRequest::GetDeviceInfo(
                     crate::requests::TapoParams::new(crate::requests::EmptyParams),
@@ -398,6 +409,7 @@ macro_rules! tapo_child_handler {
             }
 
             /// Returns the *component list* of the device.
+            /// This information is useful in debugging or when investigating new functionality to add.
             #[cfg(feature = "debug")]
             pub async fn get_component_list(
                 &self,
@@ -485,9 +497,14 @@ macro_rules! hub_child_handlers {
                 "Returns *child device list* as [`ChildDeviceHubResult`](crate::responses::ChildDeviceHubResult).\n",
                 "It is not guaranteed to contain all the properties returned from the Tapo API\n",
                 "or to support all the possible devices connected to the hub.\n",
-                "If the deserialization fails, or if a property that you care about it's not present, ",
-                "try [`", stringify!($name), "::get_child_device_list_json`].",
+                "If the deserialization fails, or if a property that you care about it's not present,",
             )]
+            #[cfg_attr(feature = "debug", doc = concat!(
+                "try [`", stringify!($name), "::get_child_device_list_json`] (requires the `debug` feature).",
+            ))]
+            #[cfg_attr(not(feature = "debug"), doc = concat!(
+                "try `", stringify!($name), "::get_child_device_list_json` (requires the `debug` feature).",
+            ))]
             $(#[doc = $child_device_list_note])?
             pub async fn get_child_device_list(
                 &self,

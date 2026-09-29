@@ -11,7 +11,7 @@ tapo_handler! {
 /// Hub handler methods.
 impl HubHandler {
     /// Returns a list of ringtones (alarm types) supported by the hub.
-    /// Used for debugging only.
+    /// This information is useful in debugging or when investigating new functionality to add.
     #[cfg(feature = "debug")]
     pub async fn get_supported_ringtone_list(&self) -> Result<Vec<String>, Error> {
         self.client

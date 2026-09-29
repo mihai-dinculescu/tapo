@@ -90,7 +90,7 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
 
     async def get_supported_ringtone_list(self) -> List[str]:
         """Returns a list of ringtones (alarm types) supported by the hub.
-        Used for debugging only.
+        This information is useful in debugging or when investigating new functionality to add.
 
         Returns:
             List[str]: List of the ringtones supported by the hub.

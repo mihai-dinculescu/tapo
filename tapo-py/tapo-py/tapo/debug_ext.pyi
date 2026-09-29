@@ -15,6 +15,7 @@ class DebugExt(Protocol):
 
     async def get_component_list(self) -> list[Component]:
         """Returns the *component list* of the device.
+        This information is useful in debugging or when investigating new functionality to add.
 
         Returns:
             list[Component]: The list of components supported by the device.

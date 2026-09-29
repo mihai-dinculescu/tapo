@@ -49,7 +49,15 @@ impl CameraHubHandler {
     /// Returns *general device list* as [`GeneralDeviceHubResult`].
     /// These are the standalone Wi-Fi cameras paired to the hub.
     /// It is not guaranteed to contain all the properties returned from the Tapo API.
-    /// If the deserialization fails, or if a property that you care about it's not present, try [`CameraHubHandler::get_general_device_list_json`].
+    /// If the deserialization fails, or if a property that you care about it's not present,
+    #[cfg_attr(
+        feature = "debug",
+        doc = "try [`CameraHubHandler::get_general_device_list_json`] (requires the `debug` feature)."
+    )]
+    #[cfg_attr(
+        not(feature = "debug"),
+        doc = "try `CameraHubHandler::get_general_device_list_json` (requires the `debug` feature)."
+    )]
     pub async fn get_general_device_list(&self) -> Result<Vec<GeneralDeviceHubResult>, Error> {
         let request = TapoRequest::SmartCamGetGeneralDeviceList(TapoParams::new(
             SmartCamGetGeneralDeviceListParams::new(),
