@@ -317,7 +317,8 @@ macro_rules! tapo_handler {
 /// }
 /// ```
 ///
-/// The `on_off` option is optional.
+/// The `on_off` option is optional. Alternatively, `trigger_logs = LogType,` generates
+/// `get_trigger_logs()` returning `TriggerLogsResult<LogType>`.
 ///
 /// # Generated code
 ///
@@ -326,6 +327,7 @@ macro_rules! tapo_handler {
 /// * `get_device_info()` method (typed)
 /// * `get_device_info_json()` method
 /// * `on()` and `off()` methods (if `on_off` specified)
+/// * `get_trigger_logs()` method (if `trigger_logs = LogType` specified)
 macro_rules! tapo_child_handler {
     // With on_off
     (
@@ -335,6 +337,16 @@ macro_rules! tapo_child_handler {
     ) => {
         tapo_child_handler!(@base $(#[$meta])* $name($device_info));
         tapo_child_handler!(@on_off $name);
+    };
+
+    // With trigger_logs
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        trigger_logs = $log:ty,
+    ) => {
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info));
+        tapo_child_handler!(@trigger_logs $name, $log);
     };
 
     // No options
@@ -470,6 +482,39 @@ macro_rules! tapo_child_handler {
                     .await?;
 
                 Ok(())
+            }
+        }
+    };
+
+    // Internal: trigger logs for hub sensors
+    (@trigger_logs $name:ident, $log:ty) => {
+        impl $name {
+            /// Returns a list of *trigger logs*.
+            ///
+            /// # Arguments
+            ///
+            /// * `page_size` - the maximum number of log items to return
+            /// * `start_id` - the log item `id` from which to start returning results in reverse chronological order (newest first)
+            ///
+            /// Use a `start_id` of `0` to get the most recent X logs, where X is capped by `page_size`.
+            pub async fn get_trigger_logs(
+                &self,
+                page_size: u64,
+                start_id: u64,
+            ) -> Result<crate::responses::TriggerLogsResult<$log>, crate::error::Error> {
+                let params = crate::requests::GetTriggerLogsParams::new(page_size, start_id);
+                let request = crate::requests::TapoRequest::GetTriggerLogs(Box::new(
+                    crate::requests::TapoParams::new(params),
+                ));
+
+                self.client
+                    .read()
+                    .await
+                    .control_child(self.device_id.clone(), request)
+                    .await?
+                    .ok_or_else(|| {
+                        crate::error::Error::Tapo(crate::error::TapoResponseError::EmptyResult)
+                    })
             }
         }
     };

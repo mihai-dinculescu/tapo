@@ -217,6 +217,7 @@ macro_rules! py_handler {
 /// * `get_device_info()` method (typed)
 /// * `get_device_info_json()` method (returns `Py<PyDict>`)
 /// * `on()` and `off()` methods (if `on_off` specified)
+/// * `get_trigger_logs()` method (if `trigger_logs = PyResultType` specified)
 macro_rules! py_child_handler {
     // With on_off
     (
@@ -226,6 +227,16 @@ macro_rules! py_child_handler {
     ) => {
         py_child_handler!(@base $py_name($handler, $device_info), $pyname);
         py_child_handler!(@on_off $py_name, $handler);
+    };
+
+    // With trigger_logs
+    (
+        $py_name:ident($handler:ident, $device_info:ty),
+        py_name = $pyname:literal,
+        trigger_logs = $trigger_logs:ty,
+    ) => {
+        py_child_handler!(@base $py_name($handler, $device_info), $pyname);
+        py_child_handler!(@trigger_logs $py_name, $handler, $trigger_logs);
     };
 
     // No options
@@ -301,6 +312,29 @@ macro_rules! py_child_handler {
                 use std::ops::Deref;
                 let handler = self.inner.clone();
                 $crate::call_handler_method!(handler.deref(), $handler::off)
+            }
+        }
+    };
+
+    // Internal: trigger logs for hub sensors
+    (@trigger_logs $py_name:ident, $handler:ident, $trigger_logs:ty) => {
+        #[pyo3::pymethods]
+        impl $py_name {
+            #[pyo3(signature = (page_size, start_id=0))]
+            pub async fn get_trigger_logs(
+                &self,
+                page_size: u64,
+                start_id: u64,
+            ) -> pyo3::prelude::PyResult<$trigger_logs> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.deref(),
+                    $handler::get_trigger_logs,
+                    page_size,
+                    start_id
+                )
+                .map(|result| result.into())
             }
         }
     };

@@ -51,7 +51,7 @@ async def main():
             )
         elif isinstance(child, S200Result):
             s200 = await hub.s200(device_id=child.device_id)
-            trigger_logs = await s200.get_trigger_logs(5, 0)
+            trigger_logs = await s200.get_trigger_logs(5)
 
             print(
                 "Found S200B/S200D child device with nickname: {}, id: {}, last 5 trigger logs: {}.".format(
@@ -74,7 +74,7 @@ async def main():
             )
         elif isinstance(child, T100Result):
             t100 = await hub.t100(device_id=child.device_id)
-            trigger_logs = await t100.get_trigger_logs(5, 0)
+            trigger_logs = await t100.get_trigger_logs(5)
 
             print(
                 "Found T100 child device with nickname: {}, id: {}, detected: {}, last 5 trigger logs: {}.".format(
@@ -86,7 +86,7 @@ async def main():
             )
         elif isinstance(child, T110Result):
             t110 = await hub.t110(device_id=child.device_id)
-            trigger_logs = await t110.get_trigger_logs(5, 0)
+            trigger_logs = await t110.get_trigger_logs(5)
 
             print(
                 "Found T110 child device with nickname: {}, id: {}, open: {}, last 5 trigger logs: {}.".format(
@@ -98,7 +98,7 @@ async def main():
             )
         elif isinstance(child, T300Result):
             t300 = await hub.t300(device_id=child.device_id)
-            trigger_logs = await t300.get_trigger_logs(5, 0)
+            trigger_logs = await t300.get_trigger_logs(5)
 
             print(
                 "Found T300 child device with nickname: {}, id: {}, in_alarm: {}, water_leak_status: {}, last 5 trigger logs: {}.".format(

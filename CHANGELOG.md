@@ -16,6 +16,7 @@ file. This change log follows the conventions of
 
 - Enums: every enum (`AlarmDuration`, `Color`, `DeviceType`, `EnergyDataInterval`, `PowerState`, `Status`, and the rest) is now hashable, so its values can be used as `dict` keys, in `set`s, and with `Counter`. The `PlugState` and `S200RotationParams` values nested in `DefaultPlugState` and `S200Log` are hashable too.
 - Enums: values no longer compare equal to integers (`DeviceType.Light == 0` is now `False`). Compare against the enum variant instead; `int(value)` still works.
+- `S200Handler.get_trigger_logs`, `T100Handler.get_trigger_logs`, `T110Handler.get_trigger_logs`, `T300Handler.get_trigger_logs`: `start_id` is now optional and defaults to `0`, so `get_trigger_logs(5)` returns the five most recent logs.
 
 ### Fixed
 

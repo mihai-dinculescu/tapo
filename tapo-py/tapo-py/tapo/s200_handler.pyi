@@ -18,15 +18,14 @@ class S200Handler(DebugExt):
             S200Result: Device info of Tapo S200B and S200D button switches.
         """
 
-    async def get_trigger_logs(self, page_size: int, start_id: int) -> TriggerLogsS200Result:
+    async def get_trigger_logs(self, page_size: int, start_id: int = 0) -> TriggerLogsS200Result:
         """Returns a list of *trigger logs*.
 
         Args:
             page_size (int): the maximum number of log items to return
             start_id (int): the log item `id` from which to start returning results
-                in reverse chronological order (newest first)
-
-        Use a `start_id` of `0` to get the most recent X logs, where X is capped by `page_size`.
+                in reverse chronological order (newest first). Defaults to `0`,
+                which returns the most recent X logs, where X is capped by `page_size`.
 
         Returns:
             TriggerLogsS200Result: Trigger logs result.
