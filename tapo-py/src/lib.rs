@@ -25,8 +25,8 @@ use tapo::responses::{
     OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus,
     PowerState, PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset,
     RecordingDateHubResult, RecordingDownloadResult, RgbLightStripState, RgbicLightStripState,
-    RtspStreamUrl, S200Log, S200Result, S200RotationParams, S210Result, ScheduleRuleResult,
-    Snapshot, Status, T31XResult, T100Log, T100Result, T110Log, T110Result, T300Log, T300Result,
+    RtspStreamUrl, S200Result, S200RotationParams, S210Result, ScheduleRuleResult, Snapshot,
+    Status, T31XResult, T100Event, T100Result, T110Event, T110Result, T300Event, T300Result,
     TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100,
     Timer, TimezoneHubResult, UsageByPeriodResult, WaterLeakStatus,
 };
@@ -47,8 +47,9 @@ use requests::{
     PyPowerDataInterval, PySegmentEffect,
 };
 use responses::{
-    PyBackupWifi, PyGeneralDeviceHubResult, PyRecordingHubResult, PyRecordingType,
-    TriggerLogsS200Result, TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
+    PyBackupWifi, PyGeneralDeviceHubResult, PyRecordingHubResult, PyRecordingType, PyS200Event,
+    PyS200Log, PyT100Log, PyT110Log, PyT300Log, TriggerLogsS200Result, TriggerLogsT100Result,
+    TriggerLogsT110Result, TriggerLogsT300Result,
 };
 
 #[pymodule]
@@ -218,12 +219,16 @@ fn register_responses_hub(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<T31XResult>()?;
 
     // child devices
-    module.add_class::<S200Log>()?;
+    module.add_class::<PyS200Event>()?;
+    module.add_class::<PyS200Log>()?;
     module.add_class::<S200RotationParams>()?;
     module.add_class::<Status>()?;
-    module.add_class::<T100Log>()?;
-    module.add_class::<T110Log>()?;
-    module.add_class::<T300Log>()?;
+    module.add_class::<T100Event>()?;
+    module.add_class::<PyT100Log>()?;
+    module.add_class::<T110Event>()?;
+    module.add_class::<PyT110Log>()?;
+    module.add_class::<T300Event>()?;
+    module.add_class::<PyT300Log>()?;
     module.add_class::<TemperatureHumidityRecord>()?;
     module.add_class::<TemperatureHumidityRecords>()?;
     module.add_class::<TemperatureUnit>()?;

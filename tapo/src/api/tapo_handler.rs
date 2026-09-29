@@ -317,8 +317,8 @@ macro_rules! tapo_handler {
 /// }
 /// ```
 ///
-/// The `on_off` option is optional. Alternatively, `trigger_logs = LogType,` generates
-/// `get_trigger_logs()` returning `TriggerLogsResult<LogType>`.
+/// The `on_off` option is optional. Alternatively, `trigger_logs = EventType,` generates
+/// `get_trigger_logs()` returning `TriggerLogsResult<EventType>`, whose entries are `TriggerLog<EventType>`.
 ///
 /// # Generated code
 ///
@@ -327,7 +327,7 @@ macro_rules! tapo_handler {
 /// * `get_device_info()` method (typed)
 /// * `get_device_info_json()` method
 /// * `on()` and `off()` methods (if `on_off` specified)
-/// * `get_trigger_logs()` method (if `trigger_logs = LogType` specified)
+/// * `get_trigger_logs()` method (if `trigger_logs = EventType` specified)
 macro_rules! tapo_child_handler {
     // With on_off
     (

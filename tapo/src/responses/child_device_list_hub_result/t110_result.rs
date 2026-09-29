@@ -54,7 +54,7 @@ impl DecodableResultExt for T110Result {
     }
 }
 
-/// T110 Log.
+/// T110 trigger log event.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "event")]
 #[cfg_attr(
@@ -62,21 +62,9 @@ impl DecodableResultExt for T110Result {
     pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
 #[allow(missing_docs)]
-pub enum T110Log {
-    Close {
-        id: u64,
-        timestamp: u64,
-    },
-    Open {
-        id: u64,
-        timestamp: u64,
-    },
+pub enum T110Event {
+    Close,
+    Open,
     /// Fired when the sensor has been open for more than 1 minute.
-    KeepOpen {
-        id: u64,
-        timestamp: u64,
-    },
+    KeepOpen,
 }
-
-#[cfg(feature = "python")]
-crate::impl_to_dict!(T110Log);

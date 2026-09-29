@@ -92,10 +92,10 @@ impl PyGeneralDeviceHubResult {
 
 tapo::impl_to_dict!(PyGeneralDeviceHubResult);
 
-/// The backup Wi-Fi network of a camera paired to a camera hub. PyO3 cannot
-/// expose a Rust enum that mixes unit variants with a data-carrying one, so
-/// this enum mirrors [`BackupWifi`] with struct variants. `None` becomes
-/// `Disabled` because `BackupWifi.None` is not valid Python.
+// PyO3 cannot expose a Rust enum that mixes unit variants with a data-carrying
+// one, so this enum mirrors `BackupWifi` with struct variants. `None` becomes
+// `Disabled` because `BackupWifi.None` is not valid Python.
+/// The backup Wi-Fi network of a camera paired to a camera hub.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[pyclass(name = "BackupWifi", from_py_object, eq, hash, frozen)]
 #[allow(missing_docs)]

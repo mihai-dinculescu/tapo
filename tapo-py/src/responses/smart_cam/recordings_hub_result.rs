@@ -42,10 +42,11 @@ impl PyRecordingHubResult {
 
 tapo::impl_to_dict!(PyRecordingHubResult);
 
-/// The type of event that produced a recording. PyO3 cannot expose a Rust
-/// enum that mixes unit variants with a data-carrying one, so this plain enum
-/// mirrors [`RecordingType`], with every unknown wire value folded into
-/// `Other`.
+// PyO3 cannot expose a Rust enum that mixes unit variants with a data-carrying
+// one, so this plain enum mirrors `RecordingType`, with every unknown wire
+// value folded into `Other`.
+/// The type of event that produced a recording. A type this library does not
+/// know yet is `Other`; its raw wire value is still in `to_dict()["video_type"]`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[pyclass(name = "RecordingType", from_py_object, eq, hash, frozen)]
 #[allow(missing_docs)]

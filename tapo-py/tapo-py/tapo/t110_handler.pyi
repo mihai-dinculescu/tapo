@@ -1,8 +1,5 @@
-from typing import List, Literal
-
 from tapo.debug_ext import DebugExt
-from tapo.responses import T110Result
-from tapo.to_dict_ext import ToDictExt
+from tapo.responses import T110Result, TriggerLogsT110Result
 
 class T110Handler(DebugExt):
     """Handler for the [T110](https://www.tapo.com/en/search/?q=T110) devices."""
@@ -29,20 +26,3 @@ class T110Handler(DebugExt):
         Returns:
             TriggerLogsT110Result: Trigger logs result.
         """
-
-class TriggerLogsT110Result(ToDictExt):
-    """Trigger logs result."""
-
-    start_id: int
-    """The `id` of the most recent log item that is returned."""
-    sum: int
-    """The total number of log items that the hub holds for this device."""
-    logs: List[T110Log]
-    """Log items in reverse chronological order (newest first)."""
-
-class T110Log(ToDictExt):
-    """T110 Log."""
-
-    event: Literal["close", "open", "keepOpen"]
-    id: int
-    timestamp: int

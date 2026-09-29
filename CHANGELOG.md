@@ -8,22 +8,34 @@ file. This change log follows the conventions of
 
 ### Changed
 
-- Enums: `AlarmDuration`, `AlarmRingtone`, `AlarmVolume`, `AutoOffStatus`, `BackupWifi`, `ChargingStatus`, `DefaultPlugState`, `DefaultPowerType`, `DefaultStateType`, `LightingEffectPreset`, `LightingEffectType`, `OvercurrentStatus`, `OverheatStatus`, `PowerProtectionStatus`, `PowerState`, `RecordingType`, `S200Log`, `SegmentEffectPreset`, `SegmentEffectType`, `Status`, `T100Log`, `T110Log`, `T300Log`, `TemperatureUnit`, `TemperatureUnitKE100`, and `WaterLeakStatus` (along with the `PlugState` and `S200RotationParams` structs they contain) now derive `Eq` and `Hash`, so they can be used as `HashMap` keys and in `HashSet`s.
+- Enums: `AlarmDuration`, `AlarmRingtone`, `AlarmVolume`, `AutoOffStatus`, `BackupWifi`, `ChargingStatus`, `DefaultPlugState`, `DefaultPowerType`, `DefaultStateType`, `LightingEffectPreset`, `LightingEffectType`, `OvercurrentStatus`, `OverheatStatus`, `PowerProtectionStatus`, `PowerState`, `RecordingType`, `S200Event`, `SegmentEffectPreset`, `SegmentEffectType`, `Status`, `T100Event`, `T110Event`, `T300Event`, `TemperatureUnit`, `TemperatureUnitKE100`, and `WaterLeakStatus` (along with the `PlugState` and `S200RotationParams` structs they contain) now derive `Eq` and `Hash`, so they can be used as `HashMap` keys and in `HashSet`s.
+- `TriggerLogsResult`: `logs` is now a `Vec<TriggerLog<E>>`. Each `TriggerLog` carries the `id`, the `triggered_at` time as a `DateTime<Utc>` and the `event`, instead of every event variant repeating an `id` and a Unix-seconds `timestamp`.
+- `S200Log`, `T100Log`, `T110Log`, `T300Log`: renamed to `S200Event`, `T100Event`, `T110Event` and `T300Event`, and their variants no longer carry `id` and `timestamp`. `S200Event::Rotation` keeps its `params`.
 
 ## [Python Unreleased][Unreleased]
 
+### Added
+
+- `S200Event`, `T100Event`, `T110Event`, `T300Event`: enums for the `event` of a trigger log.
+
 ### Changed
 
-- Enums: every enum (`AlarmDuration`, `Color`, `DeviceType`, `EnergyDataInterval`, `PowerState`, `Status`, and the rest) is now hashable, so its values can be used as `dict` keys, in `set`s, and with `Counter`. The `PlugState` and `S200RotationParams` values nested in `DefaultPlugState` and `S200Log` are hashable too.
+- Enums: every enum (`AlarmDuration`, `Color`, `DeviceType`, `EnergyDataInterval`, `PowerState`, `Status`, and the rest) is now hashable, so its values can be used as `dict` keys, in `set`s, and with `Counter`. The `PlugState` and `S200RotationParams` values nested in `DefaultPlugState` and `S200Log.params` are hashable too.
 - Enums: values no longer compare equal to integers (`DeviceType.Light == 0` is now `False`). Compare against the enum variant instead; `int(value)` still works.
 - `S200Handler.get_trigger_logs`, `T100Handler.get_trigger_logs`, `T110Handler.get_trigger_logs`, `T300Handler.get_trigger_logs`: `start_id` is now optional and defaults to `0`, so `get_trigger_logs(5)` returns the five most recent logs.
+- `S200Log`, `T100Log`, `T110Log`, `T300Log`: each log now has `id`, `triggered_at` (a timezone-aware `datetime` in UTC) and `event`, instead of variant classes with an integer `timestamp`. `S200Log` also has `params`, set for rotations. `to_dict()` emits `triggered_at` as an ISO 8601 string in place of `timestamp`.
 
 ### Fixed
 
 - `PlugEnergyMonitoringHandler.get_power_data`, `PowerStripPlugEnergyMonitoringHandler.get_power_data`: `start_date_time` and `end_date_time` now accept a timezone-aware `datetime` in any timezone, instead of raising `ValueError` for anything other than `timezone.utc`. A naive `datetime` raises `TypeError`.
 - Type stubs: the enums are no longer declared as `(str, Enum)` or `Enum` subclasses, which they never were at runtime. Each variant is now typed as an instance of its class, so type checkers reject comparing a value with a string or reading `.name` / `.value`, which never worked.
+- Type stubs: `TriggerLogsS200Result`, `S200Log`, `S200Event`, `S200RotationParams` and the `T100`, `T110` and `T300` counterparts are now declared in `tapo.responses`, where they live at runtime. Importing them from the top-level `tapo` package type-checked but raised `ImportError`.
 
 ## [MCP Unreleased][Unreleased]
+
+### Changed
+
+- `get_device_state`: `TriggerLogs` entries now carry `triggered_at` as an ISO 8601 UTC string instead of the Unix-seconds `timestamp`.
 
 ## [MCP v0.5.1][tapo-mcp-v0.5.1] - 2026-09-28
 

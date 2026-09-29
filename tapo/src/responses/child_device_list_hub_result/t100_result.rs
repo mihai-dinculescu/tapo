@@ -54,7 +54,7 @@ impl DecodableResultExt for T100Result {
     }
 }
 
-/// T100 Log.
+/// T100 trigger log event.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "event")]
 #[cfg_attr(
@@ -62,9 +62,6 @@ impl DecodableResultExt for T100Result {
     pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
 #[allow(missing_docs)]
-pub enum T100Log {
-    Motion { id: u64, timestamp: u64 },
+pub enum T100Event {
+    Motion,
 }
-
-#[cfg(feature = "python")]
-crate::impl_to_dict!(T100Log);

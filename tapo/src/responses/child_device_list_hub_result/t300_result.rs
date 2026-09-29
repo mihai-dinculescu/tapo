@@ -69,7 +69,7 @@ impl DecodableResultExt for T300Result {
     }
 }
 
-/// T300 Log.
+/// T300 trigger log event.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "event")]
 #[cfg_attr(
@@ -77,10 +77,7 @@ impl DecodableResultExt for T300Result {
     pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
 #[allow(missing_docs)]
-pub enum T300Log {
-    WaterDry { id: u64, timestamp: u64 },
-    WaterLeak { id: u64, timestamp: u64 },
+pub enum T300Event {
+    WaterDry,
+    WaterLeak,
 }
-
-#[cfg(feature = "python")]
-crate::impl_to_dict!(T300Log);

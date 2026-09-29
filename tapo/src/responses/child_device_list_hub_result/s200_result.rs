@@ -67,33 +67,13 @@ pub struct S200RotationParams {
 #[cfg(feature = "python")]
 crate::impl_to_dict!(S200RotationParams);
 
-/// S200B and S200D Log.
+/// S200B and S200D trigger log event.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "event")]
-#[cfg_attr(
-    feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
-)]
 #[allow(missing_docs)]
-pub enum S200Log {
-    Rotation {
-        id: u64,
-        timestamp: u64,
-        params: S200RotationParams,
-    },
-    SingleClick {
-        id: u64,
-        timestamp: u64,
-    },
-    DoubleClick {
-        id: u64,
-        timestamp: u64,
-    },
-    LowBattery {
-        id: u64,
-        timestamp: u64,
-    },
+pub enum S200Event {
+    Rotation { params: S200RotationParams },
+    SingleClick,
+    DoubleClick,
+    LowBattery,
 }
-
-#[cfg(feature = "python")]
-crate::impl_to_dict!(S200Log);

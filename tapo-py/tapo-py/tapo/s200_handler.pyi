@@ -1,8 +1,5 @@
-from typing import List, Literal, Optional
-
 from tapo.debug_ext import DebugExt
-from tapo.responses import S200Result
-from tapo.to_dict_ext import ToDictExt
+from tapo.responses import S200Result, TriggerLogsS200Result
 
 class S200Handler(DebugExt):
     """Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) and
@@ -30,26 +27,3 @@ class S200Handler(DebugExt):
         Returns:
             TriggerLogsS200Result: Trigger logs result.
         """
-
-class TriggerLogsS200Result(ToDictExt):
-    """Trigger logs result."""
-
-    start_id: int
-    """The `id` of the most recent log item that is returned."""
-    sum: int
-    """The total number of log items that the hub holds for this device."""
-    logs: List[S200Log]
-    """Log items in reverse chronological order (newest first)."""
-
-class S200Log(ToDictExt):
-    """S200B and S200D Log."""
-
-    event: Literal["rotation", "singleClick", "doubleClick", "lowBattery"]
-    id: int
-    timestamp: int
-    params: Optional[S200RotationParams]
-
-class S200RotationParams(ToDictExt):
-    """S200B and S200D Rotation log params."""
-
-    rotation_degrees: int

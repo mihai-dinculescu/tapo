@@ -1,8 +1,5 @@
-from typing import List, Literal
-
 from tapo.debug_ext import DebugExt
-from tapo.responses import T300Result
-from tapo.to_dict_ext import ToDictExt
+from tapo.responses import T300Result, TriggerLogsT300Result
 
 class T300Handler(DebugExt):
     """Handler for the [T300](https://www.tapo.com/en/search/?q=T300) devices."""
@@ -29,20 +26,3 @@ class T300Handler(DebugExt):
         Returns:
             TriggerLogsT300Result: Trigger logs result.
         """
-
-class TriggerLogsT300Result(ToDictExt):
-    """Trigger logs result."""
-
-    start_id: int
-    """The `id` of the most recent log item that is returned."""
-    sum: int
-    """The total number of log items that the hub holds for this device."""
-    logs: List[T300Log]
-    """Log items in reverse chronological order (newest first)."""
-
-class T300Log(ToDictExt):
-    """T300 Log."""
-
-    event: Literal["waterDry", "waterLeak"]
-    id: int
-    timestamp: int
