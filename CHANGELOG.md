@@ -8,13 +8,14 @@ file. This change log follows the conventions of
 
 ### Changed
 
-- Enums: `AlarmVolume`, `AlarmRingtone`, `LightingEffectType`, `LightingEffectPreset`, `SegmentEffectType`, `SegmentEffectPreset`, `Status`, `TemperatureUnit`, `TemperatureUnitKE100`, `WaterLeakStatus`, `AutoOffStatus`, `DefaultStateType`, `DefaultPowerType`, `ChargingStatus`, `OvercurrentStatus`, `OverheatStatus`, `PowerProtectionStatus`, `PowerState`, and `RecordingType` now derive `Eq` and `Hash`, so they can be used as `HashMap` keys and in `HashSet`s.
+- Enums: `AlarmDuration`, `AlarmRingtone`, `AlarmVolume`, `AutoOffStatus`, `BackupWifi`, `ChargingStatus`, `DefaultPlugState`, `DefaultPowerType`, `DefaultStateType`, `LightingEffectPreset`, `LightingEffectType`, `OvercurrentStatus`, `OverheatStatus`, `PowerProtectionStatus`, `PowerState`, `RecordingType`, `S200Log`, `SegmentEffectPreset`, `SegmentEffectType`, `Status`, `T100Log`, `T110Log`, `T300Log`, `TemperatureUnit`, `TemperatureUnitKE100`, and `WaterLeakStatus` (along with the `PlugState` and `S200RotationParams` structs they contain) now derive `Eq` and `Hash`, so they can be used as `HashMap` keys and in `HashSet`s.
 
 ## [Python Unreleased][Unreleased]
 
 ### Changed
 
-- Enums: every enum (`DeviceType`, `Color`, `Status`, `PowerState`, `EnergyDataInterval`, `AlarmDuration`, and the rest) is now hashable, so its values can be used as `dict` keys, in `set`s, and with `Counter`.
+- Enums: every enum (`AlarmDuration`, `Color`, `DeviceType`, `EnergyDataInterval`, `PowerState`, `Status`, and the rest) is now hashable, so its values can be used as `dict` keys, in `set`s, and with `Counter`. The `PlugState` and `S200RotationParams` values nested in `DefaultPlugState` and `S200Log` are hashable too.
+- Enums: values no longer compare equal to integers (`DeviceType.Light == 0` is now `False`). Compare against the enum variant instead; `int(value)` still works.
 
 ### Fixed
 

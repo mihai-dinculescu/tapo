@@ -55,9 +55,12 @@ impl DecodableResultExt for T110Result {
 }
 
 /// T110 Log.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "event")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
+)]
 #[allow(missing_docs)]
 pub enum T110Log {
     Close {

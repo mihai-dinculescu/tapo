@@ -42,7 +42,7 @@ class TriggerLogsT100Result(ToDictExt):
     """Log items in reverse chronological order (newest first)."""
 
 class T100Log(ToDictExt):
-    """T110 Log."""
+    """T100 Log."""
 
     event: Literal["motion"]
     id: int

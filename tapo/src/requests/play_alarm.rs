@@ -7,7 +7,7 @@ use serde::{Serialize, Serializer};
 #[serde(rename_all = "lowercase")]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
 pub enum AlarmVolume {
     /// Use the default volume for the hub.
@@ -36,7 +36,7 @@ impl AlarmVolume {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize)]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
 pub enum AlarmRingtone {
     /// Use the default ringtone for the hub.
@@ -108,7 +108,7 @@ impl AlarmRingtone {
 }
 
 /// Controls how long the alarm plays for.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AlarmDuration {
     /// Play the alarm continuously until stopped.
     Continuous,

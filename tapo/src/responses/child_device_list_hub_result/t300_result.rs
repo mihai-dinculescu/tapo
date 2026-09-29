@@ -8,7 +8,7 @@ use crate::responses::{DecodableResultExt, Status, TapoResponseExt, decode_value
 #[serde(rename_all = "snake_case")]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
 #[allow(missing_docs)]
 pub enum WaterLeakStatus {
@@ -70,9 +70,12 @@ impl DecodableResultExt for T300Result {
 }
 
 /// T300 Log.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "event")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
+)]
 #[allow(missing_docs)]
 pub enum T300Log {
     WaterDry { id: u64, timestamp: u64 },

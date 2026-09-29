@@ -47,7 +47,7 @@ tapo::impl_to_dict!(PyRecordingHubResult);
 /// mirrors [`RecordingType`], with every unknown wire value folded into
 /// `Other`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[pyclass(name = "RecordingType", from_py_object, eq, eq_int, hash, frozen)]
+#[pyclass(name = "RecordingType", from_py_object, eq, hash, frozen)]
 #[allow(missing_docs)]
 pub enum PyRecordingType {
     Timing,

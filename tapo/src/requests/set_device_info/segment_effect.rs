@@ -6,7 +6,7 @@ use crate::error::Error;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
 #[serde(rename_all = "snake_case")]
 #[allow(missing_docs)]
@@ -183,7 +183,7 @@ impl SegmentEffect {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
 #[non_exhaustive]
 #[allow(missing_docs)]

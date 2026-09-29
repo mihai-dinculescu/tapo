@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// The backup Wi-Fi network of a camera paired to a camera hub.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(from = "String", into = "String")]
 pub enum BackupWifi {
     /// The backup network is chosen automatically.

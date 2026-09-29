@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(
     feature = "python",
-    pyo3::prelude::pyclass(from_py_object, get_all, eq, eq_int, hash, frozen)
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
 pub enum DeviceType {
     /// Tapo L510, L520, L610 — dimmable lights.

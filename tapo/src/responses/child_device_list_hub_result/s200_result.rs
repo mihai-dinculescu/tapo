@@ -53,8 +53,11 @@ impl DecodableResultExt for S200Result {
 }
 
 /// S200B and S200D Rotation log params.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
+)]
 #[allow(missing_docs)]
 pub struct S200RotationParams {
     #[serde(rename = "rotate_deg")]
@@ -65,9 +68,12 @@ pub struct S200RotationParams {
 crate::impl_to_dict!(S200RotationParams);
 
 /// S200B and S200D Log.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "event")]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
+)]
 #[allow(missing_docs)]
 pub enum S200Log {
     Rotation {
