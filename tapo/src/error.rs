@@ -32,7 +32,7 @@ impl TapoResponseError {
     pub(crate) fn hash_mismatch() -> Self {
         Self::Unauthorized {
             kind: "HASH_MISMATCH",
-            description: "The device response did not match the challenge issued by the library. Make sure that your email and password are correct -— both are case-sensitive. Before adding a new device, disconnect any existing TP-Link/Tapo devices on the network. The TP-Link Simple Setup (TSS) protocol, which shares credentials from previously configured devices, may interfere with authentication. If the problem continues, perform a factory reset on the new device and add it again with no other TP-Link devices active during setup.".to_string(),
+            description: "The device response did not match the challenge issued by the library. Make sure that your email and password are correct - both are case-sensitive. Before adding a new device, disconnect any existing TP-Link/Tapo devices on the network. The TP-Link Simple Setup (TSS) protocol, which shares credentials from previously configured devices, may interfere with authentication. If the problem continues, perform a factory reset on the new device and add it again with no other TP-Link devices active during setup.".to_string(),
         }
     }
 }

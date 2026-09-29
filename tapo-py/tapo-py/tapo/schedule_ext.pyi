@@ -17,7 +17,7 @@ class ScheduleExt(Protocol):
                 factories. Any ``id`` it carries is ignored, because the
                 device assigns one.
 
-        The device has a fixed capacity — a P110 stores 32 rules — and raises
+        The device has a fixed capacity (a P110 stores 32 rules) and raises
         once it is full.
         """
 

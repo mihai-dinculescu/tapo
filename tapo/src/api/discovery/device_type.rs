@@ -12,27 +12,27 @@ use serde::{Deserialize, Serialize};
     pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
 pub enum DeviceType {
-    /// Tapo L510, L520, L610 — dimmable lights.
+    /// Tapo L510, L520, L610 - dimmable lights.
     Light,
-    /// Tapo L530, L535, L630 — color lights.
+    /// Tapo L530, L535, L630 - color lights.
     ColorLight,
-    /// Tapo L900 — RGB light strip.
+    /// Tapo L900 - RGB light strip.
     RgbLightStrip,
-    /// Tapo L920, L930 — RGBIC light strip.
+    /// Tapo L920, L930 - RGBIC light strip.
     RgbicLightStrip,
-    /// Tapo P100, P105 — smart plugs.
+    /// Tapo P100, P105 - smart plugs.
     Plug,
-    /// Tapo P110, P110M, P115 — smart plugs with energy monitoring.
+    /// Tapo P110, P110M, P115 - smart plugs with energy monitoring.
     PlugEnergyMonitoring,
-    /// Tapo P300, P306 — power strips.
+    /// Tapo P300, P306 - power strips.
     PowerStrip,
-    /// Tapo P304M, P316M — power strips with energy monitoring.
+    /// Tapo P304M, P316M - power strips with energy monitoring.
     PowerStripEnergyMonitoring,
-    /// Tapo H100 — smart hub.
+    /// Tapo H100 - smart hub.
     Hub,
-    /// Tapo H200, H500 — camera hubs.
+    /// Tapo H200, H500 - camera hubs.
     CameraHub,
-    /// Tapo C210, C220, C225, C325WB, C520WS, TC40, TC70 — smart cameras with PTZ.
+    /// Tapo C210, C220, C225, C325WB, C520WS, TC40, TC70 - smart cameras with PTZ.
     CameraPtz,
     /// A Tapo device without a specific handler implementation.
     Other,

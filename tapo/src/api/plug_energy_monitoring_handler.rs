@@ -86,7 +86,7 @@ impl PlugEnergyMonitoringHandler {
     ///   builders. Any `id` it carries is ignored, because the device assigns
     ///   one.
     ///
-    /// The device has a fixed capacity — a P110 stores 32 rules — and returns
+    /// The device has a fixed capacity (a P110 stores 32 rules) and returns
     /// a device error once it is full.
     pub async fn add_schedule_rule(&self, rule: ScheduleRule) -> Result<ScheduleRuleResult, Error> {
         self.client.read().await.add_schedule_rule(rule).await

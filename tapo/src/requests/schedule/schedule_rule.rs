@@ -22,7 +22,7 @@ const MAX_OFFSET_MINUTES: i16 = 360;
 /// The device evaluates the time against its own configured timezone; you
 /// don't supply a calendar date. The on-the-wire `year` / `month` / `day`
 /// fields the device requires are filled with a constant placeholder
-/// (`1970-01-01`) because the device ignores their values — this was
+/// (`1970-01-01`) because the device ignores their values. This was
 /// confirmed experimentally on a P110: a `clock_once` sent with
 /// `year=1970, month=1, day=1` still fires at the requested HH:MM.
 #[derive(Debug, Clone, PartialEq, Eq)]

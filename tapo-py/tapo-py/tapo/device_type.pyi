@@ -7,34 +7,34 @@ class DeviceType:
     """A Tapo device without a specific handler implementation."""
 
     Light: Final[DeviceType]
-    """Tapo L510, L520, L610 — dimmable lights."""
+    """Tapo L510, L520, L610 - dimmable lights."""
 
     ColorLight: Final[DeviceType]
-    """Tapo L530, L535, L630 — color lights."""
+    """Tapo L530, L535, L630 - color lights."""
 
     RgbLightStrip: Final[DeviceType]
-    """Tapo L900 — RGB light strip."""
+    """Tapo L900 - RGB light strip."""
 
     RgbicLightStrip: Final[DeviceType]
-    """Tapo L920, L930 — RGBIC light strip."""
+    """Tapo L920, L930 - RGBIC light strip."""
 
     Plug: Final[DeviceType]
-    """Tapo P100, P105 — smart plugs."""
+    """Tapo P100, P105 - smart plugs."""
 
     PlugEnergyMonitoring: Final[DeviceType]
-    """Tapo P110, P110M, P115 — smart plugs with energy monitoring."""
+    """Tapo P110, P110M, P115 - smart plugs with energy monitoring."""
 
     PowerStrip: Final[DeviceType]
-    """Tapo P300, P306 — power strips."""
+    """Tapo P300, P306 - power strips."""
 
     PowerStripEnergyMonitoring: Final[DeviceType]
-    """Tapo P304M, P316M — power strips with energy monitoring."""
+    """Tapo P304M, P316M - power strips with energy monitoring."""
 
     Hub: Final[DeviceType]
-    """Tapo H100 — smart hub."""
+    """Tapo H100 - smart hub."""
 
     CameraHub: Final[DeviceType]
-    """Tapo H200, H500 — camera hubs."""
+    """Tapo H200, H500 - camera hubs."""
 
     CameraPtz: Final[DeviceType]
-    """Tapo C210, C220, C225, C325WB, C520WS, TC40, TC70 — smart cameras with PTZ."""
+    """Tapo C210, C220, C225, C325WB, C520WS, TC40, TC70 - smart cameras with PTZ."""

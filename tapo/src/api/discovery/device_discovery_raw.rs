@@ -18,7 +18,7 @@ use crate::DiscoveryError;
 const DISCOVERY_INTERVAL: Duration = Duration::from_secs(3);
 
 /// Low-level UDP discovery that broadcasts queries and yields the [`IpAddr`] of each
-/// responding device. Does not perform device login or info fetching — see
+/// responding device. Does not perform device login or info fetching. See
 /// [`DeviceDiscovery`](super::DeviceDiscovery) for the higher-level stream that
 /// wraps this and produces [`DiscoveryResult`](super::DiscoveryResult) items.
 #[cfg_attr(not(feature = "debug"), allow(unreachable_pub))]

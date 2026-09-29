@@ -1614,8 +1614,8 @@ impl ApiClient {
             }
 
             for raw in page.rule_list {
-                // Parse per rule, so one the library cannot represent — an
-                // unknown `s_type` from a newer app, say — degrades the
+                // Parse per rule, so one the library cannot represent (an
+                // unknown `s_type` from a newer app, say) degrades the
                 // listing instead of failing it outright.
                 match ScheduleRuleResult::try_from(raw) {
                     Ok(rule) => all.push(rule),

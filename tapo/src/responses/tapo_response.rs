@@ -36,7 +36,7 @@ pub(crate) fn validate_response(error_code: i64) -> Result<(), Error> {
         "LOGIN" => TapoResponseError::Unauthorized {
             kind,
             description:
-                "Please verify that your email and password are correct—both are case-sensitive."
+                "Please verify that your email and password are correct - both are case-sensitive."
                     .to_string(),
         },
         "SESSION_TIMEOUT" | "SESSION_EXPIRED" => TapoResponseError::session_expired(kind),

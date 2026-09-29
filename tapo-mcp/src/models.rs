@@ -118,7 +118,7 @@ pub enum SetCapabilityRequest {
 pub enum GetCapabilityRequest {
     /// Read the device's current state (on/off, brightness, etc.).
     DeviceInfo,
-    /// Not callable via `get_device_state` — returns an error pointing to the
+    /// Not callable via `get_device_state`. Returns an error pointing to the
     /// dedicated `take_snapshot` tool. Listed here so the schema can give a
     /// helpful error rather than `unknown variant 'Snapshot'`.
     Snapshot,

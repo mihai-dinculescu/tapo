@@ -50,7 +50,7 @@ pub(crate) struct TapoProtocol {
 
 impl Clone for TapoProtocol {
     fn clone(&self) -> Self {
-        // Intentionally drops session — cloned clients must re-discover and re-login.
+        // Intentionally drops session: cloned clients must re-discover and re-login.
         Self {
             client: self.client.clone(),
             device_family: self.device_family,

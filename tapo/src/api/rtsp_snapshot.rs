@@ -5,8 +5,8 @@
 //! Tapo PTZ cameras (verified on the C220) advertise an MJPEG profile but
 //! deviate from [RFC 2435](https://www.rfc-editor.org/rfc/rfc2435.txt): the
 //! payload of every RTP packet (after the 8-byte RTP/JPEG main header and any
-//! optional sub-headers) carries a slice of an already-complete JFIF file —
-//! `FF D8` … `FF D9`, including DQT/SOF/DHT — rather than the bare entropy-
+//! optional sub-headers) carries a slice of an already-complete JFIF file
+//! (`FF D8` ... `FF D9`, including DQT/SOF/DHT) rather than the bare entropy-
 //! coded scan that the RFC requires. Retina's `Depacketizer` faithfully
 //! reconstructs JPEG headers from the RTP/JPEG main header fields and prepends
 //! them to the body, which here produces a malformed double-headered JPEG that

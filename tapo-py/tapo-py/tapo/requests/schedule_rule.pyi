@@ -43,7 +43,7 @@ class DaysOfWeek:
         Args:
             bits: a device bitmask in the range 0..=255; bit 0 is Sunday
                 through bit 6, Saturday. Bits 7 and above are ignored, but the
-                value must still fit in a byte — a wider int raises
+                value must still fit in a byte. A wider int raises
                 ``OverflowError``.
         """
 
