@@ -14,6 +14,10 @@ file. This change log follows the conventions of
 - `TemperatureHumidityRecords`: renamed the `datetime` field to `retrieved_at`.
 - `TemperatureHumidityRecord`: renamed the `datetime` field to `recorded_at`.
 
+### Fixed
+
+- `ApiClient::h200`, `ApiClient::h500`, `ApiClient::discover_devices`: logging in to a camera hub and the first request after it no longer fail intermittently with `error sending request`. During discovery this reported the hub as an error instead of returning it.
+
 ## [Python Unreleased][Unreleased]
 
 ### Added
@@ -31,6 +35,7 @@ file. This change log follows the conventions of
 
 ### Fixed
 
+- `ApiClient.h200`, `ApiClient.h500`, `ApiClient.discover_devices`: logging in to a camera hub and the first request after it no longer fail intermittently with `error sending request`. During discovery this raised an exception for the hub instead of returning it.
 - `PlugEnergyMonitoringHandler.get_power_data`, `PowerStripPlugEnergyMonitoringHandler.get_power_data`: `start_date_time` and `end_date_time` now accept a timezone-aware `datetime` in any timezone, instead of raising `ValueError` for anything other than `timezone.utc`. A naive `datetime` raises `TypeError`.
 - Type stubs: the enums are no longer declared as `(str, Enum)` or `Enum` subclasses, which they never were at runtime. Each variant is now typed as an instance of its class, so type checkers reject comparing a value with a string or reading `.name` / `.value`, which never worked.
 - Type stubs: `TriggerLogsS200Result`, `S200Log`, `S200Event`, `S200RotationParams` and the `T100`, `T110` and `T300` counterparts are now declared in `tapo.responses`, where they live at runtime. Importing them from the top-level `tapo` package type-checked but raised `ImportError`.
@@ -42,6 +47,10 @@ file. This change log follows the conventions of
 
 - `get_device_state`: `TriggerLogs` entries now carry `triggered_at` as an ISO 8601 UTC string instead of the Unix-seconds `timestamp`.
 - `get_device_state`: `TemperatureHumidityRecords` now reports the time the records were retrieved as `retrieved_at` and the time of each record as `recorded_at`, instead of `datetime` for both.
+
+### Fixed
+
+- `list_devices`, `check_device`, `get_device_state`: an H200 or H500 camera hub and the sensors paired to it no longer fail intermittently with `error sending request`. In `list_devices` this reported the hub under `errors` instead of listing it as a device.
 
 ## [MCP v0.5.1][tapo-mcp-v0.5.1] - 2026-09-28
 

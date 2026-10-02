@@ -154,7 +154,7 @@ impl DiscoveryResult {
         let auth_protocol = raw_result.auth_protocol();
 
         if raw_result.is_camera_hub() {
-            client.use_camera_hub_account();
+            client.prepare_for_camera_hub();
         }
 
         client
