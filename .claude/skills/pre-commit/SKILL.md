@@ -59,6 +59,10 @@ Run the following checks if there are changes in the `tapo-mcp/` directory. Fix 
 Run the following checks if there are changes in the `tapo/` or `tapo-py/` directories. Fix all issues found.
 
 - Verify that `SUPPORTED_DEVICES.md` is up to date: add, remove, or regroup rows/columns when a handler's public method list changed, a device model was added/removed, or a method's `#[cfg(feature = "debug")]` gating changed
+- Verify that `TROUBLESHOOTING.md` still matches the library when the change touches protocols, authentication, discovery, error types or messages, or logging. Read the whole file, not only the sections the change seems to concern:
+  - **Correct**: every error message, log line, URL path, port, protocol name, and example file it quotes is what the code produces now. Grep each quoted string against `tapo/src/` and `tapo-py/` and fix the ones that drifted
+  - **Relevant**: every section describes a failure a user of the current library can still hit. Rewrite or remove sections, symptoms, and solutions about behavior the change removed. Describe only current behavior, with no notes about what older versions did
+  - **Complete**: if the change adds or rewords a failure that users must resolve on their side (a new error variant, a message that tells them to change a setting, a new protocol or firmware limitation), add it to the matching section or write a new one in the existing Symptoms / Cause / Solutions layout. Skip this when the error message already states the cause and the fix, so the guide would only repeat it: an entry has to add something the message cannot carry, such as several steps to try in order, a cause that is not obvious, or symptoms that only show in the logs
 
 ### Decompiled app checks
 
