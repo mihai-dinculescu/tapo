@@ -34,7 +34,7 @@ See [/SUPPORTED_DEVICES.md][supported_devices] for the supported devices and fea
 > Cargo.toml
 ```toml
 [dependencies]
-tapo = "0.10"
+tapo = "0.11"
 ```
 
 > main.rs

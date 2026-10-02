@@ -6,6 +6,26 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [MCP Unreleased][Unreleased]
+
+### Changed
+
+- `get_device_state`: `TriggerLogs` entries now carry `triggered_at` as an ISO 8601 UTC string instead of the Unix-seconds `timestamp`.
+- `get_device_state`: `TemperatureHumidityRecords` now reports the time the records were retrieved as `retrieved_at` and the time of each record as `recorded_at`, instead of `datetime` for both.
+- `list_devices`, `check_device`, `get_device_state`, `control_device`: a device that only accepts the TPAP protocol now fails with a message that points to the Third-Party Compatibility option in the Tapo app, instead of one from a failed handshake. In `list_devices` the device is reported under `errors`.
+
+### Fixed
+
+- `list_devices`, `check_device`, `get_device_state`: an H200 or H500 camera hub and the sensors paired to it no longer fail intermittently with `error sending request`. In `list_devices` this reported the hub under `errors` instead of listing it as a device.
+
+### Removed
+
+- `list_devices`, `check_device`, `get_device_state`, `control_device`: removed support for devices whose firmware only speaks the legacy AES protocol. Such a device now fails with a message that says its firmware needs updating in the Tapo app. In `list_devices` it is reported under `errors` instead of being listed.
+
+## [Rust v0.11.0][v0.11.0] - 2026-10-02
+
 ### Added
 
 - `Error::UnsupportedProtocol`: added variant for a device that speaks a protocol the library does not support. It carries the `protocol` name and a `description` of what to do about it.
@@ -27,7 +47,7 @@ file. This change log follows the conventions of
 
 - `ApiClient`: removed support for the legacy AES protocol. Lights, plugs, power strips and the H100 hub now always connect over KLAP, so a device whose firmware predates KLAP needs a firmware update in the Tapo app before it can be used. `ApiClient::discover_devices` reports such a device with an `Error::UnsupportedProtocol` error that says so. Connecting by IP address also sends one request fewer, because the client no longer probes the device to find out which protocol it speaks.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.11.0][v0.11.0] - 2026-10-02
 
 ### Added
 
@@ -54,22 +74,6 @@ file. This change log follows the conventions of
 ### Removed
 
 - `ApiClient`: removed support for the legacy AES protocol. Lights, plugs, power strips and the H100 hub now always connect over KLAP, so a device whose firmware predates KLAP needs a firmware update in the Tapo app before it can be used. `ApiClient.discover_devices` raises an exception for such a device that says so. Connecting by IP address also sends one request fewer, because the client no longer probes the device to find out which protocol it speaks.
-
-## [MCP Unreleased][Unreleased]
-
-### Changed
-
-- `get_device_state`: `TriggerLogs` entries now carry `triggered_at` as an ISO 8601 UTC string instead of the Unix-seconds `timestamp`.
-- `get_device_state`: `TemperatureHumidityRecords` now reports the time the records were retrieved as `retrieved_at` and the time of each record as `recorded_at`, instead of `datetime` for both.
-- `list_devices`, `check_device`, `get_device_state`, `control_device`: a device that only accepts the TPAP protocol now fails with a message that points to the Third-Party Compatibility option in the Tapo app, instead of one from a failed handshake. In `list_devices` the device is reported under `errors`.
-
-### Fixed
-
-- `list_devices`, `check_device`, `get_device_state`: an H200 or H500 camera hub and the sensors paired to it no longer fail intermittently with `error sending request`. In `list_devices` this reported the hub under `errors` instead of listing it as a device.
-
-### Removed
-
-- `list_devices`, `check_device`, `get_device_state`, `control_device`: removed support for devices whose firmware only speaks the legacy AES protocol. Such a device now fails with a message that says its firmware needs updating in the Tapo app. In `list_devices` it is reported under `errors` instead of being listed.
 
 ## [MCP v0.5.1][tapo-mcp-v0.5.1] - 2026-09-28
 
@@ -1108,6 +1112,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.11.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.11.0
 [tapo-mcp-v0.5.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.1
 [v0.10.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.10.0
 [tapo-mcp-v0.5.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.0
