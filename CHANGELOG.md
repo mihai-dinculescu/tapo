@@ -6,6 +6,10 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `Error::UnsupportedProtocol`: added variant for a device that speaks a protocol the library does not support. It carries the `protocol` name and a `description` of what to do about it.
+
 ### Changed
 
 - Enums: `AlarmDuration`, `AlarmRingtone`, `AlarmVolume`, `AutoOffStatus`, `BackupWifi`, `ChargingStatus`, `DefaultPlugState`, `DefaultPowerType`, `DefaultStateType`, `LightingEffectPreset`, `LightingEffectType`, `OvercurrentStatus`, `OverheatStatus`, `PowerProtectionStatus`, `PowerState`, `RecordingType`, `S200Event`, `SegmentEffectPreset`, `SegmentEffectType`, `Status`, `T100Event`, `T110Event`, `T300Event`, `TemperatureUnit`, `TemperatureUnitKE100`, and `WaterLeakStatus` (along with the `PlugState` and `S200RotationParams` structs they contain) now derive `Eq` and `Hash`, so they can be used as `HashMap` keys and in `HashSet`s.
@@ -13,6 +17,7 @@ file. This change log follows the conventions of
 - `S200Log`, `T100Log`, `T110Log`, `T300Log`: renamed to `S200Event`, `T100Event`, `T110Event` and `T300Event`, and their variants no longer carry `id` and `timestamp`. `S200Event::Rotation` keeps its `params`.
 - `TemperatureHumidityRecords`: renamed the `datetime` field to `retrieved_at`.
 - `TemperatureHumidityRecord`: renamed the `datetime` field to `recorded_at`.
+- `ApiClient::discover_devices`: a device that only accepts the TPAP protocol is now reported with an `Error::UnsupportedProtocol` error that points to the Third-Party Compatibility option in the Tapo app, instead of an error from a failed handshake.
 
 ### Fixed
 
@@ -32,6 +37,7 @@ file. This change log follows the conventions of
 - `S200Log`, `T100Log`, `T110Log`, `T300Log`: each log now has `id`, `triggered_at` (a timezone-aware `datetime` in UTC) and `event`, instead of variant classes with an integer `timestamp`. `S200Log` also has `params`, set for rotations. `to_dict()` emits `triggered_at` as an ISO 8601 string in place of `timestamp`.
 - `TemperatureHumidityRecords`: renamed the `datetime` attribute to `retrieved_at`, in `to_dict()` too.
 - `TemperatureHumidityRecord`: renamed the `datetime` attribute to `recorded_at`, in `to_dict()` too.
+- `ApiClient.discover_devices`: a device that only accepts the TPAP protocol now raises an exception that points to the Third-Party Compatibility option in the Tapo app, instead of one from a failed handshake.
 
 ### Fixed
 
@@ -47,6 +53,7 @@ file. This change log follows the conventions of
 
 - `get_device_state`: `TriggerLogs` entries now carry `triggered_at` as an ISO 8601 UTC string instead of the Unix-seconds `timestamp`.
 - `get_device_state`: `TemperatureHumidityRecords` now reports the time the records were retrieved as `retrieved_at` and the time of each record as `recorded_at`, instead of `datetime` for both.
+- `list_devices`, `check_device`, `get_device_state`, `control_device`: a device that only accepts the TPAP protocol now fails with a message that points to the Third-Party Compatibility option in the Tapo app, instead of one from a failed handshake. In `list_devices` the device is reported under `errors`.
 
 ### Fixed
 

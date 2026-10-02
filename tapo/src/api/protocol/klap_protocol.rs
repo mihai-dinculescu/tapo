@@ -159,11 +159,7 @@ impl KlapProtocol {
             debug!("Handshake1 error: {}", response.status());
 
             if response.status() == StatusCode::FORBIDDEN {
-                return Err(Error::Tapo(TapoResponseError::Unauthorized {
-                    kind: "FORBIDDEN",
-                    description: r"Make sure Third-Party Compatibility is turned on in the Tapo app. If it's already enabled, try switching it off and then back on again. You can find this option by navigating to Me > Third-Party Services in the app."
-                        .to_string(),
-                }));
+                return Err(Error::Tapo(TapoResponseError::forbidden()));
             }
             return Err(Error::Tapo(TapoResponseError::HttpError {
                 status_code: response.status().as_u16(),

@@ -151,7 +151,7 @@ impl DiscoveryResult {
         raw_result: DiscoveryRawResult,
     ) -> Result<Self, Error> {
         let device_family = raw_result.device_family();
-        let auth_protocol = raw_result.auth_protocol();
+        let auth_protocol = raw_result.auth_protocol()?;
 
         if raw_result.is_camera_hub() {
             client.prepare_for_camera_hub();

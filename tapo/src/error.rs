@@ -29,6 +29,13 @@ impl TapoResponseError {
         }
     }
 
+    pub(crate) fn forbidden() -> Self {
+        Self::Unauthorized {
+            kind: "FORBIDDEN",
+            description: "Make sure Third-Party Compatibility is turned on in the Tapo app. If it's already enabled, try switching it off and then back on again. You can find this option by navigating to Me > Third-Party Services in the app. If this error still occurs after that, the device no longer supports KLAP, which the library needs to connect to it.".to_string(),
+        }
+    }
+
     pub(crate) fn hash_mismatch() -> Self {
         Self::Unauthorized {
             kind: "HASH_MISMATCH",
@@ -61,9 +68,26 @@ pub enum Error {
     /// Device not found
     #[error("Device not found")]
     DeviceNotFound,
+    /// The device speaks a protocol that the library does not support.
+    #[error("Unsupported protocol: {protocol}: {description}")]
+    UnsupportedProtocol {
+        /// The protocol the device speaks.
+        protocol: &'static str,
+        /// Why the protocol is not supported and what to do about it.
+        description: String,
+    },
     /// Other Error. This is a catch-all for errors that don't fit into the other categories.
     #[error(transparent)]
     Other(#[from] anyhow::Error),
+}
+
+impl Error {
+    pub(crate) fn unsupported_tpap_protocol() -> Self {
+        Self::UnsupportedProtocol {
+            protocol: "TPAP",
+            description: "The device uses the TPAP protocol, which is not supported yet. On some devices, turning on Third-Party Compatibility in the Tapo app (Me > Third-Party Services) switches the device to KLAP, which is supported. If it's already enabled, try switching it off and then back on again. If this error still occurs after that, the device no longer supports KLAP.".to_string(),
+        }
+    }
 }
 
 impl From<reqwest::Error> for Error {

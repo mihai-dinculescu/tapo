@@ -3,6 +3,7 @@ use std::net::IpAddr;
 use serde_json::Value;
 
 use crate::api::protocol::{AuthProtocol, DeviceFamily};
+use crate::error::Error;
 
 use super::DeviceType;
 
@@ -66,21 +67,37 @@ impl DiscoveryRawResult {
             == Some(DeviceType::CameraHub)
     }
 
-    pub(crate) fn auth_protocol(&self) -> AuthProtocol {
+    /// The protocol the device announces.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the device announces a protocol that is not supported.
+    pub(crate) fn auth_protocol(&self) -> Result<AuthProtocol, Error> {
         let scheme = self
             .message
             .get("result")
             .and_then(|r| r.get("mgt_encrypt_schm"));
 
         if scheme.and_then(|s| s["is_support_https"].as_bool()) == Some(true) {
-            return AuthProtocol::AesSsl;
+            return Ok(AuthProtocol::AesSsl);
         }
 
         match scheme.and_then(|s| s["encrypt_type"].as_str()) {
-            Some("KLAP") => AuthProtocol::Klap,
-            Some("AES") => AuthProtocol::Aes,
-            _ => AuthProtocol::Unknown,
+            Some("KLAP") => Ok(AuthProtocol::Klap),
+            Some("AES") => Ok(AuthProtocol::Aes),
+            // The `encrypt_type` alone is not enough: it has been reported to
+            // say `TPAP` on devices that still speak KLAP. A device in TPAP
+            // mode also announces a `tpap` object.
+            Some("TPAP") if self.has_tpap_info() => Err(Error::unsupported_tpap_protocol()),
+            _ => Ok(AuthProtocol::Unknown),
         }
+    }
+
+    fn has_tpap_info(&self) -> bool {
+        self.message
+            .get("result")
+            .and_then(|r| r.get("tpap"))
+            .is_some_and(Value::is_object)
     }
 }
 
@@ -96,14 +113,20 @@ mod tests {
         device_type: &str,
         device_model: &str,
         is_support_https: bool,
+        encrypt_type: Option<&str>,
     ) -> DiscoveryRawResult {
+        let mut mgt_encrypt_schm = json!({ "is_support_https": is_support_https });
+        if let Some(encrypt_type) = encrypt_type {
+            mgt_encrypt_schm["encrypt_type"] = json!(encrypt_type);
+        }
+
         DiscoveryRawResult {
             ip: IpAddr::V4(Ipv4Addr::new(192, 168, 1, 100)),
             message: json!({
                 "result": {
                     "device_type": device_type,
                     "device_model": device_model,
-                    "mgt_encrypt_schm": { "is_support_https": is_support_https },
+                    "mgt_encrypt_schm": mgt_encrypt_schm,
                 },
                 "error_code": 0,
             }),
@@ -111,17 +134,44 @@ mod tests {
     }
 
     #[test]
+    fn klap_hint_uses_klap_protocol() {
+        let result = raw_result("SMART.TAPOPLUG", "P110", false, Some("KLAP"));
+
+        assert_eq!(result.device_family(), DeviceFamily::Smart);
+        assert_eq!(result.auth_protocol().unwrap(), AuthProtocol::Klap);
+    }
+
+    #[test]
+    fn tpap_hint_is_an_error() {
+        let mut result = raw_result("SMART.TAPOBULB", "L930", false, Some("TPAP"));
+        result.message["result"]["tpap"] =
+            json!({ "tls": 0, "dac": 0, "noc": 0, "pake": [2], "port": 80 });
+
+        assert!(matches!(
+            result.auth_protocol().err(),
+            Some(Error::UnsupportedProtocol { protocol, .. }) if protocol == "TPAP"
+        ));
+    }
+
+    #[test]
+    fn tpap_hint_without_tpap_info_is_unknown() {
+        let result = raw_result("SMART.TAPOBULB", "L930", false, Some("TPAP"));
+
+        assert_eq!(result.auth_protocol().unwrap(), AuthProtocol::Unknown);
+    }
+
+    #[test]
     fn camera_hub_uses_smart_cam_family() {
-        let result = raw_result("SMART.TAPOHUB", "H200", true);
+        let result = raw_result("SMART.TAPOHUB", "H200", true, None);
 
         assert!(result.is_camera_hub());
         assert_eq!(result.device_family(), DeviceFamily::SmartCam);
-        assert_eq!(result.auth_protocol(), AuthProtocol::AesSsl);
+        assert_eq!(result.auth_protocol().unwrap(), AuthProtocol::AesSsl);
     }
 
     #[test]
     fn hub_uses_smart_family() {
-        let result = raw_result("SMART.TAPOHUB", "H100", false);
+        let result = raw_result("SMART.TAPOHUB", "H100", false, None);
 
         assert!(!result.is_camera_hub());
         assert_eq!(result.device_family(), DeviceFamily::Smart);
@@ -129,7 +179,7 @@ mod tests {
 
     #[test]
     fn camera_uses_smart_cam_family() {
-        let result = raw_result("SMART.IPCAMERA", "C220", true);
+        let result = raw_result("SMART.IPCAMERA", "C220", true, None);
 
         assert!(!result.is_camera_hub());
         assert_eq!(result.device_family(), DeviceFamily::SmartCam);

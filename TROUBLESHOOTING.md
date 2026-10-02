@@ -33,11 +33,12 @@ Reported in [#441][issue_441], [#449][issue_449], [#473][issue_473] and [#643][i
 
 - Connecting to the device fails with `Unauthorized: FORBIDDEN: Make sure Third-Party Compatibility is turned on in the Tapo app...`.
 - With debug logging enabled, the log shows `Handshake1 error: 403 Forbidden`.
+- When the device is found through `discover_devices`, it is reported with `Unsupported protocol: TPAP: The device uses the TPAP protocol, which is not supported yet...` instead, and no handshake takes place.
 - The device worked previously and stopped after a firmware update. Devices still on older firmware keep working.
 
 ### Cause
 
-Starting with firmware 1.4.0, the device rejects local API access unless the "Third-Party Compatibility" option is enabled in the Tapo app. The setting is stored per account and pushed to the devices, and that push does not always reach a device that was updated after the option was turned on.
+Starting with firmware 1.4.0, the device rejects local API access unless the "Third-Party Compatibility" option is enabled in the Tapo app. With the option off, the device uses the TPAP protocol, which the library does not support yet. The setting is stored per account and pushed to the devices, and that push does not always reach a device that was updated after the option was turned on.
 
 ### Solutions
 
@@ -47,6 +48,8 @@ Try these in order:
 2. **If it is already on, switch it off and back on again.** Switch it off, leave the settings screen, wait about a minute, go back in and switch it on. Wait another minute before retrying.
 3. **Update the Tapo app.** On older app versions the option sits under "Tapo Lab", and toggling it there has no effect. After updating the app, the option moves to Third-Party Services and toggling it there works.
 4. **Factory reset the device.** As a last resort, reset the device to factory settings, remove it from the Tapo app, set it up again, and then toggle Third-Party Compatibility once more.
+
+If Third-Party Compatibility is on and the error still occurs after these steps, the device no longer supports KLAP, which the library needs to connect to it. This is tracked in [#657][issue_657].
 
 Note: on firmware 1.4.0 some users reported that the handshake succeeds but later requests intermittently fail with 403 Forbidden. Testing against a P110 reproduced this without any clear pattern, which points to a firmware issue rather than an authentication problem. Retrying the request or re-creating the device handler works around it.
 
@@ -105,4 +108,5 @@ Try these in order:
 [issue_473]: https://github.com/mihai-dinculescu/tapo/issues/473
 [issue_577]: https://github.com/mihai-dinculescu/tapo/issues/577
 [issue_643]: https://github.com/mihai-dinculescu/tapo/issues/643
+[issue_657]: https://github.com/mihai-dinculescu/tapo/issues/657
 [discover_example]: https://github.com/mihai-dinculescu/tapo/blob/main/tapo/examples/tapo_discover_devices.rs
