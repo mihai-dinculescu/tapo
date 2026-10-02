@@ -10,6 +10,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.5.2][tapo-mcp-v0.5.2] - 2026-10-02
+
 ### Changed
 
 - `get_device_state`: `TriggerLogs` entries now carry `triggered_at` as an ISO 8601 UTC string instead of the Unix-seconds `timestamp`.
@@ -1112,6 +1114,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.5.2]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.2
 [v0.11.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.11.0
 [tapo-mcp-v0.5.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.1
 [v0.10.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.10.0
