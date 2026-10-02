@@ -84,7 +84,7 @@ Reported in [#577][issue_577] where a P110 device has been upgraded to firmware 
 
 ### Symptoms
 
-- Connection attempts fail with errors such as `error sending request for url (http://<device ip>/app)`.
+- Connection attempts fail with errors such as `error sending request for url (http://<device ip>/app/handshake1)`.
 - The device responds to pings and works fine in the Tapo app, but a port scan shows that port 80 (HTTP) is closed, and navigating to `http://<device ip>/app` in a browser times out instead of returning `200 OK`.
 - The device worked previously and stopped after a firmware update or a power loss.
 

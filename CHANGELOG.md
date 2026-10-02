@@ -23,6 +23,10 @@ file. This change log follows the conventions of
 
 - `ApiClient::h200`, `ApiClient::h500`, `ApiClient::discover_devices`: logging in to a camera hub and the first request after it no longer fail intermittently with `error sending request`. During discovery this reported the hub as an error instead of returning it.
 
+### Removed
+
+- `ApiClient`: removed support for the legacy AES protocol. Lights, plugs, power strips and the H100 hub now always connect over KLAP, so a device whose firmware predates KLAP needs a firmware update in the Tapo app before it can be used. `ApiClient::discover_devices` reports such a device with an `Error::UnsupportedProtocol` error that says so. Connecting by IP address also sends one request fewer, because the client no longer probes the device to find out which protocol it speaks.
+
 ## [Python Unreleased][Unreleased]
 
 ### Added
@@ -47,6 +51,10 @@ file. This change log follows the conventions of
 - Type stubs: `TriggerLogsS200Result`, `S200Log`, `S200Event`, `S200RotationParams` and the `T100`, `T110` and `T300` counterparts are now declared in `tapo.responses`, where they live at runtime. Importing them from the top-level `tapo` package type-checked but raised `ImportError`.
 - Type stubs: `T31XResult.current_temperature` and `T31XResult.current_temperature_exception` are now typed as `float`, which is what they are at runtime, instead of `int`.
 
+### Removed
+
+- `ApiClient`: removed support for the legacy AES protocol. Lights, plugs, power strips and the H100 hub now always connect over KLAP, so a device whose firmware predates KLAP needs a firmware update in the Tapo app before it can be used. `ApiClient.discover_devices` raises an exception for such a device that says so. Connecting by IP address also sends one request fewer, because the client no longer probes the device to find out which protocol it speaks.
+
 ## [MCP Unreleased][Unreleased]
 
 ### Changed
@@ -58,6 +66,10 @@ file. This change log follows the conventions of
 ### Fixed
 
 - `list_devices`, `check_device`, `get_device_state`: an H200 or H500 camera hub and the sensors paired to it no longer fail intermittently with `error sending request`. In `list_devices` this reported the hub under `errors` instead of listing it as a device.
+
+### Removed
+
+- `list_devices`, `check_device`, `get_device_state`, `control_device`: removed support for devices whose firmware only speaks the legacy AES protocol. Such a device now fails with a message that says its firmware needs updating in the Tapo app. In `list_devices` it is reported under `errors` instead of being listed.
 
 ## [MCP v0.5.1][tapo-mcp-v0.5.1] - 2026-09-28
 

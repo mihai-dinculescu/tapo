@@ -84,7 +84,7 @@ impl DiscoveryRawResult {
 
         match scheme.and_then(|s| s["encrypt_type"].as_str()) {
             Some("KLAP") => Ok(AuthProtocol::Klap),
-            Some("AES") => Ok(AuthProtocol::Aes),
+            Some("AES") => Err(Error::unsupported_aes_protocol()),
             // The `encrypt_type` alone is not enough: it has been reported to
             // say `TPAP` on devices that still speak KLAP. A device in TPAP
             // mode also announces a `tpap` object.
@@ -139,6 +139,16 @@ mod tests {
 
         assert_eq!(result.device_family(), DeviceFamily::Smart);
         assert_eq!(result.auth_protocol().unwrap(), AuthProtocol::Klap);
+    }
+
+    #[test]
+    fn aes_hint_is_an_error() {
+        let result = raw_result("SMART.TAPOPLUG", "P110", false, Some("AES"));
+
+        assert!(matches!(
+            result.auth_protocol().err(),
+            Some(Error::UnsupportedProtocol { protocol, .. }) if protocol == "AES"
+        ));
     }
 
     #[test]

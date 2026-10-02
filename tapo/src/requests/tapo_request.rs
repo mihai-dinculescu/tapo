@@ -5,9 +5,9 @@ use serde::Serialize;
 use super::{
     AddTimerParams, ControlChildParams, DeviceRebootParams, GetChildDeviceListParams,
     GetEnergyDataParams, GetPowerDataParams, GetScheduleRulesParams, GetTriggerLogsParams,
-    HandshakeParams, LightingEffect, LoginDeviceParams, MultipleRequestParams, PlayAlarmParams,
-    RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams,
-    SegmentEffect, SmartCamControlChildParams, SmartCamDoParams, SmartCamGetChildDeviceListParams,
+    LightingEffect, MultipleRequestParams, PlayAlarmParams, RemoveScheduleRulesParams,
+    RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams, SegmentEffect,
+    SmartCamControlChildParams, SmartCamDoParams, SmartCamGetChildDeviceListParams,
     SmartCamGetGeneralDeviceListParams, SmartCamGetParams, SmartCamGetTimezoneParams,
     SmartCamSearchDateWithVideoParams, SmartCamSearchVideoWithUtcParams,
 };
@@ -21,8 +21,6 @@ use super::SmartCamGetAppComponentListParams;
 pub(crate) enum TapoRequest {
     #[serde(rename = "component_nego")]
     ComponentNegotiation(TapoParams<EmptyParams>),
-    Handshake(TapoParams<HandshakeParams>),
-    LoginDevice(TapoParams<LoginDeviceParams>),
     #[serde(rename = "securePassthrough")]
     SecurePassthrough(TapoParams<SecurePassthroughParams>),
     SetDeviceInfo(Box<TapoParams<serde_json::Value>>),

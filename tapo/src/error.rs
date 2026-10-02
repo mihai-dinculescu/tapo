@@ -82,6 +82,13 @@ pub enum Error {
 }
 
 impl Error {
+    pub(crate) fn unsupported_aes_protocol() -> Self {
+        Self::UnsupportedProtocol {
+            protocol: "AES",
+            description: "The device uses the legacy AES protocol, which is no longer supported. Updating the firmware in the Tapo app switches the device to KLAP, which is supported.".to_string(),
+        }
+    }
+
     pub(crate) fn unsupported_tpap_protocol() -> Self {
         Self::UnsupportedProtocol {
             protocol: "TPAP",
@@ -100,8 +107,7 @@ impl From<reqwest::Error> for Error {
     }
 }
 
-/// Redacts the session token that the AES SSL protocol puts in the `stok=` path segment
-/// and the AES protocol puts in the `token` query parameter.
+/// Redacts the session token that the AES SSL protocol puts in the `stok=` path segment.
 fn redact_session_token(url: &mut reqwest::Url) {
     let path = url
         .path()
@@ -116,21 +122,6 @@ fn redact_session_token(url: &mut reqwest::Url) {
         .collect::<Vec<_>>()
         .join("/");
     url.set_path(&path);
-
-    if url.query().is_some() {
-        let pairs = url
-            .query_pairs()
-            .map(|(key, value)| {
-                let value = if key == "token" {
-                    "REDACTED".to_string()
-                } else {
-                    value.into_owned()
-                };
-                (key.into_owned(), value)
-            })
-            .collect::<Vec<_>>();
-        url.query_pairs_mut().clear().extend_pairs(pairs);
-    }
 }
 
 #[cfg(feature = "python")]
@@ -176,13 +167,6 @@ mod tests {
             "{display}"
         );
         assert!(!format!("{err:?}").contains("secret-token"));
-    }
-
-    #[test]
-    fn redact_session_token_in_query() {
-        let mut url = reqwest::Url::parse("http://127.0.0.1/app?token=secret-token").unwrap();
-        redact_session_token(&mut url);
-        assert_eq!(url.as_str(), "http://127.0.0.1/app?token=REDACTED");
     }
 
     #[test]

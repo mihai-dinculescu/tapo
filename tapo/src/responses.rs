@@ -23,7 +23,6 @@ mod supported_alarm_type_list_result;
 mod tapo_response;
 mod tapo_result;
 mod timer_result;
-mod token_result;
 mod trigger_logs_result;
 
 pub use crate::requests::{LightingEffect, LightingEffectType};
@@ -54,4 +53,3 @@ pub(crate) use decodable_result_ext::*;
 pub(crate) use supported_alarm_type_list_result::*;
 pub(crate) use tapo_response::*;
 pub(crate) use tapo_result::*;
-pub(crate) use token_result::*;

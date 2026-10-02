@@ -7,10 +7,9 @@ use serde::de::DeserializeOwned;
 
 use crate::Error;
 use crate::TapoResponseError;
-use crate::requests::{EmptyParams, TapoParams, TapoRequest};
-use crate::responses::{TapoResponse, TapoResponseExt, validate_response};
+use crate::requests::TapoRequest;
+use crate::responses::TapoResponseExt;
 
-use super::aes_protocol::AesProtocol;
 use super::aes_ssl_protocol::AesSslProtocol;
 use super::klap_protocol::KlapProtocol;
 
@@ -23,21 +22,17 @@ pub(crate) enum DeviceFamily {
 /// The authentication protocol used to communicate with a Tapo device.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum AuthProtocol {
-    /// AES-based protocol. The client sends encrypted JSON
-    /// requests over HTTP and the device returns encrypted JSON responses.
-    Aes,
     /// AES-based protocol over HTTPS with nonce-based authentication.
     /// Used by IP cameras, hubs, and doorbells.
     AesSsl,
     /// KLAP (Key-Length-Authentication Protocol). Uses a handshake-derived
     /// symmetric cipher for request/response encryption.
     Klap,
-    /// Protocol type could not be determined.
+    /// No protocol hint is available. KLAP is used.
     Unknown,
 }
 
 enum ActiveProtocol {
-    Aes(AesProtocol),
     AesSsl(AesSslProtocol),
     Klap(KlapProtocol),
 }
@@ -92,10 +87,6 @@ impl TapoProtocol {
 
         if self.active.is_none() {
             self.active = Some(match auth_protocol {
-                AuthProtocol::Aes => {
-                    debug!("Using AES protocol (from discovery hint)...");
-                    ActiveProtocol::Aes(AesProtocol::new(self.client.clone())?)
-                }
                 AuthProtocol::AesSsl => {
                     debug!("Using AES SSL protocol (from discovery hint)...");
                     ActiveProtocol::AesSsl(AesSslProtocol::new(self.client.clone()))
@@ -104,12 +95,14 @@ impl TapoProtocol {
                     debug!("Using KLAP protocol (from discovery hint)...");
                     ActiveProtocol::Klap(KlapProtocol::new(self.client.clone()))
                 }
-                AuthProtocol::Unknown => self.discover_protocol_type(&url).await?,
+                AuthProtocol::Unknown => {
+                    debug!("Using KLAP protocol...");
+                    ActiveProtocol::Klap(KlapProtocol::new(self.client.clone()))
+                }
             });
         }
 
         match &mut self.active {
-            Some(ActiveProtocol::Aes(p)) => p.login(url, username, password).await,
             Some(ActiveProtocol::AesSsl(p)) => p.login(url, username, password).await,
             Some(ActiveProtocol::Klap(p)) => p.login(url, username, password).await,
             None => unreachable!(),
@@ -122,7 +115,6 @@ impl TapoProtocol {
         password: String,
     ) -> Result<(), Error> {
         match &mut self.active {
-            Some(ActiveProtocol::Aes(p)) => p.refresh_session(username, password).await,
             Some(ActiveProtocol::AesSsl(p)) => p.refresh_session(username, password).await,
             Some(ActiveProtocol::Klap(p)) => p.refresh_session(username, password).await,
             None => Err(anyhow::anyhow!(
@@ -137,7 +129,6 @@ impl TapoProtocol {
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
         match &self.active {
-            Some(ActiveProtocol::Aes(p)) => p.execute_request(request).await,
             Some(ActiveProtocol::AesSsl(p)) => p.execute_request(request).await,
             Some(ActiveProtocol::Klap(p)) => p.execute_request(request).await,
             None => Err(anyhow::anyhow!(
@@ -156,45 +147,5 @@ impl TapoProtocol {
                 description: "TP_SESSIONID cookie not found in response".to_string(),
             })),
         }
-    }
-
-    async fn discover_protocol_type(&self, url: &str) -> Result<ActiveProtocol, Error> {
-        debug!("Testing the AES protocol...");
-        if self.is_aes_supported(url).await? {
-            debug!("Supported. Setting up the AES protocol...");
-            Ok(ActiveProtocol::Aes(AesProtocol::new(self.client.clone())?))
-        } else {
-            debug!("Not supported. Setting up the KLAP protocol...");
-            Ok(ActiveProtocol::Klap(KlapProtocol::new(self.client.clone())))
-        }
-    }
-
-    async fn is_aes_supported(&self, url: &str) -> Result<bool, Error> {
-        match self.test_aes(url).await {
-            Err(Error::Tapo(TapoResponseError::DeviceError { code, .. })) => Ok(code != 1003),
-            Err(err) => Err(err),
-            Ok(_) => Ok(true),
-        }
-    }
-
-    async fn test_aes(&self, url: &str) -> Result<(), Error> {
-        let request = TapoRequest::ComponentNegotiation(TapoParams::new(EmptyParams));
-        let request_string = serde_json::to_string(&request)?;
-        debug!("Component negotiation request: {request_string}");
-
-        let response = self
-            .client
-            .post(url)
-            .body(request_string)
-            .send()
-            .await?
-            .json::<TapoResponse<serde_json::Value>>()
-            .await?;
-
-        debug!("Device responded with: {response:?}");
-
-        validate_response(response.error_code)?;
-
-        Ok(())
     }
 }
