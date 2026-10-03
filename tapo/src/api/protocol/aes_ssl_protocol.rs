@@ -114,8 +114,7 @@ impl AesSslProtocol {
         validate_response(extract_error_code(&response_body))?;
 
         // SmartCam hubs (e.g. H500) encrypt the reply inside the
-        // securePassthrough envelope; cameras respond to single requests in
-        // plain text.
+        // securePassthrough envelope; cameras respond in plain text.
         let response_body = match response_body
             .pointer("/result/response")
             .and_then(|v| v.as_str())
@@ -132,19 +131,7 @@ impl AesSslProtocol {
             None => response_body,
         };
 
-        // Only SmartCam get responses nest the data under a section key that
-        // needs unwrapping; other responses (e.g. multipleRequest) deserialize
-        // from the full body.
-        let payload = if matches!(request, TapoRequest::SmartCamGet(_)) {
-            match extract_section_leaf(response_body) {
-                Some(leaf) => leaf,
-                None => return Ok(None),
-            }
-        } else {
-            response_body
-        };
-
-        let result: R = serde_json::from_value(payload)?;
+        let result: R = serde_json::from_value(response_body)?;
         debug!("Device responded with: {result:?}");
 
         Ok(Some(result))
@@ -339,23 +326,6 @@ impl AesSslProtocol {
 
         Ok(result)
     }
-}
-
-pub(super) fn extract_section_leaf(response_body: serde_json::Value) -> Option<serde_json::Value> {
-    // SmartCam get responses place data under a single section key
-    // (e.g. "device_info": {"basic_info": {...}}). Extract the leaf object.
-    let serde_json::Value::Object(body) = response_body else {
-        return None;
-    };
-
-    let (_, section) = body.into_iter().find(|(key, _)| key != "error_code")?;
-
-    let serde_json::Value::Object(section) = section else {
-        return None;
-    };
-
-    let leaf = section.into_values().next()?;
-    leaf.is_object().then_some(leaf)
 }
 
 pub(super) fn extract_error_code(response_body: &serde_json::Value) -> i64 {

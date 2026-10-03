@@ -13,7 +13,7 @@ use crate::requests::TapoRequest;
 use crate::responses::{TapoResponse, TapoResponseExt, validate_response};
 use crate::{Error, TapoResponseError};
 
-use super::aes_ssl_protocol::{extract_error_code, extract_section_leaf};
+use super::aes_ssl_protocol::extract_error_code;
 use super::crypto;
 use super::tapo_protocol::DeviceFamily;
 use super::tpap_cipher::TpapCipher;
@@ -188,10 +188,10 @@ impl TpapProtocol {
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
+        let response_decrypted = self.send(&serde_json::to_string(&request)?).await?;
+
         match self.device_family {
             DeviceFamily::Smart => {
-                let response_decrypted = self.send(&serde_json::to_string(&request)?).await?;
-
                 let response: TapoResponse<R> = serde_json::from_str(&response_decrypted)?;
                 debug!("Device responded with: {response:?}");
 
@@ -200,43 +200,19 @@ impl TpapProtocol {
 
                 Ok(result)
             }
-            DeviceFamily::SmartCam => self.execute_smart_cam_request(request).await,
-        }
-    }
+            // A camera or camera hub is read from the whole response, as
+            // over AES SSL.
+            DeviceFamily::SmartCam => {
+                let response_body: serde_json::Value = serde_json::from_str(&response_decrypted)?;
 
-    /// A camera takes a request only inside a `multipleRequest`, so a
-    /// request that is not one is sent as the only request of one.
-    async fn execute_smart_cam_request<R>(&self, request: TapoRequest) -> Result<Option<R>, Error>
-    where
-        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
-    {
-        let is_get = matches!(request, TapoRequest::SmartCamGet(_));
-        let is_multiple = matches!(request, TapoRequest::MultipleRequest(_));
+                validate_response(extract_error_code(&response_body))?;
 
-        let request_string = if is_multiple {
-            serde_json::to_string(&request)?
-        } else {
-            multiple_request_of(&request)?.to_string()
-        };
+                let result: R = serde_json::from_value(response_body)?;
+                debug!("Device responded with: {result:?}");
 
-        let response_decrypted = self.send(&request_string).await?;
-        let response_body: serde_json::Value = serde_json::from_str(&response_decrypted)?;
-
-        validate_response(extract_error_code(&response_body))?;
-
-        let payload = if is_multiple {
-            response_body
-        } else {
-            match sole_response_result(response_body, is_get)? {
-                Some(result) => result,
-                None => return Ok(None),
+                Ok(Some(result))
             }
-        };
-
-        let result: R = serde_json::from_value(payload)?;
-        debug!("Device responded with: {result:?}");
-
-        Ok(Some(result))
+        }
     }
 
     /// Sends the encrypted `request` and returns the decrypted response.
@@ -465,56 +441,6 @@ fn has_port(address: &str) -> bool {
     })
 }
 
-/// A `multipleRequest` of the `request` alone. Inside of one a camera
-/// refuses the `get` and `do` methods that AES SSL sends on their own, and
-/// takes each such request under a method of its own.
-fn multiple_request_of(request: &TapoRequest) -> Result<serde_json::Value, Error> {
-    let request = match request {
-        TapoRequest::SmartCamGet(params) => json!({
-            "method": params.method(),
-            "params": params,
-        }),
-        TapoRequest::SmartCamDo(params) => json!({
-            "method": params.method(),
-            "params": params,
-        }),
-        request => serde_json::to_value(request)?,
-    };
-
-    Ok(json!({
-        "method": "multipleRequest",
-        "params": { "requests": [request] },
-    }))
-}
-
-/// The result of the only response of a `multipleRequest`, if it has one.
-///
-/// # Errors
-///
-/// Returns an error if there is no response, or if the response is an error.
-fn sole_response_result(
-    mut response_body: serde_json::Value,
-    is_get: bool,
-) -> Result<Option<serde_json::Value>, Error> {
-    let Some(response) = response_body.pointer_mut("/result/responses/0") else {
-        return Err(Error::Tapo(TapoResponseError::EmptyResult));
-    };
-
-    validate_response(extract_error_code(response))?;
-
-    let Some(result) = response.get_mut("result").map(serde_json::Value::take) else {
-        return Ok(None);
-    };
-
-    // Only SmartCam get responses nest the data under a section key that
-    // needs unwrapping.
-    if is_get {
-        Ok(extract_section_leaf(result))
-    } else {
-        Ok(Some(result))
-    }
-}
-
 /// The error of a failed `pake_share`. A camera answers a wrong password
 /// with the code that stands for an expired session everywhere else, and a
 /// caller answers an expired session by logging in again.
@@ -645,8 +571,6 @@ struct ShareResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::requests::{SmartCamDoParams, SmartCamGetParams};
-
     use super::*;
 
     fn info(tpap: serde_json::Value) -> TpapInfo {
@@ -871,107 +795,6 @@ mod tests {
             ..register_result()
         };
         assert!(response_error(result.validate()).contains("dev_share"));
-    }
-
-    #[test]
-    fn multiple_request_of_a_get_names_its_method() {
-        // What a C220 takes over TPAP.
-        let request = TapoRequest::SmartCamGet(SmartCamGetParams::device_info());
-
-        assert_eq!(
-            multiple_request_of(&request).unwrap(),
-            json!({
-                "method": "multipleRequest",
-                "params": { "requests": [{
-                    "method": "getDeviceInfo",
-                    "params": { "device_info": { "name": ["basic_info"] } },
-                }] },
-            })
-        );
-
-        let request = TapoRequest::SmartCamGet(SmartCamGetParams::preset());
-
-        assert_eq!(
-            multiple_request_of(&request).unwrap(),
-            json!({
-                "method": "multipleRequest",
-                "params": { "requests": [{
-                    "method": "getPresetConfig",
-                    "params": { "preset": { "name": ["preset"] } },
-                }] },
-            })
-        );
-    }
-
-    #[test]
-    fn multiple_request_of_a_do_names_its_method() {
-        let requests = [
-            (SmartCamDoParams::motor_move(10, -5), "motorMove"),
-            (SmartCamDoParams::set_preset("Door"), "addMotorPostion"),
-            (SmartCamDoParams::goto_preset("1"), "motorMoveToPreset"),
-            (SmartCamDoParams::remove_preset("1"), "deletePreset"),
-        ];
-
-        for (params, method) in requests {
-            let request = multiple_request_of(&TapoRequest::SmartCamDo(params)).unwrap();
-
-            assert_eq!(request["params"]["requests"][0]["method"], method);
-        }
-
-        let request = TapoRequest::SmartCamDo(SmartCamDoParams::motor_move(10, -5));
-
-        assert_eq!(
-            multiple_request_of(&request).unwrap()["params"]["requests"][0]["params"],
-            json!({ "motor": { "move": { "x_coord": "10", "y_coord": "-5" } } })
-        );
-    }
-
-    #[test]
-    fn sole_response_result_of_a_get_is_the_section_leaf() {
-        let response_body = json!({
-            "result": { "responses": [{
-                "method": "getDeviceInfo",
-                "result": { "device_info": { "basic_info": { "device_model": "C220" } } },
-                "error_code": 0,
-            }] },
-            "error_code": 0,
-        });
-
-        assert_eq!(
-            sole_response_result(response_body.clone(), true).unwrap(),
-            Some(json!({ "device_model": "C220" }))
-        );
-        assert_eq!(
-            sole_response_result(response_body, false).unwrap(),
-            Some(json!({ "device_info": { "basic_info": { "device_model": "C220" } } }))
-        );
-    }
-
-    #[test]
-    fn sole_response_result_of_a_refused_request_is_an_error() {
-        // What a C220 answers a method that it does not know with.
-        let response_body = json!({
-            "result": { "responses": [{ "method": "unknown", "result": {}, "error_code": -40210 }] },
-            "error_code": 0,
-        });
-
-        assert!(matches!(
-            sole_response_result(response_body, false),
-            Err(Error::Tapo(TapoResponseError::DeviceError {
-                code: -40210,
-                kind: "PROTOCOL_FORMAT_ERROR",
-            }))
-        ));
-    }
-
-    #[test]
-    fn sole_response_result_without_a_response_is_an_error() {
-        let response_body = json!({ "result": { "responses": [] }, "error_code": 0 });
-
-        assert!(matches!(
-            sole_response_result(response_body, false),
-            Err(Error::Tapo(TapoResponseError::EmptyResult))
-        ));
     }
 
     #[test]

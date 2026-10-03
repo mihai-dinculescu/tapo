@@ -15,8 +15,8 @@ use crate::requests::{
     EnergyDataInterval, GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams,
     GetScheduleRulesParams, LightingEffect, MultipleRequestParams, PlayAlarmParams,
     PowerDataInterval, RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRule,
-    ScheduleRuleRaw, SegmentEffect, SmartCamControlChildParams, SmartCamDoParams,
-    SmartCamGetChildDeviceListParams, SmartCamGetParams, TapoParams, TapoRequest,
+    ScheduleRuleRaw, SegmentEffect, SmartCamControlChildParams, SmartCamGetChildDeviceListParams,
+    SmartCamGetDeviceInfoParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
     AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
@@ -1232,8 +1232,11 @@ impl ApiClient {
 
         match self.protocol()?.device_family() {
             DeviceFamily::SmartCam => {
-                self.execute_smart_cam_get(SmartCamGetParams::device_info())
-                    .await
+                let request = TapoRequest::SmartCamGetDeviceInfo(TapoParams::new(
+                    SmartCamGetDeviceInfoParams::new(),
+                ));
+
+                self.execute_smart_cam_section_request(request).await
             }
             DeviceFamily::Smart => {
                 let request = TapoRequest::GetDeviceInfo(TapoParams::new(EmptyParams));
@@ -1467,37 +1470,60 @@ impl ApiClient {
         }
     }
 
-    pub(crate) async fn execute_smart_cam_get<R>(
+    /// Executes a SmartCam request that reads a section of the device's
+    /// configuration, returning what the section holds.
+    pub(crate) async fn execute_smart_cam_section_request<R>(
         &self,
-        params: SmartCamGetParams,
+        request: TapoRequest,
     ) -> Result<R, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
-        let request = TapoRequest::SmartCamGet(params);
+        let result = self
+            .execute_smart_cam_multiple_request::<serde_json::Value>(request)
+            .await?;
 
-        self.protocol()?
-            .execute_request(request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+        let leaf = extract_section_leaf(result)
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        Ok(serde_json::from_value(leaf)?)
     }
 
-    pub(crate) async fn execute_smart_cam_do(&self, params: SmartCamDoParams) -> Result<(), Error> {
-        let request = TapoRequest::SmartCamDo(params);
-
-        self.protocol()?
-            .execute_request::<serde_json::Value>(request)
+    /// Executes a SmartCam request whose result is of no interest.
+    pub(crate) async fn execute_smart_cam_command(
+        &self,
+        request: TapoRequest,
+    ) -> Result<(), Error> {
+        self.execute_smart_cam_request_opt::<serde_json::Value>(request)
             .await?;
 
         Ok(())
     }
 
-    /// Executes a single SmartCam request wrapped in a `multipleRequest`
-    /// envelope, returning the result of its sole response.
+    /// Executes a SmartCam request, returning its result.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the response has no result.
     pub(crate) async fn execute_smart_cam_multiple_request<R>(
         &self,
         request: TapoRequest,
     ) -> Result<R, Error>
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
+    {
+        self.execute_smart_cam_request_opt(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    /// A camera or camera hub takes a request only inside a
+    /// `multipleRequest`, so every request is sent as the only request of
+    /// one.
+    async fn execute_smart_cam_request_opt<R>(
+        &self,
+        request: TapoRequest,
+    ) -> Result<Option<R>, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
@@ -1520,9 +1546,7 @@ impl ApiClient {
 
         validate_response(response.error_code)?;
 
-        response
-            .result
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+        Ok(response.result)
     }
 
     pub(crate) async fn set_timer(
@@ -1762,9 +1786,44 @@ impl ApiClientExt for ApiClient {
     }
 }
 
+fn extract_section_leaf(result: serde_json::Value) -> Option<serde_json::Value> {
+    // SmartCam get responses place data under a single section key
+    // (e.g. "device_info": {"basic_info": {...}}). Extract the leaf object.
+    let serde_json::Value::Object(result) = result else {
+        return None;
+    };
+
+    let serde_json::Value::Object(section) = result.into_values().next()? else {
+        return None;
+    };
+
+    let leaf = section.into_values().next()?;
+    leaf.is_object().then_some(leaf)
+}
+
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
+
+    #[test]
+    fn section_leaf_of_a_get_result_is_extracted() {
+        // What a C220 answers `getDeviceInfo` with.
+        let result = json!({ "device_info": { "basic_info": { "device_model": "C220" } } });
+
+        assert_eq!(
+            extract_section_leaf(result),
+            Some(json!({ "device_model": "C220" }))
+        );
+    }
+
+    #[test]
+    fn section_leaf_of_an_empty_result_is_none() {
+        for result in [json!({}), json!({ "device_info": {} }), json!(null)] {
+            assert_eq!(extract_section_leaf(result), None);
+        }
+    }
 
     #[test]
     fn test_debug_obscures_the_password() {

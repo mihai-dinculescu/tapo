@@ -7,9 +7,11 @@ use super::{
     GetEnergyDataParams, GetPowerDataParams, GetScheduleRulesParams, GetTriggerLogsParams,
     LightingEffect, MultipleRequestParams, PlayAlarmParams, RemoveScheduleRulesParams,
     RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams, SegmentEffect,
-    SmartCamControlChildParams, SmartCamDoParams, SmartCamGetChildDeviceListParams,
-    SmartCamGetGeneralDeviceListParams, SmartCamGetParams, SmartCamGetTimezoneParams,
-    SmartCamSearchDateWithVideoParams, SmartCamSearchVideoWithUtcParams,
+    SmartCamAddMotorPositionParams, SmartCamControlChildParams, SmartCamDeletePresetParams,
+    SmartCamGetChildDeviceListParams, SmartCamGetDeviceInfoParams,
+    SmartCamGetGeneralDeviceListParams, SmartCamGetPresetConfigParams, SmartCamGetTimezoneParams,
+    SmartCamMotorMoveParams, SmartCamMotorMoveToPresetParams, SmartCamSearchDateWithVideoParams,
+    SmartCamSearchVideoWithUtcParams,
 };
 
 #[cfg(feature = "debug")]
@@ -50,10 +52,19 @@ pub(crate) enum TapoRequest {
     #[serde(rename = "get_support_alarm_type_list")]
     GetSupportedAlarmTypeList(TapoParams<EmptyParams>),
     // Smart Camera requests
-    #[serde(rename = "get")]
-    SmartCamGet(SmartCamGetParams),
-    #[serde(rename = "do")]
-    SmartCamDo(SmartCamDoParams),
+    #[serde(rename = "getDeviceInfo")]
+    SmartCamGetDeviceInfo(TapoParams<SmartCamGetDeviceInfoParams>),
+    #[serde(rename = "getPresetConfig")]
+    SmartCamGetPresetConfig(TapoParams<SmartCamGetPresetConfigParams>),
+    #[serde(rename = "motorMove")]
+    SmartCamMotorMove(TapoParams<SmartCamMotorMoveParams>),
+    // The misspelling is the device's.
+    #[serde(rename = "addMotorPostion")]
+    SmartCamAddMotorPosition(TapoParams<SmartCamAddMotorPositionParams>),
+    #[serde(rename = "motorMoveToPreset")]
+    SmartCamMotorMoveToPreset(TapoParams<SmartCamMotorMoveToPresetParams>),
+    #[serde(rename = "deletePreset")]
+    SmartCamDeletePreset(TapoParams<SmartCamDeletePresetParams>),
     #[serde(rename = "getChildDeviceList")]
     SmartCamGetChildDeviceList(TapoParams<SmartCamGetChildDeviceListParams>),
     // Shares the `childControl` pagination payload with `getChildDeviceList`.
