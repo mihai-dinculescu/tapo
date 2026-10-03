@@ -32,7 +32,7 @@ impl TapoResponseError {
     pub(crate) fn forbidden() -> Self {
         Self::Unauthorized {
             kind: "FORBIDDEN",
-            description: "Make sure Third-Party Compatibility is turned on in the Tapo app. If it's already enabled, try switching it off and then back on again. You can find this option by navigating to Me > Third-Party Services in the app. If this error still occurs after that, the device no longer supports KLAP, which the library needs to connect to it.".to_string(),
+            description: "Make sure Third-Party Compatibility is turned on in the Tapo app. If it's already enabled, try switching it off and then back on again. You can find this option by navigating to Me > Third-Party Services in the app.".to_string(),
         }
     }
 
@@ -40,6 +40,27 @@ impl TapoResponseError {
         Self::Unauthorized {
             kind: "HASH_MISMATCH",
             description: "The device response did not match the challenge issued by the library. Make sure that your email and password are correct - both are case-sensitive. Before adding a new device, disconnect any existing TP-Link/Tapo devices on the network. The TP-Link Simple Setup (TSS) protocol, which shares credentials from previously configured devices, may interfere with authentication. If the problem continues, perform a factory reset on the new device and add it again with no other TP-Link devices active during setup.".to_string(),
+        }
+    }
+
+    pub(crate) fn tpap_hash_mismatch() -> Self {
+        Self::Unauthorized {
+            kind: "TPAP_HASH_MISMATCH",
+            description: "The device accepted the login but its response did not match the challenge issued by the library, so the device could not prove that it knows the password as well.".to_string(),
+        }
+    }
+
+    pub(crate) fn tpap_credentials() -> Self {
+        Self::Unauthorized {
+            kind: "TPAP_CREDENTIALS",
+            description: "Please verify that your password is correct - it is case-sensitive. The device locks itself after too many failed logins, so do not retry in a loop.".to_string(),
+        }
+    }
+
+    pub(crate) fn tpap_auth_attempts_limit() -> Self {
+        Self::Unauthorized {
+            kind: "TPAP_AUTH_ATTEMPTS_LIMIT",
+            description: "The device has locked itself after too many failed logins and refuses even a correct password. Verify that your email and password are those of the TP-Link account the device is registered to, and wait a while before trying again. Retrying keeps the device locked.".to_string(),
         }
     }
 }
@@ -89,10 +110,14 @@ impl Error {
         }
     }
 
-    pub(crate) fn unsupported_tpap_protocol() -> Self {
+    /// A device in TPAP mode that wants to be logged in to in a way the
+    /// library cannot do yet. `detail` is what the device announced.
+    pub(crate) fn unsupported_tpap(detail: String) -> Self {
         Self::UnsupportedProtocol {
             protocol: "TPAP",
-            description: "The device uses the TPAP protocol, which is not supported yet. On some devices, turning on Third-Party Compatibility in the Tapo app (Me > Third-Party Services) switches the device to KLAP, which is supported. If it's already enabled, try switching it off and then back on again. If this error still occurs after that, the device no longer supports KLAP.".to_string(),
+            description: format!(
+                "The device uses a variant of the TPAP protocol that is not supported yet ({detail}). On some devices, turning on Third-Party Compatibility in the Tapo app (Me > Third-Party Services) switches the device to a protocol that is supported. If that does not help, please open an issue with this message and the device model."
+            ),
         }
     }
 }
@@ -107,7 +132,7 @@ impl From<reqwest::Error> for Error {
     }
 }
 
-/// Redacts the session token that the AES SSL protocol puts in the `stok=` path segment.
+/// Redacts the session token that the AES SSL and TPAP protocols put in the `stok=` path segment.
 fn redact_session_token(url: &mut reqwest::Url) {
     let path = url
         .path()

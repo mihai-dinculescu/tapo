@@ -32,24 +32,20 @@ Reported in [#441][issue_441], [#449][issue_449], [#473][issue_473] and [#643][i
 ### Symptoms
 
 - Connecting to the device fails with `Unauthorized: FORBIDDEN: Make sure Third-Party Compatibility is turned on in the Tapo app...`.
-- With debug logging enabled, the log shows `Handshake1 error: 403 Forbidden`.
-- When the device is found through `discover_devices`, it is reported with `Unsupported protocol: TPAP: The device uses the TPAP protocol, which is not supported yet...` instead, and no handshake takes place.
+- With debug logging enabled, the log shows `Using KLAP protocol` followed by `Handshake1 error: 403 Forbidden`.
 - The device worked previously and stopped after a firmware update. Devices still on older firmware keep working.
 
 ### Cause
 
-Starting with firmware 1.4.0, the device rejects local API access unless the "Third-Party Compatibility" option is enabled in the Tapo app. With the option off, the device uses the TPAP protocol, which the library does not support yet. The setting is stored per account and pushed to the devices, and that push does not always reach a device that was updated after the option was turned on.
+Starting with firmware 1.4.0, the device speaks one of two protocols, depending on the "Third-Party Compatibility" option in the Tapo app: KLAP with the option on, TPAP with it off. The library asks the device which of the two it speaks and supports both, so the option can be left either way. This error means that the device did not announce TPAP and then refused KLAP. The setting is stored per account and pushed to the devices, and that push does not always reach a device that was updated after the option was changed.
 
 ### Solutions
 
 Try these in order:
 
-1. **Turn on Third-Party Compatibility in the Tapo app.** Navigate to Me > Third-Party Services > Third-Party Compatibility.
-2. **If it is already on, switch it off and back on again.** Switch it off, leave the settings screen, wait about a minute, go back in and switch it on. Wait another minute before retrying.
-3. **Update the Tapo app.** On older app versions the option sits under "Tapo Lab", and toggling it there has no effect. After updating the app, the option moves to Third-Party Services and toggling it there works.
-4. **Factory reset the device.** As a last resort, reset the device to factory settings, remove it from the Tapo app, set it up again, and then toggle Third-Party Compatibility once more.
-
-If Third-Party Compatibility is on and the error still occurs after these steps, the device no longer supports KLAP, which the library needs to connect to it. This is tracked in [#657][issue_657].
+1. **Switch Third-Party Compatibility off and back on again in the Tapo app.** Navigate to Me > Third-Party Services > Third-Party Compatibility. Switch it off, leave the settings screen, wait about a minute, go back in and switch it on. Wait another minute before retrying.
+2. **Update the Tapo app.** On older app versions the option sits under "Tapo Lab", and toggling it there has no effect. After updating the app, the option moves to Third-Party Services and toggling it there works.
+3. **Factory reset the device.** As a last resort, reset the device to factory settings, remove it from the Tapo app, set it up again, and then toggle Third-Party Compatibility once more.
 
 Note: on firmware 1.4.0 some users reported that the handshake succeeds but later requests intermittently fail with 403 Forbidden. Testing against a P110 reproduced this without any clear pattern, which points to a firmware issue rather than an authentication problem. Retrying the request or re-creating the device handler works around it.
 
@@ -84,7 +80,7 @@ Reported in [#577][issue_577] where a P110 device has been upgraded to firmware 
 
 ### Symptoms
 
-- Connection attempts fail with errors such as `error sending request for url (http://<device ip>/app/handshake1)`.
+- Connection attempts fail with errors such as `error sending request for url (http://<device ip>/)`.
 - The device responds to pings and works fine in the Tapo app, but a port scan shows that port 80 (HTTP) is closed, and navigating to `http://<device ip>/app` in a browser times out instead of returning `200 OK`.
 - The device worked previously and stopped after a firmware update or a power loss.
 
@@ -108,5 +104,4 @@ Try these in order:
 [issue_473]: https://github.com/mihai-dinculescu/tapo/issues/473
 [issue_577]: https://github.com/mihai-dinculescu/tapo/issues/577
 [issue_643]: https://github.com/mihai-dinculescu/tapo/issues/643
-[issue_657]: https://github.com/mihai-dinculescu/tapo/issues/657
 [discover_example]: https://github.com/mihai-dinculescu/tapo/blob/main/tapo/examples/tapo_discover_devices.rs
