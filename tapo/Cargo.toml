@@ -34,7 +34,7 @@ serde = { workspace = true, features = ["derive", "serde_derive"] }
 serde_json = { workspace = true }
 serde_with = "3.20"
 thiserror = { workspace = true }
-tokio = { workspace = true, features = ["io-util", "net", "sync", "time"] }
+tokio = { workspace = true, features = ["io-util", "net", "rt", "sync", "time"] }
 tokio-stream = "0.1"
 uuid = { version = "1.23", features = ["serde", "v4"] }
 
@@ -43,8 +43,11 @@ aes = "0.9"
 base16ct = { version = "1.0", features = ["alloc"] }
 base64 = { workspace = true }
 cbc = { version = "0.2", features = ["alloc"] }
+ccm = "0.6"
 hkdf = "0.13"
 hmac = "0.13"
+p256 = { version = "0.14", default-features = false, features = ["arithmetic"] }
+pbkdf2 = "0.13"
 rand = "0.10"
 rsa = { version = "0.10.0-rc.18", features = ["getrandom"] }
 sha1 = "0.11"

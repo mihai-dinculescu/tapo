@@ -10,6 +10,10 @@ pub fn sha1(data: &[u8]) -> [u8; 20] {
     hasher.finalize().into()
 }
 
+pub fn sha1_hex_lower(data: &[u8]) -> String {
+    base16ct::lower::encode_string(&sha1(data))
+}
+
 pub fn sha256(data: &[u8]) -> [u8; 32] {
     use sha2::{Digest, Sha256};
     let mut hasher = Sha256::new();
@@ -21,12 +25,19 @@ pub fn sha256_hex(data: &[u8]) -> String {
     base16ct::upper::encode_string(&sha256(data))
 }
 
-pub fn md5_hex(data: &[u8]) -> String {
-    use md5::Digest;
-    let mut hasher = md5::Md5::new();
+pub fn md5(data: &[u8]) -> [u8; 16] {
+    use md5::{Digest, Md5};
+    let mut hasher = Md5::new();
     hasher.update(data);
-    let hash = hasher.finalize();
-    base16ct::upper::encode_string(&hash)
+    hasher.finalize().into()
+}
+
+pub fn md5_hex(data: &[u8]) -> String {
+    base16ct::upper::encode_string(&md5(data))
+}
+
+pub fn md5_hex_lower(data: &[u8]) -> String {
+    base16ct::lower::encode_string(&md5(data))
 }
 
 pub fn aes128_cbc_encrypt(key: &[u8], iv: &[u8], data: &str) -> anyhow::Result<String> {
@@ -46,6 +57,14 @@ pub fn aes128_cbc_decrypt_bytes(key: &[u8], iv: &[u8], data: &[u8]) -> anyhow::R
     decryptor
         .decrypt_padded_vec::<block_padding::Pkcs7>(data)
         .map_err(|e| anyhow::anyhow!("Decryption error: {:?}", e))
+}
+
+pub fn hmac_sha256(key: &[u8], data: &[u8]) -> [u8; 32] {
+    use hmac::{Hmac, KeyInit, Mac};
+    use sha2::Sha256;
+    let mut mac = Hmac::<Sha256>::new_from_slice(key).expect("HMAC takes a key of any size");
+    mac.update(data);
+    mac.finalize().into_bytes().into()
 }
 
 /// Whether `tag` is the HMAC-SHA256 of `data` under `key`, compared in
@@ -68,6 +87,14 @@ pub fn hkdf_sha256(ikm: &[u8], salt: &[u8], info: &[u8], length: usize) -> anyho
         .expand(info, &mut okm)
         .map_err(|e| anyhow::anyhow!("HKDF-SHA256 cannot expand to {length} bytes: {e}"))?;
     Ok(okm)
+}
+
+/// PBKDF2 with HMAC-SHA256 (RFC 8018), `length` bytes of output.
+pub fn pbkdf2_hmac_sha256(password: &[u8], salt: &[u8], iterations: u32, length: usize) -> Vec<u8> {
+    use sha2::Sha256;
+    let mut key = vec![0u8; length];
+    pbkdf2::pbkdf2_hmac::<Sha256>(password, salt, iterations, &mut key);
+    key
 }
 
 #[cfg(test)]

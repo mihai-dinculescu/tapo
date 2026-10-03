@@ -85,19 +85,9 @@ impl DiscoveryRawResult {
         match scheme.and_then(|s| s["encrypt_type"].as_str()) {
             Some("KLAP") => Ok(AuthProtocol::Klap),
             Some("AES") => Err(Error::unsupported_aes_protocol()),
-            // The `encrypt_type` alone is not enough: it has been reported to
-            // say `TPAP` on devices that still speak KLAP. A device in TPAP
-            // mode also announces a `tpap` object.
-            Some("TPAP") if self.has_tpap_info() => Err(Error::unsupported_tpap_protocol()),
+            Some("TPAP") => Ok(AuthProtocol::Tpap),
             _ => Ok(AuthProtocol::Unknown),
         }
-    }
-
-    fn has_tpap_info(&self) -> bool {
-        self.message
-            .get("result")
-            .and_then(|r| r.get("tpap"))
-            .is_some_and(Value::is_object)
     }
 }
 
@@ -152,20 +142,16 @@ mod tests {
     }
 
     #[test]
-    fn tpap_hint_is_an_error() {
-        let mut result = raw_result("SMART.TAPOBULB", "L930", false, Some("TPAP"));
-        result.message["result"]["tpap"] =
-            json!({ "tls": 0, "dac": 0, "noc": 0, "pake": [2], "port": 80 });
+    fn tpap_hint_uses_tpap_protocol() {
+        let result = raw_result("SMART.TAPOBULB", "L930", false, Some("TPAP"));
 
-        assert!(matches!(
-            result.auth_protocol().err(),
-            Some(Error::UnsupportedProtocol { protocol, .. }) if protocol == "TPAP"
-        ));
+        assert_eq!(result.device_family(), DeviceFamily::Smart);
+        assert_eq!(result.auth_protocol().unwrap(), AuthProtocol::Tpap);
     }
 
     #[test]
-    fn tpap_hint_without_tpap_info_is_unknown() {
-        let result = raw_result("SMART.TAPOBULB", "L930", false, Some("TPAP"));
+    fn missing_hint_is_unknown() {
+        let result = raw_result("SMART.TAPOHUB", "H100", false, None);
 
         assert_eq!(result.auth_protocol().unwrap(), AuthProtocol::Unknown);
     }

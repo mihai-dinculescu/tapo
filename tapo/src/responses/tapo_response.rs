@@ -39,6 +39,10 @@ pub(crate) fn validate_response(error_code: i64) -> Result<(), Error> {
                 "Please verify that your email and password are correct - both are case-sensitive."
                     .to_string(),
         },
+        // The device counts failed logins and locks itself after too many,
+        // so neither of these may read as an expired session to retry on.
+        "TPAP_CREDENTIALS" => TapoResponseError::tpap_credentials(),
+        "TPAP_AUTH_ATTEMPTS_LIMIT" => TapoResponseError::tpap_auth_attempts_limit(),
         "SESSION_TIMEOUT" | "SESSION_EXPIRED" => TapoResponseError::session_expired(kind),
         _ => TapoResponseError::DeviceError {
             code: error_code,
@@ -63,6 +67,12 @@ fn error_kind(code: i64) -> &'static str {
         -1802 => "SCHEDULE_FULL",
         -1803 => "SCHEDULE_CONFLICT",
         -1805 => "SCHEDULE_INDEX",
+        // Smart Devices: TPAP protocol
+        -2101 => "TPAP_AUTH_ATTEMPTS_LIMIT",
+        -2201 => "TPAP_CIPHER_SUITES_UNSUPPORTED",
+        -2202 => "TPAP_PASSCODE_TYPE_UNSUPPORTED",
+        -2203 => "TPAP_CREDENTIALS",
+        -2402 => "TPAP_SESSION_INVALID",
         // SmartCam Devices
         -40106 => "UNSUPPORTED_METHOD",
         -40109 => "ONE_SECOND_REPEAT_REQUEST",

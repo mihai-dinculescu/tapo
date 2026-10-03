@@ -12,6 +12,7 @@ use crate::responses::TapoResponseExt;
 
 use super::aes_ssl_protocol::AesSslProtocol;
 use super::klap_protocol::KlapProtocol;
+use super::tpap_protocol::TpapProtocol;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum DeviceFamily {
@@ -28,13 +29,20 @@ pub(crate) enum AuthProtocol {
     /// KLAP (Key-Length-Authentication Protocol). Uses a handshake-derived
     /// symmetric cipher for request/response encryption.
     Klap,
-    /// No protocol hint is available. KLAP is used.
+    /// TPAP. Logs in with SPAKE2+ and encrypts requests and responses with
+    /// AES-CCM. Discovery reporting TPAP is not proof: some devices that
+    /// report it still speak KLAP. The device is therefore probed first,
+    /// and KLAP is used if it does not answer as a TPAP device.
+    Tpap,
+    /// No protocol hint is available. The device is asked whether it speaks
+    /// TPAP, and KLAP is used when it does not.
     Unknown,
 }
 
 enum ActiveProtocol {
     AesSsl(AesSslProtocol),
     Klap(KlapProtocol),
+    Tpap(Box<TpapProtocol>),
 }
 
 pub(crate) struct TapoProtocol {
@@ -79,11 +87,6 @@ impl TapoProtocol {
     ) -> Result<(), Error> {
         let ip_address = ip_address.into();
         self.device_family = device_family;
-        let url = match auth_protocol {
-            AuthProtocol::AesSsl => format!("https://{ip_address}"),
-            _ => format!("http://{ip_address}/app"),
-        };
-        debug!("Device url: {url}");
 
         if self.active.is_none() {
             self.active = Some(match auth_protocol {
@@ -95,16 +98,36 @@ impl TapoProtocol {
                     debug!("Using KLAP protocol (from discovery hint)...");
                     ActiveProtocol::Klap(KlapProtocol::new(self.client.clone()))
                 }
-                AuthProtocol::Unknown => {
-                    debug!("Using KLAP protocol...");
-                    ActiveProtocol::Klap(KlapProtocol::new(self.client.clone()))
+                AuthProtocol::Tpap | AuthProtocol::Unknown => {
+                    match TpapProtocol::discover(&self.client, &ip_address).await? {
+                        Some(info) => {
+                            debug!("Using TPAP protocol (negotiated)...");
+                            ActiveProtocol::Tpap(Box::new(TpapProtocol::new(
+                                self.client.clone(),
+                                info,
+                            )))
+                        }
+                        None => {
+                            debug!("Using KLAP protocol (negotiated)...");
+                            ActiveProtocol::Klap(KlapProtocol::new(self.client.clone()))
+                        }
+                    }
                 }
             });
         }
 
+        let url = match &self.active {
+            Some(ActiveProtocol::AesSsl(_)) => format!("https://{ip_address}"),
+            Some(ActiveProtocol::Klap(_)) => format!("http://{ip_address}/app"),
+            Some(ActiveProtocol::Tpap(p)) => p.url(&ip_address)?,
+            None => unreachable!(),
+        };
+        debug!("Device url: {url}");
+
         match &mut self.active {
             Some(ActiveProtocol::AesSsl(p)) => p.login(url, username, password).await,
             Some(ActiveProtocol::Klap(p)) => p.login(url, username, password).await,
+            Some(ActiveProtocol::Tpap(p)) => p.login(url, username, password).await,
             None => unreachable!(),
         }
     }
@@ -117,6 +140,7 @@ impl TapoProtocol {
         match &mut self.active {
             Some(ActiveProtocol::AesSsl(p)) => p.refresh_session(username, password).await,
             Some(ActiveProtocol::Klap(p)) => p.refresh_session(username, password).await,
+            Some(ActiveProtocol::Tpap(p)) => p.refresh_session(username, password).await,
             None => Err(anyhow::anyhow!(
                 "Cannot refresh session: protocol not yet initialized (login first)"
             )
@@ -131,6 +155,7 @@ impl TapoProtocol {
         match &self.active {
             Some(ActiveProtocol::AesSsl(p)) => p.execute_request(request).await,
             Some(ActiveProtocol::Klap(p)) => p.execute_request(request).await,
+            Some(ActiveProtocol::Tpap(p)) => p.execute_request(request).await,
             None => Err(anyhow::anyhow!(
                 "Cannot execute request: protocol not yet initialized (login first)"
             )

@@ -6,9 +6,33 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `ApiClient`: added support for the TPAP protocol, which lights, plugs, power strips and the H100 hub on recent firmware speak when the Third-Party Compatibility option is switched off in the Tapo app. Such a device can now be used without changing that option, both when connecting by IP address and through `ApiClient::discover_devices`. Tested with the H100, L535, L930, P110, P110M and P304M.
+- `TapoResponseError::Unauthorized`: added the `TPAP_CREDENTIALS` kind for a wrong password and the `TPAP_AUTH_ATTEMPTS_LIMIT` kind for a device that has locked itself after too many failed logins. A locked device refuses every login for a while, so neither error should be retried in a loop. A device that accepts the login but cannot prove that it knows the password as well is reported with the `TPAP_HASH_MISMATCH` kind.
+
+### Changed
+
+- `ApiClient::discover_devices`: a device that speaks the TPAP protocol is now returned like any other device, instead of being reported with an `Error::UnsupportedProtocol` error. That error is now reserved for a device that speaks TPAP in a way the library cannot handle yet, and its `description` names what the device announced.
+- `ApiClient`: connecting to a light, plug, power strip or H100 hub by IP address now sends one request more, which asks the device which protocol it speaks.
+
 ## [Python Unreleased][Unreleased]
 
+### Added
+
+- `ApiClient`: added support for the TPAP protocol, which lights, plugs, power strips and the H100 hub on recent firmware speak when the Third-Party Compatibility option is switched off in the Tapo app. Such a device can now be used without changing that option, both when connecting by IP address and through `ApiClient.discover_devices`. Tested with the H100, L535, L930, P110, P110M and P304M.
+- `ApiClient`: a wrong password on a device that speaks TPAP raises an exception of kind `TPAP_CREDENTIALS`, and a device that has locked itself after too many failed logins raises one of kind `TPAP_AUTH_ATTEMPTS_LIMIT`. A locked device refuses every login for a while, so neither should be retried in a loop. A device that accepts the login but cannot prove that it knows the password as well raises one of kind `TPAP_HASH_MISMATCH`.
+
+### Changed
+
+- `ApiClient.discover_devices`: a device that speaks the TPAP protocol is now returned like any other device, instead of raising an unsupported protocol exception. That exception is now reserved for a device that speaks TPAP in a way the library cannot handle yet, and its message names what the device announced.
+- `ApiClient`: connecting to a light, plug, power strip or H100 hub by IP address now sends one request more, which asks the device which protocol it speaks.
+
 ## [MCP Unreleased][Unreleased]
+
+### Added
+
+- `list_devices`, `check_device`, `get_device_state`, `control_device`: added support for lights, plugs, power strips and the H100 hub that speak the TPAP protocol, which they do on recent firmware when the Third-Party Compatibility option is switched off in the Tapo app. Such a device is now listed and can be controlled without changing that option.
 
 ## [MCP v0.5.2][tapo-mcp-v0.5.2] - 2026-10-02
 
