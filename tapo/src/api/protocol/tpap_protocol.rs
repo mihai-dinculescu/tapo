@@ -13,7 +13,9 @@ use crate::requests::TapoRequest;
 use crate::responses::{TapoResponse, TapoResponseExt, validate_response};
 use crate::{Error, TapoResponseError};
 
+use super::aes_ssl_protocol::{extract_error_code, extract_section_leaf};
 use super::crypto;
+use super::tapo_protocol::DeviceFamily;
 use super::tpap_cipher::TpapCipher;
 use super::tpap_spake2p::{self, Proof};
 
@@ -26,7 +28,8 @@ const MAX_ITERATIONS: u32 = 100_000;
 /// How a device in TPAP mode wants to be logged in to.
 #[derive(Debug, Clone, Deserialize)]
 pub(super) struct TpapInfo {
-    /// 0 for plain HTTP, anything else for TLS.
+    /// 0 for plain HTTP, 1 for TLS without verification of the certificate
+    /// and 2 for TLS with it.
     #[serde(default)]
     tls: i64,
     port: Option<i64>,
@@ -37,20 +40,33 @@ pub(super) struct TpapInfo {
 }
 
 impl TpapInfo {
-    fn url(&self, ip_address: &str) -> Result<String, Error> {
-        if self.tls != 0 {
-            return Err(Error::unsupported_tpap(format!("tls: {}", self.tls)));
+    /// How a camera or camera hub wants to be logged in to, which it does not
+    /// announce: with the account password, over TLS and on the port that AES
+    /// SSL uses.
+    pub fn camera() -> Self {
+        Self {
+            tls: 1,
+            port: None,
+            pake: vec![2],
         }
+    }
+
+    fn url(&self, ip_address: &str) -> Result<String, Error> {
+        let (scheme, default_port) = match self.tls {
+            0 => ("http", 80),
+            1 => ("https", 443),
+            _ => return Err(Error::unsupported_tpap(format!("tls: {}", self.tls))),
+        };
 
         // A caller that names a port reaches the device through it, as with
         // a forwarded port, and the device does not know about that one.
         if has_port(ip_address) {
-            return Ok(format!("http://{ip_address}"));
+            return Ok(format!("{scheme}://{ip_address}"));
         }
 
-        let port = self.port.filter(|port| *port > 0).unwrap_or(80);
+        let port = self.port.filter(|port| *port > 0).unwrap_or(default_port);
 
-        Ok(format!("http://{ip_address}:{port}"))
+        Ok(format!("{scheme}://{ip_address}:{port}"))
     }
 
     fn passcode_type(&self) -> Result<&'static str, Error> {
@@ -73,15 +89,17 @@ struct TpapSession {
 pub(super) struct TpapProtocol {
     client: Client,
     info: TpapInfo,
+    device_family: DeviceFamily,
     url: Option<String>,
     session: Option<TpapSession>,
 }
 
 impl TpapProtocol {
-    pub fn new(client: Client, info: TpapInfo) -> Self {
+    pub fn new(client: Client, info: TpapInfo, device_family: DeviceFamily) -> Self {
         Self {
             client,
             info,
+            device_family,
             url: None,
             session: None,
         }
@@ -142,7 +160,8 @@ impl TpapProtocol {
     ///
     /// # Errors
     ///
-    /// Returns an error if the device takes them over TLS, which is not supported.
+    /// Returns an error if the device takes them over TLS with a verified
+    /// certificate, which is not supported.
     pub fn url(&self, ip_address: &str) -> Result<String, Error> {
         self.info.url(ip_address)
     }
@@ -169,12 +188,64 @@ impl TpapProtocol {
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
+        match self.device_family {
+            DeviceFamily::Smart => {
+                let response_decrypted = self.send(&serde_json::to_string(&request)?).await?;
+
+                let response: TapoResponse<R> = serde_json::from_str(&response_decrypted)?;
+                debug!("Device responded with: {response:?}");
+
+                validate_response(response.error_code)?;
+                let result = response.result;
+
+                Ok(result)
+            }
+            DeviceFamily::SmartCam => self.execute_smart_cam_request(request).await,
+        }
+    }
+
+    /// A camera takes a request only inside a `multipleRequest`, so a
+    /// request that is not one is sent as the only request of one.
+    async fn execute_smart_cam_request<R>(&self, request: TapoRequest) -> Result<Option<R>, Error>
+    where
+        R: fmt::Debug + DeserializeOwned + TapoResponseExt,
+    {
+        let is_get = matches!(request, TapoRequest::SmartCamGet(_));
+        let is_multiple = matches!(request, TapoRequest::MultipleRequest(_));
+
+        let request_string = if is_multiple {
+            serde_json::to_string(&request)?
+        } else {
+            multiple_request_of(&request)?.to_string()
+        };
+
+        let response_decrypted = self.send(&request_string).await?;
+        let response_body: serde_json::Value = serde_json::from_str(&response_decrypted)?;
+
+        validate_response(extract_error_code(&response_body))?;
+
+        let payload = if is_multiple {
+            response_body
+        } else {
+            match sole_response_result(response_body, is_get)? {
+                Some(result) => result,
+                None => return Ok(None),
+            }
+        };
+
+        let result: R = serde_json::from_value(payload)?;
+        debug!("Device responded with: {result:?}");
+
+        Ok(Some(result))
+    }
+
+    /// Sends the encrypted `request` and returns the decrypted response.
+    async fn send(&self, request_string: &str) -> Result<String, Error> {
         let session = self.session()?;
 
-        let request_string = serde_json::to_string(&request)?;
         debug!("Request: {request_string}");
 
-        let (payload, seq) = session.cipher.encrypt(&request_string)?;
+        let (payload, seq) = session.cipher.encrypt(request_string)?;
 
         let response = self
             .client
@@ -210,13 +281,7 @@ impl TpapProtocol {
         };
         trace!("Device responded with (raw): {response_decrypted}");
 
-        let response: TapoResponse<R> = serde_json::from_str(&response_decrypted)?;
-        debug!("Device responded with: {response:?}");
-
-        validate_response(response.error_code)?;
-        let result = response.result;
-
-        Ok(result)
+        Ok(response_decrypted)
     }
 
     fn session(&self) -> Result<&TpapSession, Error> {
@@ -237,7 +302,11 @@ impl TpapProtocol {
 
         let registration = self.pake_register(url, passcode_type, &user_random).await?;
 
-        let credential = tpap_spake2p::credential(&password, registration.extra_crypt.as_ref())?;
+        let credential = tpap_spake2p::credential(
+            &password,
+            registration.extra_crypt.as_ref(),
+            self.device_family,
+        )?;
         // The key derivation takes long enough to stall the other tasks of
         // the runtime, so it runs on the blocking pool.
         let proof = tokio::task::spawn_blocking(move || {
@@ -301,7 +370,10 @@ impl TpapProtocol {
             }
         });
 
-        let result: ShareResult = self.login_request(url, "pake_share", &body).await?;
+        let result: ShareResult = self
+            .login_request(url, "pake_share", &body)
+            .await
+            .map_err(pake_share_error)?;
 
         let device_confirm = decode_base64("dev_confirm", &result.device_confirm)?;
         if !proof.verify(&device_confirm) {
@@ -391,6 +463,69 @@ fn has_port(address: &str) -> bool {
             && port.bytes().all(|b| b.is_ascii_digit())
             && (!host.contains(':') || host.ends_with(']'))
     })
+}
+
+/// A `multipleRequest` of the `request` alone. Inside of one a camera
+/// refuses the `get` and `do` methods that AES SSL sends on their own, and
+/// takes each such request under a method of its own.
+fn multiple_request_of(request: &TapoRequest) -> Result<serde_json::Value, Error> {
+    let request = match request {
+        TapoRequest::SmartCamGet(params) => json!({
+            "method": params.method(),
+            "params": params,
+        }),
+        TapoRequest::SmartCamDo(params) => json!({
+            "method": params.method(),
+            "params": params,
+        }),
+        request => serde_json::to_value(request)?,
+    };
+
+    Ok(json!({
+        "method": "multipleRequest",
+        "params": { "requests": [request] },
+    }))
+}
+
+/// The result of the only response of a `multipleRequest`, if it has one.
+///
+/// # Errors
+///
+/// Returns an error if there is no response, or if the response is an error.
+fn sole_response_result(
+    mut response_body: serde_json::Value,
+    is_get: bool,
+) -> Result<Option<serde_json::Value>, Error> {
+    let Some(response) = response_body.pointer_mut("/result/responses/0") else {
+        return Err(Error::Tapo(TapoResponseError::EmptyResult));
+    };
+
+    validate_response(extract_error_code(response))?;
+
+    let Some(result) = response.get_mut("result").map(serde_json::Value::take) else {
+        return Ok(None);
+    };
+
+    // Only SmartCam get responses nest the data under a section key that
+    // needs unwrapping.
+    if is_get {
+        Ok(extract_section_leaf(result))
+    } else {
+        Ok(Some(result))
+    }
+}
+
+/// The error of a failed `pake_share`. A camera answers a wrong password
+/// with the code that stands for an expired session everywhere else, and a
+/// caller answers an expired session by logging in again.
+fn pake_share_error(error: Error) -> Error {
+    match error {
+        Error::Tapo(TapoResponseError::Unauthorized {
+            kind: "SESSION_EXPIRED",
+            ..
+        }) => Error::Tapo(TapoResponseError::tpap_credentials()),
+        error => error,
+    }
 }
 
 /// The error for a response that does not decrypt. A device that no longer
@@ -510,6 +645,8 @@ struct ShareResult {
 
 #[cfg(test)]
 mod tests {
+    use crate::requests::{SmartCamDoParams, SmartCamGetParams};
+
     use super::*;
 
     fn info(tpap: serde_json::Value) -> TpapInfo {
@@ -638,7 +775,33 @@ mod tests {
     }
 
     #[test]
-    fn url_over_tls_is_unsupported() {
+    fn url_over_tls_defaults_to_port_443() {
+        // What a C220 announces over UDP.
+        let info = info(json!({ "noc": 1, "pake": [2], "port": 443, "tls": 1 }));
+
+        assert_eq!(
+            info.url("192.168.1.100").unwrap(),
+            "https://192.168.1.100:443"
+        );
+        assert_eq!(
+            info.url("192.168.1.100:8443").unwrap(),
+            "https://192.168.1.100:8443"
+        );
+    }
+
+    #[test]
+    fn camera_info_is_the_account_password_over_tls() {
+        let info = TpapInfo::camera();
+
+        assert_eq!(
+            info.url("192.168.1.100").unwrap(),
+            "https://192.168.1.100:443"
+        );
+        assert_eq!(info.passcode_type().unwrap(), "userpw");
+    }
+
+    #[test]
+    fn url_over_verified_tls_is_unsupported() {
         let error = info(json!({ "tls": 2, "pake": [2], "port": 4433 }))
             .url("192.168.1.100")
             .unwrap_err();
@@ -708,6 +871,134 @@ mod tests {
             ..register_result()
         };
         assert!(response_error(result.validate()).contains("dev_share"));
+    }
+
+    #[test]
+    fn multiple_request_of_a_get_names_its_method() {
+        // What a C220 takes over TPAP.
+        let request = TapoRequest::SmartCamGet(SmartCamGetParams::device_info());
+
+        assert_eq!(
+            multiple_request_of(&request).unwrap(),
+            json!({
+                "method": "multipleRequest",
+                "params": { "requests": [{
+                    "method": "getDeviceInfo",
+                    "params": { "device_info": { "name": ["basic_info"] } },
+                }] },
+            })
+        );
+
+        let request = TapoRequest::SmartCamGet(SmartCamGetParams::preset());
+
+        assert_eq!(
+            multiple_request_of(&request).unwrap(),
+            json!({
+                "method": "multipleRequest",
+                "params": { "requests": [{
+                    "method": "getPresetConfig",
+                    "params": { "preset": { "name": ["preset"] } },
+                }] },
+            })
+        );
+    }
+
+    #[test]
+    fn multiple_request_of_a_do_names_its_method() {
+        let requests = [
+            (SmartCamDoParams::motor_move(10, -5), "motorMove"),
+            (SmartCamDoParams::set_preset("Door"), "addMotorPostion"),
+            (SmartCamDoParams::goto_preset("1"), "motorMoveToPreset"),
+            (SmartCamDoParams::remove_preset("1"), "deletePreset"),
+        ];
+
+        for (params, method) in requests {
+            let request = multiple_request_of(&TapoRequest::SmartCamDo(params)).unwrap();
+
+            assert_eq!(request["params"]["requests"][0]["method"], method);
+        }
+
+        let request = TapoRequest::SmartCamDo(SmartCamDoParams::motor_move(10, -5));
+
+        assert_eq!(
+            multiple_request_of(&request).unwrap()["params"]["requests"][0]["params"],
+            json!({ "motor": { "move": { "x_coord": "10", "y_coord": "-5" } } })
+        );
+    }
+
+    #[test]
+    fn sole_response_result_of_a_get_is_the_section_leaf() {
+        let response_body = json!({
+            "result": { "responses": [{
+                "method": "getDeviceInfo",
+                "result": { "device_info": { "basic_info": { "device_model": "C220" } } },
+                "error_code": 0,
+            }] },
+            "error_code": 0,
+        });
+
+        assert_eq!(
+            sole_response_result(response_body.clone(), true).unwrap(),
+            Some(json!({ "device_model": "C220" }))
+        );
+        assert_eq!(
+            sole_response_result(response_body, false).unwrap(),
+            Some(json!({ "device_info": { "basic_info": { "device_model": "C220" } } }))
+        );
+    }
+
+    #[test]
+    fn sole_response_result_of_a_refused_request_is_an_error() {
+        // What a C220 answers a method that it does not know with.
+        let response_body = json!({
+            "result": { "responses": [{ "method": "unknown", "result": {}, "error_code": -40210 }] },
+            "error_code": 0,
+        });
+
+        assert!(matches!(
+            sole_response_result(response_body, false),
+            Err(Error::Tapo(TapoResponseError::DeviceError {
+                code: -40210,
+                kind: "PROTOCOL_FORMAT_ERROR",
+            }))
+        ));
+    }
+
+    #[test]
+    fn sole_response_result_without_a_response_is_an_error() {
+        let response_body = json!({ "result": { "responses": [] }, "error_code": 0 });
+
+        assert!(matches!(
+            sole_response_result(response_body, false),
+            Err(Error::Tapo(TapoResponseError::EmptyResult))
+        ));
+    }
+
+    #[test]
+    fn pake_share_error_of_a_camera_with_a_wrong_password_is_a_credentials_error() {
+        // What a C220 answers `pake_share` with.
+        let error = validate_response(-40401).unwrap_err();
+
+        assert!(matches!(
+            pake_share_error(error),
+            Error::Tapo(TapoResponseError::Unauthorized {
+                kind: "TPAP_CREDENTIALS",
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn pake_share_error_keeps_other_errors() {
+        let error = validate_response(-2101).unwrap_err();
+
+        assert!(matches!(
+            pake_share_error(error),
+            Error::Tapo(TapoResponseError::Unauthorized {
+                kind: "TPAP_AUTH_ATTEMPTS_LIMIT",
+                ..
+            })
+        ));
     }
 
     #[test]

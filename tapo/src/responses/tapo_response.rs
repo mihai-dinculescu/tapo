@@ -80,6 +80,7 @@ fn error_kind(code: i64) -> &'static str {
         // The positive variant has been observed from both camera hubs (H200,
         // H500) rejecting a Smart-format request under "err_code".
         -40210 | 40210 => "PROTOCOL_FORMAT_ERROR",
+        -40211 => "MISSING_NECESSARY_PARAMS",
         -40321 => "IP_CONFLICT",
         -40401 => "SESSION_EXPIRED",
         -40404 => "DEVICE_BLOCKED",

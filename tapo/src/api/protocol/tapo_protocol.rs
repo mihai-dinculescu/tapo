@@ -10,9 +10,9 @@ use crate::TapoResponseError;
 use crate::requests::TapoRequest;
 use crate::responses::TapoResponseExt;
 
-use super::aes_ssl_protocol::AesSslProtocol;
+use super::aes_ssl_protocol::{AesSslLogin, AesSslProtocol};
 use super::klap_protocol::KlapProtocol;
-use super::tpap_protocol::TpapProtocol;
+use super::tpap_protocol::{TpapInfo, TpapProtocol};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum DeviceFamily {
@@ -24,7 +24,9 @@ pub(crate) enum DeviceFamily {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum AuthProtocol {
     /// AES-based protocol over HTTPS with nonce-based authentication.
-    /// Used by IP cameras, hubs, and doorbells.
+    /// Used by IP cameras, hubs, and doorbells. Such a device gives no hint
+    /// of whether it takes TPAP as well, so TPAP is tried first and this
+    /// protocol is used if the device does not take it.
     AesSsl,
     /// KLAP (Key-Length-Authentication Protocol). Uses a handshake-derived
     /// symmetric cipher for request/response encryption.
@@ -89,10 +91,12 @@ impl TapoProtocol {
         self.device_family = device_family;
 
         if self.active.is_none() {
-            self.active = Some(match auth_protocol {
+            let active = match auth_protocol {
+                // A camera or camera hub is logged in to while finding out
+                // which protocol it takes, so there is nothing left to do
+                // after that.
                 AuthProtocol::AesSsl => {
-                    debug!("Using AES SSL protocol (from discovery hint)...");
-                    ActiveProtocol::AesSsl(AesSslProtocol::new(self.client.clone()))
+                    return self.login_smart_cam(&ip_address, username, password).await;
                 }
                 AuthProtocol::Klap => {
                     debug!("Using KLAP protocol (from discovery hint)...");
@@ -105,6 +109,7 @@ impl TapoProtocol {
                             ActiveProtocol::Tpap(Box::new(TpapProtocol::new(
                                 self.client.clone(),
                                 info,
+                                device_family,
                             )))
                         }
                         None => {
@@ -113,7 +118,8 @@ impl TapoProtocol {
                         }
                     }
                 }
-            });
+            };
+            self.active = Some(active);
         }
 
         let url = match &self.active {
@@ -125,10 +131,55 @@ impl TapoProtocol {
         debug!("Device url: {url}");
 
         match &mut self.active {
-            Some(ActiveProtocol::AesSsl(p)) => p.login(url, username, password).await,
+            Some(ActiveProtocol::AesSsl(p)) => {
+                p.login(url, username, password).await?.into_result()
+            }
             Some(ActiveProtocol::Klap(p)) => p.login(url, username, password).await,
             Some(ActiveProtocol::Tpap(p)) => p.login(url, username, password).await,
             None => unreachable!(),
+        }
+    }
+
+    /// Logs in to a camera or camera hub: over TPAP, and over AES SSL if the
+    /// device does not take that login. A camera takes TPAP whether or not
+    /// it takes AES SSL, at the same address. It does not announce TPAP when
+    /// asked, so it is not asked.
+    async fn login_smart_cam(
+        &mut self,
+        ip_address: &str,
+        username: String,
+        password: String,
+    ) -> Result<(), Error> {
+        debug!("Using TPAP protocol (tried first)...");
+        let mut tpap =
+            TpapProtocol::new(self.client.clone(), TpapInfo::camera(), self.device_family);
+
+        let url = tpap.url(ip_address)?;
+        debug!("Device url: {url}");
+
+        let tpap_error = match tpap.login(url, username.clone(), password.clone()).await {
+            Ok(()) => {
+                self.active = Some(ActiveProtocol::Tpap(Box::new(tpap)));
+                return Ok(());
+            }
+            Err(error) if !falls_back_to_aes_ssl(&error) => return Err(error),
+            Err(error) => error,
+        };
+
+        debug!("Using AES SSL protocol (TPAP login failed: {tpap_error})...");
+        let mut aes_ssl = AesSslProtocol::new(self.client.clone());
+
+        let url = format!("https://{ip_address}");
+        debug!("Device url: {url}");
+
+        match aes_ssl.login(url, username, password).await? {
+            AesSslLogin::LoggedIn => {
+                self.active = Some(ActiveProtocol::AesSsl(aes_ssl));
+                Ok(())
+            }
+            // The device takes neither login, and of the two errors the one
+            // of the TPAP login says why.
+            AesSslLogin::Refused(_) => Err(tpap_error),
         }
     }
 
@@ -172,5 +223,61 @@ impl TapoProtocol {
                 description: "TP_SESSIONID cookie not found in response".to_string(),
             })),
         }
+    }
+}
+
+/// Whether a camera or camera hub whose TPAP login failed with `error` is
+/// tried over AES SSL. A device that cannot be reached is out of reach for
+/// AES SSL too, and a device that has locked itself is left alone.
+fn falls_back_to_aes_ssl(error: &Error) -> bool {
+    match error {
+        Error::Http(error) => !(error.is_connect() || error.is_timeout()),
+        Error::Tapo(TapoResponseError::Unauthorized {
+            kind: "TPAP_AUTH_ATTEMPTS_LIMIT",
+            ..
+        }) => false,
+        _ => true,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::responses::validate_response;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn unreachable_device_does_not_fall_back_to_aes_ssl() {
+        let error: Error = Client::new()
+            .post("https://127.0.0.1:0/")
+            .send()
+            .await
+            .unwrap_err()
+            .into();
+
+        assert!(!falls_back_to_aes_ssl(&error));
+    }
+
+    #[test]
+    fn locked_device_does_not_fall_back_to_aes_ssl() {
+        let error = validate_response(-2101).unwrap_err();
+
+        assert!(!falls_back_to_aes_ssl(&error));
+    }
+
+    #[test]
+    fn refused_tpap_login_falls_back_to_aes_ssl() {
+        // A wrong password is among them: the first request of the AES SSL
+        // login does not send one, so it costs no failed login.
+        for error_code in [-40209, -40210, -40401, -2203] {
+            let error = validate_response(error_code).unwrap_err();
+
+            assert!(falls_back_to_aes_ssl(&error), "{error_code}");
+        }
+
+        // What `pake_share` turns the -40401 of a camera into.
+        let error = Error::Tapo(TapoResponseError::tpap_credentials());
+
+        assert!(falls_back_to_aes_ssl(&error));
     }
 }

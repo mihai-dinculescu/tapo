@@ -9,6 +9,7 @@ use p256::{NonZeroScalar, ProjectivePoint, PublicKey, Scalar};
 use crate::{Error, TapoResponseError};
 
 use super::crypto;
+use super::tapo_protocol::DeviceFamily;
 
 /// The points `M` and `N` that RFC 9383 assigns to P-256, compressed.
 const M: &str = "02886e2f97ace46e55ba9dd7242579f2993b64e16ef3dcab95afd497333d8fa12f";
@@ -33,22 +34,28 @@ impl Proof {
 }
 
 /// The string that stands in for the password, which depends on the
-/// `extra_crypt` of the device's `pake_register` response.
+/// `extra_crypt` of the device's `pake_register` response and on the
+/// `device_family`.
 ///
 /// # Errors
 ///
 /// Returns an error if the device asks for a password transform that is not
-/// supported, or for none at all.
+/// supported, or for none at all unless it is a camera.
 pub(super) fn credential(
     password: &str,
     extra_crypt: Option<&serde_json::Value>,
+    device_family: DeviceFamily,
 ) -> Result<String, Error> {
     let Some(extra_crypt) = extra_crypt else {
-        return Err(Error::Tapo(TapoResponseError::ResponseError {
-            description:
-                "The device asks for no password transform (`extra_crypt`), which is not supported yet"
-                    .to_string(),
-        }));
+        return match device_family {
+            // A camera names no transform and takes the MD5 of the password.
+            DeviceFamily::SmartCam => Ok(crypto::md5_hex_lower(password.as_bytes())),
+            DeviceFamily::Smart => Err(Error::Tapo(TapoResponseError::ResponseError {
+                description:
+                    "The device asks for no password transform (`extra_crypt`), which is not supported yet"
+                        .to_string(),
+            })),
+        };
     };
 
     let kind = extra_crypt.get("type").and_then(|v| v.as_str());
@@ -321,9 +328,17 @@ mod tests {
 
     #[test]
     fn credential_without_extra_crypt_is_unsupported() {
-        let error = credential("hunter2", None).unwrap_err();
+        let error = credential("hunter2", None, DeviceFamily::Smart).unwrap_err();
 
         assert!(error.to_string().contains("extra_crypt"), "{error}");
+    }
+
+    #[test]
+    fn credential_of_a_camera_without_extra_crypt_is_the_md5_of_the_password() {
+        assert_eq!(
+            credential("hunter2", None, DeviceFamily::SmartCam).unwrap(),
+            "2ab96390c7dbe3439de74d0c9b0b1767"
+        );
     }
 
     #[test]
@@ -331,7 +346,7 @@ mod tests {
         let extra_crypt = json!({ "type": "password_shadow", "params": { "passwd_id": 2 } });
 
         assert_eq!(
-            credential("hunter2", Some(&extra_crypt)).unwrap(),
+            credential("hunter2", Some(&extra_crypt), DeviceFamily::Smart).unwrap(),
             "f3bbbd66a63d4bf1747940578ec3d0103530e21d"
         );
     }
@@ -340,7 +355,7 @@ mod tests {
     fn credential_for_an_unsupported_transform_names_it() {
         let extra_crypt = json!({ "type": "password_shadow", "params": { "passwd_id": 5 } });
 
-        let error = credential("hunter2", Some(&extra_crypt)).unwrap_err();
+        let error = credential("hunter2", Some(&extra_crypt), DeviceFamily::Smart).unwrap_err();
 
         assert!(error.to_string().contains("password_shadow"), "{error}");
         assert!(error.to_string().contains(r#""passwd_id":5"#), "{error}");

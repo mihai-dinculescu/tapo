@@ -95,7 +95,6 @@ pub struct ApiClient {
     tapo_username: String,
     tapo_password: String,
     timeout: Option<Duration>,
-    reuse_connections: bool,
     protocol: Option<TapoProtocol>,
 }
 
@@ -129,7 +128,6 @@ impl ApiClient {
             tapo_username: tapo_username.into(),
             tapo_password: tapo_password.into(),
             timeout: None,
-            reuse_connections: true,
             protocol: None,
         }
     }
@@ -1059,24 +1057,12 @@ impl ApiClient {
 /// Tapo API Client private methods.
 impl ApiClient {
     /// Prepares the client for a camera hub (H200, H500). Must be called
-    /// before the login, which is when the HTTP client is built.
+    /// before the login.
     ///
     /// Switches to the local `admin` account that camera hubs require. The
     /// override persists, so session refreshes reuse it.
-    ///
-    /// Also stops connections from being reused. The hub advertises
-    /// `keep-alive` but closes the connection after a login request, and a
-    /// request sent on that connection before the close is noticed fails.
-    /// Every request opens its own connection, not only the one after a
-    /// login, because a session refresh can log in again at any point.
     pub(crate) fn prepare_for_camera_hub(&mut self) {
-        debug_assert!(
-            self.protocol.is_none(),
-            "the HTTP client is already built, so the connection reuse setting would be ignored"
-        );
-
         self.tapo_username = CAMERA_HUB_USERNAME.to_string();
-        self.reuse_connections = false;
     }
 
     pub(crate) async fn login(
@@ -1087,6 +1073,27 @@ impl ApiClient {
     ) -> Result<(), Error> {
         let tapo_username = self.tapo_username.clone();
         let tapo_password = self.tapo_password.clone();
+
+        if self.protocol.is_none() {
+            let mut builder = Client::builder()
+                .http1_title_case_headers()
+                .timeout(self.timeout())
+                .danger_accept_invalid_certs(true);
+
+            // A camera or camera hub gets a connection per request. A
+            // camera hub advertises `keep-alive` but closes the connection
+            // after a login request, and a request sent on that connection
+            // before the close is noticed fails. A camera refuses a TPAP
+            // login request on a connection that has carried a request of a
+            // session. Every request opens its own connection, not only the
+            // ones around a login, because a session refresh can log in
+            // again at any point.
+            if device_family == DeviceFamily::SmartCam {
+                builder = builder.pool_max_idle_per_host(0);
+            }
+
+            self.protocol = Some(TapoProtocol::new(builder.build()?));
+        }
 
         self.protocol_mut()?
             .login(
@@ -1698,22 +1705,11 @@ impl ApiClient {
     }
 
     fn protocol_mut(&mut self) -> Result<&mut TapoProtocol, Error> {
-        if self.protocol.is_none() {
-            let mut builder = Client::builder()
-                .http1_title_case_headers()
-                .timeout(self.timeout())
-                .danger_accept_invalid_certs(true);
-
-            if !self.reuse_connections {
-                builder = builder.pool_max_idle_per_host(0);
-            }
-
-            let client = builder.build()?;
-            self.protocol = Some(TapoProtocol::new(client));
-        }
-
-        // safe: protocol is always Some after the block above
-        Ok(self.protocol.as_mut().unwrap())
+        self.protocol.as_mut().ok_or_else(|| {
+            Error::Other(anyhow::anyhow!(
+                "The protocol should have been initialized already"
+            ))
+        })
     }
 
     fn protocol(&self) -> Result<&TapoProtocol, Error> {

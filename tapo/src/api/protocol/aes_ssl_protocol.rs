@@ -14,6 +14,24 @@ use super::aes_ssl_cipher::{
 };
 use super::crypto;
 
+/// How a login over AES SSL ended.
+pub(super) enum AesSslLogin {
+    LoggedIn,
+    /// The device does not take the AES SSL login at all. Holds the error
+    /// that says so.
+    Refused(Error),
+}
+
+impl AesSslLogin {
+    /// The login as a result, for a caller that has no other login to try.
+    pub fn into_result(self) -> Result<(), Error> {
+        match self {
+            Self::LoggedIn => Ok(()),
+            Self::Refused(error) => Err(error),
+        }
+    }
+}
+
 struct AesSslSession {
     cipher: AesSslCipher,
     url_with_token: String,
@@ -38,7 +56,7 @@ impl AesSslProtocol {
         url: String,
         username: String,
         password: String,
-    ) -> Result<(), Error> {
+    ) -> Result<AesSslLogin, Error> {
         self.handshake(url, username, password).await
     }
 
@@ -48,7 +66,8 @@ impl AesSslProtocol {
         password: String,
     ) -> Result<(), Error> {
         let url = self.session()?.url.clone();
-        self.handshake(url, username, password).await
+
+        self.handshake(url, username, password).await?.into_result()
     }
 
     pub async fn execute_request<R>(&self, request: TapoRequest) -> Result<Option<R>, Error>
@@ -142,12 +161,16 @@ impl AesSslProtocol {
         url: String,
         username: String,
         password: String,
-    ) -> Result<(), Error> {
+    ) -> Result<AesSslLogin, Error> {
         let local_nonce = generate_nonce();
 
-        let handshake1_result = self
+        let handshake1_result = match self
             .handshake1(&url, &username, &password, &local_nonce)
-            .await?;
+            .await?
+        {
+            Handshake1::Accepted(result) => result,
+            Handshake1::Refused(error) => return Ok(AesSslLogin::Refused(error)),
+        };
 
         let handshake2_result = self
             .handshake2(
@@ -172,7 +195,7 @@ impl AesSslProtocol {
             url,
         });
 
-        Ok(())
+        Ok(AesSslLogin::LoggedIn)
     }
 
     async fn handshake1(
@@ -181,7 +204,7 @@ impl AesSslProtocol {
         username: &str,
         password: &str,
         local_nonce: &str,
-    ) -> Result<Handshake1Result, Error> {
+    ) -> Result<Handshake1, Error> {
         debug!("Performing handshake1...");
 
         let body = serde_json::json!({
@@ -217,10 +240,20 @@ impl AesSslProtocol {
                 response_body.error_code
             );
             debug!("{description}");
-            return Err(Error::Tapo(TapoResponseError::Unauthorized {
+            let error = Error::Tapo(TapoResponseError::Unauthorized {
                 kind: "EXPECTED_INVALID_NONCE",
                 description,
-            }));
+            });
+
+            // -40211 (MISSING_NECESSARY_PARAMS) is what a device answers when
+            // it does not take the AES SSL login at all. A camera does so
+            // while Third-Party Compatibility is off in the Tapo app, and
+            // takes the TPAP login.
+            if response_body.error_code == -40211 {
+                return Ok(Handshake1::Refused(error));
+            }
+
+            return Err(error);
         }
 
         let result = response_body
@@ -237,10 +270,10 @@ impl AesSslProtocol {
             &data.device_confirm,
         ) {
             debug!("Handshake1 OK (SHA256)");
-            return Ok(Handshake1Result {
+            return Ok(Handshake1::Accepted(Handshake1Result {
                 server_nonce: data.nonce,
                 password_hash: password_hash_sha256,
-            });
+            }));
         }
 
         let password_hash_md5 = crypto::md5_hex(password.as_bytes());
@@ -251,10 +284,10 @@ impl AesSslProtocol {
             &data.device_confirm,
         ) {
             debug!("Handshake1 OK (MD5 fallback)");
-            return Ok(Handshake1Result {
+            return Ok(Handshake1::Accepted(Handshake1Result {
                 server_nonce: data.nonce,
                 password_hash: password_hash_md5,
-            });
+            }));
         }
 
         debug!("Device confirm hash mismatch in handshake1");
@@ -308,7 +341,7 @@ impl AesSslProtocol {
     }
 }
 
-fn extract_section_leaf(response_body: serde_json::Value) -> Option<serde_json::Value> {
+pub(super) fn extract_section_leaf(response_body: serde_json::Value) -> Option<serde_json::Value> {
     // SmartCam get responses place data under a single section key
     // (e.g. "device_info": {"basic_info": {...}}). Extract the leaf object.
     let serde_json::Value::Object(body) = response_body else {
@@ -325,7 +358,7 @@ fn extract_section_leaf(response_body: serde_json::Value) -> Option<serde_json::
     leaf.is_object().then_some(leaf)
 }
 
-fn extract_error_code(response_body: &serde_json::Value) -> i64 {
+pub(super) fn extract_error_code(response_body: &serde_json::Value) -> i64 {
     // Successful responses may omit the error code entirely (e.g. the H200
     // hub). Errors are reported under either "error_code" or "err_code".
     response_body
@@ -344,6 +377,11 @@ struct Handshake1Response {
 struct Handshake1ResponseData {
     nonce: String,
     device_confirm: String,
+}
+
+enum Handshake1 {
+    Accepted(Handshake1Result),
+    Refused(Error),
 }
 
 struct Handshake1Result {

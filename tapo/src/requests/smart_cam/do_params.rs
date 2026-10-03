@@ -2,6 +2,9 @@ use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub(crate) struct SmartCamDoParams {
+    /// The method that the request goes by inside a `multipleRequest`.
+    #[serde(skip)]
+    method: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub motor: Option<MotorAction>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -11,6 +14,7 @@ pub(crate) struct SmartCamDoParams {
 impl SmartCamDoParams {
     pub fn motor_move(x: i32, y: i32) -> Self {
         Self {
+            method: "motorMove",
             motor: Some(MotorAction {
                 move_action: MotorMoveParams {
                     x_coord: x.to_string(),
@@ -23,6 +27,8 @@ impl SmartCamDoParams {
 
     pub fn set_preset(name: &str) -> Self {
         Self {
+            // The misspelling is the device's.
+            method: "addMotorPostion",
             motor: None,
             preset: Some(PresetAction {
                 set_preset: Some(SetPresetParams {
@@ -36,6 +42,7 @@ impl SmartCamDoParams {
 
     pub fn goto_preset(id: &str) -> Self {
         Self {
+            method: "motorMoveToPreset",
             motor: None,
             preset: Some(PresetAction {
                 set_preset: None,
@@ -47,6 +54,7 @@ impl SmartCamDoParams {
 
     pub fn remove_preset(id: &str) -> Self {
         Self {
+            method: "deletePreset",
             motor: None,
             preset: Some(PresetAction {
                 set_preset: None,
@@ -56,6 +64,10 @@ impl SmartCamDoParams {
                 }),
             }),
         }
+    }
+
+    pub fn method(&self) -> &'static str {
+        self.method
     }
 }
 
