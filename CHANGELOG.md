@@ -6,6 +6,16 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [MCP Unreleased][Unreleased]
+
+### Added
+
+- `list_devices`, `check_device`, `get_device_state`, `control_device`, `take_snapshot`: added support for the TPAP protocol, which lights, plugs, power strips, hubs and cameras on recent firmware require when the Third-Party Compatibility option is switched off in the Tapo app. Such a device is now listed and can be used without changing that option.
+
+## [Rust v0.11.1][v0.11.1] - 2026-10-04
+
 ### Added
 
 - `ApiClient`: added support for the TPAP protocol, which lights, plugs, power strips, hubs and cameras on recent firmware require when the Third-Party Compatibility option is switched off in the Tapo app. Such a device can now be used without changing that option, both when connecting by IP address and through `ApiClient::discover_devices`. A camera hub (H200, H500) is logged in to over TPAP only through `ApiClient::discover_devices`.
@@ -14,11 +24,11 @@ file. This change log follows the conventions of
 ### Changed
 
 - `ApiClient::discover_devices`: a device that speaks the TPAP protocol is now returned like any other device, instead of being reported with an `Error::UnsupportedProtocol` error. That error is now reserved for a device that speaks TPAP in a way the library cannot handle yet, and its `description` names what the device announced.
-- `ApiClient`: connecting to a light, plug, power strip or H100 hub by IP address now sends one request more, which asks the device which protocol it speaks.
+- `ApiClient`: connecting to a light, plug, power strip or H100 hub by IP address now starts by asking the device which protocol it speaks, so that a device that requires TPAP is logged in to over TPAP. This takes the place of the legacy protocol probe removed in v0.11.0, so connecting sends as many requests as it did before that release.
 - `ApiClient`: connecting to a camera by IP address now logs in over the TPAP protocol whenever the camera takes it, and sends one request more to a camera that does not. A camera hub is still logged in to over AES SSL. `ApiClient::discover_devices` logs in to a camera or camera hub over the protocol it announces.
 - Cameras and camera hubs: a request on an expired session now returns a `TapoResponseError::Unauthorized` error of kind `SESSION_TIMEOUT`, instead of a `TapoResponseError::HttpError` with status code 401. As for every other device, `refresh_session` recovers from it.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.11.1][v0.11.1] - 2026-10-04
 
 ### Added
 
@@ -28,15 +38,9 @@ file. This change log follows the conventions of
 ### Changed
 
 - `ApiClient.discover_devices`: a device that speaks the TPAP protocol is now returned like any other device, instead of raising an unsupported protocol exception. That exception is now reserved for a device that speaks TPAP in a way the library cannot handle yet, and its message names what the device announced.
-- `ApiClient`: connecting to a light, plug, power strip or H100 hub by IP address now sends one request more, which asks the device which protocol it speaks.
+- `ApiClient`: connecting to a light, plug, power strip or H100 hub by IP address now starts by asking the device which protocol it speaks, so that a device that requires TPAP is logged in to over TPAP. This takes the place of the legacy protocol probe removed in v0.11.0, so connecting sends as many requests as it did before that release.
 - `ApiClient`: connecting to a camera by IP address now logs in over the TPAP protocol whenever the camera takes it, and sends one request more to a camera that does not. A camera hub is still logged in to over AES SSL. `ApiClient.discover_devices` logs in to a camera or camera hub over the protocol it announces.
 - Cameras and camera hubs: a request on an expired session now raises an exception of kind `SESSION_TIMEOUT`, instead of an HTTP error with status code 401. As for every other device, `refresh_session` recovers from it.
-
-## [MCP Unreleased][Unreleased]
-
-### Added
-
-- `list_devices`, `check_device`, `get_device_state`, `control_device`, `take_snapshot`: added support for the TPAP protocol, which lights, plugs, power strips, hubs and cameras on recent firmware require when the Third-Party Compatibility option is switched off in the Tapo app. Such a device is now listed and can be used without changing that option.
 
 ## [MCP v0.5.2][tapo-mcp-v0.5.2] - 2026-10-02
 
@@ -1142,6 +1146,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.11.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.11.1
 [tapo-mcp-v0.5.2]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.2
 [v0.11.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.11.0
 [tapo-mcp-v0.5.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.1
