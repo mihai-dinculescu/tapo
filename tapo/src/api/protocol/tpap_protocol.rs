@@ -26,8 +26,8 @@ const ENCRYPTION: &str = "aes_128_ccm";
 const MAX_ITERATIONS: u32 = 100_000;
 
 /// How a device in TPAP mode wants to be logged in to.
-#[derive(Debug, Clone, Deserialize)]
-pub(super) struct TpapInfo {
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub(crate) struct TpapInfo {
     /// 0 for plain HTTP, 1 for TLS without verification of the certificate
     /// and 2 for TLS with it.
     #[serde(default)]
@@ -40,15 +40,26 @@ pub(super) struct TpapInfo {
 }
 
 impl TpapInfo {
-    /// How a camera or camera hub wants to be logged in to, which it does not
-    /// announce: with the account password, over TLS and on the port that AES
-    /// SSL uses.
+    /// How a camera that is reached by its IP address is logged in to: with
+    /// the account password, over TLS and on the port that AES SSL uses. A
+    /// camera does not announce this when asked. These are the values that
+    /// a C220 announces in discovery.
     pub fn camera() -> Self {
         Self {
             tls: 1,
             port: None,
             pake: vec![2],
         }
+    }
+
+    /// Reads the `tpap` object that a device announces, in discovery or
+    /// when asked.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the object cannot be read.
+    pub fn from_announcement(tpap: &serde_json::Value) -> Result<Self, Error> {
+        Self::deserialize(tpap).map_err(|_| Error::unsupported_tpap(format!("tpap: {tpap}")))
     }
 
     fn url(&self, ip_address: &str) -> Result<String, Error> {
@@ -414,8 +425,7 @@ fn parse_discover_response(response_body: &serde_json::Value) -> Result<Option<T
 
     // A device that announces a `tpap` object is in TPAP mode, and KLAP
     // would only hide that behind a 403.
-    let info = TpapInfo::deserialize(tpap)
-        .map_err(|_| Error::unsupported_tpap(format!("tpap: {tpap}")))?;
+    let info = TpapInfo::from_announcement(tpap)?;
 
     Ok(Some(info))
 }
@@ -611,6 +621,33 @@ mod tests {
             "http://192.168.1.100:80"
         );
         assert_eq!(info.passcode_type().unwrap(), "userpw");
+    }
+
+    #[test]
+    fn announcement_of_a_camera_has_tpap_info() {
+        // What a C220 announces in discovery.
+        let tpap = json!({ "noc": 1, "pake": [2], "port": 443, "tls": 1 });
+
+        let info = TpapInfo::from_announcement(&tpap).unwrap();
+
+        assert_eq!(
+            info.url("192.168.1.100").unwrap(),
+            "https://192.168.1.100:443"
+        );
+        assert_eq!(info.passcode_type().unwrap(), "userpw");
+    }
+
+    #[test]
+    fn announcement_that_cannot_be_read_is_an_error() {
+        let tpap = json!({ "pake": "2" });
+
+        assert!(matches!(
+            TpapInfo::from_announcement(&tpap),
+            Err(Error::UnsupportedProtocol {
+                protocol: "TPAP",
+                ..
+            })
+        ));
     }
 
     #[test]

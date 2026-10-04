@@ -10,3 +10,4 @@ mod tpap_protocol;
 mod tpap_spake2p;
 
 pub(crate) use tapo_protocol::*;
+pub(crate) use tpap_protocol::TpapInfo;

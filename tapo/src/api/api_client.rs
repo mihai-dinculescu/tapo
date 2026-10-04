@@ -821,7 +821,7 @@ impl ApiClient {
         self.login(
             ip_address.clone(),
             DeviceFamily::SmartCam,
-            AuthProtocol::AesSsl,
+            AuthProtocol::TpapThenAesSsl,
         )
         .await?;
 
@@ -857,7 +857,7 @@ impl ApiClient {
         self.login(
             ip_address.clone(),
             DeviceFamily::SmartCam,
-            AuthProtocol::AesSsl,
+            AuthProtocol::TpapThenAesSsl,
         )
         .await?;
 
@@ -893,7 +893,7 @@ impl ApiClient {
         self.login(
             ip_address.clone(),
             DeviceFamily::SmartCam,
-            AuthProtocol::AesSsl,
+            AuthProtocol::TpapThenAesSsl,
         )
         .await?;
 
@@ -932,7 +932,7 @@ impl ApiClient {
         self.login(
             ip_address.clone(),
             DeviceFamily::SmartCam,
-            AuthProtocol::AesSsl,
+            AuthProtocol::TpapThenAesSsl,
         )
         .await?;
 
@@ -971,7 +971,7 @@ impl ApiClient {
         self.login(
             ip_address.clone(),
             DeviceFamily::SmartCam,
-            AuthProtocol::AesSsl,
+            AuthProtocol::TpapThenAesSsl,
         )
         .await?;
 
@@ -1007,7 +1007,7 @@ impl ApiClient {
         self.login(
             ip_address.clone(),
             DeviceFamily::SmartCam,
-            AuthProtocol::AesSsl,
+            AuthProtocol::TpapThenAesSsl,
         )
         .await?;
 
@@ -1043,7 +1043,7 @@ impl ApiClient {
         self.login(
             ip_address.clone(),
             DeviceFamily::SmartCam,
-            AuthProtocol::AesSsl,
+            AuthProtocol::TpapThenAesSsl,
         )
         .await?;
 

@@ -37,7 +37,7 @@ Reported in [#441][issue_441], [#449][issue_449], [#473][issue_473] and [#643][i
 
 ### Cause
 
-Starting with firmware 1.4.0, the device speaks one of two protocols, depending on the "Third-Party Compatibility" option in the Tapo app: KLAP with the option on, TPAP with it off. The library asks the device which of the two it speaks and supports both, so the option can be left either way. This error means that the device did not announce TPAP and then refused KLAP. The setting is stored per account and pushed to the devices, and that push does not always reach a device that was updated after the option was changed.
+Starting with firmware 1.4.0, the device speaks one of two protocols, depending on the "Third-Party Compatibility" option in the Tapo app: KLAP with the option on, TPAP with it off. The library supports both and uses the one the device announces, so the option can be left either way. This error means that the device did not announce TPAP and then refused KLAP. The setting is stored per account and pushed to the devices, and that push does not always reach a device that was updated after the option was changed.
 
 ### Solutions
 

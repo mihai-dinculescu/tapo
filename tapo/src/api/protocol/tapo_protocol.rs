@@ -21,21 +21,25 @@ pub(crate) enum DeviceFamily {
 }
 
 /// The authentication protocol used to communicate with a Tapo device.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum AuthProtocol {
     /// AES-based protocol over HTTPS with nonce-based authentication.
-    /// Used by IP cameras, hubs, and doorbells. Such a device gives no hint
-    /// of whether it takes TPAP as well, so TPAP is tried first and this
-    /// protocol is used if the device does not take it.
+    /// Used by IP cameras, hubs, and doorbells. A camera hub that is reached
+    /// by its IP address, and a device that announces it in discovery, is
+    /// logged in to over this protocol only.
     AesSsl,
     /// KLAP (Key-Length-Authentication Protocol). Uses a handshake-derived
     /// symmetric cipher for request/response encryption.
     Klap,
     /// TPAP. Logs in with SPAKE2+ and encrypts requests and responses with
-    /// AES-CCM. Discovery reporting TPAP is not proof: some devices that
-    /// report it still speak KLAP. The device is therefore probed first,
-    /// and KLAP is used if it does not answer as a TPAP device.
-    Tpap,
+    /// AES-CCM. A device that announces it in discovery says how it wants
+    /// to be logged in to as well, and is logged in to over this protocol
+    /// only.
+    TpapAnnounced(TpapInfo),
+    /// TPAP first, and AES SSL if the device does not take that login. For
+    /// a camera that is reached by its IP address, which gives no hint of
+    /// the protocol it takes.
+    TpapThenAesSsl,
     /// No protocol hint is available. The device is asked whether it speaks
     /// TPAP, and KLAP is used when it does not.
     Unknown,
@@ -92,17 +96,31 @@ impl TapoProtocol {
 
         if self.active.is_none() {
             let active = match auth_protocol {
-                // A camera or camera hub is logged in to while finding out
-                // which protocol it takes, so there is nothing left to do
-                // after that.
                 AuthProtocol::AesSsl => {
-                    return self.login_smart_cam(&ip_address, username, password).await;
+                    debug!("Using AES SSL protocol...");
+                    ActiveProtocol::AesSsl(AesSslProtocol::new(self.client.clone()))
+                }
+                // A camera that is reached by its IP address is logged in
+                // to while finding out which protocol it takes, so there is
+                // nothing left to do after that.
+                AuthProtocol::TpapThenAesSsl => {
+                    return self
+                        .login_tpap_then_aes_ssl(&ip_address, username, password)
+                        .await;
                 }
                 AuthProtocol::Klap => {
                     debug!("Using KLAP protocol (from discovery hint)...");
                     ActiveProtocol::Klap(KlapProtocol::new(self.client.clone()))
                 }
-                AuthProtocol::Tpap | AuthProtocol::Unknown => {
+                AuthProtocol::TpapAnnounced(info) => {
+                    debug!("Using TPAP protocol (from discovery hint)...");
+                    ActiveProtocol::Tpap(Box::new(TpapProtocol::new(
+                        self.client.clone(),
+                        info,
+                        device_family,
+                    )))
+                }
+                AuthProtocol::Unknown => {
                     match TpapProtocol::discover(&self.client, &ip_address).await? {
                         Some(info) => {
                             debug!("Using TPAP protocol (negotiated)...");
@@ -140,11 +158,11 @@ impl TapoProtocol {
         }
     }
 
-    /// Logs in to a camera or camera hub: over TPAP, and over AES SSL if the
-    /// device does not take that login. A camera takes TPAP whether or not
+    /// Logs in to a camera: over TPAP, and over AES SSL if the device does
+    /// not take that login. A camera that takes TPAP does so whether or not
     /// it takes AES SSL, at the same address. It does not announce TPAP when
     /// asked, so it is not asked.
-    async fn login_smart_cam(
+    async fn login_tpap_then_aes_ssl(
         &mut self,
         ip_address: &str,
         username: String,
@@ -226,9 +244,9 @@ impl TapoProtocol {
     }
 }
 
-/// Whether a camera or camera hub whose TPAP login failed with `error` is
-/// tried over AES SSL. A device that cannot be reached is out of reach for
-/// AES SSL too, and a device that has locked itself is left alone.
+/// Whether a camera whose TPAP login failed with `error` is tried over AES
+/// SSL. A device that cannot be reached is out of reach for AES SSL too,
+/// and a device that has locked itself is left alone.
 fn falls_back_to_aes_ssl(error: &Error) -> bool {
     match error {
         Error::Http(error) => !(error.is_connect() || error.is_timeout()),

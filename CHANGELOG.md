@@ -8,28 +8,28 @@ file. This change log follows the conventions of
 
 ### Added
 
-- `ApiClient`: added support for the TPAP protocol, which lights, plugs, power strips, hubs and cameras on recent firmware require when the Third-Party Compatibility option is switched off in the Tapo app. Such a device can now be used without changing that option, both when connecting by IP address and through `ApiClient::discover_devices`.
+- `ApiClient`: added support for the TPAP protocol, which lights, plugs, power strips, hubs and cameras on recent firmware require when the Third-Party Compatibility option is switched off in the Tapo app. Such a device can now be used without changing that option, both when connecting by IP address and through `ApiClient::discover_devices`. A camera hub (H200, H500) is logged in to over TPAP only through `ApiClient::discover_devices`.
 - `TapoResponseError::Unauthorized`: added the `TPAP_CREDENTIALS` kind for a wrong password and the `TPAP_AUTH_ATTEMPTS_LIMIT` kind for a device that has locked itself after too many failed logins. A locked device refuses every login for a while, so neither error should be retried in a loop. A device that accepts the login but cannot prove that it knows the password as well is reported with the `TPAP_HASH_MISMATCH` kind.
 
 ### Changed
 
 - `ApiClient::discover_devices`: a device that speaks the TPAP protocol is now returned like any other device, instead of being reported with an `Error::UnsupportedProtocol` error. That error is now reserved for a device that speaks TPAP in a way the library cannot handle yet, and its `description` names what the device announced.
 - `ApiClient`: connecting to a light, plug, power strip or H100 hub by IP address now sends one request more, which asks the device which protocol it speaks.
-- `ApiClient`: a camera or camera hub is now logged in to over the TPAP protocol whenever it takes it. Connecting to one that does not take it sends one request more.
+- `ApiClient`: connecting to a camera by IP address now logs in over the TPAP protocol whenever the camera takes it, and sends one request more to a camera that does not. A camera hub is still logged in to over AES SSL. `ApiClient::discover_devices` logs in to a camera or camera hub over the protocol it announces.
 - Cameras and camera hubs: a request on an expired session now returns a `TapoResponseError::Unauthorized` error of kind `SESSION_TIMEOUT`, instead of a `TapoResponseError::HttpError` with status code 401. As for every other device, `refresh_session` recovers from it.
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
-- `ApiClient`: added support for the TPAP protocol, which lights, plugs, power strips, hubs and cameras on recent firmware require when the Third-Party Compatibility option is switched off in the Tapo app. Such a device can now be used without changing that option, both when connecting by IP address and through `ApiClient.discover_devices`.
+- `ApiClient`: added support for the TPAP protocol, which lights, plugs, power strips, hubs and cameras on recent firmware require when the Third-Party Compatibility option is switched off in the Tapo app. Such a device can now be used without changing that option, both when connecting by IP address and through `ApiClient.discover_devices`. A camera hub (H200, H500) is logged in to over TPAP only through `ApiClient.discover_devices`.
 - `ApiClient`: a wrong password on a device that speaks TPAP raises an exception of kind `TPAP_CREDENTIALS`, and a device that has locked itself after too many failed logins raises one of kind `TPAP_AUTH_ATTEMPTS_LIMIT`. A locked device refuses every login for a while, so neither should be retried in a loop. A device that accepts the login but cannot prove that it knows the password as well raises one of kind `TPAP_HASH_MISMATCH`.
 
 ### Changed
 
 - `ApiClient.discover_devices`: a device that speaks the TPAP protocol is now returned like any other device, instead of raising an unsupported protocol exception. That exception is now reserved for a device that speaks TPAP in a way the library cannot handle yet, and its message names what the device announced.
 - `ApiClient`: connecting to a light, plug, power strip or H100 hub by IP address now sends one request more, which asks the device which protocol it speaks.
-- `ApiClient`: a camera or camera hub is now logged in to over the TPAP protocol whenever it takes it. Connecting to one that does not take it sends one request more.
+- `ApiClient`: connecting to a camera by IP address now logs in over the TPAP protocol whenever the camera takes it, and sends one request more to a camera that does not. A camera hub is still logged in to over AES SSL. `ApiClient.discover_devices` logs in to a camera or camera hub over the protocol it announces.
 - Cameras and camera hubs: a request on an expired session now raises an exception of kind `SESSION_TIMEOUT`, instead of an HTTP error with status code 401. As for every other device, `refresh_session` recovers from it.
 
 ## [MCP Unreleased][Unreleased]
