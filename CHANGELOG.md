@@ -10,6 +10,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.5.3][tapo-mcp-v0.5.3] - 2026-10-04
+
 ### Added
 
 - `list_devices`, `check_device`, `get_device_state`, `control_device`, `take_snapshot`: added support for the TPAP protocol, which lights, plugs, power strips, hubs and cameras on recent firmware require when the Third-Party Compatibility option is switched off in the Tapo app. Such a device is now listed and can be used without changing that option.
@@ -1146,6 +1148,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.5.3]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.3
 [v0.11.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.11.1
 [tapo-mcp-v0.5.2]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.2
 [v0.11.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.11.0
