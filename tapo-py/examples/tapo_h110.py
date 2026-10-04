@@ -1,8 +1,8 @@
 """H110 Example
 
-The H110 is handled by the same `HubHandler` as the H100. On top of the sensors
-that the H100 supports, it can also have IR remotes as child devices, which must
-be configured in the Tapo app first.
+The H110 is handled by `HubIrHandler`, a subclass of `HubHandler`. On top of the
+sensors that the H100 supports, it can also have IR remotes as child devices, which
+must be configured in the Tapo app first.
 
 Set the optional `IR_REMOTE` and `IR_KEY` environment variables to send one of
 the keys stored on a remote:

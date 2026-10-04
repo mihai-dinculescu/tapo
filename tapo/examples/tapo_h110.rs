@@ -1,6 +1,6 @@
 //! H110 Example
 //!
-//! The H110 is handled by the same [`HubHandler`](tapo::HubHandler) as the H100.
+//! The H110 is handled by [`HubIrHandler`](tapo::HubIrHandler).
 //! On top of the sensors that the H100 supports, it can also have IR remotes as
 //! child devices, which must be configured in the Tapo app first.
 //!
@@ -14,7 +14,7 @@
 use std::env;
 
 use log::info;
-use tapo::responses::ChildDeviceHubResult;
+use tapo::responses::ChildDeviceHubIrResult;
 use tapo::{ApiClient, HubDevice};
 
 mod common;
@@ -38,7 +38,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for child in child_device_list {
         match child {
-            ChildDeviceHubResult::IrRemote(device) => {
+            ChildDeviceHubIrResult::IrRemote(device) => {
                 let keys = device
                     .key_list
                     .iter()

@@ -8,20 +8,22 @@ file. This change log follows the conventions of
 
 ### Added
 
-- H110 hub support. `ApiClient`: added `h110`, an alias for `h100` since the two hubs speak the same protocol. `DeviceType::from_model` now maps `H110` to `DeviceType::Hub`, so H110 hubs are returned by device discovery.
-- `ChildDeviceHubResult`: added an `IrRemote` variant for the IR remotes (`SMART.TAPOREMOTE`) that can be paired with an H110 hub. Existing exhaustive matches on `ChildDeviceHubResult` will need to handle it.
+- `HubIrHandler`: added for the H110 hub. It supports everything that `HubHandler` does, and adds `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`. Its `get_child_device_list` returns `ChildDeviceHubIrResult`.
+- `ApiClient`: added `h110`, which returns a `HubIrHandler`.
+- `DeviceType::HubIr` and `DiscoveryResult::HubIr`: `discover_devices` now finds H110 hubs and returns them with a ready-to-use `HubIrHandler`.
+- `ChildDeviceHubIrResult`: added for the child devices of an H110 hub. It has the same variants as `ChildDeviceHubResult`, plus an `IrRemote` variant for the IR remotes (`SMART.TAPOREMOTE`) that can be paired with the hub, and it can be converted from a `ChildDeviceHubResult` with `From`.
 - `IrRemoteResult` and `IrRemoteKey`: added for the IR remote child devices, exposing the stored `key_list` alongside the usual child device properties.
 - `IrRemoteHandler`: added with `get_device_info`, `get_device_info_json`, `get_component_list`, and a `send_ir_cmd_by_id` method that sends one of the keys stored on an IR remote.
-- `HubHandler`: added `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`.
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
-- H110 hub support. `ApiClient`: added `h110`, an alias for `h100` since the two hubs speak the same protocol. `DeviceType.from_model` now maps `H110` to `DeviceType.Hub`, so H110 hubs are returned by device discovery.
-- `IrRemoteResult` and `IrRemoteKey`: added for the IR remote child devices (`SMART.TAPOREMOTE`) that can be paired with an H110 hub, exposing the stored `key_list` alongside the usual child device properties. `HubHandler.get_child_device_list` can now return `IrRemoteResult` items.
+- `HubIrHandler`: added for the H110 hub. It is a subclass of `HubHandler`, and adds `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`. Its `get_child_device_list` can also return `IrRemoteResult` items.
+- `ApiClient`: added `h110`, which returns a `HubIrHandler`.
+- `DeviceType.HubIr` and `DiscoveryResult.HubIr`: `discover_devices` now finds H110 hubs and returns them with a ready-to-use `HubIrHandler`.
+- `IrRemoteResult` and `IrRemoteKey`: added for the IR remote child devices (`SMART.TAPOREMOTE`) that can be paired with an H110 hub, exposing the stored `key_list` alongside the usual child device properties.
 - `IrRemoteHandler`: added with `get_device_info`, `get_device_info_json`, `get_component_list`, and a `send_ir_cmd_by_id` method that sends one of the keys stored on an IR remote.
-- `HubHandler`: added `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`.
 
 ## [MCP Unreleased][Unreleased]
 

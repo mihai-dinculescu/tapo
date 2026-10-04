@@ -31,6 +31,7 @@ from .color_light_handler import ColorLightHandler
 from .device_discovery import DeviceDiscovery
 from .device_discovery_raw import DeviceDiscoveryRaw
 from .hub_handler import HubHandler
+from .hub_ir_handler import HubIrHandler
 from .light_handler import LightHandler
 from .plug_energy_monitoring_handler import PlugEnergyMonitoringHandler
 from .plug_handler import PlugHandler
@@ -493,19 +494,17 @@ class ApiClient:
             ```
         """
 
-    async def h110(self, ip_address: str) -> HubHandler:
-        """Specializes the given `ApiClient` into an authenticated `HubHandler`.
+    async def h110(self, ip_address: str) -> HubIrHandler:
+        """Specializes the given `ApiClient` into an authenticated `HubIrHandler`.
 
-        The H110 speaks the same protocol as the H100, so this is an alias for
-        `ApiClient.h100`. In addition to the sensors that the H100 supports, the
-        H110 can have IR remotes as child devices, which are handled by
-        `IrRemoteHandler`.
+        In addition to the sensors that the H100 supports, the H110 can have IR remotes
+        as child devices, which are handled by `IrRemoteHandler`.
 
         Args:
             ip_address (str): The IP address of the device
 
         Returns:
-            HubHandler: Handler for the [H110](https://www.tapo.com/en/search/?q=H110) hubs.
+            HubIrHandler: Handler for the [H110](https://www.tapo.com/en/search/?q=H110) hubs.
 
         Example:
             ```python

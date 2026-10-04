@@ -40,7 +40,7 @@ use super::protocol::media_stream;
 use super::protocol::media_stream::download::DownloadRequest;
 use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
 use super::{
-    CameraHubHandler, CameraPtzHandler, ColorLightHandler, HubHandler, LightHandler,
+    CameraHubHandler, CameraPtzHandler, ColorLightHandler, HubHandler, HubIrHandler, LightHandler,
     PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
     RgbLightStripHandler, RgbicLightStripHandler,
 };
@@ -715,12 +715,10 @@ impl ApiClient {
         Ok(HubHandler::new(Arc::new(RwLock::new(self))))
     }
 
-    /// Specializes the given [`ApiClient`] into an authenticated [`HubHandler`].
+    /// Specializes the given [`ApiClient`] into an authenticated [`HubIrHandler`].
     ///
-    /// The H110 speaks the same protocol as the H100, so this is an alias for
-    /// [`ApiClient::h100`]. In addition to the sensors that the H100 supports, the
-    /// H110 can have IR remotes as child devices, which are handled by
-    /// [`IrRemoteHandler`](crate::IrRemoteHandler).
+    /// In addition to the sensors that the H100 supports, the H110 can have IR remotes
+    /// as child devices, which are handled by [`IrRemoteHandler`](crate::IrRemoteHandler).
     ///
     /// # Arguments
     ///
@@ -741,8 +739,11 @@ impl ApiClient {
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn h110(self, ip_address: impl Into<String>) -> Result<HubHandler, Error> {
-        self.h100(ip_address).await
+    pub async fn h110(mut self, ip_address: impl Into<String>) -> Result<HubIrHandler, Error> {
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
+
+        Ok(HubIrHandler::new(Arc::new(RwLock::new(self))))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraHubHandler`].

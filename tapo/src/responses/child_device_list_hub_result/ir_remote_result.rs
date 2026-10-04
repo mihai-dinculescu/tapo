@@ -110,7 +110,7 @@ impl DecodableResultExt for IrRemoteKey {
 
 #[cfg(test)]
 mod tests {
-    use crate::responses::ChildDeviceHubResult;
+    use crate::responses::ChildDeviceHubIrResult;
 
     use super::*;
 
@@ -146,9 +146,9 @@ mod tests {
 
     #[test]
     fn test_ir_remote_parse() {
-        let child: ChildDeviceHubResult = serde_json::from_str(IR_REMOTE_JSON).unwrap();
+        let child: ChildDeviceHubIrResult = serde_json::from_str(IR_REMOTE_JSON).unwrap();
 
-        let ChildDeviceHubResult::IrRemote(remote) = child else {
+        let ChildDeviceHubIrResult::IrRemote(remote) = child else {
             panic!("expected an IR remote, got {child:?}");
         };
 

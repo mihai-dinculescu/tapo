@@ -24,6 +24,7 @@
 /// * `on()` and `off()` methods (if `on_off` specified)
 /// * `device_reboot()` and `device_reset()` methods (if `device_management` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
+/// * `subclass` in the `pyclass` attribute (if `subclass` specified)
 macro_rules! py_handler {
     // on_off + device_management + device_usage
     (
@@ -59,6 +60,17 @@ macro_rules! py_handler {
         py_handler!(@device_management $py_name, $handler);
     };
 
+    // device_management only, as a class that can be subclassed
+    (
+        $py_name:ident($handler:ident, $device_info:ty),
+        py_name = $pyname:literal,
+        device_management,
+        subclass,
+    ) => {
+        py_handler!(@base $py_name($handler, $device_info), $pyname, subclass);
+        py_handler!(@device_management $py_name, $handler);
+    };
+
     // No options
     (
         $py_name:ident($handler:ident, $device_info:ty),
@@ -68,9 +80,9 @@ macro_rules! py_handler {
     };
 
     // Internal: base struct + core methods + PyHandlerExt
-    (@base $py_name:ident($handler:ident, $device_info:ty), $pyname:literal) => {
+    (@base $py_name:ident($handler:ident, $device_info:ty), $pyname:literal $(, $pyclass_option:ident)*) => {
         #[derive(Clone)]
-        #[pyo3::pyclass(from_py_object, name = $pyname)]
+        #[pyo3::pyclass(from_py_object, name = $pyname $(, $pyclass_option)*)]
         pub struct $py_name {
             inner: std::sync::Arc<tokio::sync::RwLock<$handler>>,
         }
@@ -376,7 +388,7 @@ macro_rules! py_hub_child_handlers {
         $(($method:ident, $unchecked:ident, $py_handler:ident),)*
     ) => {
         impl $py_name {
-            fn parse_identifier(
+            pub(crate) fn parse_identifier(
                 device_id: Option<String>,
                 nickname: Option<String>,
             ) -> pyo3::prelude::PyResult<tapo::HubDevice> {
@@ -412,9 +424,6 @@ macro_rules! py_hub_child_handlers {
 
                     for child in children {
                         match child {
-                            ChildDeviceHubResult::IrRemote(device) => {
-                                results.append(device.into_pyobject(py)?)?;
-                            }
                             ChildDeviceHubResult::KE100(device) => {
                                 results.append(device.into_pyobject(py)?)?;
                             }

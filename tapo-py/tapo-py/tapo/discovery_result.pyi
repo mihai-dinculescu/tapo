@@ -6,6 +6,7 @@ from tapo import (
     CameraPtzHandler,
     ColorLightHandler,
     HubHandler,
+    HubIrHandler,
     LightHandler,
     PlugEnergyMonitoringHandler,
     PlugHandler,
@@ -227,6 +228,21 @@ class Hub(DiscoveryResultExt):
     )
 
 @dataclass
+class HubIr(DiscoveryResultExt):
+    """Tapo H110 devices."""
+
+    device_info: DeviceInfoHubResult
+    """Device info of Tapo H110."""
+
+    handler: HubIrHandler
+    """Handler for the [H110](https://www.tapo.com/en/search/?q=H110) devices."""
+
+    __match_args__ = (
+        "device_info",
+        "handler",
+    )
+
+@dataclass
 class CameraHub(DiscoveryResultExt):
     """Tapo H200 and H500 devices."""
 
@@ -282,6 +298,7 @@ class MaybeDiscoveryResult:
         PowerStrip,
         PowerStripEnergyMonitoring,
         Hub,
+        HubIr,
         CameraHub,
         CameraPtz,
         Other,
@@ -300,6 +317,7 @@ class DiscoveryResult(DiscoveryResultExt):
     PowerStrip: Type[PowerStrip] = PowerStrip
     PowerStripEnergyMonitoring: Type[PowerStripEnergyMonitoring] = PowerStripEnergyMonitoring
     Hub: Type[Hub] = Hub
+    HubIr: Type[HubIr] = HubIr
     CameraHub: Type[CameraHub] = CameraHub
     CameraPtz: Type[CameraPtz] = CameraPtz
     Other: Type[Other] = Other
