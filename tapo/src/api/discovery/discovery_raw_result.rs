@@ -2,7 +2,7 @@ use std::net::IpAddr;
 
 use serde_json::Value;
 
-use crate::api::protocol::{AuthProtocol, DeviceFamily};
+use crate::api::protocol::{AuthProtocol, DeviceFamily, TpapInfo};
 use crate::error::Error;
 
 use super::DeviceType;
@@ -71,33 +71,36 @@ impl DiscoveryRawResult {
     ///
     /// # Errors
     ///
-    /// Returns an error if the device announces a protocol that is not supported.
+    /// Returns an error if the device announces a protocol that is not supported,
+    /// or TPAP in a way that cannot be read.
     pub(crate) fn auth_protocol(&self) -> Result<AuthProtocol, Error> {
-        let scheme = self
-            .message
-            .get("result")
-            .and_then(|r| r.get("mgt_encrypt_schm"));
+        let result = self.message.get("result");
+        let scheme = result.and_then(|r| r.get("mgt_encrypt_schm"));
+        let tpap = result
+            .and_then(|r| r.get("tpap"))
+            .filter(|tpap| tpap.is_object());
 
         if scheme.and_then(|s| s["is_support_https"].as_bool()) == Some(true) {
-            return Ok(AuthProtocol::AesSsl);
+            // A camera that takes TPAP announces a `tpap` object, and one
+            // that does not take it announces none.
+            return match tpap {
+                Some(tpap) => Ok(AuthProtocol::TpapAnnounced(TpapInfo::from_announcement(
+                    tpap,
+                )?)),
+                None => Ok(AuthProtocol::AesSsl),
+            };
         }
 
-        match scheme.and_then(|s| s["encrypt_type"].as_str()) {
-            Some("KLAP") => Ok(AuthProtocol::Klap),
-            Some("AES") => Err(Error::unsupported_aes_protocol()),
-            // The `encrypt_type` alone is not enough: it has been reported to
-            // say `TPAP` on devices that still speak KLAP. A device in TPAP
-            // mode also announces a `tpap` object.
-            Some("TPAP") if self.has_tpap_info() => Err(Error::unsupported_tpap_protocol()),
+        match (scheme.and_then(|s| s["encrypt_type"].as_str()), tpap) {
+            (Some("KLAP"), _) => Ok(AuthProtocol::Klap),
+            (Some("AES"), _) => Err(Error::unsupported_aes_protocol()),
+            // A device in TPAP mode announces a `tpap` object as well, which
+            // says how it wants to be logged in to.
+            (Some("TPAP"), Some(tpap)) => Ok(AuthProtocol::TpapAnnounced(
+                TpapInfo::from_announcement(tpap)?,
+            )),
             _ => Ok(AuthProtocol::Unknown),
         }
-    }
-
-    fn has_tpap_info(&self) -> bool {
-        self.message
-            .get("result")
-            .and_then(|r| r.get("tpap"))
-            .is_some_and(Value::is_object)
     }
 }
 
@@ -152,20 +155,29 @@ mod tests {
     }
 
     #[test]
-    fn tpap_hint_is_an_error() {
+    fn tpap_hint_uses_the_announced_tpap_protocol() {
+        // What an L930 announces in TPAP mode.
         let mut result = raw_result("SMART.TAPOBULB", "L930", false, Some("TPAP"));
         result.message["result"]["tpap"] =
             json!({ "tls": 0, "dac": 0, "noc": 0, "pake": [2], "port": 80 });
 
+        assert_eq!(result.device_family(), DeviceFamily::Smart);
         assert!(matches!(
-            result.auth_protocol().err(),
-            Some(Error::UnsupportedProtocol { protocol, .. }) if protocol == "TPAP"
+            result.auth_protocol().unwrap(),
+            AuthProtocol::TpapAnnounced(_)
         ));
     }
 
     #[test]
-    fn tpap_hint_without_tpap_info_is_unknown() {
+    fn tpap_hint_without_a_tpap_object_is_unknown() {
         let result = raw_result("SMART.TAPOBULB", "L930", false, Some("TPAP"));
+
+        assert_eq!(result.auth_protocol().unwrap(), AuthProtocol::Unknown);
+    }
+
+    #[test]
+    fn missing_hint_is_unknown() {
+        let result = raw_result("SMART.TAPOHUB", "H100", false, None);
 
         assert_eq!(result.auth_protocol().unwrap(), AuthProtocol::Unknown);
     }
@@ -193,5 +205,35 @@ mod tests {
 
         assert!(!result.is_camera_hub());
         assert_eq!(result.device_family(), DeviceFamily::SmartCam);
+        assert_eq!(result.auth_protocol().unwrap(), AuthProtocol::AesSsl);
+    }
+
+    #[test]
+    fn camera_with_a_tpap_object_uses_the_announced_tpap_protocol() {
+        // What a C220 announces.
+        let mut result = raw_result("SMART.IPCAMERA", "C220", true, None);
+        result.message["result"]["tpap"] = json!({
+            "noc": 1,
+            "pake": [2],
+            "port": 443,
+            "tls": 1,
+        });
+
+        assert_eq!(result.device_family(), DeviceFamily::SmartCam);
+        assert!(matches!(
+            result.auth_protocol().unwrap(),
+            AuthProtocol::TpapAnnounced(_)
+        ));
+    }
+
+    #[test]
+    fn camera_with_an_unreadable_tpap_object_is_an_error() {
+        let mut result = raw_result("SMART.IPCAMERA", "C220", true, None);
+        result.message["result"]["tpap"] = json!({ "pake": "2" });
+
+        assert!(matches!(
+            result.auth_protocol().err(),
+            Some(Error::UnsupportedProtocol { protocol, .. }) if protocol == "TPAP"
+        ));
     }
 }
