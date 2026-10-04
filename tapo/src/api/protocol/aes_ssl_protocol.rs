@@ -13,6 +13,7 @@ use super::aes_ssl_cipher::{
     AesSslCipher, compute_password_digest, generate_nonce, validate_device_confirm,
 };
 use super::crypto;
+use super::tapo_protocol::request_error;
 
 /// How a login over AES SSL ended.
 pub(super) enum AesSslLogin {
@@ -102,10 +103,7 @@ impl AesSslProtocol {
 
         if !response.status().is_success() {
             debug!("Response error: {}", response.status());
-            return Err(Error::Tapo(TapoResponseError::HttpError {
-                status_code: response.status().as_u16(),
-                description: "Request failed".to_string(),
-            }));
+            return Err(request_error(response.status()));
         }
 
         let response_body: serde_json::Value = response.json().await?;

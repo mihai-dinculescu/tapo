@@ -47,8 +47,6 @@ Try these in order:
 2. **Update the Tapo app.** On older app versions the option sits under "Tapo Lab", and toggling it there has no effect. After updating the app, the option moves to Third-Party Services and toggling it there works.
 3. **Factory reset the device.** As a last resort, reset the device to factory settings, remove it from the Tapo app, set it up again, and then toggle Third-Party Compatibility once more.
 
-Note: on firmware 1.4.0 some users reported that the handshake succeeds but later requests intermittently fail with 403 Forbidden. Testing against a P110 reproduced this without any clear pattern, which points to a firmware issue rather than an authentication problem. Retrying the request or re-creating the device handler works around it.
-
 ## Handshake fails with a hash mismatch (invalid credentials)
 
 Reported in [#320][issue_320] and [#373][issue_373] across plugs (P100, P110, P115) and bulbs (L530, L535). Often affects only some of the devices on an account while the others work with the same credentials.

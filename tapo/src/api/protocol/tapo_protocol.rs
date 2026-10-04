@@ -1,8 +1,8 @@
 use std::fmt;
 
 use log::debug;
-use reqwest::Client;
 use reqwest::cookie::Cookie;
+use reqwest::{Client, StatusCode};
 use serde::de::DeserializeOwned;
 
 use crate::Error;
@@ -240,6 +240,22 @@ fn falls_back_to_aes_ssl(error: &Error) -> bool {
     }
 }
 
+/// The error for a request that the device answered with `status`. A device
+/// that no longer knows the session answers with 401 or 403.
+pub(super) fn request_error(status: StatusCode) -> Error {
+    let error = match status {
+        StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
+            TapoResponseError::session_expired("SESSION_TIMEOUT")
+        }
+        _ => TapoResponseError::HttpError {
+            status_code: status.as_u16(),
+            description: "Request failed".to_string(),
+        },
+    };
+
+    Error::Tapo(error)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::responses::validate_response;
@@ -279,5 +295,30 @@ mod tests {
         let error = Error::Tapo(TapoResponseError::tpap_credentials());
 
         assert!(falls_back_to_aes_ssl(&error));
+    }
+
+    #[test]
+    fn request_error_of_an_unknown_session_is_an_expired_session() {
+        // A C220 answers a request of an ended session with 401.
+        for status in [StatusCode::UNAUTHORIZED, StatusCode::FORBIDDEN] {
+            assert!(matches!(
+                request_error(status),
+                Error::Tapo(TapoResponseError::Unauthorized {
+                    kind: "SESSION_TIMEOUT",
+                    ..
+                })
+            ));
+        }
+    }
+
+    #[test]
+    fn request_error_of_another_status_is_an_http_error() {
+        assert!(matches!(
+            request_error(StatusCode::INTERNAL_SERVER_ERROR),
+            Error::Tapo(TapoResponseError::HttpError {
+                status_code: 500,
+                ..
+            })
+        ));
     }
 }

@@ -3,8 +3,8 @@ use std::fmt;
 use base64::{Engine as _, engine::general_purpose};
 use log::{debug, trace};
 use rand::RngExt as _;
+use reqwest::Client;
 use reqwest::header::CONTENT_TYPE;
-use reqwest::{Client, StatusCode};
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use serde_json::json;
@@ -15,7 +15,7 @@ use crate::{Error, TapoResponseError};
 
 use super::aes_ssl_protocol::extract_error_code;
 use super::crypto;
-use super::tapo_protocol::DeviceFamily;
+use super::tapo_protocol::{DeviceFamily, request_error};
 use super::tpap_cipher::TpapCipher;
 use super::tpap_spake2p::{self, Proof};
 
@@ -233,18 +233,7 @@ impl TpapProtocol {
 
         if !response.status().is_success() {
             debug!("Response error: {}", response.status());
-
-            let error = match response.status() {
-                StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
-                    TapoResponseError::session_expired("SESSION_TIMEOUT")
-                }
-                _ => TapoResponseError::HttpError {
-                    status_code: response.status().as_u16(),
-                    description: "Request failed".to_string(),
-                },
-            };
-
-            return Err(Error::Tapo(error));
+            return Err(request_error(response.status()));
         }
 
         let response_body = response.bytes().await?;

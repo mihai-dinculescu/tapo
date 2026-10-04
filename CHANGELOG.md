@@ -16,6 +16,7 @@ file. This change log follows the conventions of
 - `ApiClient::discover_devices`: a device that speaks the TPAP protocol is now returned like any other device, instead of being reported with an `Error::UnsupportedProtocol` error. That error is now reserved for a device that speaks TPAP in a way the library cannot handle yet, and its `description` names what the device announced.
 - `ApiClient`: connecting to a light, plug, power strip or H100 hub by IP address now sends one request more, which asks the device which protocol it speaks.
 - `ApiClient`: a camera or camera hub is now logged in to over the TPAP protocol whenever it takes it. Connecting to one that does not take it sends one request more.
+- Cameras and camera hubs: a request on an expired session now returns a `TapoResponseError::Unauthorized` error of kind `SESSION_TIMEOUT`, instead of a `TapoResponseError::HttpError` with status code 401. As for every other device, `refresh_session` recovers from it.
 
 ## [Python Unreleased][Unreleased]
 
@@ -29,6 +30,7 @@ file. This change log follows the conventions of
 - `ApiClient.discover_devices`: a device that speaks the TPAP protocol is now returned like any other device, instead of raising an unsupported protocol exception. That exception is now reserved for a device that speaks TPAP in a way the library cannot handle yet, and its message names what the device announced.
 - `ApiClient`: connecting to a light, plug, power strip or H100 hub by IP address now sends one request more, which asks the device which protocol it speaks.
 - `ApiClient`: a camera or camera hub is now logged in to over the TPAP protocol whenever it takes it. Connecting to one that does not take it sends one request more.
+- Cameras and camera hubs: a request on an expired session now raises an exception of kind `SESSION_TIMEOUT`, instead of an HTTP error with status code 401. As for every other device, `refresh_session` recovers from it.
 
 ## [MCP Unreleased][Unreleased]
 

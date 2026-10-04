@@ -13,6 +13,7 @@ use crate::{Error, TapoResponseError};
 
 use super::crypto;
 use super::klap_cipher::KlapCipher;
+use super::tapo_protocol::request_error;
 
 struct KlapSession {
     url: String,
@@ -72,18 +73,7 @@ impl KlapProtocol {
 
         if !response.status().is_success() {
             debug!("Response error: {}", response.status());
-
-            let error = match response.status() {
-                StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => {
-                    TapoResponseError::session_expired("SESSION_TIMEOUT")
-                }
-                _ => TapoResponseError::HttpError {
-                    status_code: response.status().as_u16(),
-                    description: "Request failed".to_string(),
-                },
-            };
-
-            return Err(Error::Tapo(error));
+            return Err(request_error(response.status()));
         }
 
         let response_body = response.bytes().await.map_err(anyhow::Error::from)?;
