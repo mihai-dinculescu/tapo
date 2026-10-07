@@ -74,7 +74,7 @@ pub enum DiscoveryResult {
     PowerStrip {
         /// Device info of Tapo P300 and P306.
         device_info: Box<DeviceInfoPowerStripResult>,
-        /// Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
+        /// Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
         /// [P306](https://www.tp-link.com/us/search/?q=P306) devices.
         handler: PowerStripHandler,
     },

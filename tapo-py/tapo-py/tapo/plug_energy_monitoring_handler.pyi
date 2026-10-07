@@ -37,7 +37,7 @@ class PlugEnergyMonitoringHandler(
         try `PlugEnergyMonitoringHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoPlugEnergyMonitoringResult: Device info of P110, P110M and P115.
+            DeviceInfoPlugEnergyMonitoringResult: Device info of Tapo P110, P110M and P115.
         """
 
     async def get_current_power(self) -> CurrentPowerResult:

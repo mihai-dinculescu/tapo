@@ -249,7 +249,7 @@ class ApiClient:
 
         Returns:
             ColorLightHandler: Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
-            [L630](https://www.tapo.com/en/search/?q=L630) and [L900](https://www.tapo.com/en/search/?q=L900) devices.
+            [L535](https://www.tapo.com/en/search/?q=L535) and [L630](https://www.tapo.com/en/search/?q=L630) devices.
 
         Example:
             ```python
