@@ -1,4 +1,4 @@
-"""P100 and P105 Example"""
+"""P100, P105, P125 and P125M Example"""
 
 import asyncio
 

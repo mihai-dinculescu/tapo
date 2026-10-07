@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `ApiClient`: added the `p125` builder for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient::discover_devices`.
+
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- `ApiClient`: added the `p125` method for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient.discover_devices`.
 
 ## [MCP Unreleased][Unreleased]
 

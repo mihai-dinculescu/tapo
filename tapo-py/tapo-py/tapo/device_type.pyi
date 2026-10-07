@@ -19,7 +19,7 @@ class DeviceType:
     """Tapo L920, L930 - RGBIC light strip."""
 
     Plug: Final[DeviceType]
-    """Tapo P100, P105 - smart plugs."""
+    """Tapo P100, P105, P125, P125M - smart plugs."""
 
     PlugEnergyMonitoring: Final[DeviceType]
     """Tapo P110, P110M, P115 - smart plugs with energy monitoring."""

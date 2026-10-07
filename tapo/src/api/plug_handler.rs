@@ -7,8 +7,9 @@ use crate::responses::{
 };
 
 tapo_handler! {
-    /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
-    /// [P105](https://www.tapo.com/en/search/?q=P105) devices.
+    /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
+    /// [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125) and
+    /// [P125M](https://www.tapo.com/en/search/?q=P125M) devices.
     PlugHandler(DeviceInfoPlugResult),
     on_off,
     device_usage = DeviceUsageResult,

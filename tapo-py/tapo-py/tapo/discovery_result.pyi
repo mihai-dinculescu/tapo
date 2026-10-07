@@ -146,14 +146,15 @@ class RgbicLightStrip(DiscoveryResultExt):
 
 @dataclass
 class Plug(DiscoveryResultExt):
-    """Tapo P100 and P105 devices."""
+    """Tapo P100, P105, P125 and P125M devices."""
 
     device_info: DeviceInfoPlugResult
-    """Device info of Tapo P100 and P105."""
+    """Device info of Tapo P100, P105, P125 and P125M."""
 
     handler: PlugHandler
-    """Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
-    [P105](https://www.tapo.com/en/search/?q=P105) devices."""
+    """Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
+    [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125) and
+    [P125M](https://www.tapo.com/en/search/?q=P125M) devices."""
 
     __match_args__ = (
         "device_info",
