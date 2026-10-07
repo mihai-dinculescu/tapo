@@ -103,7 +103,7 @@ pub enum DiscoveryResult {
     },
     /// Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70).
     CameraPtz {
-        /// Device info of Tapo cameras (C100, C110, C210, C220, C225, C325WB, C520WS, C720, TC40, TC65, TC70, etc.).
+        /// Device info of Tapo cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
         device_info: Box<DeviceInfoCameraResult>,
         /// Handler for Tapo cameras with PTZ, such as the
         /// [C210](https://www.tapo.com/en/search/?q=C210),

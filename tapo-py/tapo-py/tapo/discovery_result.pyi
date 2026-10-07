@@ -247,7 +247,7 @@ class CameraPtz(DiscoveryResultExt):
     """Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70)."""
 
     device_info: DeviceInfoCameraResult
-    """Device info of Tapo cameras (C100, C110, C210, C220, C225, C325WB, C520WS, C720, TC40, TC65, TC70, etc.)."""
+    """Device info of Tapo cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70)."""
 
     handler: CameraPtzHandler
     """Handler for Tapo cameras with PTZ, such as the

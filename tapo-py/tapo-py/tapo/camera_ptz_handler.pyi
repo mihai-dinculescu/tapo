@@ -25,7 +25,7 @@ class CameraPtzHandler(RefreshSessionExt, DebugExt):
         try `CameraPtzHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoCameraResult: Device info of Tapo cameras (C100, C110, C210, C220, C225, C325WB, C520WS, C720, TC40, TC65, TC70, etc.).
+            DeviceInfoCameraResult: Device info of Tapo cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
         """
 
     async def get_rtsp_stream_url(self, username: str, password: str) -> RtspStreamUrl:
