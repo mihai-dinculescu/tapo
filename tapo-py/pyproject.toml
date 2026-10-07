@@ -27,6 +27,7 @@ dependencies = ["tzdata"]
 dev = ["maturin>=1.13.1,<2.0", "black>=26.5.1,<27.0", "mypy>=2.3.1"]
 
 [project.urls]
+Author = "https://mihai.dinculescu.dev"
 Changelog = "https://github.com/mihai-dinculescu/tapo/blob/main/CHANGELOG.md"
 Funding = "https://github.com/mihai-dinculescu"
 Homepage = "https://github.com/mihai-dinculescu/tapo"
