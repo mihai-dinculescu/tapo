@@ -119,7 +119,9 @@ A big thank you to the sponsors of this project!
 
 ## Credits
 
-Inspired by [petretiandrea/plugp100][inspired_by].
+Created and maintained by [Mihai Dinculescu][author].
+
+Inspired by [petretiandrea/plugp100][inspired_by_plugp100] and [python-kasa/python-kasa][inspired_by_kasa].
 
 [supported_devices]: https://github.com/mihai-dinculescu/tapo/blob/main/SUPPORTED_DEVICES.md
 [examples]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo/examples
@@ -132,4 +134,6 @@ Inspired by [petretiandrea/plugp100][inspired_by].
 [sponsor_abler98]: https://github.com/abler98
 [sponsor_nathanja]: https://github.com/nathanja
 [sponsor_santiago_salas_v]: https://github.com/santiago-salas-v
-[inspired_by]: https://github.com/petretiandrea/plugp100
+[author]: https://mihai.dinculescu.dev
+[inspired_by_plugp100]: https://github.com/petretiandrea/plugp100
+[inspired_by_kasa]: https://github.com/python-kasa/python-kasa
