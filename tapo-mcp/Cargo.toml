@@ -12,9 +12,11 @@ config = "0.15"
 rmcp = { version = "3.5", features = ["server", "macros", "transport-streamable-http-server"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
+rand = { workspace = true }
 subtle = "2.6"
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "signal", "macros"] }
+url = "2.5"
 
 opentelemetry = "0.33"
 opentelemetry_sdk = { version = "0.33", features = ["rt-tokio"] }

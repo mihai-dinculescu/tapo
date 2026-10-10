@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use url::Url;
 
 const ENV_PREFIX: &str = "TAPO_MCP";
 const DEFAULT_HTTP_ADDR: &str = "127.0.0.1:3000";
@@ -24,6 +25,10 @@ pub struct AppConfig {
     /// rebinding. Populated from `TAPO_MCP_ALLOWED_HOSTS`.
     #[serde(skip)]
     pub allowed_hosts: Vec<String>,
+    /// Base URL clients reach the server at, without a trailing `/`. Enables
+    /// short-lived snapshot links. Populated from `TAPO_MCP_PUBLIC_URL`.
+    #[serde(default)]
+    pub public_url: Option<String>,
 }
 
 impl std::fmt::Debug for AppConfig {
@@ -44,6 +49,7 @@ impl std::fmt::Debug for AppConfig {
             .field("discovery_timeout", &self.discovery_timeout)
             .field("api_key", &self.api_key.as_ref().map(|_| "[redacted]"))
             .field("allowed_hosts", &self.allowed_hosts)
+            .field("public_url", &self.public_url)
             .finish()
     }
 }
@@ -103,9 +109,43 @@ impl AppConfig {
 
         config.allowed_hosts = Self::parse_list_env(&format!("{ENV_PREFIX}_ALLOWED_HOSTS"));
 
+        config.public_url = config
+            .public_url
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty())
+            .map(|v| Self::normalize_public_url(&v))
+            .transpose()?;
+
         config.validate_binding_security()?;
 
         Ok(config)
+    }
+
+    /// Validates `TAPO_MCP_PUBLIC_URL` and returns it normalized, without a trailing slash.
+    fn normalize_public_url(raw: &str) -> Result<String, config::ConfigError> {
+        let invalid = |reason: &str| {
+            config::ConfigError::Message(format!(
+                "{ENV_PREFIX}_PUBLIC_URL must be an absolute http(s) URL, got '{raw}' ({reason})"
+            ))
+        };
+
+        let url = Url::parse(raw).map_err(|e| invalid(&e.to_string()))?;
+        if !matches!(url.scheme(), "http" | "https") {
+            return Err(invalid("scheme must be http or https"));
+        }
+        if url.host_str().is_none_or(str::is_empty) {
+            return Err(invalid("missing host"));
+        }
+        if url.query().is_some() || url.fragment().is_some() {
+            return Err(invalid("query strings and fragments are not supported"));
+        }
+        if !url.username().is_empty() || url.password().is_some() {
+            return Err(config::ConfigError::Message(format!(
+                "{ENV_PREFIX}_PUBLIC_URL must not contain a username or password"
+            )));
+        }
+
+        Ok(url.as_str().trim_end_matches('/').to_string())
     }
 
     /// Reads a comma-separated env var into a list of trimmed, non-empty entries.
@@ -180,6 +220,7 @@ mod tests {
             "TAPO_MCP_DISCOVERY_TIMEOUT",
             "TAPO_MCP_API_KEY",
             "TAPO_MCP_ALLOWED_HOSTS",
+            "TAPO_MCP_PUBLIC_URL",
         ] {
             unsafe { std::env::remove_var(key) };
         }
@@ -265,6 +306,7 @@ mod tests {
             discovery_timeout: 5,
             api_key: Some("my-api-key".to_string()),
             allowed_hosts: vec![],
+            public_url: None,
         };
 
         let debug = format!("{config:?}");
@@ -365,6 +407,124 @@ mod tests {
     }
 
     #[test]
+    fn public_url_strips_trailing_slash() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_PUBLIC_URL", " https://tapo.example.com/ ");
+        }
+
+        let config = AppConfig::from_env().unwrap();
+        assert_eq!(
+            config.public_url.as_deref(),
+            Some("https://tapo.example.com")
+        );
+    }
+
+    #[test]
+    fn public_url_empty_normalizes_to_none() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_PUBLIC_URL", "  ");
+        }
+
+        let config = AppConfig::from_env().unwrap();
+        assert!(config.public_url.is_none());
+    }
+
+    #[test]
+    fn public_url_without_scheme_is_rejected() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_PUBLIC_URL", "tapo.example.com");
+        }
+
+        let err = AppConfig::from_env().unwrap_err().to_string();
+        assert!(
+            err.contains("TAPO_MCP_PUBLIC_URL must be an absolute http(s) URL"),
+            "should reject a URL without a scheme: {err}"
+        );
+    }
+
+    #[test]
+    fn public_url_uppercase_scheme_is_normalized() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_PUBLIC_URL", "HTTPS://Tapo.Example.com/mcp/");
+        }
+
+        let config = AppConfig::from_env().unwrap();
+        assert_eq!(
+            config.public_url.as_deref(),
+            Some("https://tapo.example.com/mcp")
+        );
+    }
+
+    #[test]
+    fn public_url_without_host_is_rejected() {
+        for value in ["https://", "http:///"] {
+            let _lock = ENV_LOCK.lock().unwrap();
+            unsafe {
+                clear_tapo_env();
+                set_required_env();
+                std::env::set_var("TAPO_MCP_PUBLIC_URL", value);
+            }
+
+            let err = AppConfig::from_env().unwrap_err().to_string();
+            assert!(
+                err.contains("TAPO_MCP_PUBLIC_URL must be an absolute http(s) URL"),
+                "should reject '{value}': {err}"
+            );
+        }
+    }
+
+    #[test]
+    fn public_url_with_query_is_rejected() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_PUBLIC_URL", "https://tapo.example.com/?a=1");
+        }
+
+        let err = AppConfig::from_env().unwrap_err().to_string();
+        assert!(
+            err.contains("query strings and fragments are not supported"),
+            "should reject a URL with a query: {err}"
+        );
+    }
+
+    #[test]
+    fn public_url_with_credentials_is_rejected() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var(
+                "TAPO_MCP_PUBLIC_URL",
+                "https://admin:secret@tapo.example.com",
+            );
+        }
+
+        let err = AppConfig::from_env().unwrap_err().to_string();
+        assert!(
+            err.contains("must not contain a username or password"),
+            "should reject a URL with credentials: {err}"
+        );
+        assert!(
+            !err.contains("secret"),
+            "error should not echo the password: {err}"
+        );
+    }
+
+    #[test]
     fn binds_to_loopback_detects_loopback_forms() {
         let loopback = [
             "127.0.0.1:3000",
@@ -429,6 +589,7 @@ mod tests {
             discovery_timeout: 5,
             api_key: None,
             allowed_hosts: vec![],
+            public_url: None,
         }
     }
 }

@@ -15,7 +15,7 @@ async fn main() -> Result<()> {
     let listener = tokio::net::TcpListener::bind(&app_config.http_addr).await?;
     tracing::info!(addr = %app_config.http_addr, "Tapo MCP server listening");
 
-    let app = tapo_mcp::router(app_config);
+    let app = tapo_mcp::router(app_config, Default::default());
 
     // Channel to notify when the signal has fired, so we can start the timeout.
     let (signal_tx, signal_rx) = oneshot::channel::<()>();

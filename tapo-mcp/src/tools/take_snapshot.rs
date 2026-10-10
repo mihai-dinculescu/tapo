@@ -10,9 +10,11 @@ use crate::errors::TapoMcpError;
 use crate::models::{CheckDeviceParams, SnapshotResult, TakeSnapshotParams};
 use crate::requests;
 use crate::requests::CheckedDevice;
+use crate::snapshots::SnapshotStore;
 
 pub async fn take_snapshot(
     config: &AppConfig,
+    snapshots: &SnapshotStore,
     params: TakeSnapshotParams,
 ) -> Result<CallToolResult, McpError> {
     let camera_username = config
@@ -45,14 +47,29 @@ pub async fn take_snapshot(
         }
     };
 
-    let result = SnapshotResult {
-        device_id: params.id,
-        captured_at: Utc::now(),
-        content_type: snapshot.content_type.clone(),
-        size_bytes: snapshot.data.len(),
+    let captured_at = Utc::now();
+    let size_bytes = snapshot.data.len();
+    let encoded = STANDARD.encode(&snapshot.data);
+
+    let (url, expires_at) = match &config.public_url {
+        Some(public_url) => {
+            let (token, expires_at) = snapshots.insert(snapshot.data);
+            (
+                Some(format!("{public_url}/snapshots/{token}.jpg")),
+                Some(expires_at),
+            )
+        }
+        None => (None, None),
     };
 
-    let encoded = STANDARD.encode(&snapshot.data);
+    let result = SnapshotResult {
+        device_id: params.id,
+        captured_at,
+        size_bytes,
+        url,
+        expires_at,
+    };
+
     Ok(CallToolResult::success(vec![
         ContentBlock::json(result)?,
         ContentBlock::image(encoded, snapshot.content_type),

@@ -43,6 +43,12 @@
           "isSecret": true
         },
         {
+          "name": "TAPO_MCP_PUBLIC_URL",
+          "description": "Optional base URL clients reach the server at; enables short-lived snapshot links",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
           "name": "TAPO_MCP_DISCOVERY_TIMEOUT",
           "description": "Device discovery timeout in seconds",
           "isRequired": false,

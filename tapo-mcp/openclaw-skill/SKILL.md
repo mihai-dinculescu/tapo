@@ -95,7 +95,7 @@ npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[
 
 ### take_snapshot
 
-Capture a still JPEG snapshot from a Tapo camera (~640x360), with the device id, capture time and size as text. Automatically runs `check_device` first. Requires `TAPO_MCP_CAMERA_USERNAME` and `TAPO_MCP_CAMERA_PASSWORD` configured on the server (Camera Settings > Advanced Settings > Camera Account in the Tapo app).
+Capture a still JPEG snapshot from a Tapo camera (~640x360), with the device id, capture time and size as text. When the server has `TAPO_MCP_PUBLIC_URL` set, the text also includes a `url` to the image that is valid for 5 minutes; share it with the user or download the file. Automatically runs `check_device` first. Requires `TAPO_MCP_CAMERA_USERNAME` and `TAPO_MCP_CAMERA_PASSWORD` configured on the server (Camera Settings > Advanced Settings > Camera Account in the Tapo app).
 
 ```bash
 npx mcporter call tapo.take_snapshot id="<DEVICE_ID>" ip="<IP>"

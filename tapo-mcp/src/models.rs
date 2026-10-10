@@ -91,10 +91,15 @@ pub struct SnapshotResult {
     pub device_id: String,
     /// When the snapshot was received from the camera.
     pub captured_at: DateTime<Utc>,
-    /// MIME type of the image (e.g. "image/jpeg").
-    pub content_type: String,
     /// Size of the image in bytes.
     pub size_bytes: usize,
+    /// Link to the image, valid until `expires_at`. Share it with the user or
+    /// fetch it to save the file.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+    /// When `url` stops working.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expires_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]

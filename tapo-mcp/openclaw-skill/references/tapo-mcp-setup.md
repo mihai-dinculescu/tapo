@@ -14,7 +14,7 @@ Tapo MCP is an HTTP server (Streamable HTTP transport) that exposes TP-Link Tapo
 | `check_device`     | Verify a device ID matches at a given IP.                                                                                                  |
 | `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Runs `check_device` first.                                                   |
 | `control_device`   | Control a device by applying one or more set capabilities. Runs `check_device` first.                                                      |
-| `take_snapshot`    | Capture a still JPEG snapshot from a Tapo camera (~640x360), with the device id, capture time and size as text. Runs `check_device` first. |
+| `take_snapshot`    | Capture a still JPEG snapshot from a Tapo camera (~640x360), with the device id, capture time and size as text, plus a short-lived link when `TAPO_MCP_PUBLIC_URL` is set (see Snapshot links). Runs `check_device` first. |
 
 ### Resources
 
@@ -37,6 +37,7 @@ All configuration is via environment variables prefixed with `TAPO_MCP_`:
 | `TAPO_MCP_DISCOVERY_TIMEOUT` | No       | `5`              | Discovery timeout in seconds                               |
 | `TAPO_MCP_API_KEY`           | No       | —                | Bearer token for HTTP authentication (see below)           |
 | `TAPO_MCP_ALLOWED_HOSTS`     | No       | loopback only    | Comma-separated `Host` header allowlist (see Network exposure) |
+| `TAPO_MCP_PUBLIC_URL`        | No       | —                | Base URL clients reach the server at (e.g. `https://tapo.example.com`). Enables short-lived snapshot links (see Snapshot links) |
 
 [^camera]: Set on each camera in the Tapo app under Camera Settings > Advanced Settings > Camera Account. Distinct from your TP-Link cloud account.
 
@@ -48,11 +49,21 @@ When the variable is unset (or empty/whitespace-only), the server runs without a
 
 ## Network exposure
 
-The server enforces the MCP Streamable HTTP DNS-rebinding protection. By default only loopback `Host` headers (`localhost`, `127.0.0.1`, `::1`) are accepted, which prevents a malicious web page from reaching a locally running server via DNS rebinding. Requests with any other `Host` receive a `403 Forbidden` response.
+The server enforces the MCP Streamable HTTP DNS-rebinding protection. By default only loopback `Host` headers (`localhost`, `127.0.0.1`, `::1`) are accepted, which prevents a malicious web page from reaching a locally running server via DNS rebinding. Requests to the MCP endpoint with any other `Host` receive a `403 Forbidden` response. Snapshot links are not covered by this check (see Snapshot links).
 
 To reach the server over the LAN or from another host, set `TAPO_MCP_ALLOWED_HOSTS` to the exact hostname(s) or `host:port` authorities clients connect to, for example `TAPO_MCP_ALLOWED_HOSTS="tapo-mcp.lan:3000,192.168.1.50:3000"`. This replaces the loopback default, so include loopback entries as well if you still need them.
 
 To avoid shipping unauthenticated smart-home control, the server refuses to start when it binds to a non-loopback address (for example `0.0.0.0:3000`) without `TAPO_MCP_API_KEY` set. Set an API key, or bind to a loopback address.
+
+## Snapshot links
+
+Some MCP clients don't pass image results on to the model, and others show the image to the model but give it nothing it can hand to the user. When `TAPO_MCP_PUBLIC_URL` is set, `take_snapshot` also returns a `url` (and its `expires_at`) pointing at `<TAPO_MCP_PUBLIC_URL>/snapshots/<token>.jpg`, so the agent can share the link or download the file.
+
+- The link is served without the API key, so a browser can open it directly. The `Host` allowlist from `TAPO_MCP_ALLOWED_HOSTS` does not apply to it either. The random token in the path is the only credential: anyone holding the link can view that frame until it expires.
+- Each link is valid for 5 minutes. Snapshots are kept in memory only and never written to disk. Expired snapshots are cleared out when the next one is taken, and at most the 1024 most recent are kept.
+- Behind an authenticating reverse proxy (Cloudflare Access and similar), links opened in a browser that is already signed in to the proxy work. Non-browser fetches (`curl`, an agent downloading the file) need the proxy's own credential or a policy exception for `/snapshots/`.
+
+When `TAPO_MCP_PUBLIC_URL` is unset, no link is returned and the `/snapshots/` route is not served.
 
 ## Deployment
 
@@ -70,7 +81,7 @@ docker run --rm \
   ghcr.io/mihai-dinculescu/tapo-mcp:latest
 ```
 
-> **Note:** The image binds to `0.0.0.0:3000`, so `TAPO_MCP_API_KEY` is required — the server refuses to start on a non-loopback address without it (see Network exposure above). To reach the server by hostname or LAN IP rather than loopback, also set `TAPO_MCP_ALLOWED_HOSTS`.
+> **Note:** The image binds to `0.0.0.0:3000`, so `TAPO_MCP_API_KEY` is required — the server refuses to start on a non-loopback address without it (see Network exposure above). To reach the server by hostname or LAN IP rather than loopback, also set `TAPO_MCP_ALLOWED_HOSTS`. To get snapshot links, add `-e TAPO_MCP_PUBLIC_URL="https://tapo.example.com"`.
 
 > **Note:** `--network host` is required so the container can reach Tapo devices on your local network via UDP broadcast for discovery. On macOS and Windows, `--network host` is not supported — you can use `-p 3000:3000` instead, but device discovery won't work as Docker Desktop runs containers inside a VM without LAN access.
 
@@ -146,7 +157,7 @@ spec:
                   key: TAPO_MCP_DISCOVERY_TARGET
 ```
 
-> **Note:** `hostNetwork: true` is required for UDP broadcast discovery, similar to `--network host` in Docker. Because clients reach the server by node IP or hostname rather than loopback, set `TAPO_MCP_ALLOWED_HOSTS` accordingly (see Network exposure above).
+> **Note:** `hostNetwork: true` is required for UDP broadcast discovery, similar to `--network host` in Docker. Because clients reach the server by node IP or hostname rather than loopback, set `TAPO_MCP_ALLOWED_HOSTS` accordingly (see Network exposure above). To get snapshot links, add `TAPO_MCP_PUBLIC_URL` to the ConfigMap and the Deployment's `env`.
 
 ## Testing
 

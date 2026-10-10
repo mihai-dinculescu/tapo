@@ -18,6 +18,10 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+### Added
+
+- `take_snapshot`: when `TAPO_MCP_PUBLIC_URL` is set, the result also carries a link to the image that stays valid for 5 minutes, so an agent can share it with the user or download the file.
+
 ### Changed
 
 - `take_snapshot`: the result now includes the device id, capture time and size as text alongside the image.

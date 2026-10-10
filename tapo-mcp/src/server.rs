@@ -16,17 +16,19 @@ use crate::models::{
     CheckDeviceParams, ControlDeviceParams, GetDeviceStateParams, TakeSnapshotParams,
 };
 use crate::resources;
+use crate::snapshots::{SNAPSHOT_TTL, SnapshotStore};
 use crate::tools;
 
 #[derive(Clone)]
 pub struct TapoMcp {
     config: Arc<AppConfig>,
+    snapshots: Arc<SnapshotStore>,
 }
 
 #[tool_router]
 impl TapoMcp {
-    pub(crate) fn new(config: Arc<AppConfig>) -> Self {
-        Self { config }
+    pub(crate) fn new(config: Arc<AppConfig>, snapshots: Arc<SnapshotStore>) -> Self {
+        Self { config, snapshots }
     }
 
     #[tool(
@@ -91,7 +93,10 @@ impl TapoMcp {
     }
 
     #[tool(
-        description = "Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs check_device first to verify the device ID matches at the given IP. Returns the device id, capture time and size as text alongside the image.",
+        description = format!(
+            "Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs check_device first to verify the device ID matches at the given IP. Returns the device id, capture time and size as text alongside the image. The text may also include a link to the image that is valid for {} minutes; share it with the user or fetch it to save the file.",
+            SNAPSHOT_TTL.as_secs() / 60
+        ),
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -103,7 +108,7 @@ impl TapoMcp {
         &self,
         Parameters(params): Parameters<TakeSnapshotParams>,
     ) -> Result<CallToolResult, McpError> {
-        tools::take_snapshot(&self.config, params).await
+        tools::take_snapshot(&self.config, &self.snapshots, params).await
     }
 }
 
@@ -151,6 +156,7 @@ impl ServerHandler for TapoMcp {
 
 pub fn new_service(
     app_config: Arc<AppConfig>,
+    snapshots: Arc<SnapshotStore>,
 ) -> StreamableHttpService<TapoMcp, LocalSessionManager> {
     let session_manager = Arc::new(LocalSessionManager::default());
     // Keep rmcp's DNS-rebinding protection. By default only loopback `Host`
@@ -161,7 +167,12 @@ pub fn new_service(
         server_config = server_config.with_allowed_hosts(app_config.allowed_hosts.clone());
     }
     StreamableHttpService::new(
-        move || Ok(TapoMcp::new(Arc::clone(&app_config))),
+        move || {
+            Ok(TapoMcp::new(
+                Arc::clone(&app_config),
+                Arc::clone(&snapshots),
+            ))
+        },
         session_manager,
         server_config,
     )
