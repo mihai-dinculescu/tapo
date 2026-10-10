@@ -8,8 +8,9 @@ use crate::responses::{
 };
 use crate::{
     ApiClient, CameraHubHandler, CameraPtzHandler, ColorLightHandler, Error, HubHandler,
-    LightHandler, PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler,
-    PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
+    HubIrHandler, LightHandler, PlugEnergyMonitoringHandler, PlugHandler,
+    PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
+    RgbicLightStripHandler,
 };
 
 use crate::api::protocol::DeviceFamily;
@@ -93,6 +94,13 @@ pub enum DiscoveryResult {
         device_info: Box<DeviceInfoHubResult>,
         /// Handler for the [H100](https://www.tapo.com/en/search/?q=H100) devices.
         handler: HubHandler,
+    },
+    /// Tapo H110 devices.
+    HubIr {
+        /// Device info of Tapo H110.
+        device_info: Box<DeviceInfoHubResult>,
+        /// Handler for the [H110](https://www.tapo.com/en/search/?q=H110) devices.
+        handler: HubIrHandler,
     },
     /// Tapo H200 and H500 devices.
     CameraHub {
@@ -247,6 +255,15 @@ impl DiscoveryResult {
             DeviceType::Hub => {
                 map_device_model!(Hub, DeviceInfoHubResult, HubHandler, device_info, client)
             }
+            DeviceType::HubIr => {
+                map_device_model!(
+                    HubIr,
+                    DeviceInfoHubResult,
+                    HubIrHandler,
+                    device_info,
+                    client
+                )
+            }
             DeviceType::CameraHub => DiscoveryResult::CameraHub {
                 device_info: Box::new(serde_json::from_value::<DeviceInfoCameraHubResult>(
                     device_info,
@@ -290,6 +307,7 @@ impl DiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring
             }
             DiscoveryResult::Hub { .. } => DeviceType::Hub,
+            DiscoveryResult::HubIr { .. } => DeviceType::HubIr,
             DiscoveryResult::CameraHub { .. } => DeviceType::CameraHub,
             DiscoveryResult::CameraPtz { .. } => DeviceType::CameraPtz,
             DiscoveryResult::Other { .. } => DeviceType::Other,
@@ -308,6 +326,7 @@ impl DiscoveryResult {
             DiscoveryResult::PowerStrip { device_info, .. } => &device_info.model,
             DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.model,
             DiscoveryResult::Hub { device_info, .. } => &device_info.model,
+            DiscoveryResult::HubIr { device_info, .. } => &device_info.model,
             DiscoveryResult::CameraHub { device_info, .. } => &device_info.model,
             DiscoveryResult::CameraPtz { device_info, .. } => &device_info.model,
             DiscoveryResult::Other { device_info, .. } => &device_info.model,
@@ -326,6 +345,7 @@ impl DiscoveryResult {
             DiscoveryResult::PowerStrip { device_info, .. } => &device_info.ip,
             DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.ip,
             DiscoveryResult::Hub { device_info, .. } => &device_info.ip,
+            DiscoveryResult::HubIr { device_info, .. } => &device_info.ip,
             DiscoveryResult::CameraHub { device_info, .. } => &device_info.ip,
             DiscoveryResult::CameraPtz { ip, .. } => ip,
             DiscoveryResult::Other { ip, .. } => ip,
@@ -346,6 +366,7 @@ impl DiscoveryResult {
                 &device_info.device_id
             }
             DiscoveryResult::Hub { device_info, .. } => &device_info.device_id,
+            DiscoveryResult::HubIr { device_info, .. } => &device_info.device_id,
             DiscoveryResult::CameraHub { device_info, .. } => &device_info.device_id,
             DiscoveryResult::CameraPtz { device_info, .. } => &device_info.device_id,
             DiscoveryResult::Other { device_info, .. } => &device_info.device_id,
@@ -368,6 +389,7 @@ impl DiscoveryResult {
                 DeviceType::PowerStripEnergyMonitoring.as_str()
             }
             DiscoveryResult::Hub { device_info, .. } => &device_info.nickname,
+            DiscoveryResult::HubIr { device_info, .. } => &device_info.nickname,
             DiscoveryResult::CameraHub { device_info, .. } => &device_info.nickname,
             DiscoveryResult::CameraPtz { device_info, .. } => &device_info.nickname,
             DiscoveryResult::Other { device_info, .. } => device_info

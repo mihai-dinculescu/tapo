@@ -1,4 +1,4 @@
-use tapo::responses::ChildDeviceHubResult;
+use tapo::responses::ChildDeviceHubIrResult;
 use tapo::{ApiClient, DiscoveryResult, StreamExt as _};
 use tokio::task::JoinSet;
 
@@ -159,14 +159,22 @@ async fn fetch_children(
                     .collect()
             })
         }
-        DiscoveryResult::Hub { handler, .. } => handler
+        DiscoveryResult::Hub { handler, .. } => handler.get_child_device_list().await.map(|list| {
+            list.into_iter()
+                .map(|c| hub_child_to_child_device(c.into()))
+                .collect()
+        }),
+        DiscoveryResult::HubIr { handler, .. } => handler
             .get_child_device_list()
             .await
             .map(|list| list.into_iter().map(hub_child_to_child_device).collect()),
-        DiscoveryResult::CameraHub { handler, .. } => handler
-            .get_child_device_list()
-            .await
-            .map(|list| list.into_iter().map(hub_child_to_child_device).collect()),
+        DiscoveryResult::CameraHub { handler, .. } => {
+            handler.get_child_device_list().await.map(|list| {
+                list.into_iter()
+                    .map(|c| hub_child_to_child_device(c.into()))
+                    .collect()
+            })
+        }
         _ => return (vec![], None),
     };
 
@@ -185,14 +193,14 @@ async fn fetch_children(
     }
 }
 
-fn hub_child_to_child_device(child: ChildDeviceHubResult) -> ChildDevice {
+fn hub_child_to_child_device(child: ChildDeviceHubIrResult) -> ChildDevice {
     let mut get_capabilities = vec![GetCapability::DeviceInfo];
     match &child {
-        ChildDeviceHubResult::S200(_)
-        | ChildDeviceHubResult::T100(_)
-        | ChildDeviceHubResult::T110(_)
-        | ChildDeviceHubResult::T300(_) => get_capabilities.push(GetCapability::TriggerLogs),
-        ChildDeviceHubResult::T31X(_) => {
+        ChildDeviceHubIrResult::S200(_)
+        | ChildDeviceHubIrResult::T100(_)
+        | ChildDeviceHubIrResult::T110(_)
+        | ChildDeviceHubIrResult::T300(_) => get_capabilities.push(GetCapability::TriggerLogs),
+        ChildDeviceHubIrResult::T31X(_) => {
             get_capabilities.push(GetCapability::TemperatureHumidityRecords)
         }
         _ => {}

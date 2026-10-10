@@ -97,26 +97,26 @@
 &#x2705; - Rust and Python\
 (d) - Requires the `debug` feature flag (enabled by default in `tapo-py`)
 
-| Feature<br/><br/>                   | H100<br/><br/> | H200<br/>H500 |
-| ----------------------------------- | :------------- | :------------ |
-| device_reboot                       | &#x2705;       |               |
-| device_reset                        | &#x2705;       |               |
-| download_recording                  |                | &#x2705;      |
-| get_child_device_component_list (d) | &#x2705;       | &#x2705;      |
-| get_child_device_list               | &#x2705;       | &#x2705;      |
-| get_child_device_list_json (d)      | &#x2705;       | &#x2705;      |
-| get_component_list (d)              | &#x2705;       | &#x2705;      |
-| get_device_info                     | &#x2705;       | &#x2705;      |
-| get_device_info_json (d)            | &#x2705;       | &#x2705;      |
-| get_general_device_list             |                | &#x2705;      |
-| get_general_device_list_json (d)    |                | &#x2705;      |
-| get_recording_dates                 |                | &#x2705;      |
-| get_recordings                      |                | &#x2705;      |
-| get_supported_ringtone_list (d)     | &#x2705;       |               |
-| get_timezone                        |                | &#x2705;      |
-| play_alarm                          | &#x2705;       |               |
-| refresh_session                     | &#x2705;       | &#x2705;      |
-| stop_alarm                          | &#x2705;       |               |
+| Feature<br/><br/>                   | H100<br/>H110 | H200<br/>H500 |
+| ----------------------------------- | :------------ | :------------ |
+| device_reboot                       | &#x2705;      |               |
+| device_reset                        | &#x2705;      |               |
+| download_recording                  |               | &#x2705;      |
+| get_child_device_component_list (d) | &#x2705;      | &#x2705;      |
+| get_child_device_list               | &#x2705;      | &#x2705;      |
+| get_child_device_list_json (d)      | &#x2705;      | &#x2705;      |
+| get_component_list (d)              | &#x2705;      | &#x2705;      |
+| get_device_info                     | &#x2705;      | &#x2705;      |
+| get_device_info_json (d)            | &#x2705;      | &#x2705;      |
+| get_general_device_list             |               | &#x2705;      |
+| get_general_device_list_json (d)    |               | &#x2705;      |
+| get_recording_dates                 |               | &#x2705;      |
+| get_recordings                      |               | &#x2705;      |
+| get_supported_ringtone_list (d)     | &#x2705;      |               |
+| get_timezone                        |               | &#x2705;      |
+| play_alarm                          | &#x2705;      |               |
+| refresh_session                     | &#x2705;      | &#x2705;      |
+| stop_alarm                          | &#x2705;      |               |
 
 ## Hub Child Devices
 
@@ -124,21 +124,22 @@
 &#x2705; - Rust and Python\
 (d) - Requires the `debug` feature flag (enabled by default in `tapo-py`)
 
-| Feature<br/><br/>                | KE100<br/><br/> | S200B<br/>S200D | S210<br/><br/> | T100<br/><br/> | T110<br/><br/> | T300<br/><br/> | T310<br/>T315 |
-| -------------------------------- | :-------------- | :-------------- | :------------- | :------------- | :------------- | :------------- | :------------ |
-| get_component_list (d)           | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
-| get_device_info \*               | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
-| get_device_info_json (d)         | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
-| get_device_usage                 |                 |                 | &#x2705;       |                |                |                |               |
-| get_temperature_humidity_records |                 |                 |                |                |                |                | &#x2705;      |
-| get_trigger_logs                 |                 | &#x2705;        |                | &#x2705;       | &#x2705;       | &#x2705;       |               |
-| off                              |                 |                 | &#x2705;       |                |                |                |               |
-| on                               |                 |                 | &#x2705;       |                |                |                |               |
-| set_child_protection             | &#x2705;        |                 |                |                |                |                |               |
-| set_frost_protection             | &#x2705;        |                 |                |                |                |                |               |
-| set_max_control_temperature      | &#x2705;        |                 |                |                |                |                |               |
-| set_min_control_temperature      | &#x2705;        |                 |                |                |                |                |               |
-| set_target_temperature           | &#x2705;        |                 |                |                |                |                |               |
-| set_temperature_offset           | &#x2705;        |                 |                |                |                |                |               |
+| Feature<br/><br/>                | IR Remote<br/><br/> | KE100<br/><br/> | S200B<br/>S200D | S210<br/><br/> | T100<br/><br/> | T110<br/><br/> | T300<br/><br/> | T310<br/>T315 |
+| -------------------------------- | :------------------ | :-------------- | :-------------- | :------------- | :------------- | :------------- | :------------- | :------------ |
+| get_component_list (d)           | &#x2705;            | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
+| get_device_info \*               | &#x2705;            | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
+| get_device_info_json (d)         | &#x2705;            | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
+| get_device_usage                 |                     |                 |                 | &#x2705;       |                |                |                |               |
+| get_temperature_humidity_records |                     |                 |                 |                |                |                |                | &#x2705;      |
+| get_trigger_logs                 |                     |                 | &#x2705;        |                | &#x2705;       | &#x2705;       | &#x2705;       |               |
+| off                              |                     |                 |                 | &#x2705;       |                |                |                |               |
+| on                               |                     |                 |                 | &#x2705;       |                |                |                |               |
+| send_ir_cmd_by_id                | &#x2705;            |                 |                 |                |                |                |                |               |
+| set_child_protection             |                     | &#x2705;        |                 |                |                |                |                |               |
+| set_frost_protection             |                     | &#x2705;        |                 |                |                |                |                |               |
+| set_max_control_temperature      |                     | &#x2705;        |                 |                |                |                |                |               |
+| set_min_control_temperature      |                     | &#x2705;        |                 |                |                |                |                |               |
+| set_target_temperature           |                     | &#x2705;        |                 |                |                |                |                |               |
+| set_temperature_offset           |                     | &#x2705;        |                 |                |                |                |                |               |
 
-\* Obtained by calling `get_child_device_list` on the hub (H100, H200, H500) or `get_device_info` on a child device handler.
+\* Obtained by calling `get_child_device_list` on the hub (H100, H110, H200, H500) or `get_device_info` on a child device handler.

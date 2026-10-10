@@ -40,7 +40,7 @@ use super::protocol::media_stream;
 use super::protocol::media_stream::download::DownloadRequest;
 use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
 use super::{
-    CameraHubHandler, CameraPtzHandler, ColorLightHandler, HubHandler, LightHandler,
+    CameraHubHandler, CameraPtzHandler, ColorLightHandler, HubHandler, HubIrHandler, LightHandler,
     PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
     RgbLightStripHandler, RgbicLightStripHandler,
 };
@@ -739,6 +739,37 @@ impl ApiClient {
             .await?;
 
         Ok(HubHandler::new(Arc::new(RwLock::new(self))))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`HubIrHandler`].
+    ///
+    /// In addition to the sensors that the H100 supports, the H110 can have IR remotes
+    /// as child devices, which are handled by [`IrRemoteHandler`](crate::IrRemoteHandler).
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .h110("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let child_device_list = device.get_child_device_list().await?;
+    /// println!("Child device list: {child_device_list:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn h110(mut self, ip_address: impl Into<String>) -> Result<HubIrHandler, Error> {
+        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
+            .await?;
+
+        Ok(HubIrHandler::new(Arc::new(RwLock::new(self))))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraHubHandler`].

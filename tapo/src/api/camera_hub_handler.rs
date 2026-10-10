@@ -326,6 +326,7 @@ impl CameraHubHandler {
 
 hub_child_handlers!(
     CameraHubHandler,
+    ChildDeviceHubResult,
     "h200",
     child_device_list_note = "Cameras paired to the hub are not included; use \
         [`CameraHubHandler::get_general_device_list`] for those.",

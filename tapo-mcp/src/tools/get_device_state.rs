@@ -1,7 +1,7 @@
 use rmcp::ErrorData as McpError;
 use rmcp::model::{CallToolResult, ContentBlock};
 use tapo::DiscoveryResult;
-use tapo::responses::ChildDeviceHubResult;
+use tapo::responses::ChildDeviceHubIrResult;
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
@@ -65,6 +65,7 @@ async fn get_device_info(checked: CheckedDevice) -> Result<serde_json::Value, Ta
                 Ok(serde_json::to_value(&*device_info)?)
             }
             DiscoveryResult::Hub { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
+            DiscoveryResult::HubIr { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
             DiscoveryResult::CameraHub { device_info, .. } => {
                 Ok(serde_json::to_value(&*device_info)?)
             }
@@ -110,6 +111,7 @@ async fn get_trigger_logs(
         ($constructor:ident) => {{
             let h = match hub {
                 HubParent::Hub(hub) => hub.$constructor(child_id),
+                HubParent::HubIr(hub) => hub.$constructor(child_id),
                 HubParent::CameraHub(hub) => hub.$constructor(child_id),
             };
             Ok(serde_json::to_value(
@@ -119,10 +121,10 @@ async fn get_trigger_logs(
     }
 
     match child {
-        ChildDeviceHubResult::S200(_) => trigger_logs!(s200_unchecked),
-        ChildDeviceHubResult::T100(_) => trigger_logs!(t100_unchecked),
-        ChildDeviceHubResult::T110(_) => trigger_logs!(t110_unchecked),
-        ChildDeviceHubResult::T300(_) => trigger_logs!(t300_unchecked),
+        ChildDeviceHubIrResult::S200(_) => trigger_logs!(s200_unchecked),
+        ChildDeviceHubIrResult::T100(_) => trigger_logs!(t100_unchecked),
+        ChildDeviceHubIrResult::T110(_) => trigger_logs!(t110_unchecked),
+        ChildDeviceHubIrResult::T300(_) => trigger_logs!(t300_unchecked),
         _ => Err(TapoMcpError::WrongDeviceType {
             id: id.to_string(),
             capability: "TriggerLogs".to_string(),
@@ -149,9 +151,10 @@ async fn get_temperature_humidity_records(
     };
 
     match child {
-        ChildDeviceHubResult::T31X(_) => {
+        ChildDeviceHubIrResult::T31X(_) => {
             let h = match hub {
                 HubParent::Hub(hub) => hub.t31x_unchecked(child_id),
+                HubParent::HubIr(hub) => hub.t31x_unchecked(child_id),
                 HubParent::CameraHub(hub) => hub.t31x_unchecked(child_id),
             };
             Ok(serde_json::to_value(
