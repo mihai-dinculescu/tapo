@@ -67,18 +67,19 @@ Devices and child devices expose separate lists of set and get capabilities they
 
 All configuration is via environment variables prefixed with `TAPO_MCP_`:
 
-| Variable                     | Required | Default          | Description                                                                                                                     |
-| ---------------------------- | -------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `TAPO_MCP_USERNAME`          | Yes      | —                | Tapo account email                                                                                                              |
-| `TAPO_MCP_PASSWORD`          | Yes      | —                | Tapo account password                                                                                                           |
-| `TAPO_MCP_CAMERA_USERNAME`   | No       | —                | Camera account username[^camera]. Required by `take_snapshot`.                                                                  |
-| `TAPO_MCP_CAMERA_PASSWORD`   | No       | —                | Camera account password[^camera]. Required by `take_snapshot`.                                                                  |
-| `TAPO_MCP_DISCOVERY_TARGET`  | Yes      | —                | Network target for device discovery (e.g. `192.168.1.255`)                                                                      |
-| `TAPO_MCP_HTTP_ADDR`         | No       | `127.0.0.1:3000` | Address the server listens on                                                                                                   |
-| `TAPO_MCP_DISCOVERY_TIMEOUT` | No       | `5`              | Discovery timeout in seconds                                                                                                    |
-| `TAPO_MCP_API_KEY`           | No       | —                | Bearer token for HTTP authentication (see below)                                                                                |
-| `TAPO_MCP_ALLOWED_HOSTS`     | No       | loopback only    | Comma-separated `Host` header allowlist (see Network exposure)                                                                  |
-| `TAPO_MCP_PUBLIC_URL`        | No       | —                | Base URL clients reach the server at (e.g. `https://tapo.example.com`). Enables short-lived snapshot links (see Snapshot links) |
+| Variable                      | Required | Default          | Description                                                                                                                     |
+| ----------------------------- | -------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `TAPO_MCP_USERNAME`           | Yes      | —                | Tapo account email                                                                                                              |
+| `TAPO_MCP_PASSWORD`           | Yes      | —                | Tapo account password                                                                                                           |
+| `TAPO_MCP_CAMERA_USERNAME`    | No       | —                | Camera account username[^camera]. Required by `take_snapshot`.                                                                  |
+| `TAPO_MCP_CAMERA_PASSWORD`    | No       | —                | Camera account password[^camera]. Required by `take_snapshot`.                                                                  |
+| `TAPO_MCP_DISCOVERY_TARGET`   | Yes      | —                | Network target for device discovery (e.g. `192.168.1.255`)                                                                      |
+| `TAPO_MCP_HTTP_ADDR`          | No       | `127.0.0.1:3000` | Address the server listens on                                                                                                   |
+| `TAPO_MCP_DISCOVERY_TIMEOUT`  | No       | `5`              | Discovery timeout in seconds. Must be between `1` and `60`                                                                       |
+| `TAPO_MCP_DISCOVERY_INTERVAL` | No       | `600`            | Seconds between background discoveries that refresh the device list. Must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most `86400` (one day) |
+| `TAPO_MCP_API_KEY`            | No       | —                | Bearer token for HTTP authentication (see below)                                                                                |
+| `TAPO_MCP_ALLOWED_HOSTS`      | No       | loopback only    | Comma-separated `Host` header allowlist (see Network exposure)                                                                  |
+| `TAPO_MCP_PUBLIC_URL`         | No       | —                | Base URL clients reach the server at (e.g. `https://tapo.example.com`). Enables short-lived snapshot links (see Snapshot links) |
 
 [^camera]: Set on each camera in the Tapo app under Camera Settings > Advanced Settings > Camera Account. Distinct from your TP-Link cloud account.
 

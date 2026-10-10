@@ -40,6 +40,9 @@ pub enum TapoMcpError {
 
     #[error("Capability '{capability}' must be invoked via the dedicated `{tool}` tool")]
     WrongTool { capability: String, tool: String },
+
+    #[error("Device discovery unavailable: {reason}")]
+    DiscoveryUnavailable { reason: String },
 }
 
 impl From<TapoMcpError> for McpError {
@@ -58,6 +61,7 @@ impl From<TapoMcpError> for McpError {
             TapoMcpError::WrongDeviceType { .. } => McpError::invalid_params(message, data),
             TapoMcpError::CameraCredentialsMissing => McpError::invalid_params(message, data),
             TapoMcpError::WrongTool { .. } => McpError::invalid_params(message, data),
+            TapoMcpError::DiscoveryUnavailable { .. } => McpError::internal_error(message, data),
         }
     }
 }
@@ -72,7 +76,7 @@ impl From<TapoMcpError> for McpError {
 /// A cause whose text is already part of the message so far is skipped, since
 /// some errors (e.g. `tapo::DiscoveryError`) embed their source in their own
 /// `Display` output.
-fn error_message(err: &(dyn std::error::Error + 'static)) -> String {
+pub(crate) fn error_message(err: &(dyn std::error::Error + 'static)) -> String {
     anyhow::Chain::new(err)
         .map(ToString::to_string)
         .fold(String::new(), |mut message, cause| {

@@ -12,6 +12,7 @@ use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, Stream
 use rmcp::{ErrorData as McpError, ServerHandler, tool, tool_handler, tool_router};
 
 use crate::config::AppConfig;
+use crate::discovery::DeviceCache;
 use crate::models::{
     CheckDeviceParams, ControlDeviceParams, GetDeviceStateParams, TakeSnapshotParams,
 };
@@ -22,13 +23,22 @@ use crate::tools;
 #[derive(Clone)]
 pub struct TapoMcp {
     config: Arc<AppConfig>,
+    devices: Arc<DeviceCache>,
     snapshots: Arc<SnapshotStore>,
 }
 
 #[tool_router]
 impl TapoMcp {
-    pub(crate) fn new(config: Arc<AppConfig>, snapshots: Arc<SnapshotStore>) -> Self {
-        Self { config, snapshots }
+    pub(crate) fn new(
+        config: Arc<AppConfig>,
+        devices: Arc<DeviceCache>,
+        snapshots: Arc<SnapshotStore>,
+    ) -> Self {
+        Self {
+            config,
+            devices,
+            snapshots,
+        }
     }
 
     #[tool(
@@ -80,7 +90,7 @@ impl TapoMcp {
     }
 
     #[tool(
-        description = "List available Tapo devices. Prefer reading the `tapo://devices` resource instead if your client supports resources.",
+        description = "List available Tapo devices. The list is refreshed periodically in the background. If a device the user expects is missing, it may have joined after `discovered_at` and will appear after the next refresh. Prefer reading the `tapo://devices` resource instead if your client supports resources.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -89,7 +99,7 @@ impl TapoMcp {
         )
     )]
     async fn list_devices(&self) -> Result<CallToolResult, McpError> {
-        tools::list_devices(&self.config).await
+        tools::list_devices(&self.devices)
     }
 
     #[tool(
@@ -143,9 +153,7 @@ impl ServerHandler for TapoMcp {
         _context: RequestContext<RoleServer>,
     ) -> Result<ReadResourceResponse, McpError> {
         match request.uri.as_str() {
-            resources::DEVICES_RESOURCE_URI => {
-                Ok(resources::read_devices(&self.config).await?.into())
-            }
+            resources::DEVICES_RESOURCE_URI => Ok(resources::read_devices(&self.devices)?.into()),
             _ => Err(McpError::resource_not_found(
                 "Unknown resource URI",
                 Some(serde_json::json!({ "uri": request.uri })),
@@ -156,6 +164,7 @@ impl ServerHandler for TapoMcp {
 
 pub fn new_service(
     app_config: Arc<AppConfig>,
+    devices: Arc<DeviceCache>,
     snapshots: Arc<SnapshotStore>,
 ) -> StreamableHttpService<TapoMcp, LocalSessionManager> {
     let session_manager = Arc::new(LocalSessionManager::default());
@@ -170,6 +179,7 @@ pub fn new_service(
         move || {
             Ok(TapoMcp::new(
                 Arc::clone(&app_config),
+                Arc::clone(&devices),
                 Arc::clone(&snapshots),
             ))
         },

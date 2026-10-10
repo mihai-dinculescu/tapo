@@ -1,6 +1,8 @@
+use chrono::Utc;
 use tapo::responses::ChildDeviceHubResult;
 use tapo::{ApiClient, DiscoveryResult, StreamExt as _};
 use tokio::task::JoinSet;
+use tracing::Instrument as _;
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
@@ -16,6 +18,7 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
         "Discovering devices",
     );
 
+    let discovered_at = Utc::now();
     let api_client = ApiClient::new(config.username.clone(), config.password.clone());
     let mut discovery = api_client
         .discover_devices(config.discovery_target.clone(), config.discovery_timeout)
@@ -27,7 +30,7 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
     while let Some(discovery_result) = discovery.next().await {
         match discovery_result {
             Ok(device) => {
-                joinset.spawn(process_device(device));
+                joinset.spawn(process_device(device).in_current_span());
             }
             Err(err) => {
                 tracing::warn!(%err, "Error discovering device");
@@ -61,9 +64,11 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
     tracing::info!("Discovery complete");
 
     Ok(DevicesList {
+        discovered_at,
         devices,
         unsupported,
         errors,
+        refresh_error: None,
     })
 }
 

@@ -5,14 +5,20 @@ use serde::de;
 use serde::{Deserialize, Serialize};
 use tapo::requests::Color;
 
-#[derive(Debug, Deserialize, Serialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct DevicesList {
+    /// When the discovery that produced this list started.
+    pub discovered_at: DateTime<Utc>,
     /// Supported devices found on the network.
     pub devices: Vec<Device>,
     /// Devices that are currently unsupported.
     pub unsupported: Vec<UnsupportedDevice>,
     /// Errors encountered during discovery.
     pub errors: Vec<DiscoveryError>,
+    /// Why the most recent background discovery failed, if it did. The devices are then
+    /// the ones from the last successful discovery, at `discovered_at`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub refresh_error: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
@@ -37,7 +43,7 @@ pub enum GetCapability {
     TriggerLogs,
 }
 
-#[derive(Debug, Deserialize, Serialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct Device {
     /// Unique device identifier.
     pub id: String,
@@ -55,7 +61,7 @@ pub struct Device {
     pub children: Vec<ChildDevice>,
 }
 
-#[derive(Debug, Deserialize, Serialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct ChildDevice {
     /// Unique child device identifier.
     pub id: String,
@@ -69,7 +75,7 @@ pub struct ChildDevice {
     pub get_capabilities: Vec<GetCapability>,
 }
 
-#[derive(Debug, Deserialize, Serialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct UnsupportedDevice {
     /// Device IP address on the local network.
     pub ip: String,
@@ -77,7 +83,7 @@ pub struct UnsupportedDevice {
     pub model: String,
 }
 
-#[derive(Debug, Deserialize, Serialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct DiscoveryError {
     /// IP address of the device that encountered the error.
     pub ip: String,

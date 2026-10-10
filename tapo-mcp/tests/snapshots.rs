@@ -20,6 +20,7 @@ fn test_config(api_key: Option<&str>, public_url: Option<&str>) -> AppConfig {
         camera_password: None,
         discovery_target: "192.168.1.255".to_string(),
         discovery_timeout: 1,
+        discovery_interval: 600,
         api_key: api_key.map(String::from),
         allowed_hosts: vec![],
         public_url: public_url.map(String::from),
@@ -39,7 +40,7 @@ async fn get(config: AppConfig, store: Arc<SnapshotStore>, path: &str) -> Respon
         .header("Host", "localhost")
         .body(Body::empty())
         .unwrap();
-    tapo_mcp::router(config, store)
+    tapo_mcp::router(config.into(), Default::default(), store)
         .oneshot(request)
         .await
         .unwrap()
@@ -65,7 +66,7 @@ async fn mcp_endpoint_still_requires_bearer_token() {
         .header("Accept", "application/json, text/event-stream")
         .body(Body::from(MCP_INITIALIZE))
         .unwrap();
-    let response = tapo_mcp::router(config, store)
+    let response = tapo_mcp::router(config.into(), Default::default(), store)
         .oneshot(request)
         .await
         .unwrap();

@@ -21,10 +21,15 @@ file. This change log follows the conventions of
 ### Added
 
 - `take_snapshot`: when `TAPO_MCP_PUBLIC_URL` is set, the result also carries a link to the image that stays valid for 5 minutes, so an agent can share it with the user or download the file.
+- `list_devices`, `tapo://devices`: the result now includes `discovered_at`, the time the discovery that produced the list started.
+- `list_devices`, `tapo://devices`: the result now includes `refresh_error` when the most recent background discovery failed. The devices are then the ones from the last successful discovery, at `discovered_at`.
+- `TAPO_MCP_DISCOVERY_INTERVAL`: added the number of seconds between background discoveries that refresh the device list. Defaults to 600 and must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most 86400 (one day).
 
 ### Changed
 
 - `take_snapshot`: the result now includes the device id, capture time and size as text alongside the image.
+- `list_devices`, `tapo://devices`: now return the device list from the most recent background discovery immediately, instead of waiting for a new discovery on every call. Until a discovery has succeeded, they return a "device discovery unavailable" error, which gives the reason when discovery failed.
+- `TAPO_MCP_DISCOVERY_TIMEOUT`: a value outside 1 to 60 now stops the server at startup with an error naming the setting, instead of making every device listing fail.
 
 ## [MCP v0.5.3][tapo-mcp-v0.5.3] - 2026-10-04
 

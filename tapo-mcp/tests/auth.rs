@@ -15,6 +15,7 @@ fn test_config(api_key: Option<&str>) -> AppConfig {
         camera_password: None,
         discovery_target: "192.168.1.255".to_string(),
         discovery_timeout: 1,
+        discovery_interval: 600,
         api_key: api_key.map(String::from),
         allowed_hosts: vec![],
         public_url: None,
@@ -41,7 +42,11 @@ fn mcp_request_with_host(authorization: Option<&str>, host: &str) -> Request {
 }
 
 async fn status(api_key: Option<&str>, authorization: Option<&str>) -> StatusCode {
-    let app = tapo_mcp::router(test_config(api_key), Default::default());
+    let app = tapo_mcp::router(
+        test_config(api_key).into(),
+        Default::default(),
+        Default::default(),
+    );
     app.oneshot(mcp_request(authorization))
         .await
         .unwrap()
@@ -103,7 +108,11 @@ async fn rejects_no_space_after_scheme() {
 
 #[tokio::test]
 async fn unauthorized_includes_www_authenticate_header() {
-    let app = tapo_mcp::router(test_config(Some("test-key")), Default::default());
+    let app = tapo_mcp::router(
+        test_config(Some("test-key")).into(),
+        Default::default(),
+        Default::default(),
+    );
     let response = app.oneshot(mcp_request(None)).await.unwrap();
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
     assert_eq!(
@@ -114,7 +123,11 @@ async fn unauthorized_includes_www_authenticate_header() {
 
 #[tokio::test]
 async fn rejects_foreign_host_header() {
-    let app = tapo_mcp::router(test_config(None), Default::default());
+    let app = tapo_mcp::router(
+        test_config(None).into(),
+        Default::default(),
+        Default::default(),
+    );
     let request = mcp_request_with_host(None, "attacker.example:3000");
     let response = app.oneshot(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::FORBIDDEN);
@@ -122,7 +135,11 @@ async fn rejects_foreign_host_header() {
 
 #[tokio::test]
 async fn allows_loopback_host_header() {
-    let app = tapo_mcp::router(test_config(None), Default::default());
+    let app = tapo_mcp::router(
+        test_config(None).into(),
+        Default::default(),
+        Default::default(),
+    );
     let request = mcp_request_with_host(None, "127.0.0.1:3000");
     let response = app.oneshot(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);

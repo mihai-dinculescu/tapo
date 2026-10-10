@@ -50,11 +50,19 @@
         },
         {
           "name": "TAPO_MCP_DISCOVERY_TIMEOUT",
-          "description": "Device discovery timeout in seconds",
+          "description": "Device discovery timeout in seconds; must be between 1 and 60",
           "isRequired": false,
           "isSecret": false,
           "format": "number",
           "default": "5"
+        },
+        {
+          "name": "TAPO_MCP_DISCOVERY_INTERVAL",
+          "description": "Seconds between background device discoveries that refresh the device list; must be at least TAPO_MCP_DISCOVERY_TIMEOUT and at most 86400 (one day)",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "number",
+          "default": "600"
         },
         {
           "name": "OTEL_EXPORTER_OTLP_ENDPOINT",

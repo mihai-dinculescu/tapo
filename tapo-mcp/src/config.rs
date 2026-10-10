@@ -4,6 +4,9 @@ use url::Url;
 const ENV_PREFIX: &str = "TAPO_MCP";
 const DEFAULT_HTTP_ADDR: &str = "127.0.0.1:3000";
 const DEFAULT_DISCOVERY_TIMEOUT: u64 = 5;
+const DEFAULT_DISCOVERY_INTERVAL: u64 = 600;
+/// One day. Keeps the interval far below the point where tokio's `Instant + period` overflows.
+const MAX_DISCOVERY_INTERVAL: u64 = 86_400;
 
 #[derive(Clone, Deserialize)]
 pub struct AppConfig {
@@ -18,6 +21,9 @@ pub struct AppConfig {
     pub discovery_target: String,
     #[serde(default = "AppConfig::default_discovery_timeout")]
     pub discovery_timeout: u64,
+    /// Seconds between background discovery runs that refresh the device list.
+    #[serde(default = "AppConfig::default_discovery_interval")]
+    pub discovery_interval: u64,
     #[serde(default)]
     pub api_key: Option<String>,
     /// Hostnames or `host:port` authorities accepted in the inbound `Host`
@@ -47,6 +53,7 @@ impl std::fmt::Debug for AppConfig {
             )
             .field("discovery_target", &self.discovery_target)
             .field("discovery_timeout", &self.discovery_timeout)
+            .field("discovery_interval", &self.discovery_interval)
             .field("api_key", &self.api_key.as_ref().map(|_| "[redacted]"))
             .field("allowed_hosts", &self.allowed_hosts)
             .field("public_url", &self.public_url)
@@ -61,6 +68,10 @@ impl AppConfig {
 
     fn default_discovery_timeout() -> u64 {
         DEFAULT_DISCOVERY_TIMEOUT
+    }
+
+    fn default_discovery_interval() -> u64 {
+        DEFAULT_DISCOVERY_INTERVAL
     }
 
     pub fn from_env() -> Result<Self, config::ConfigError> {
@@ -116,6 +127,8 @@ impl AppConfig {
             .map(|v| Self::normalize_public_url(&v))
             .transpose()?;
 
+        config.validate_discovery_timeout()?;
+        config.validate_discovery_interval()?;
         config.validate_binding_security()?;
 
         Ok(config)
@@ -181,6 +194,36 @@ impl AppConfig {
                 .unwrap_or(false)
     }
 
+    /// Refuses a timeout outside the range `ApiClient::discover_devices` accepts, which
+    /// would otherwise only surface as a failure of every background discovery.
+    fn validate_discovery_timeout(&self) -> Result<(), config::ConfigError> {
+        if (1..=60).contains(&self.discovery_timeout) {
+            return Ok(());
+        }
+
+        Err(config::ConfigError::Message(format!(
+            "{ENV_PREFIX}_DISCOVERY_TIMEOUT must be between 1 and 60, got {}",
+            self.discovery_timeout
+        )))
+    }
+
+    /// Refuses a refresh interval shorter than one discovery run, or longer than a day.
+    /// Zero is rejected because `tokio::time::interval` panics on a zero period, and very
+    /// large values because computing the next tick overflows `Instant` and panics.
+    fn validate_discovery_interval(&self) -> Result<(), config::ConfigError> {
+        if self.discovery_interval > 0
+            && self.discovery_interval >= self.discovery_timeout
+            && self.discovery_interval <= MAX_DISCOVERY_INTERVAL
+        {
+            return Ok(());
+        }
+
+        Err(config::ConfigError::Message(format!(
+            "{ENV_PREFIX}_DISCOVERY_INTERVAL must be greater than 0, at least {ENV_PREFIX}_DISCOVERY_TIMEOUT ({}s) and at most {MAX_DISCOVERY_INTERVAL}, got {}",
+            self.discovery_timeout, self.discovery_interval
+        )))
+    }
+
     /// Refuses a network-exposed bind that has no access control, so the
     /// documented deployment cannot silently run unauthenticated.
     fn validate_binding_security(&self) -> Result<(), config::ConfigError> {
@@ -218,6 +261,7 @@ mod tests {
             "TAPO_MCP_DISCOVERY_TARGET",
             "TAPO_MCP_HTTP_ADDR",
             "TAPO_MCP_DISCOVERY_TIMEOUT",
+            "TAPO_MCP_DISCOVERY_INTERVAL",
             "TAPO_MCP_API_KEY",
             "TAPO_MCP_ALLOWED_HOSTS",
             "TAPO_MCP_PUBLIC_URL",
@@ -304,6 +348,7 @@ mod tests {
             camera_password: Some("cam-very-secret".to_string()),
             discovery_target: "192.168.1.255".to_string(),
             discovery_timeout: 5,
+            discovery_interval: 600,
             api_key: Some("my-api-key".to_string()),
             allowed_hosts: vec![],
             public_url: None,
@@ -578,6 +623,73 @@ mod tests {
         assert!(AppConfig::from_env().is_ok());
     }
 
+    #[test]
+    fn zero_discovery_interval_is_rejected() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_DISCOVERY_INTERVAL", "0");
+        }
+
+        let err = AppConfig::from_env().unwrap_err().to_string();
+        assert!(
+            err.contains("TAPO_MCP_DISCOVERY_INTERVAL"),
+            "should refuse a zero interval: {err}"
+        );
+    }
+
+    #[test]
+    fn discovery_timeout_out_of_range_is_rejected() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        for timeout in ["0", "61"] {
+            unsafe {
+                clear_tapo_env();
+                set_required_env();
+                std::env::set_var("TAPO_MCP_DISCOVERY_TIMEOUT", timeout);
+            }
+
+            let err = AppConfig::from_env().unwrap_err().to_string();
+            assert!(
+                err.contains("TAPO_MCP_DISCOVERY_TIMEOUT"),
+                "should refuse a timeout of {timeout}: {err}"
+            );
+        }
+    }
+
+    #[test]
+    fn discovery_interval_below_timeout_is_rejected() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_DISCOVERY_TIMEOUT", "10");
+            std::env::set_var("TAPO_MCP_DISCOVERY_INTERVAL", "5");
+        }
+
+        let err = AppConfig::from_env().unwrap_err().to_string();
+        assert!(
+            err.contains("TAPO_MCP_DISCOVERY_INTERVAL"),
+            "should refuse an interval shorter than the timeout: {err}"
+        );
+    }
+
+    #[test]
+    fn discovery_interval_above_one_day_is_rejected() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_DISCOVERY_INTERVAL", "86401");
+        }
+
+        let err = AppConfig::from_env().unwrap_err().to_string();
+        assert!(
+            err.contains("TAPO_MCP_DISCOVERY_INTERVAL"),
+            "should refuse an interval longer than a day: {err}"
+        );
+    }
+
     fn config_with_addr(addr: &str) -> AppConfig {
         AppConfig {
             http_addr: addr.to_string(),
@@ -587,6 +699,7 @@ mod tests {
             camera_password: None,
             discovery_target: "192.168.1.255".to_string(),
             discovery_timeout: 5,
+            discovery_interval: 600,
             api_key: None,
             allowed_hosts: vec![],
             public_url: None,

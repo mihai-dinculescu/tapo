@@ -6,6 +6,7 @@ use tokio::sync::oneshot;
 const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(10);
 
 use tapo_mcp::config::AppConfig;
+use tapo_mcp::discovery::{DeviceCache, spawn_discovery};
 use tapo_mcp::snapshots::{SnapshotStore, spawn_pruner};
 use tapo_mcp::telemetry::init_tracing;
 
@@ -13,16 +14,19 @@ use tapo_mcp::telemetry::init_tracing;
 async fn main() -> Result<()> {
     let tracer_provider = init_tracing()?;
 
-    let app_config = AppConfig::from_env()?;
+    let app_config = Arc::new(AppConfig::from_env()?);
     let listener = tokio::net::TcpListener::bind(&app_config.http_addr).await?;
     tracing::info!(addr = %app_config.http_addr, "Tapo MCP server listening");
+
+    let devices = Arc::new(DeviceCache::default());
+    spawn_discovery(Arc::clone(&app_config), Arc::clone(&devices));
 
     let snapshots = Arc::new(SnapshotStore::default());
     if app_config.public_url.is_some() {
         spawn_pruner(Arc::clone(&snapshots));
     }
 
-    let app = tapo_mcp::router(app_config, snapshots);
+    let app = tapo_mcp::router(app_config, devices, snapshots);
 
     // Channel to notify when the signal has fired, so we can start the timeout.
     let (signal_tx, signal_rx) = oneshot::channel::<()>();
