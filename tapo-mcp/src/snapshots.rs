@@ -99,7 +99,7 @@ impl StoreInner {
     }
 }
 
-/// Spawns a task that drops expired snapshots every [`PRUNE_INTERVAL`], so they don't
+/// Spawns a task that drops expired snapshots every `PRUNE_INTERVAL`, so they don't
 /// stay in memory until the next snapshot is taken.
 pub fn spawn_pruner(store: Arc<SnapshotStore>) {
     tokio::spawn(async move {
