@@ -1,12 +1,13 @@
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
+use chrono::Utc;
 use rmcp::ErrorData as McpError;
 use rmcp::model::{CallToolResult, ContentBlock};
 use tapo::DiscoveryResult;
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
-use crate::models::{CheckDeviceParams, TakeSnapshotParams};
+use crate::models::{CheckDeviceParams, SnapshotResult, TakeSnapshotParams};
 use crate::requests;
 use crate::requests::CheckedDevice;
 
@@ -44,9 +45,16 @@ pub async fn take_snapshot(
         }
     };
 
+    let result = SnapshotResult {
+        device_id: params.id,
+        captured_at: Utc::now(),
+        content_type: snapshot.content_type.clone(),
+        size_bytes: snapshot.data.len(),
+    };
+
     let encoded = STANDARD.encode(&snapshot.data);
-    Ok(CallToolResult::success(vec![ContentBlock::image(
-        encoded,
-        snapshot.content_type,
-    )]))
+    Ok(CallToolResult::success(vec![
+        ContentBlock::json(result)?,
+        ContentBlock::image(encoded, snapshot.content_type),
+    ]))
 }

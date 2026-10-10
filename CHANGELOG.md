@@ -18,6 +18,10 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+### Changed
+
+- `take_snapshot`: the result now includes the device id, capture time and size as text alongside the image.
+
 ## [MCP v0.5.3][tapo-mcp-v0.5.3] - 2026-10-04
 
 ### Added

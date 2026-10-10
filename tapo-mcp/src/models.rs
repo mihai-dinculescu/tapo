@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use rmcp::schemars;
 use rmcp::schemars::JsonSchema;
 use serde::de;
@@ -82,6 +83,18 @@ pub struct DiscoveryError {
     pub ip: String,
     /// Error description.
     pub message: String,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+pub struct SnapshotResult {
+    /// Unique identifier of the camera the snapshot was taken from.
+    pub device_id: String,
+    /// When the snapshot was received from the camera.
+    pub captured_at: DateTime<Utc>,
+    /// MIME type of the image (e.g. "image/jpeg").
+    pub content_type: String,
+    /// Size of the image in bytes.
+    pub size_bytes: usize,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]

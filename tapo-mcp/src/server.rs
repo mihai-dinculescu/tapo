@@ -91,7 +91,7 @@ impl TapoMcp {
     }
 
     #[tool(
-        description = "Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs check_device first to verify the device ID matches at the given IP.",
+        description = "Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs check_device first to verify the device ID matches at the given IP. Returns the device id, capture time and size as text alongside the image.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
