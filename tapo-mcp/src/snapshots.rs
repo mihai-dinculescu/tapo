@@ -12,10 +12,12 @@ use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use chrono::{DateTime, Utc};
 use rand::RngExt as _;
+use tokio::time::{Instant, MissedTickBehavior};
 
 /// How long a snapshot link stays valid after the snapshot is taken.
 pub const SNAPSHOT_TTL: Duration = Duration::from_secs(300);
 const MAX_SNAPSHOTS: usize = 1024;
+const PRUNE_INTERVAL: Duration = Duration::from_secs(60);
 
 /// In-memory store of recent snapshots, keyed by an unguessable token.
 #[derive(Default)]
@@ -46,15 +48,6 @@ impl SnapshotStore {
     fn insert_at(&self, now: DateTime<Utc>, data: Vec<u8>) -> (String, DateTime<Utc>) {
         let mut inner = self.inner.lock().unwrap_or_else(|e| e.into_inner());
 
-        while inner
-            .order
-            .front()
-            .and_then(|token| inner.entries.get(token))
-            .is_some_and(|entry| entry.expires_at <= now)
-        {
-            inner.remove_oldest();
-        }
-
         if inner.order.len() >= MAX_SNAPSHOTS {
             inner.remove_oldest();
         }
@@ -70,6 +63,22 @@ impl SnapshotStore {
         );
         inner.order.push_back(token.clone());
         (token, expires_at)
+    }
+
+    /// Drops every snapshot that has expired by `now` and returns how many were dropped.
+    fn prune_expired_at(&self, now: DateTime<Utc>) -> usize {
+        let mut inner = self.inner.lock().unwrap_or_else(|e| e.into_inner());
+        let mut removed = 0;
+        while inner
+            .order
+            .front()
+            .and_then(|token| inner.entries.get(token))
+            .is_some_and(|entry| entry.expires_at <= now)
+        {
+            inner.remove_oldest();
+            removed += 1;
+        }
+        removed
     }
 
     fn get_at(&self, now: DateTime<Utc>, token: &str) -> Option<StoredSnapshot> {
@@ -90,6 +99,26 @@ impl StoreInner {
     }
 }
 
+/// Spawns a task that drops expired snapshots every [`PRUNE_INTERVAL`], so they don't
+/// stay in memory until the next snapshot is taken.
+pub fn spawn_pruner(store: Arc<SnapshotStore>) {
+    tokio::spawn(async move {
+        let mut interval =
+            tokio::time::interval_at(Instant::now() + PRUNE_INTERVAL, PRUNE_INTERVAL);
+        interval.set_missed_tick_behavior(MissedTickBehavior::Delay);
+        loop {
+            interval.tick().await;
+            let span = tracing::info_span!("prune_snapshots", removed = tracing::field::Empty);
+            let _guard = span.enter();
+            let removed = store.prune_expired_at(Utc::now());
+            span.record("removed", removed);
+            if removed > 0 {
+                tracing::debug!(removed, "Pruned expired snapshots");
+            }
+        }
+    });
+}
+
 fn generate_token() -> String {
     let bytes: [u8; 32] = rand::rng().random();
     URL_SAFE_NO_PAD.encode(bytes)
@@ -105,6 +134,7 @@ pub fn router(store: Arc<SnapshotStore>) -> Router {
         .with_state(store)
 }
 
+#[tracing::instrument(skip_all)]
 async fn get_snapshot(
     State(store): State<Arc<SnapshotStore>>,
     Path(file): Path<String>,
@@ -151,6 +181,20 @@ mod tests {
                 .is_some()
         );
         assert!(store.get_at(now + SNAPSHOT_TTL, &token).is_none());
+    }
+
+    #[test]
+    fn prune_drops_only_expired() {
+        let store = SnapshotStore::default();
+        let now = Utc::now();
+        let (first, _) = store.insert_at(now, vec![]);
+        let (second, _) = store.insert_at(now + Duration::from_secs(120), vec![]);
+
+        let prune_at = now + SNAPSHOT_TTL;
+        assert_eq!(store.prune_expired_at(prune_at), 1);
+
+        assert!(store.get_at(now, &first).is_none());
+        assert!(store.get_at(now, &second).is_some());
     }
 
     #[test]

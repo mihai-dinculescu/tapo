@@ -15,7 +15,7 @@ serde_json = { workspace = true }
 rand = { workspace = true }
 subtle = "2.6"
 thiserror = { workspace = true }
-tokio = { workspace = true, features = ["rt-multi-thread", "signal", "macros"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "signal", "macros", "time"] }
 url = "2.5"
 
 opentelemetry = "0.33"
