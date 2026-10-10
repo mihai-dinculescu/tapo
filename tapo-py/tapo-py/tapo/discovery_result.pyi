@@ -147,14 +147,15 @@ class RgbicLightStrip(DiscoveryResultExt):
 
 @dataclass
 class Plug(DiscoveryResultExt):
-    """Tapo P100 and P105 devices."""
+    """Tapo P100, P105, P125 and P125M devices."""
 
     device_info: DeviceInfoPlugResult
-    """Device info of Tapo P100 and P105."""
+    """Device info of Tapo P100, P105, P125 and P125M."""
 
     handler: PlugHandler
-    """Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
-    [P105](https://www.tapo.com/en/search/?q=P105) devices."""
+    """Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
+    [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125) and
+    [P125M](https://www.tapo.com/en/search/?q=P125M) devices."""
 
     __match_args__ = (
         "device_info",
@@ -263,7 +264,7 @@ class CameraPtz(DiscoveryResultExt):
     """Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70)."""
 
     device_info: DeviceInfoCameraResult
-    """Device info of Tapo PTZ cameras."""
+    """Device info of Tapo cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70)."""
 
     handler: CameraPtzHandler
     """Handler for Tapo cameras with PTZ, such as the

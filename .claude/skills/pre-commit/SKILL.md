@@ -50,15 +50,13 @@ Run the following checks if there are changes in the `tapo-mcp/` directory. Fix 
   - `tapo-mcp/openclaw-skill/SKILL.md` — frontmatter (`description`, `version`, `requires`), Setup, Tools section with example `npx mcporter call` invocations
   - `tapo-mcp/openclaw-skill/references/setup.md` — verification table (tool, description, parameters)
   - `tapo-mcp/openclaw-skill/references/tapo-mcp-setup.md` — Tools table, Resources table, Configuration env vars, Authentication, Deployment (kept in sync with `tapo-mcp/README.md`)
-- When device-support categories change (e.g. adding a new family like the H100 hub), verify the device-type enumeration is in sync across both surfaces that list it:
-  - `tapo-mcp/src/server.rs` `with_instructions(...)` (e.g. `"plugs, lights, power strips, hubs and their child sensors, cameras"`)
-  - `tapo-mcp/openclaw-skill/SKILL.md` frontmatter `description:` (e.g. `(lights, plugs, power strips, hubs and sensors, cameras)`)
+- The device family words in `tapo-mcp/src/server.rs` `with_instructions(...)` and the OpenClaw `description:` are checked by `/verify-device-support`, which the Rust and Python checks below run when a model or category changes
 
 ### Documentation checks
 
 Run the following checks if there are changes in the `tapo/` or `tapo-py/` directories. Fix all issues found.
 
-- Verify that `SUPPORTED_DEVICES.md` is up to date: add, remove, or regroup rows/columns when a handler's public method list changed, a device model was added/removed, or a method's `#[cfg(feature = "debug")]` gating changed
+- Run `/verify-device-support` when a device model or category was added or removed, a handler's public method list changed, or a method's `#[cfg(feature = "debug")]` gating changed. It checks `SUPPORTED_DEVICES.md`, the "Tested with" sentences, the builders, the handler and device info docs, the Python stubs, the examples and `tapo-mcp` against the code. Fix every finding it reports
 - Verify that `TROUBLESHOOTING.md` still matches the library when the change touches protocols, authentication, discovery, error types or messages, or logging. Read the whole file, not only the sections the change seems to concern:
   - **Correct**: every error message, log line, URL path, port, protocol name, and example file it quotes is what the code produces now. Grep each quoted string against `tapo/src/` and `tapo-py/` and fix the ones that drifted
   - **Relevant**: every section describes a failure a user of the current library can still hit. Rewrite or remove sections, symptoms, and solutions about behavior the change removed. Describe only current behavior, with no notes about what older versions did

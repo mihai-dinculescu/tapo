@@ -3,7 +3,7 @@ from typing import Optional
 from tapo.to_dict_ext import ToDictExt
 
 class DeviceInfoCameraResult(ToDictExt):
-    """Device info of Tapo cameras (C100, C110, C210, C220, C225, C325WB, C520WS, C720, TC40, TC65, TC70, etc.)."""
+    """Device info of Tapo cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70)."""
 
     avatar: str
     device_id: str

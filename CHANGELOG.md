@@ -8,6 +8,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- `ApiClient`: added the `p125` builder for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient::discover_devices`.
 - `HubIrHandler`: added for the H110 hub. It supports everything that `HubHandler` does, and adds `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`. Its `get_child_device_list` returns `ChildDeviceHubIrResult`.
 - `ApiClient`: added `h110`, which returns a `HubIrHandler`.
 - `DeviceType::HubIr` and `DiscoveryResult::HubIr`: `discover_devices` now finds H110 hubs and returns them with a ready-to-use `HubIrHandler`.
@@ -19,6 +20,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- `ApiClient`: added the `p125` method for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient.discover_devices`.
 - `HubIrHandler`: added for the H110 hub. It is a subclass of `HubHandler`, and adds `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`. Its `get_child_device_list` can also return `IrRemoteResult` items.
 - `ApiClient`: added `h110`, which returns a `HubIrHandler`.
 - `DeviceType.HubIr` and `DiscoveryResult.HubIr`: `discover_devices` now finds H110 hubs and returns them with a ready-to-use `HubIrHandler`.

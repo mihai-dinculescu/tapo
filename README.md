@@ -8,7 +8,7 @@
 [![PyPI][pypi_badge]][pypi]
 [![Python][pypi_versions_badge]][pypi]
 [![PyPI][pypi_downloads_badge]][pypi]\
-Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115), power strips (P300, P304M, P306, P316M), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315) and cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
+Unofficial Tapo API Client. Works with TP-Link Tapo smart devices. Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P125, P125M), power strips (P300, P304M, P306, P316M), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315) and cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
 
 [license_badge]: https://img.shields.io/crates/l/tapo.svg
 [license]: https://github.com/mihai-dinculescu/tapo/blob/main/LICENSE
@@ -119,7 +119,9 @@ A big thank you to the sponsors of this project!
 
 ## Credits
 
-Inspired by [petretiandrea/plugp100][inspired_by].
+Created and maintained by [Mihai Dinculescu][author].
+
+Inspired by [petretiandrea/plugp100][inspired_by_plugp100] and [python-kasa/python-kasa][inspired_by_kasa].
 
 [supported_devices]: https://github.com/mihai-dinculescu/tapo/blob/main/SUPPORTED_DEVICES.md
 [examples]: https://github.com/mihai-dinculescu/tapo/tree/main/tapo/examples
@@ -132,4 +134,6 @@ Inspired by [petretiandrea/plugp100][inspired_by].
 [sponsor_abler98]: https://github.com/abler98
 [sponsor_nathanja]: https://github.com/nathanja
 [sponsor_santiago_salas_v]: https://github.com/santiago-salas-v
-[inspired_by]: https://github.com/petretiandrea/plugp100
+[author]: https://mihai.dinculescu.dev
+[inspired_by_plugp100]: https://github.com/petretiandrea/plugp100
+[inspired_by_kasa]: https://github.com/python-kasa/python-kasa

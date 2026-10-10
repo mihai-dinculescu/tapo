@@ -54,12 +54,13 @@ pub enum DiscoveryResult {
         /// [L930](https://www.tapo.com/en/search/?q=L930) devices.
         handler: RgbicLightStripHandler,
     },
-    /// Tapo P100 and P105 devices.
+    /// Tapo P100, P105, P125 and P125M devices.
     Plug {
-        /// Device info of Tapo P100 and P105.
+        /// Device info of Tapo P100, P105, P125 and P125M.
         device_info: Box<DeviceInfoPlugResult>,
-        /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100) and
-        /// [P105](https://www.tapo.com/en/search/?q=P105) devices.
+        /// Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
+        /// [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125) and
+        /// [P125M](https://www.tapo.com/en/search/?q=P125M) devices.
         handler: PlugHandler,
     },
     /// Tapo P110, P110M and P115 devices.
@@ -75,7 +76,7 @@ pub enum DiscoveryResult {
     PowerStrip {
         /// Device info of Tapo P300 and P306.
         device_info: Box<DeviceInfoPowerStripResult>,
-        /// Handler for the [P300](https://www.tapo.com/en/search/?q=P300) and
+        /// Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
         /// [P306](https://www.tp-link.com/us/search/?q=P306) devices.
         handler: PowerStripHandler,
     },
@@ -111,7 +112,7 @@ pub enum DiscoveryResult {
     },
     /// Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70).
     CameraPtz {
-        /// Device info of Tapo cameras (C100, C110, C210, C220, C225, C325WB, C520WS, C720, TC40, TC65, TC70, etc.).
+        /// Device info of Tapo cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
         device_info: Box<DeviceInfoCameraResult>,
         /// Handler for Tapo cameras with PTZ, such as the
         /// [C210](https://www.tapo.com/en/search/?q=C210),
