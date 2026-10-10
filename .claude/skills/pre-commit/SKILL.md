@@ -16,10 +16,10 @@ Unless otherwise specified, run checks at the workspace level (no `-p` flags) wi
 Link-free checks (`check`, `clippy`) take `--workspace` so they cover `tapo-py` too; `cargo test` must NOT — it links test binaries and examples, which fails with `tapo-py`'s `pyo3/extension-module`, so it relies on `default-members` excluding `tapo-py`.
 
 - `cargo check --workspace --all-features`
-- `cargo clippy --workspace --all-features`
+- `cargo clippy --workspace --all-targets --all-features -- -D warnings`
 - `cargo fmt --all`
 - `cargo test --all-features`
-- `cargo clean --doc && RUSTDOCFLAGS="-D warnings" cargo doc -p tapo --no-deps --all-features`
+- `cargo clean --doc && RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --all-features`
 - No `unwrap()` in non-test code without a `// safe:` comment
 - No `unsafe` in non-test code without a `// SAFETY:` comment
 - No unnecessary clones
