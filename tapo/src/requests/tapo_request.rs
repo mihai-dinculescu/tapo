@@ -21,6 +21,7 @@ use super::SmartCamGetAppComponentListParams;
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "method")]
 pub(crate) enum TapoRequest {
+    #[cfg(feature = "debug")]
     #[serde(rename = "component_nego")]
     ComponentNegotiation(TapoParams<EmptyParams>),
     #[serde(rename = "securePassthrough")]
