@@ -107,6 +107,19 @@ Some MCP clients don't pass image results on to the model, and others show the i
 
 When `TAPO_MCP_PUBLIC_URL` is unset, no link is returned and the `/snapshots/` route is not served.
 
+## OpenTelemetry
+
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` to the full URL of an OTLP/HTTP traces endpoint, including the path (e.g. `http://alloy.monitoring:4318/v1/traces`), to export traces. `OTEL_RESOURCE_ATTRIBUTES` adds resource attributes. `RUST_LOG` (default `tapo_mcp=info`) also decides which spans are exported.
+
+What gets traced:
+
+- **Tool calls.** Each `tools/call` request gets one server span named `tools/call <tool>`, covering the whole call, following the [OpenTelemetry MCP semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/mcp.md). It carries `mcp.method.name`, `gen_ai.tool.name` (only for tools the server provides), `gen_ai.operation.name`, `jsonrpc.request.id`, `mcp.session.id` and `mcp.protocol.version`, plus `tapo.device.id` and `tapo.device.ip` where the tool takes them. A failed call has error status and `error.type` (the JSON-RPC error code, or `tool_error`). Inside it, `check_device` covers the device verification, and `get_capability`, `set_capability` or `capture_snapshot` covers the device request. `get_capability` and `set_capability` carry `tapo.capability`, and `control_device` has one `set_capability` span for each capability it applies. A failed step has error status and `error.type` set to the kind of failure, such as `DeviceNotFound` or `WrongDeviceType`.
+- **Background jobs.** `refresh_devices` for each device discovery, and `prune_snapshots` for each sweep of expired snapshot links.
+
+Credentials, the API key and image data are never recorded. Tool arguments are not recorded either, except `id` and `ip`, and a failed call's error message, which can repeat the value that was rejected.
+
+Incoming W3C trace context is honoured. When the request's `params._meta` has a `traceparent` (and optionally `tracestate`), as MCP clients that trace their calls send, the tool call span becomes its child and joins that trace. A `traceparent` header on the HTTP request that carries the call, for example from a tracing reverse proxy, is then recorded as a span link. Without `_meta` context, the HTTP header is used as the parent instead. Without either, the span starts a new trace.
+
 ## Deployment
 
 ### Docker

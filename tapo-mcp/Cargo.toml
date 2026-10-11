@@ -14,6 +14,7 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 rand = { workspace = true }
 subtle = "2.6"
+strum = { version = "0.28", features = ["derive"] }
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["rt-multi-thread", "signal", "macros", "time"] }
 url = "2.5"
@@ -28,4 +29,5 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "std"] 
 tapo = { path = "../tapo", features = ["json-schema"] }
 
 [dev-dependencies]
+opentelemetry_sdk = { version = "0.33", features = ["testing"] }
 tower = { version = "0.5", features = ["util"] }

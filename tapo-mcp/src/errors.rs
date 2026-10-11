@@ -1,7 +1,8 @@
 use rmcp::ErrorData as McpError;
+use strum::IntoStaticStr;
 use thiserror::Error;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Error, IntoStaticStr)]
 pub enum TapoMcpError {
     #[error(transparent)]
     Internal(#[from] tapo::Error),

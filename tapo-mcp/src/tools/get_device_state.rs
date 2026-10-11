@@ -2,12 +2,14 @@ use rmcp::ErrorData as McpError;
 use rmcp::model::{CallToolResult, ContentBlock};
 use tapo::DiscoveryResult;
 use tapo::responses::ChildDeviceHubResult;
+use tracing::field::Empty;
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
 use crate::models::{CheckDeviceParams, GetCapabilityRequest, GetDeviceStateParams};
 use crate::requests;
 use crate::requests::{CheckedDevice, HubParent};
+use crate::telemetry::run_in_span;
 
 pub async fn get_device_state(
     config: &AppConfig,
@@ -19,21 +21,40 @@ pub async fn get_device_state(
     };
     let checked = requests::check_device(config, check_params).await?;
 
+    let capability = params.capability.name();
+    let span = || {
+        tracing::info_span!(
+            "get_capability",
+            tapo.capability = capability,
+            otel.status_code = Empty,
+            "error.type" = Empty,
+        )
+    };
     let value = match params.capability {
-        GetCapabilityRequest::DeviceInfo => get_device_info(checked).await?,
         GetCapabilityRequest::Snapshot => {
             return Err(TapoMcpError::WrongTool {
-                capability: "Snapshot".to_string(),
+                capability: capability.to_string(),
                 tool: "take_snapshot".to_string(),
             }
             .into());
         }
+        GetCapabilityRequest::DeviceInfo => run_in_span(span(), get_device_info(checked)).await?,
         GetCapabilityRequest::TriggerLogs {
             page_size,
             start_id,
-        } => get_trigger_logs(&params.id, checked, page_size, start_id).await?,
+        } => {
+            run_in_span(
+                span(),
+                get_trigger_logs(&params.id, checked, page_size, start_id),
+            )
+            .await?
+        }
         GetCapabilityRequest::TemperatureHumidityRecords => {
-            get_temperature_humidity_records(&params.id, checked).await?
+            run_in_span(
+                span(),
+                get_temperature_humidity_records(&params.id, checked),
+            )
+            .await?
         }
     };
 

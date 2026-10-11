@@ -1,15 +1,18 @@
 use std::sync::Arc;
 
 use anyhow::Result;
+use rmcp::handler::server::tool::ToolCallContext;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
-    CallToolResult, ListResourcesResult, PaginatedRequestParams, ReadResourceRequestParams,
-    ReadResourceResponse, ServerCapabilities, ServerConfig,
+    CallToolRequestParams, CallToolResponse, CallToolResult, ListResourcesResult,
+    PaginatedRequestParams, ReadResourceRequestParams, ReadResourceResponse, ServerCapabilities,
+    ServerConfig,
 };
 use rmcp::service::{RequestContext, RoleServer};
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
 use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, StreamableHttpService};
 use rmcp::{ErrorData as McpError, ServerHandler, tool, tool_handler, tool_router};
+use tracing::Instrument as _;
 
 use crate::config::AppConfig;
 use crate::discovery::DeviceCache;
@@ -18,6 +21,7 @@ use crate::models::{
 };
 use crate::resources;
 use crate::snapshots::{SNAPSHOT_TTL, SnapshotStore};
+use crate::telemetry;
 use crate::tools;
 
 #[derive(Clone)]
@@ -136,6 +140,22 @@ impl ServerHandler for TapoMcp {
         info.server_info.version = env!("CARGO_PKG_VERSION").to_owned();
         info.server_info.title = Some("Tapo MCP Server".to_owned());
         info
+    }
+
+    // Replaces the `call_tool` that `#[tool_handler]` would generate, so every
+    // tool call runs inside one server span.
+    async fn call_tool(
+        &self,
+        request: CallToolRequestParams,
+        context: RequestContext<RoleServer>,
+    ) -> Result<CallToolResponse, McpError> {
+        let router = Self::tool_router();
+        let known_tool = router.has_route(&request.name);
+        let span = telemetry::tool_call_span(&request, known_tool, &context);
+        let tcc = ToolCallContext::new(self, request, context);
+        let result = router.call(tcc).instrument(span.clone()).await;
+        telemetry::record_tool_outcome(&span, &result);
+        result
     }
 
     async fn list_resources(

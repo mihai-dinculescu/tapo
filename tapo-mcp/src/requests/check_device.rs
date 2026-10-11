@@ -3,9 +3,12 @@ use tapo::{
     PowerStripHandler, StreamExt as _, responses::ChildDeviceHubResult,
 };
 
+use tracing::field::Empty;
+
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
 use crate::models::CheckDeviceParams;
+use crate::telemetry::run_in_span;
 
 pub enum CheckedDevice {
     Parent(DiscoveryResult),
@@ -31,6 +34,18 @@ pub enum HubParent {
 }
 
 pub async fn check_device(
+    config: &AppConfig,
+    params: CheckDeviceParams,
+) -> Result<CheckedDevice, TapoMcpError> {
+    let span = tracing::info_span!(
+        "check_device",
+        otel.status_code = Empty,
+        "error.type" = Empty,
+    );
+    run_in_span(span, find_device(config, params)).await
+}
+
+async fn find_device(
     config: &AppConfig,
     params: CheckDeviceParams,
 ) -> Result<CheckedDevice, TapoMcpError> {

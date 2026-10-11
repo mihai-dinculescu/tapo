@@ -4,13 +4,15 @@ use chrono::Utc;
 use rmcp::ErrorData as McpError;
 use rmcp::model::{CallToolResult, ContentBlock};
 use tapo::DiscoveryResult;
+use tracing::field::Empty;
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
-use crate::models::{CheckDeviceParams, SnapshotResult, TakeSnapshotParams};
+use crate::models::{CheckDeviceParams, GetCapabilityRequest, SnapshotResult, TakeSnapshotParams};
 use crate::requests;
 use crate::requests::CheckedDevice;
 use crate::snapshots::SnapshotStore;
+use crate::telemetry::run_in_span;
 
 pub async fn take_snapshot(
     config: &AppConfig,
@@ -33,14 +35,23 @@ pub async fn take_snapshot(
     let checked = requests::check_device(config, check_params).await?;
 
     let snapshot = match checked {
-        CheckedDevice::Parent(DiscoveryResult::CameraPtz { handler, .. }) => handler
-            .get_snapshot(camera_username, camera_password)
-            .await
-            .map_err(TapoMcpError::Internal)?,
+        CheckedDevice::Parent(DiscoveryResult::CameraPtz { handler, .. }) => {
+            let span = tracing::info_span!(
+                "capture_snapshot",
+                otel.status_code = Empty,
+                "error.type" = Empty,
+            );
+            run_in_span(span, async {
+                Ok(handler
+                    .get_snapshot(camera_username, camera_password)
+                    .await?)
+            })
+            .await?
+        }
         _ => {
             return Err(TapoMcpError::WrongDeviceType {
                 id: params.id,
-                capability: "Snapshot".to_string(),
+                capability: GetCapabilityRequest::Snapshot.name().to_string(),
                 expected: "a camera".to_string(),
             }
             .into());

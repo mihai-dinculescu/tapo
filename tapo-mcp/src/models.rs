@@ -3,6 +3,7 @@ use rmcp::schemars;
 use rmcp::schemars::JsonSchema;
 use serde::de;
 use serde::{Deserialize, Serialize};
+use strum::IntoStaticStr;
 use tapo::requests::Color;
 
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
@@ -116,7 +117,7 @@ pub struct CheckDeviceParams {
     pub ip: String,
 }
 
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, JsonSchema, IntoStaticStr)]
 #[serde(tag = "type")]
 pub enum SetCapabilityRequest {
     /// Set the device brightness. Also turns the device on if it's off.
@@ -137,7 +138,14 @@ pub enum SetCapabilityRequest {
     },
 }
 
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+impl SetCapabilityRequest {
+    /// The capability's name, without its value.
+    pub fn name(&self) -> &'static str {
+        self.into()
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, JsonSchema, IntoStaticStr)]
 #[serde(tag = "type")]
 pub enum GetCapabilityRequest {
     /// Read the device's current state (on/off, brightness, etc.).
@@ -160,6 +168,13 @@ pub enum GetCapabilityRequest {
         /// `page_size` logs.
         start_id: u64,
     },
+}
+
+impl GetCapabilityRequest {
+    /// The capability's name, without its parameters.
+    pub fn name(&self) -> &'static str {
+        self.into()
+    }
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -211,5 +226,53 @@ where
     match &value {
         serde_json::Value::String(s) => serde_json::from_str(s).map_err(de::Error::custom),
         _ => serde_json::from_value(value).map_err(de::Error::custom),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::mem::discriminant;
+
+    use serde_json::json;
+
+    use super::*;
+
+    /// `name()` must stay equal to the serde `type` tag that clients send.
+    #[test]
+    fn capability_names_match_serde_tags() {
+        let set_requests = [
+            SetCapabilityRequest::Brightness { value: 50 },
+            SetCapabilityRequest::Color {
+                value: Color::Daylight,
+            },
+            SetCapabilityRequest::OnOff { value: true },
+        ];
+        for request in set_requests {
+            let value = match &request {
+                SetCapabilityRequest::Brightness { .. } => json!(50),
+                SetCapabilityRequest::Color { .. } => json!("Daylight"),
+                SetCapabilityRequest::OnOff { .. } => json!(true),
+            };
+            let parsed: SetCapabilityRequest =
+                serde_json::from_value(json!({ "type": request.name(), "value": value })).unwrap();
+            assert_eq!(discriminant(&parsed), discriminant(&request));
+        }
+
+        let get_requests = [
+            GetCapabilityRequest::DeviceInfo,
+            GetCapabilityRequest::Snapshot,
+            GetCapabilityRequest::TemperatureHumidityRecords,
+            GetCapabilityRequest::TriggerLogs {
+                page_size: 10,
+                start_id: 0,
+            },
+        ];
+        for request in get_requests {
+            let parsed: GetCapabilityRequest = serde_json::from_value(
+                json!({ "type": request.name(), "page_size": 10, "start_id": 0 }),
+            )
+            .unwrap();
+            assert_eq!(discriminant(&parsed), discriminant(&request));
+        }
     }
 }
