@@ -15,7 +15,7 @@
 /// # Generated code
 ///
 /// * Struct with `inner: Arc<RwLock<Handler>>` field and `#[derive(Clone)]`
-/// * `#[pyo3::pyclass(from_py_object, name = ...)]` attribute
+/// * `#[pyo3::pyclass(from_py_object, name = ..., subclass)]` attribute
 /// * `new(handler)` constructor
 /// * `refresh_session()` method
 /// * `get_device_info()` method (typed)
@@ -24,7 +24,6 @@
 /// * `on()` and `off()` methods (if `on_off` specified)
 /// * `device_reboot()` and `device_reset()` methods (if `device_management` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
-/// * `subclass` in the `pyclass` attribute (if `subclass` specified)
 macro_rules! py_handler {
     // on_off + device_management + device_usage
     (
@@ -60,17 +59,6 @@ macro_rules! py_handler {
         py_handler!(@device_management $py_name, $handler);
     };
 
-    // device_management only, as a class that can be subclassed
-    (
-        $py_name:ident($handler:ident, $device_info:ty),
-        py_name = $pyname:literal,
-        device_management,
-        subclass,
-    ) => {
-        py_handler!(@base $py_name($handler, $device_info), $pyname, subclass);
-        py_handler!(@device_management $py_name, $handler);
-    };
-
     // No options
     (
         $py_name:ident($handler:ident, $device_info:ty),
@@ -80,9 +68,9 @@ macro_rules! py_handler {
     };
 
     // Internal: base struct + core methods + PyHandlerExt
-    (@base $py_name:ident($handler:ident, $device_info:ty), $pyname:literal $(, $pyclass_option:ident)*) => {
+    (@base $py_name:ident($handler:ident, $device_info:ty), $pyname:literal) => {
         #[derive(Clone)]
-        #[pyo3::pyclass(from_py_object, name = $pyname $(, $pyclass_option)*)]
+        #[pyo3::pyclass(from_py_object, name = $pyname, subclass)]
         pub struct $py_name {
             inner: std::sync::Arc<tokio::sync::RwLock<$handler>>,
         }

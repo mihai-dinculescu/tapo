@@ -12,7 +12,6 @@ py_handler! {
     PyHubHandler(HubHandler, DeviceInfoHubResult),
     py_name = "HubHandler",
     device_management,
-    subclass,
 }
 
 py_hub_child_handlers!(PyHubHandler, HubHandler);
