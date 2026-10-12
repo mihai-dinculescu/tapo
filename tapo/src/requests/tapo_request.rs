@@ -7,8 +7,8 @@ use super::{
     GetEnergyDataParams, GetPowerDataParams, GetScheduleRulesParams, GetTriggerLogsParams,
     LightingEffect, MultipleRequestParams, PlayAlarmParams, RemoveScheduleRulesParams,
     RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams, SegmentEffect,
-    SmartCamAddMotorPositionParams, SmartCamControlChildParams, SmartCamDeletePresetParams,
-    SmartCamGetChildDeviceListParams, SmartCamGetDeviceInfoParams,
+    SendIrCmdByIdParams, SmartCamAddMotorPositionParams, SmartCamControlChildParams,
+    SmartCamDeletePresetParams, SmartCamGetChildDeviceListParams, SmartCamGetDeviceInfoParams,
     SmartCamGetGeneralDeviceListParams, SmartCamGetPresetConfigParams, SmartCamGetTimezoneParams,
     SmartCamMotorMoveParams, SmartCamMotorMoveToPresetParams, SmartCamSearchDateWithVideoParams,
     SmartCamSearchVideoWithUtcParams,
@@ -100,17 +100,6 @@ pub(crate) enum TapoRequest {
     EditScheduleRule(TapoParams<ScheduleRuleRaw>),
     GetScheduleRules(TapoParams<GetScheduleRulesParams>),
     RemoveScheduleRules(TapoParams<RemoveScheduleRulesParams>),
-}
-
-#[derive(Debug, Serialize)]
-pub(crate) struct SendIrCmdByIdParams {
-    name: String,
-}
-
-impl SendIrCmdByIdParams {
-    pub(crate) fn new(name: impl Into<String>) -> Self {
-        Self { name: name.into() }
-    }
 }
 
 #[derive(Debug, Serialize)]

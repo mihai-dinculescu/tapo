@@ -743,9 +743,6 @@ impl ApiClient {
 
     /// Specializes the given [`ApiClient`] into an authenticated [`HubIrHandler`].
     ///
-    /// In addition to the sensors that the H100 supports, the H110 can have IR remotes
-    /// as child devices, which are handled by [`IrRemoteHandler`](crate::IrRemoteHandler).
-    ///
     /// # Arguments
     ///
     /// * `ip_address` - the IP address of the device

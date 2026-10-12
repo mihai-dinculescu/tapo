@@ -3,11 +3,11 @@ use crate::responses::{ChildDeviceHubIrResult, DeviceInfoHubResult};
 
 use super::{HubDevice, IrRemoteHandler};
 
+#[cfg(feature = "python")]
+use super::HubHandler;
+
 tapo_handler! {
     /// Handler for the [H110](https://www.tapo.com/en/search/?q=H110) devices.
-    ///
-    /// It supports everything that [`HubHandler`](crate::HubHandler) does, and also
-    /// handles the IR remotes paired with the hub through [`HubIrHandler::ir_remote`].
     HubIrHandler(DeviceInfoHubResult),
     device_management,
 }
@@ -40,7 +40,7 @@ impl HubIrHandler {
     /// let device_id = "0000000000000000000000000000000000000000".to_string();
     /// let device = hub.ir_remote(HubDevice::ByDeviceId(device_id)).await?;
     /// // Send one of the keys stored on the remote
-    /// device.send_ir_cmd_by_id("POWER").await?;
+    /// device.send_key_by_name("POWER").await?;
     /// # Ok(())
     /// # }
     /// ```
@@ -74,12 +74,8 @@ impl HubIrHandler {
 }
 
 #[cfg(feature = "python")]
-impl HubIrHandler {
-    /// Returns a [`HubHandler`](crate::HubHandler) that shares this handler's
-    /// authenticated session. `tapo-py` uses it to build the `HubHandler` base
-    /// class of the Python `HubIrHandler`.
-    #[doc(hidden)]
-    pub fn to_hub_handler(&self) -> crate::HubHandler {
-        crate::HubHandler::new(self.client.clone())
+impl From<&HubIrHandler> for HubHandler {
+    fn from(handler: &HubIrHandler) -> Self {
+        HubHandler::new(handler.client.clone())
     }
 }

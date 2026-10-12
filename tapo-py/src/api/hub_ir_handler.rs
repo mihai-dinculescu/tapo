@@ -3,8 +3,8 @@ use std::sync::Arc;
 
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use tapo::HubIrHandler;
 use tapo::responses::ChildDeviceHubIrResult;
+use tapo::{HubHandler, HubIrHandler};
 use tokio::sync::RwLock;
 
 use crate::api::{PyHubHandler, PyIrRemoteHandler};
@@ -22,7 +22,7 @@ pub struct PyHubIrHandler {
 
 impl PyHubIrHandler {
     pub fn new(handler: HubIrHandler) -> PyClassInitializer<Self> {
-        let base = PyHubHandler::new(handler.to_hub_handler());
+        let base = PyHubHandler::new(HubHandler::from(&handler));
 
         PyClassInitializer::from(base).add_subclass(Self {
             inner: Arc::new(RwLock::new(handler)),

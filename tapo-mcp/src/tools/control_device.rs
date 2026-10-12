@@ -2,12 +2,14 @@ use rmcp::ErrorData as McpError;
 use rmcp::model::CallToolResult;
 use tapo::DiscoveryResult;
 use tapo::requests::Color;
+use tracing::field::Empty;
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
 use crate::models::{CheckDeviceParams, ControlDeviceParams, SetCapabilityRequest};
 use crate::requests;
 use crate::requests::CheckedDevice;
+use crate::telemetry::run_in_span;
 
 pub async fn control_device(
     config: &AppConfig,
@@ -20,17 +22,26 @@ pub async fn control_device(
     let checked = requests::check_device(config, check_params).await?;
 
     for capability in &params.capabilities {
-        match capability {
-            SetCapabilityRequest::Brightness { value } => {
-                apply_brightness(&params.id, &checked, *value).await?
+        let span = tracing::info_span!(
+            "set_capability",
+            tapo.capability = capability.name(),
+            otel.status_code = Empty,
+            "error.type" = Empty,
+        );
+        run_in_span(span, async {
+            match capability {
+                SetCapabilityRequest::Brightness { value } => {
+                    apply_brightness(&params.id, &checked, *value).await
+                }
+                SetCapabilityRequest::Color { value } => {
+                    apply_color(&params.id, &checked, value.clone()).await
+                }
+                SetCapabilityRequest::OnOff { value } => {
+                    apply_on_off(&params.id, &checked, *value).await
+                }
             }
-            SetCapabilityRequest::Color { value } => {
-                apply_color(&params.id, &checked, value.clone()).await?
-            }
-            SetCapabilityRequest::OnOff { value } => {
-                apply_on_off(&params.id, &checked, *value).await?
-            }
-        }
+        })
+        .await?;
     }
 
     Ok(CallToolResult::success(vec![]))

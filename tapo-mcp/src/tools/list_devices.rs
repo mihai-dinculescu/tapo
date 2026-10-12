@@ -1,11 +1,10 @@
 use rmcp::ErrorData as McpError;
 use rmcp::model::{CallToolResult, ContentBlock};
 
-use crate::config::AppConfig;
-use crate::requests::get_devices;
+use crate::discovery::DeviceCache;
 
-pub async fn list_devices(config: &AppConfig) -> Result<CallToolResult, McpError> {
-    let devices = get_devices(config).await?;
-    let content = vec![ContentBlock::json(devices)?];
+pub fn list_devices(cache: &DeviceCache) -> Result<CallToolResult, McpError> {
+    let devices = cache.get()?;
+    let content = vec![ContentBlock::json(&*devices)?];
     Ok(CallToolResult::success(content))
 }

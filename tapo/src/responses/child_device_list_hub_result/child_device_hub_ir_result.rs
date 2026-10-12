@@ -175,7 +175,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_non_ir_child_falls_back_to_child_device_hub_result() {
+    fn test_unknown_child_parses_as_other() {
         let json = r#"{"device_id":"0000","model":"UNKNOWN","nickname":"VGVzdA=="}"#;
 
         let parsed: ChildDeviceHubIrResult = serde_json::from_str(json).unwrap();

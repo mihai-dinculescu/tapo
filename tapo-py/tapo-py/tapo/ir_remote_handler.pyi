@@ -20,7 +20,7 @@ class IrRemoteHandler(DebugExt):
             IrRemoteResult: Device info of the IR remotes paired with a Tapo H110 hub.
         """
 
-    async def send_ir_cmd_by_id(self, key_name: str) -> None:
+    async def send_key_by_name(self, key_name: str) -> None:
         """Sends one of the IR keys stored on this remote.
 
         Args:

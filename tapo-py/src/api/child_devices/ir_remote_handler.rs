@@ -13,12 +13,8 @@ py_child_handler! {
 
 #[pymethods]
 impl PyIrRemoteHandler {
-    pub async fn send_ir_cmd_by_id(&self, key_name: String) -> PyResult<()> {
+    pub async fn send_key_by_name(&self, key_name: String) -> PyResult<()> {
         let handler = self.inner.clone();
-        call_handler_method!(
-            handler.deref(),
-            IrRemoteHandler::send_ir_cmd_by_id,
-            key_name
-        )
+        call_handler_method!(handler.deref(), IrRemoteHandler::send_key_by_name, key_name)
     }
 }

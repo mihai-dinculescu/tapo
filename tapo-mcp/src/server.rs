@@ -1,32 +1,48 @@
 use std::sync::Arc;
 
 use anyhow::Result;
+use rmcp::handler::server::tool::ToolCallContext;
 use rmcp::handler::server::wrapper::Parameters;
 use rmcp::model::{
-    CallToolResult, ListResourcesResult, PaginatedRequestParams, ReadResourceRequestParams,
-    ReadResourceResponse, ServerCapabilities, ServerConfig,
+    CallToolRequestParams, CallToolResponse, CallToolResult, ListResourcesResult,
+    PaginatedRequestParams, ReadResourceRequestParams, ReadResourceResponse, ServerCapabilities,
+    ServerConfig,
 };
 use rmcp::service::{RequestContext, RoleServer};
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
 use rmcp::transport::streamable_http_server::{StreamableHttpServerConfig, StreamableHttpService};
 use rmcp::{ErrorData as McpError, ServerHandler, tool, tool_handler, tool_router};
+use tracing::Instrument as _;
 
 use crate::config::AppConfig;
+use crate::discovery::DeviceCache;
 use crate::models::{
     CheckDeviceParams, ControlDeviceParams, GetDeviceStateParams, TakeSnapshotParams,
 };
 use crate::resources;
+use crate::snapshots::{SNAPSHOT_TTL, SnapshotStore};
+use crate::telemetry;
 use crate::tools;
 
 #[derive(Clone)]
 pub struct TapoMcp {
     config: Arc<AppConfig>,
+    devices: Arc<DeviceCache>,
+    snapshots: Arc<SnapshotStore>,
 }
 
 #[tool_router]
 impl TapoMcp {
-    pub(crate) fn new(config: Arc<AppConfig>) -> Self {
-        Self { config }
+    pub(crate) fn new(
+        config: Arc<AppConfig>,
+        devices: Arc<DeviceCache>,
+        snapshots: Arc<SnapshotStore>,
+    ) -> Self {
+        Self {
+            config,
+            devices,
+            snapshots,
+        }
     }
 
     #[tool(
@@ -78,7 +94,7 @@ impl TapoMcp {
     }
 
     #[tool(
-        description = "List available Tapo devices. Prefer reading the `tapo://devices` resource instead if your client supports resources.",
+        description = "List available Tapo devices. The list is refreshed periodically in the background. If a device the user expects is missing, it may have joined after `discovered_at` and will appear after the next refresh. Prefer reading the `tapo://devices` resource instead if your client supports resources.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -87,11 +103,14 @@ impl TapoMcp {
         )
     )]
     async fn list_devices(&self) -> Result<CallToolResult, McpError> {
-        tools::list_devices(&self.config).await
+        tools::list_devices(&self.devices)
     }
 
     #[tool(
-        description = "Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs check_device first to verify the device ID matches at the given IP.",
+        description = format!(
+            "Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs check_device first to verify the device ID matches at the given IP. Returns the device id, capture time and size as text alongside the image. The text may also include a link to the image that is valid for {} minutes; share it with the user or fetch it to save the file.",
+            SNAPSHOT_TTL.as_secs() / 60
+        ),
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -103,7 +122,7 @@ impl TapoMcp {
         &self,
         Parameters(params): Parameters<TakeSnapshotParams>,
     ) -> Result<CallToolResult, McpError> {
-        tools::take_snapshot(&self.config, params).await
+        tools::take_snapshot(&self.config, &self.snapshots, params).await
     }
 }
 
@@ -123,6 +142,22 @@ impl ServerHandler for TapoMcp {
         info
     }
 
+    // Replaces the `call_tool` that `#[tool_handler]` would generate, so every
+    // tool call runs inside one server span.
+    async fn call_tool(
+        &self,
+        request: CallToolRequestParams,
+        context: RequestContext<RoleServer>,
+    ) -> Result<CallToolResponse, McpError> {
+        let router = Self::tool_router();
+        let known_tool = router.has_route(&request.name);
+        let span = telemetry::tool_call_span(&request, known_tool, &context);
+        let tcc = ToolCallContext::new(self, request, context);
+        let result = router.call(tcc).instrument(span.clone()).await;
+        telemetry::record_tool_outcome(&span, &result);
+        result
+    }
+
     async fn list_resources(
         &self,
         _request: Option<PaginatedRequestParams>,
@@ -138,9 +173,7 @@ impl ServerHandler for TapoMcp {
         _context: RequestContext<RoleServer>,
     ) -> Result<ReadResourceResponse, McpError> {
         match request.uri.as_str() {
-            resources::DEVICES_RESOURCE_URI => {
-                Ok(resources::read_devices(&self.config).await?.into())
-            }
+            resources::DEVICES_RESOURCE_URI => Ok(resources::read_devices(&self.devices)?.into()),
             _ => Err(McpError::resource_not_found(
                 "Unknown resource URI",
                 Some(serde_json::json!({ "uri": request.uri })),
@@ -151,6 +184,8 @@ impl ServerHandler for TapoMcp {
 
 pub fn new_service(
     app_config: Arc<AppConfig>,
+    devices: Arc<DeviceCache>,
+    snapshots: Arc<SnapshotStore>,
 ) -> StreamableHttpService<TapoMcp, LocalSessionManager> {
     let session_manager = Arc::new(LocalSessionManager::default());
     // Keep rmcp's DNS-rebinding protection. By default only loopback `Host`
@@ -161,7 +196,13 @@ pub fn new_service(
         server_config = server_config.with_allowed_hosts(app_config.allowed_hosts.clone());
     }
     StreamableHttpService::new(
-        move || Ok(TapoMcp::new(Arc::clone(&app_config))),
+        move || {
+            Ok(TapoMcp::new(
+                Arc::clone(&app_config),
+                Arc::clone(&devices),
+                Arc::clone(&snapshots),
+            ))
+        },
         session_manager,
         server_config,
     )

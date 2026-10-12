@@ -134,7 +134,7 @@
 | get_trigger_logs                 |                     |                 | &#x2705;        |                | &#x2705;       | &#x2705;       | &#x2705;       |               |
 | off                              |                     |                 |                 | &#x2705;       |                |                |                |               |
 | on                               |                     |                 |                 | &#x2705;       |                |                |                |               |
-| send_ir_cmd_by_id                | &#x2705;            |                 |                 |                |                |                |                |               |
+| send_key_by_name                 | &#x2705;            |                 |                 |                |                |                |                |               |
 | set_child_protection             |                     | &#x2705;        |                 |                |                |                |                |               |
 | set_frost_protection             |                     | &#x2705;        |                 |                |                |                |                |               |
 | set_max_control_temperature      |                     | &#x2705;        |                 |                |                |                |                |               |

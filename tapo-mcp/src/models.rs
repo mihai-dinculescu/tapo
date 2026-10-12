@@ -1,17 +1,25 @@
+use chrono::{DateTime, Utc};
 use rmcp::schemars;
 use rmcp::schemars::JsonSchema;
 use serde::de;
 use serde::{Deserialize, Serialize};
+use strum::IntoStaticStr;
 use tapo::requests::Color;
 
-#[derive(Debug, Deserialize, Serialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct DevicesList {
+    /// When the discovery that produced this list started.
+    pub discovered_at: DateTime<Utc>,
     /// Supported devices found on the network.
     pub devices: Vec<Device>,
     /// Devices that are currently unsupported.
     pub unsupported: Vec<UnsupportedDevice>,
     /// Errors encountered during discovery.
     pub errors: Vec<DiscoveryError>,
+    /// Why the most recent background discovery failed, if it did. The devices are then
+    /// the ones from the last successful discovery, at `discovered_at`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub refresh_error: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
@@ -36,7 +44,7 @@ pub enum GetCapability {
     TriggerLogs,
 }
 
-#[derive(Debug, Deserialize, Serialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct Device {
     /// Unique device identifier.
     pub id: String,
@@ -54,7 +62,7 @@ pub struct Device {
     pub children: Vec<ChildDevice>,
 }
 
-#[derive(Debug, Deserialize, Serialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct ChildDevice {
     /// Unique child device identifier.
     pub id: String,
@@ -68,7 +76,7 @@ pub struct ChildDevice {
     pub get_capabilities: Vec<GetCapability>,
 }
 
-#[derive(Debug, Deserialize, Serialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct UnsupportedDevice {
     /// Device IP address on the local network.
     pub ip: String,
@@ -76,12 +84,29 @@ pub struct UnsupportedDevice {
     pub model: String,
 }
 
-#[derive(Debug, Deserialize, Serialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct DiscoveryError {
     /// IP address of the device that encountered the error.
     pub ip: String,
     /// Error description.
     pub message: String,
+}
+
+#[derive(Debug, Serialize, JsonSchema)]
+pub struct SnapshotResult {
+    /// Unique identifier of the camera the snapshot was taken from.
+    pub device_id: String,
+    /// When the snapshot was received from the camera.
+    pub captured_at: DateTime<Utc>,
+    /// Size of the image in bytes.
+    pub size_bytes: usize,
+    /// Link to the image, valid until `expires_at`. Share it with the user or
+    /// fetch it to save the file.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+    /// When `url` stops working.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expires_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -92,7 +117,7 @@ pub struct CheckDeviceParams {
     pub ip: String,
 }
 
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, JsonSchema, IntoStaticStr)]
 #[serde(tag = "type")]
 pub enum SetCapabilityRequest {
     /// Set the device brightness. Also turns the device on if it's off.
@@ -113,7 +138,14 @@ pub enum SetCapabilityRequest {
     },
 }
 
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+impl SetCapabilityRequest {
+    /// The capability's name, without its value.
+    pub fn name(&self) -> &'static str {
+        self.into()
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, JsonSchema, IntoStaticStr)]
 #[serde(tag = "type")]
 pub enum GetCapabilityRequest {
     /// Read the device's current state (on/off, brightness, etc.).
@@ -136,6 +168,13 @@ pub enum GetCapabilityRequest {
         /// `page_size` logs.
         start_id: u64,
     },
+}
+
+impl GetCapabilityRequest {
+    /// The capability's name, without its parameters.
+    pub fn name(&self) -> &'static str {
+        self.into()
+    }
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -187,5 +226,53 @@ where
     match &value {
         serde_json::Value::String(s) => serde_json::from_str(s).map_err(de::Error::custom),
         _ => serde_json::from_value(value).map_err(de::Error::custom),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::mem::discriminant;
+
+    use serde_json::json;
+
+    use super::*;
+
+    /// `name()` must stay equal to the serde `type` tag that clients send.
+    #[test]
+    fn capability_names_match_serde_tags() {
+        let set_requests = [
+            SetCapabilityRequest::Brightness { value: 50 },
+            SetCapabilityRequest::Color {
+                value: Color::Daylight,
+            },
+            SetCapabilityRequest::OnOff { value: true },
+        ];
+        for request in set_requests {
+            let value = match &request {
+                SetCapabilityRequest::Brightness { .. } => json!(50),
+                SetCapabilityRequest::Color { .. } => json!("Daylight"),
+                SetCapabilityRequest::OnOff { .. } => json!(true),
+            };
+            let parsed: SetCapabilityRequest =
+                serde_json::from_value(json!({ "type": request.name(), "value": value })).unwrap();
+            assert_eq!(discriminant(&parsed), discriminant(&request));
+        }
+
+        let get_requests = [
+            GetCapabilityRequest::DeviceInfo,
+            GetCapabilityRequest::Snapshot,
+            GetCapabilityRequest::TemperatureHumidityRecords,
+            GetCapabilityRequest::TriggerLogs {
+                page_size: 10,
+                start_id: 0,
+            },
+        ];
+        for request in get_requests {
+            let parsed: GetCapabilityRequest = serde_json::from_value(
+                json!({ "type": request.name(), "page_size": 10, "start_id": 0 }),
+            )
+            .unwrap();
+            assert_eq!(discriminant(&parsed), discriminant(&request));
+        }
     }
 }

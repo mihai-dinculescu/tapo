@@ -75,7 +75,7 @@ class HubIrHandler(HubHandler):
             device = await hub.ir_remote(nickname="Living Room TV")
 
             # Send one of the keys stored on the remote
-            await device.send_ir_cmd_by_id("POWER")
+            await device.send_key_by_name("POWER")
             ```
         """
 

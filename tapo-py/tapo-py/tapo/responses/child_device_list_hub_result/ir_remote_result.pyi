@@ -51,7 +51,7 @@ class IrRemoteKey(ToDictExt):
     learned from a physical remote."""
     name: str
     """The name of the key. This is the value that
-    `IrRemoteHandler.send_ir_cmd_by_id` expects."""
+    `IrRemoteHandler.send_key_by_name` expects."""
     display_name: str
     """The label shown in the Tapo app. It is meaningful for most downloaded keys
     (e.g. "POWER", "VOL+"), but it can also be an opaque string, in which case

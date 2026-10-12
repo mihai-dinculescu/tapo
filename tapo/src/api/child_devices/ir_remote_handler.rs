@@ -36,11 +36,11 @@ impl IrRemoteHandler {
     ///     .ir_remote(HubDevice::ByNickname("Living Room TV".to_string()))
     ///     .await?;
     /// // Send one of the keys stored on the remote
-    /// remote.send_ir_cmd_by_id("POWER").await?;
+    /// remote.send_key_by_name("POWER").await?;
     /// # Ok(())
     /// # }
     /// ```
-    pub async fn send_ir_cmd_by_id(&self, key_name: impl Into<String>) -> Result<(), Error> {
+    pub async fn send_key_by_name(&self, key_name: impl Into<String>) -> Result<(), Error> {
         let request =
             TapoRequest::SendIrCmdById(TapoParams::new(SendIrCmdByIdParams::new(key_name)));
 

@@ -9,29 +9,33 @@ file. This change log follows the conventions of
 ### Added
 
 - `ApiClient`: added the `p125` builder for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient::discover_devices`.
-- `HubIrHandler`: added for the H110 hub. It supports everything that `HubHandler` does, and adds `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`. Its `get_child_device_list` returns `ChildDeviceHubIrResult`.
-- `ApiClient`: added `h110`, which returns a `HubIrHandler`.
-- `DeviceType::HubIr` and `DiscoveryResult::HubIr`: `discover_devices` now finds H110 hubs and returns them with a ready-to-use `HubIrHandler`.
-- `ChildDeviceHubIrResult`: added for the child devices of an H110 hub. It has the same variants as `ChildDeviceHubResult`, plus an `IrRemote` variant for the IR remotes (`SMART.TAPOREMOTE`) that can be paired with the hub, and it can be converted from a `ChildDeviceHubResult` with `From`.
-- `IrRemoteResult` and `IrRemoteKey`: added for the IR remote child devices, exposing the stored `key_list` alongside the usual child device properties.
-- `IrRemoteHandler`: added with `get_device_info`, `get_device_info_json`, `get_component_list`, and a `send_ir_cmd_by_id` method that sends one of the keys stored on an IR remote.
+- `ApiClient`: added the `h110` builder for the H110 hub. It returns a `HubIrHandler`, which supports everything `HubHandler` does and adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient::discover_devices`. (thanks to @skoky)
+- `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
 - `ApiClient`: added the `p125` method for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient.discover_devices`.
-- `HubIrHandler`: added for the H110 hub. It is a subclass of `HubHandler`, and adds `ir_remote` and `ir_remote_unchecked` for constructing an `IrRemoteHandler`. Its `get_child_device_list` can also return `IrRemoteResult` items.
-- `ApiClient`: added `h110`, which returns a `HubIrHandler`.
-- `DeviceType.HubIr` and `DiscoveryResult.HubIr`: `discover_devices` now finds H110 hubs and returns them with a ready-to-use `HubIrHandler`.
-- `IrRemoteResult` and `IrRemoteKey`: added for the IR remote child devices (`SMART.TAPOREMOTE`) that can be paired with an H110 hub, exposing the stored `key_list` alongside the usual child device properties.
-- `IrRemoteHandler`: added with `get_device_info`, `get_device_info_json`, `get_component_list`, and a `send_ir_cmd_by_id` method that sends one of the keys stored on an IR remote.
+- `ApiClient`: added the `h110` method for the H110 hub. It returns a `HubIrHandler`, a subclass of `HubHandler` that adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient.discover_devices`. (thanks to @skoky)
+- `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 
 ## [MCP Unreleased][Unreleased]
 
 ### Added
 
-- `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub. It is now listed as a supported device, with its sensors and IR remotes surfaced under `children`. IR remotes serve `DeviceInfo`, which includes the list of keys stored on the remote.
+- `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub, with its sensors and IR remotes listed under `children`. IR remotes include the keys stored on them. (thanks to @skoky)
+- `take_snapshot`: when `TAPO_MCP_PUBLIC_URL` is set, the result also carries a link to the image that stays valid for 5 minutes, so an agent can share it with the user or download the file.
+- `list_devices`, `tapo://devices`: the result now includes `discovered_at`, the time the discovery that produced the list started.
+- `list_devices`, `tapo://devices`: the result now includes `refresh_error` when the most recent background discovery failed. The devices are then the ones from the last successful discovery, at `discovered_at`.
+- `TAPO_MCP_DISCOVERY_INTERVAL`: added the number of seconds between background discoveries that refresh the device list. Defaults to 600 and must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most 86400 (one day).
+- OpenTelemetry: each tool call is now exported as a trace that shows how long the device check and the device request took, and marks failed calls. When the MCP client or a tracing reverse proxy sends trace context, the call joins that trace.
+
+### Changed
+
+- `take_snapshot`: the result now includes the device id, capture time and size as text alongside the image.
+- `list_devices`, `tapo://devices`: now return the device list from the most recent background discovery immediately, instead of waiting for a new discovery on every call. Until a discovery has succeeded, they return a "device discovery unavailable" error, which gives the reason when discovery failed.
+- `TAPO_MCP_DISCOVERY_TIMEOUT`: a value outside 1 to 60 now stops the server at startup with an error naming the setting, instead of making every device listing fail.
 
 ## [MCP v0.5.3][tapo-mcp-v0.5.3] - 2026-10-04
 
