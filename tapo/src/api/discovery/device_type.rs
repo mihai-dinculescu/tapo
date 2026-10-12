@@ -20,7 +20,7 @@ pub enum DeviceType {
     RgbLightStrip,
     /// Tapo L920, L930 - RGBIC light strip.
     RgbicLightStrip,
-    /// Tapo P100, P105, P125, P125M - smart plugs.
+    /// Tapo P100, P105, P125, P125M, TP10 - smart plugs.
     Plug,
     /// Tapo P110, P110M, P115 - smart plugs with energy monitoring.
     PlugEnergyMonitoring,
@@ -50,7 +50,7 @@ impl DeviceType {
             "L530" | "L530 Series" | "L535" | "L535B" | "L630" => DeviceType::ColorLight,
             "L900" => DeviceType::RgbLightStrip,
             "L920" | "L930" => DeviceType::RgbicLightStrip,
-            "P100" | "P105" | "P125" | "P125M" => DeviceType::Plug,
+            "P100" | "P105" | "P125" | "P125M" | "TP10" => DeviceType::Plug,
             "P110" | "P110M" | "P115" => DeviceType::PlugEnergyMonitoring,
             "P300" | "P306" => DeviceType::PowerStrip,
             "P304M" | "P316M" => DeviceType::PowerStripEnergyMonitoring,
@@ -128,6 +128,7 @@ mod tests {
         assert_eq!(DeviceType::from_model("P105"), DeviceType::Plug);
         assert_eq!(DeviceType::from_model("P125"), DeviceType::Plug);
         assert_eq!(DeviceType::from_model("P125M"), DeviceType::Plug);
+        assert_eq!(DeviceType::from_model("TP10"), DeviceType::Plug);
         assert_eq!(
             DeviceType::from_model("P110"),
             DeviceType::PlugEnergyMonitoring

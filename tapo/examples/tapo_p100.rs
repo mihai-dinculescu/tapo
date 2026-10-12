@@ -1,4 +1,4 @@
-/// P100, P105, P125 and P125M Example
+/// P100, P105, P125, P125M and TP10 Example
 use std::{thread, time::Duration};
 
 use log::info;

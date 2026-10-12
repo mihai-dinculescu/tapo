@@ -9,6 +9,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `ApiClient`: added the `p125` builder for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient::discover_devices`.
+- `ApiClient`: added the `tp10` builder for the TP10 plug. It is served by `PlugHandler`, like the P100 and P105, and is recognised by `ApiClient::discover_devices`. (thanks to @rw-r-r-0644)
 - `ApiClient`: added the `h110` builder for the H110 hub. It returns a `HubIrHandler`, which supports everything `HubHandler` does and adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient::discover_devices`. (thanks to @skoky)
 - `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 - `DiscoveryResult::HubIr` and `DeviceType::HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult::Other`. (thanks to @skoky)
@@ -29,6 +30,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `ApiClient`: added the `p125` method for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient.discover_devices`.
+- `ApiClient`: added the `tp10` method for the TP10 plug. It is served by `PlugHandler`, like the P100 and P105, and is recognised by `ApiClient.discover_devices`. (thanks to @rw-r-r-0644)
 - `ApiClient`: added the `h110` method for the H110 hub. It returns a `HubIrHandler`, a subclass of `HubHandler` that adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient.discover_devices`. (thanks to @skoky)
 - `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 - `DiscoveryResult.HubIr` and `DeviceType.HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult.Other`. (thanks to @skoky)
