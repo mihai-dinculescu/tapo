@@ -24,6 +24,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Turning device on...");
     device.on().await?;
 
+    info!("Waiting 2 seconds...");
+    thread::sleep(Duration::from_secs(2));
+
     info!("Setting the brightness to 30%...");
     device.set_brightness(30).await?;
 
