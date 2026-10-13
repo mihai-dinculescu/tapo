@@ -1,3 +1,4 @@
+use base64::{Engine as _, engine::general_purpose};
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
@@ -77,9 +78,10 @@ pub struct IrRemoteKey {
     /// The name of the key. This is the value that
     /// [`IrRemoteHandler::send_key_by_name`](crate::IrRemoteHandler::send_key_by_name) expects.
     pub name: String,
-    /// The label shown in the Tapo app. It is meaningful for most downloaded keys
-    /// (e.g. "POWER", "VOL+"), but it can also be an opaque string, in which case
-    /// [`IrRemoteKey::name`] is the only usable identifier.
+    /// The label shown in the Tapo app. For keys that were downloaded from TP-Link's
+    /// IR database, the hub only stores the first 4 bytes of the label, so this is at
+    /// most the first 4 bytes of [`IrRemoteKey::name`] (e.g. "POWE" for "POWER"), and
+    /// several keys can share it. Use [`IrRemoteKey::name`] to identify a key.
     pub display_name: String,
     /// The carrier frequency of the key, in kHz.
     pub pwm: u8,
@@ -97,15 +99,29 @@ crate::impl_to_dict!(IrRemoteKey);
 
 impl DecodableResultExt for IrRemoteKey {
     fn decode(mut self) -> Result<Self, Error> {
-        // Unlike the other encoded fields, `display_name` is not always valid
-        // base64 encoded UTF-8, so it's left as-is when it cannot be decoded
-        // instead of failing the whole child device list.
-        if let Ok(display_name) = decode_value(&self.display_name) {
-            self.display_name = display_name;
-        }
+        self.display_name = decode_display_name(&self.display_name)?;
 
         Ok(self)
     }
+}
+
+/// Decodes the `display_name` of an [`IrRemoteKey`].
+///
+/// The hub stores at most 4 bytes of the label. Shorter labels end in a NUL,
+/// sometimes followed by stray bytes, so the label is cut at the first NUL.
+/// The 4-byte limit can also split a multi-byte character, which is dropped.
+fn decode_display_name(value: &str) -> anyhow::Result<String> {
+    let bytes = general_purpose::STANDARD.decode(value)?;
+    let end = bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len());
+    let bytes = &bytes[..end];
+
+    let bytes = match std::str::from_utf8(bytes) {
+        Ok(_) => bytes,
+        Err(e) if e.error_len().is_none() => &bytes[..e.valid_up_to()],
+        Err(e) => return Err(e.into()),
+    };
+
+    Ok(std::str::from_utf8(bytes)?.to_string())
 }
 
 #[cfg(test)]
@@ -121,17 +137,20 @@ mod tests {
         "copy_device_id": "",
         "customize_key_sum": 1,
         "device_id": "0000000000000000000000000000000000000000",
-        "downloaded_key_sum": 2,
+        "downloaded_key_sum": 5,
         "fw_ver": "",
         "hw_id": "",
         "hw_ver": "",
         "isThirdPartySub": true,
         "key_list": [
-            { "display_name": "UE9XRVI=", "id": 1, "name": "POWER", "pwm": 26 },
+            { "display_name": "UE9XRQ==", "id": 1, "name": "POWER", "pwm": 26 },
+            { "display_name": "T0sAAA==", "id": 42, "name": "OK", "pwm": 26 },
             { "display_name": "Vk9MKw==", "id": 50, "name": "VOL+", "pwm": 26 },
+            { "display_name": "MABMeg==", "id": 56, "name": "0", "pwm": 26 },
+            { "display_name": "4oCiAA==", "id": 9695, "name": "\u2022", "pwm": 26 },
             { "display_name": "Ug==", "icon": "One", "id": -1, "name": "m8B637k", "order": 1, "pwm": 24, "type": "" }
         ],
-        "key_sum": 3,
+        "key_sum": 6,
         "lastOnboardingTimestamp": 1767226732,
         "mac": "000000000000",
         "model": "TV",
@@ -156,17 +175,23 @@ mod tests {
         // be picked based on the `type` instead.
         assert_eq!(remote.model, "TV");
         assert_eq!(remote.remote_id, 8964);
-        assert_eq!(remote.key_sum, 3);
-        assert_eq!(remote.key_list.len(), 3);
+        assert_eq!(remote.key_sum, 6);
+        assert_eq!(remote.key_list.len(), 6);
 
         let remote = remote.decode().unwrap();
 
         assert_eq!(remote.nickname, "Living Room TV");
         assert_eq!(remote.key_list[0].name, "POWER");
-        assert_eq!(remote.key_list[0].display_name, "POWER");
-        assert_eq!(remote.key_list[1].display_name, "VOL+");
 
-        let custom_key = &remote.key_list[2];
+        // Downloaded keys only store the first 4 bytes of the label, padded with a
+        // NUL and stray bytes when the label is shorter.
+        let display_names: Vec<_> = remote.key_list[..5]
+            .iter()
+            .map(|key| key.display_name.as_str())
+            .collect();
+        assert_eq!(display_names, ["POWE", "OK", "VOL+", "0", "\u{2022}"]);
+
+        let custom_key = &remote.key_list[5];
         assert_eq!(custom_key.id, -1);
         assert_eq!(custom_key.name, "m8B637k");
         assert_eq!(custom_key.display_name, "R");
@@ -175,12 +200,13 @@ mod tests {
     }
 
     #[test]
-    fn test_ir_remote_keeps_undecodable_display_name() {
-        let key: IrRemoteKey = serde_json::from_str(
-            r#"{ "display_name": "not base64!", "id": 1, "name": "POWER", "pwm": 26 }"#,
-        )
-        .unwrap();
+    fn test_display_name_drops_split_character() {
+        // "abc" followed by the first byte of "\u{17d}", cut by the 4-byte limit.
+        assert_eq!(decode_display_name("YWJjxQ==").unwrap(), "abc");
+    }
 
-        assert_eq!(key.decode().unwrap().display_name, "not base64!");
+    #[test]
+    fn test_display_name_rejects_invalid_base64() {
+        assert!(decode_display_name("not base64!").is_err());
     }
 }

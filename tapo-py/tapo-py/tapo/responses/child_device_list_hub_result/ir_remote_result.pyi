@@ -53,9 +53,10 @@ class IrRemoteKey(ToDictExt):
     """The name of the key. This is the value that
     `IrRemoteHandler.send_key_by_name` expects."""
     display_name: str
-    """The label shown in the Tapo app. It is meaningful for most downloaded keys
-    (e.g. "POWER", "VOL+"), but it can also be an opaque string, in which case
-    `IrRemoteKey.name` is the only usable identifier."""
+    """The label shown in the Tapo app. For keys that were downloaded from TP-Link's
+    IR database, the hub only stores the first 4 bytes of the label, so this is at
+    most the first 4 bytes of `IrRemoteKey.name` (e.g. "POWE" for "POWER"), and
+    several keys can share it. Use `IrRemoteKey.name` to identify a key."""
     pwm: int
     """The carrier frequency of the key, in kHz."""
     icon: Optional[str]

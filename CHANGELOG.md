@@ -26,7 +26,7 @@ file. This change log follows the conventions of
 
 ### Added
 
-- `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub, with its sensors and IR remotes listed under `children`. IR remotes include the keys stored on them. (thanks to @skoky)
+- `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub, with its sensors and IR remotes listed under `children`. `get_device_state` returns the keys stored on each IR remote. (thanks to @skoky)
 - `take_snapshot`: when `TAPO_MCP_PUBLIC_URL` is set, the result also carries a link to the image that stays valid for 5 minutes, so an agent can share it with the user or download the file.
 - `list_devices`, `tapo://devices`: the result now includes `discovered_at`, the time the discovery that produced the list started.
 - `list_devices`, `tapo://devices`: the result now includes `refresh_error` when the most recent background discovery failed. The devices are then the ones from the last successful discovery, at `discovered_at`.
