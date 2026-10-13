@@ -32,14 +32,28 @@ impl TapoResponseError {
     pub(crate) fn forbidden() -> Self {
         Self::Unauthorized {
             kind: "FORBIDDEN",
-            description: "Make sure Third-Party Compatibility is turned on in the Tapo app. If it's already enabled, try switching it off and then back on again. You can find this option by navigating to Me > Third-Party Services in the app.".to_string(),
+            description: "The device refused the KLAP login. Turn Third-Party Compatibility off in the Tapo app so that the device switches to TPAP, then connect to the device again, which picks TPAP up. If another integration needs the option on, try switching it off and then back on again. You can find this option by navigating to Me > Third-Party Services in the app.".to_string(),
         }
     }
 
     pub(crate) fn hash_mismatch() -> Self {
+        Self::hash_mismatch_with(
+            "Make sure that your email and password are correct - both are case-sensitive. Before adding a new device, disconnect any existing TP-Link/Tapo devices on the network. The TP-Link Simple Setup (TSS) protocol, which shares credentials from previously configured devices, may interfere with authentication. If the problem continues, perform a factory reset on the new device and add it again with no other TP-Link devices active during setup.",
+        )
+    }
+
+    pub(crate) fn password_hash_mismatch() -> Self {
+        Self::hash_mismatch_with(
+            "Make sure that the password of your TP-Link account is correct - it is case-sensitive.",
+        )
+    }
+
+    fn hash_mismatch_with(advice: &str) -> Self {
         Self::Unauthorized {
             kind: "HASH_MISMATCH",
-            description: "The device response did not match the challenge issued by the library. Make sure that your email and password are correct - both are case-sensitive. Before adding a new device, disconnect any existing TP-Link/Tapo devices on the network. The TP-Link Simple Setup (TSS) protocol, which shares credentials from previously configured devices, may interfere with authentication. If the problem continues, perform a factory reset on the new device and add it again with no other TP-Link devices active during setup.".to_string(),
+            description: format!(
+                "The device response did not match the challenge issued by the library. {advice}"
+            ),
         }
     }
 

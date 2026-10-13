@@ -16,11 +16,13 @@ file. This change log follows the conventions of
 ### Changed
 
 - `LightingEffect`: changed `brightness_range` from `Option<Vec<u8>>` to `Option<[u8; 2]>`, matching `with_brightness_range` and the other range fields.
+- `TapoResponseError::Unauthorized`: the `FORBIDDEN` description now suggests turning Third-Party Compatibility off and then connecting to the device again. On cameras and other camera-family devices, such as the H200 and H500 hubs, the `HASH_MISMATCH` description now asks only to check the TP-Link account password.
 
 ### Fixed
 
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` no longer panics in time zones where the clocks change at midnight, such as America/Santiago. A day whose midnight is skipped now starts when the clocks resume.
+- `ApiClient`: connecting to a camera by its IP address with a wrong password now fails with `TPAP_CREDENTIALS`, which warns that the device locks itself after too many failed logins, instead of with `HASH_MISMATCH`.
 
 ## [Python Unreleased][Unreleased]
 
@@ -37,6 +39,7 @@ file. This change log follows the conventions of
 ### Changed
 
 - `LightingEffect`: `hue_range`, `saturation_range`, `transition_range` and `brightness_range` now return a tuple of two ints, `display_colors`, `backgrounds`, `init_states` and `sequence` return a list of tuples, and `segments` returns a list of ints. In the `lighting_effect` returned by `RgbicLightStripHandler.get_device_info`, the ranges used to be lists, the colors and states used to be lists of lists, and `brightness_range` and `segments` used to be `bytes`.
+- `ApiClient`: the description of a `FORBIDDEN` exception now suggests turning Third-Party Compatibility off and then connecting to the device again. On cameras and other camera-family devices, such as the H200 and H500 hubs, the description of a `HASH_MISMATCH` exception now asks only to check the TP-Link account password.
 
 ### Fixed
 
@@ -49,6 +52,7 @@ file. This change log follows the conventions of
 - `DeviceInfoSmartExt`: corrected the type stubs to declare it as a `Protocol`.
 - `DeviceInfoSmartExt`, `DeviceInfoBasicResult`, `DeviceInfoCameraResult`: corrected the type hints of `latitude` and `longitude` to `int`. They were declared as `float`.
 - `EnergyUsageResult`: corrected the type hint of `electricity_charge` to a list of ints. It was declared as a tuple.
+- `ApiClient`: connecting to a camera by its IP address with a wrong password now raises a `TPAP_CREDENTIALS` exception, which warns that the device locks itself after too many failed logins, instead of a `HASH_MISMATCH` one.
 
 ## [MCP Unreleased][Unreleased]
 

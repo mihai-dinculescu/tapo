@@ -31,21 +31,22 @@ Reported in [#441][issue_441], [#449][issue_449], [#473][issue_473] and [#643][i
 
 ### Symptoms
 
-- Connecting to the device fails with `Unauthorized: FORBIDDEN: Make sure Third-Party Compatibility is turned on in the Tapo app...`.
+- Connecting to the device fails with `Unauthorized: FORBIDDEN: The device refused the KLAP login. Turn Third-Party Compatibility off in the Tapo app...`.
 - With debug logging enabled, the log shows `Using KLAP protocol` followed by `Handshake1 error: 403 Forbidden`.
 - The device worked previously and stopped after a firmware update. Devices still on older firmware keep working.
 
 ### Cause
 
-Starting with firmware 1.4.0, the device speaks one of two protocols, depending on the "Third-Party Compatibility" option in the Tapo app: KLAP with the option on, TPAP with it off. The library supports both and uses the one the device announces, so the option can be left either way. This error means that the device did not announce TPAP and then refused KLAP. The setting is stored per account and pushed to the devices, and that push does not always reach a device that was updated after the option was changed.
+Starting with firmware 1.4.0, the device speaks one of two protocols, depending on the "Third-Party Compatibility" option in the Tapo app: KLAP with the option on, TPAP with it off. The library supports both and uses the one the device announces. This error means that the device did not announce TPAP and then refused KLAP, which is why switching the option off, so that the device announces TPAP, is the first thing to try. The setting is stored per account and pushed to the devices, and that push does not always reach a device that was updated after the option was changed.
 
 ### Solutions
 
 Try these in order:
 
-1. **Switch Third-Party Compatibility off and back on again in the Tapo app.** Navigate to Me > Third-Party Services > Third-Party Compatibility. Switch it off, leave the settings screen, wait about a minute, go back in and switch it on. Wait another minute before retrying.
-2. **Update the Tapo app.** On older app versions the option sits under "Tapo Lab", and toggling it there has no effect. After updating the app, the option moves to Third-Party Services and toggling it there works.
-3. **Factory reset the device.** As a last resort, reset the device to factory settings, remove it from the Tapo app, set it up again, and then toggle Third-Party Compatibility once more.
+1. **Switch Third-Party Compatibility off in the Tapo app.** Navigate to Me > Third-Party Services > Third-Party Compatibility and switch it off. Wait about a minute before retrying. The device then announces TPAP, and connecting to it again (with a new client) uses TPAP instead of KLAP. If another integration you use needs the option on, skip this step.
+2. **Switch Third-Party Compatibility off and back on again in the Tapo app.** Switch it off, leave the settings screen, wait about a minute, go back in and switch it on. Wait another minute before retrying.
+3. **Update the Tapo app.** On older app versions the option sits under "Tapo Lab", and toggling it there has no effect. After updating the app, the option moves to Third-Party Services and toggling it there works.
+4. **Factory reset the device.** As a last resort, reset the device to factory settings, remove it from the Tapo app, set it up again, and then toggle Third-Party Compatibility once more.
 
 ## Handshake fails with a hash mismatch (invalid credentials)
 
@@ -54,17 +55,22 @@ Reported in [#320][issue_320] and [#373][issue_373] across plugs (P100, P110, P1
 ### Symptoms
 
 - Connecting to the device fails with `Unauthorized: HASH_MISMATCH: The device response did not match the challenge issued by the library...`.
+- On a camera, connecting can fail with `Unauthorized: TPAP_CREDENTIALS: Please verify that your password is correct...` instead.
 - The device works fine in the Tapo app.
 - Other devices on the same account and network work with the same credentials.
 
 ### Cause
 
-During the KLAP handshake the device proves that it holds the same hash of your email and password as the library. A mismatch means the device was set up with different credentials than the ones you are passing in. The two known causes are:
+During the handshake the device proves that it holds the same hash of your email and password as the library. A mismatch means the device was set up with different credentials than the ones you are passing in. The two known causes are:
 
 - The email or password differs in case. Both are case-sensitive, and the email must match the case of the account exactly.
 - The device received its credentials from another TP-Link device during setup. The TP-Link Simple Setup (TSS) protocol shares credentials from previously configured devices on the network, and the copied credentials do not always match your account. This explains why the first device added to a fresh account works while later ones fail.
 
+Cameras and other camera-family devices, such as the H200 and H500 hubs, check only the password, not the email, so on these devices a mismatch means that the password is wrong. They take the password of your TP-Link account, not the camera account set up in the camera's Advanced Settings.
+
 ### Solutions
+
+On a camera or another camera-family device, such as an H200 or H500 hub, check the password of your TP-Link account, which is case-sensitive. The steps below are for the other devices.
 
 Try these in order:
 

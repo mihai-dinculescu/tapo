@@ -272,7 +272,7 @@ impl AesSslProtocol {
         }
 
         debug!("Device confirm hash mismatch in handshake1");
-        Err(Error::Tapo(TapoResponseError::hash_mismatch()))
+        Err(Error::Tapo(TapoResponseError::password_hash_mismatch()))
     }
 
     async fn handshake2(

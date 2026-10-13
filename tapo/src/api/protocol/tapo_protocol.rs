@@ -189,14 +189,21 @@ impl TapoProtocol {
         let url = format!("https://{ip_address}");
         debug!("Device url: {url}");
 
-        match aes_ssl.login(url, username, password).await? {
-            AesSslLogin::LoggedIn => {
+        match aes_ssl.login(url, username, password).await {
+            Ok(AesSslLogin::LoggedIn) => {
                 self.active = Some(ActiveProtocol::AesSsl(aes_ssl));
                 Ok(())
             }
             // The device takes neither login, and of the two errors the one
             // of the TPAP login says why.
-            AesSslLogin::Refused(_) => Err(tpap_error),
+            Ok(AesSslLogin::Refused(_)) => Err(tpap_error),
+            // Both logins took the password as wrong, and the error of the
+            // TPAP login also warns that the device locks itself.
+            Err(Error::Tapo(TapoResponseError::Unauthorized {
+                kind: "HASH_MISMATCH",
+                ..
+            })) if is_tpap_credentials(&tpap_error) => Err(tpap_error),
+            Err(error) => Err(error),
         }
     }
 
@@ -251,6 +258,17 @@ fn falls_back_to_aes_ssl(error: &Error) -> bool {
         }) => false,
         _ => true,
     }
+}
+
+/// Whether a TPAP login failed with `error` because the password is wrong.
+fn is_tpap_credentials(error: &Error) -> bool {
+    matches!(
+        error,
+        Error::Tapo(TapoResponseError::Unauthorized {
+            kind: "TPAP_CREDENTIALS",
+            ..
+        })
+    )
 }
 
 /// The error for a request that the device answered with `status`. A device
