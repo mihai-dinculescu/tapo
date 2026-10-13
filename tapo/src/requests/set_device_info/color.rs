@@ -10,48 +10,88 @@ use serde::{Deserialize, Serialize};
     feature = "python",
     pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
-#[allow(missing_docs)]
 pub enum Color {
+    /// White light at 4000 K.
     CoolWhite,
+    /// White light at 5000 K.
     Daylight,
+    /// White light at 6000 K.
     Ivory,
+    /// White light at 3000 K.
     WarmWhite,
+    /// White light at 2700 K.
     Incandescent,
+    /// White light at 2500 K.
     Candlelight,
+    /// White light at 6500 K.
     Snow,
+    /// White light at 6500 K.
     GhostWhite,
+    /// Hue 208°, saturation 5%.
     AliceBlue,
+    /// Hue 54°, saturation 28%.
     LightGoldenrod,
+    /// Hue 54°, saturation 19%.
     LemonChiffon,
+    /// White light at 5500 K.
     AntiqueWhite,
+    /// Hue 50°, saturation 100%.
     Gold,
+    /// Hue 29°, saturation 69%.
     Peru,
+    /// Hue 30°, saturation 100%.
     Chocolate,
+    /// Hue 27°, saturation 60%.
     SandyBrown,
+    /// Hue 16°, saturation 68%.
     Coral,
+    /// Hue 24°, saturation 90%.
     Pumpkin,
+    /// Hue 9°, saturation 72%.
     Tomato,
+    /// Hue 4°, saturation 77%.
     Vermilion,
+    /// Hue 16°, saturation 100%.
     OrangeRed,
+    /// Hue 349°, saturation 24%.
     Pink,
+    /// Hue 348°, saturation 90%.
     Crimson,
+    /// Hue 0°, saturation 100%.
     DarkRed,
+    /// Hue 330°, saturation 58%.
     HotPink,
+    /// Hue 329°, saturation 67%.
     Smitten,
+    /// Hue 259°, saturation 48%.
     MediumPurple,
+    /// Hue 271°, saturation 80%.
     BlueViolet,
+    /// Hue 274°, saturation 100%.
     Indigo,
+    /// Hue 202°, saturation 46%.
     LightSkyBlue,
+    /// Hue 218°, saturation 57%.
     CornflowerBlue,
+    /// Hue 254°, saturation 100%.
     Ultramarine,
+    /// Hue 195°, saturation 100%.
     DeepSkyBlue,
+    /// Hue 210°, saturation 100%.
     Azure,
+    /// Hue 240°, saturation 100%.
     NavyBlue,
+    /// Hue 180°, saturation 26%.
     LightTurquoise,
+    /// Hue 159°, saturation 50%.
     Aquamarine,
+    /// Hue 174°, saturation 71%.
     Turquoise,
+    /// Hue 120°, saturation 39%.
     LightGreen,
+    /// Hue 75°, saturation 100%.
     Lime,
+    /// Hue 120°, saturation 75%.
     ForestGreen,
 }
 

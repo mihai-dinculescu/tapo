@@ -61,7 +61,7 @@ To avoid shipping unauthenticated smart-home control, the server refuses to star
 Some MCP clients don't pass image results on to the model, and others show the image to the model but give it nothing it can hand to the user. When `TAPO_MCP_PUBLIC_URL` is set, `take_snapshot` also returns a `url` (and its `expires_at`) pointing at `<TAPO_MCP_PUBLIC_URL>/snapshots/<token>.jpg`, so the agent can share the link or download the file.
 
 - The link is served without the API key, so a browser can open it directly. The `Host` allowlist from `TAPO_MCP_ALLOWED_HOSTS` does not apply to it either. The random token in the path is the only credential: anyone holding the link can view that frame until it expires.
-- Each link is valid for 5 minutes. Snapshots are kept in memory only and never written to disk. Expired snapshots are cleared out when the next one is taken, and at most the 1024 most recent are kept.
+- Each link is valid for 5 minutes. Snapshots are kept in memory only and never written to disk. Expired snapshots are cleared out within a minute, and at most the 1024 most recent are kept.
 - Behind an authenticating reverse proxy (Cloudflare Access and similar), links opened in a browser that is already signed in to the proxy work. Non-browser fetches (`curl`, an agent downloading the file) need the proxy's own credential or a policy exception for `/snapshots/`.
 
 When `TAPO_MCP_PUBLIC_URL` is unset, no link is returned and the `/snapshots/` route is not served.

@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use strum::IntoStaticStr;
 use tapo::requests::Color;
 
+/// The Tapo devices found on the local network by the most recent discovery.
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct DevicesList {
     /// When the discovery that produced this list started.
@@ -22,6 +23,7 @@ pub struct DevicesList {
     pub refresh_error: Option<String>,
 }
 
+/// A capability that can be set on a device with `control_device`.
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub enum SetCapability {
     /// Set the device brightness (1-100).
@@ -32,6 +34,7 @@ pub enum SetCapability {
     OnOff,
 }
 
+/// A capability that can be read from a device with `get_device_state`.
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub enum GetCapability {
     /// Read the device's current state.
@@ -44,6 +47,7 @@ pub enum GetCapability {
     TriggerLogs,
 }
 
+/// A supported Tapo device found on the local network.
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct Device {
     /// Unique device identifier.
@@ -62,6 +66,7 @@ pub struct Device {
     pub children: Vec<ChildDevice>,
 }
 
+/// A device attached to a parent device, such as an outlet on a power strip or a device paired with a hub.
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct ChildDevice {
     /// Unique child device identifier.
@@ -76,6 +81,7 @@ pub struct ChildDevice {
     pub get_capabilities: Vec<GetCapability>,
 }
 
+/// A Tapo device found on the local network that this server can't control.
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct UnsupportedDevice {
     /// Device IP address on the local network.
@@ -84,6 +90,7 @@ pub struct UnsupportedDevice {
     pub model: String,
 }
 
+/// An error from discovering a device or reading its child devices.
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct DiscoveryError {
     /// IP address of the device that encountered the error.
@@ -92,6 +99,7 @@ pub struct DiscoveryError {
     pub message: String,
 }
 
+/// A still JPEG snapshot taken from a Tapo camera.
 #[derive(Debug, Serialize, JsonSchema)]
 pub struct SnapshotResult {
     /// Unique identifier of the camera the snapshot was taken from.
@@ -109,6 +117,7 @@ pub struct SnapshotResult {
     pub expires_at: Option<DateTime<Utc>>,
 }
 
+/// Parameters for `check_device`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct CheckDeviceParams {
     /// Device ID from `list_devices`.
@@ -117,6 +126,7 @@ pub struct CheckDeviceParams {
     pub ip: String,
 }
 
+/// A capability to set on a device, with the value to set it to.
 #[derive(Debug, Clone, Deserialize, JsonSchema, IntoStaticStr)]
 #[serde(tag = "type")]
 pub enum SetCapabilityRequest {
@@ -145,6 +155,7 @@ impl SetCapabilityRequest {
     }
 }
 
+/// A capability to read from a device, with its parameters.
 #[derive(Debug, Clone, Deserialize, JsonSchema, IntoStaticStr)]
 #[serde(tag = "type")]
 pub enum GetCapabilityRequest {
@@ -177,6 +188,7 @@ impl GetCapabilityRequest {
     }
 }
 
+/// Parameters for `control_device`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ControlDeviceParams {
     /// Device ID from `list_devices`.
@@ -189,6 +201,7 @@ pub struct ControlDeviceParams {
     pub capabilities: Vec<SetCapabilityRequest>,
 }
 
+/// Parameters for `get_device_state`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct GetDeviceStateParams {
     /// Device ID from `list_devices`.
@@ -200,6 +213,7 @@ pub struct GetDeviceStateParams {
     pub capability: GetCapabilityRequest,
 }
 
+/// Parameters for `take_snapshot`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TakeSnapshotParams {
     /// Device ID from `list_devices`. Must identify a camera.

@@ -304,7 +304,7 @@ macro_rules! tapo_handler {
     };
 }
 
-/// Generates common handler boilerplate for Tapo child device handlers (hub sensors,
+/// Generates common handler boilerplate for Tapo child device handlers (hub child devices,
 /// power strip plugs, etc.).
 ///
 /// # Usage

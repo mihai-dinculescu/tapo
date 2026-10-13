@@ -31,6 +31,18 @@
           "isSecret": true
         },
         {
+          "name": "TAPO_MCP_CAMERA_USERNAME",
+          "description": "Optional camera account username; required for taking camera snapshots",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "TAPO_MCP_CAMERA_PASSWORD",
+          "description": "Optional camera account password; required for taking camera snapshots",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
           "name": "TAPO_MCP_DISCOVERY_TARGET",
           "description": "Network target for device discovery (e.g. 192.168.1.255)",
           "isRequired": true,
@@ -41,6 +53,12 @@
           "description": "Optional Bearer token for API authentication",
           "isRequired": false,
           "isSecret": true
+        },
+        {
+          "name": "TAPO_MCP_ALLOWED_HOSTS",
+          "description": "Optional comma-separated Host header allowlist; replaces the loopback-only default",
+          "isRequired": false,
+          "isSecret": false
         },
         {
           "name": "TAPO_MCP_PUBLIC_URL",
