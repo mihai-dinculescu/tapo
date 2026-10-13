@@ -9,15 +9,18 @@ use crate::responses::{
 };
 
 /// Hub child device list result.
+///
+/// `T` is the child device result type of the hub, e.g. [`ChildDeviceHubResult`] or
+/// [`ChildDeviceHubIrResult`](crate::responses::ChildDeviceHubIrResult).
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub(crate) struct ChildDeviceListHubResult {
+pub(crate) struct ChildDeviceListHubResult<T = ChildDeviceHubResult> {
     /// Hub child devices.
     /// H200 firmware 1.6.5 omits the field entirely when the list is empty.
-    #[serde(rename = "child_device_list", default)]
-    pub devices: Vec<ChildDeviceHubResult>,
+    #[serde(rename = "child_device_list", default = "Vec::new")]
+    pub devices: Vec<T>,
 }
 
-impl DecodableResultExt for ChildDeviceListHubResult {
+impl<T: DecodableResultExt> DecodableResultExt for ChildDeviceListHubResult<T> {
     fn decode(self) -> Result<Self, Error> {
         Ok(ChildDeviceListHubResult {
             devices: self
@@ -29,7 +32,7 @@ impl DecodableResultExt for ChildDeviceListHubResult {
     }
 }
 
-impl TapoResponseExt for ChildDeviceListHubResult {}
+impl<T> TapoResponseExt for ChildDeviceListHubResult<T> {}
 
 /// Hub child device result.
 #[derive(Debug, Clone)]

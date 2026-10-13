@@ -119,6 +119,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         device_info.nickname, device_info.model, device_info.ip
                     );
                 }
+                DiscoveryResult::HubIr {
+                    device_info,
+                    handler: _,
+                } => {
+                    info!(
+                        "Found {:?} of model {:?} at IP address {:?}.",
+                        device_info.nickname, device_info.model, device_info.ip
+                    );
+                }
                 DiscoveryResult::CameraHub {
                     device_info,
                     handler: _,

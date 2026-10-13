@@ -9,17 +9,24 @@ file. This change log follows the conventions of
 ### Added
 
 - `ApiClient`: added the `p125` builder for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient::discover_devices`.
+- `ApiClient`: added the `h110` builder for the H110 hub. It returns a `HubIrHandler`, which supports everything `HubHandler` does and adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient::discover_devices`. (thanks to @skoky)
+- `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
+- `DiscoveryResult::HubIr` and `DeviceType::HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult::Other`. (thanks to @skoky)
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
 - `ApiClient`: added the `p125` method for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient.discover_devices`.
+- `ApiClient`: added the `h110` method for the H110 hub. It returns a `HubIrHandler`, a subclass of `HubHandler` that adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient.discover_devices`. (thanks to @skoky)
+- `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
+- `DiscoveryResult.HubIr` and `DeviceType.HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult.Other`. (thanks to @skoky)
 
 ## [MCP Unreleased][Unreleased]
 
 ### Added
 
+- `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub, with its sensors and IR remotes listed under `children`. `get_device_state` returns the keys stored on each IR remote. (thanks to @skoky)
 - `take_snapshot`: when `TAPO_MCP_PUBLIC_URL` is set, the result also carries a link to the image that stays valid for 5 minutes, so an agent can share it with the user or download the file.
 - `list_devices`, `tapo://devices`: the result now includes `discovered_at`, the time the discovery that produced the list started.
 - `list_devices`, `tapo://devices`: the result now includes `refresh_error` when the most recent background discovery failed. The devices are then the ones from the last successful discovery, at `discovered_at`.

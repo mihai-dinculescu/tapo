@@ -15,7 +15,7 @@
 /// # Generated code
 ///
 /// * Struct with `inner: Arc<RwLock<Handler>>` field and `#[derive(Clone)]`
-/// * `#[pyo3::pyclass(from_py_object, name = ...)]` attribute
+/// * `#[pyo3::pyclass(from_py_object, name = ..., subclass)]` attribute
 /// * `new(handler)` constructor
 /// * `refresh_session()` method
 /// * `get_device_info()` method (typed)
@@ -70,7 +70,7 @@ macro_rules! py_handler {
     // Internal: base struct + core methods + PyHandlerExt
     (@base $py_name:ident($handler:ident, $device_info:ty), $pyname:literal) => {
         #[derive(Clone)]
-        #[pyo3::pyclass(from_py_object, name = $pyname)]
+        #[pyo3::pyclass(from_py_object, name = $pyname, subclass)]
         pub struct $py_name {
             inner: std::sync::Arc<tokio::sync::RwLock<$handler>>,
         }
@@ -376,7 +376,7 @@ macro_rules! py_hub_child_handlers {
         $(($method:ident, $unchecked:ident, $py_handler:ident),)*
     ) => {
         impl $py_name {
-            fn parse_identifier(
+            pub(crate) fn parse_identifier(
                 device_id: Option<String>,
                 nickname: Option<String>,
             ) -> pyo3::prelude::PyResult<tapo::HubDevice> {

@@ -1,6 +1,7 @@
 use tapo::{
-    ApiClient, CameraHubHandler, DiscoveryResult, HubHandler, PowerStripEnergyMonitoringHandler,
-    PowerStripHandler, StreamExt as _, responses::ChildDeviceHubResult,
+    ApiClient, CameraHubHandler, DiscoveryResult, HubHandler, HubIrHandler,
+    PowerStripEnergyMonitoringHandler, PowerStripHandler, StreamExt as _,
+    responses::ChildDeviceHubIrResult,
 };
 
 use tracing::field::Empty;
@@ -23,13 +24,16 @@ pub enum CheckedDevice {
     HubChild {
         hub: HubParent,
         child_id: String,
-        child: ChildDeviceHubResult,
+        /// Hub children as the superset of all the hub child types, so that the
+        /// tools can handle them in one place regardless of the hub model.
+        child: ChildDeviceHubIrResult,
     },
 }
 
 /// The hub a [`CheckedDevice::HubChild`] is paired to.
 pub enum HubParent {
     Hub(HubHandler),
+    HubIr(HubIrHandler),
     CameraHub(CameraHubHandler),
 }
 
@@ -121,6 +125,16 @@ async fn find_child(
             .map(|c| CheckedDevice::HubChild {
                 hub: HubParent::Hub(handler),
                 child_id: c.device_id().to_string(),
+                child: c.into(),
+            })),
+        DiscoveryResult::HubIr { handler, .. } => Ok(handler
+            .get_child_device_list()
+            .await?
+            .into_iter()
+            .find(|c| c.device_id() == target_id)
+            .map(|c| CheckedDevice::HubChild {
+                hub: HubParent::HubIr(handler),
+                child_id: c.device_id().to_string(),
                 child: c,
             })),
         DiscoveryResult::CameraHub { handler, .. } => Ok(handler
@@ -131,7 +145,7 @@ async fn find_child(
             .map(|c| CheckedDevice::HubChild {
                 hub: HubParent::CameraHub(handler),
                 child_id: c.device_id().to_string(),
-                child: c,
+                child: c.into(),
             })),
         _ => Ok(None),
     }

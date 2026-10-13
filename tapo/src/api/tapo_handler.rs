@@ -319,6 +319,8 @@ macro_rules! tapo_handler {
 ///
 /// The `on_off` option is optional. Alternatively, `trigger_logs = EventType,` generates
 /// `get_trigger_logs()` returning `TriggerLogsResult<EventType>`, whose entries are `TriggerLog<EventType>`.
+/// Another alternative, `camel_case_device_info,`, makes `get_device_info` and
+/// `get_device_info_json` use the camelCase `getDeviceInfo` method, which is how IR remotes are addressed.
 ///
 /// # Generated code
 ///
@@ -335,7 +337,7 @@ macro_rules! tapo_child_handler {
         $name:ident($device_info:ty),
         on_off,
     ) => {
-        tapo_child_handler!(@base $(#[$meta])* $name($device_info));
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info), GetDeviceInfo);
         tapo_child_handler!(@on_off $name);
     };
 
@@ -345,8 +347,17 @@ macro_rules! tapo_child_handler {
         $name:ident($device_info:ty),
         trigger_logs = $log:ty,
     ) => {
-        tapo_child_handler!(@base $(#[$meta])* $name($device_info));
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info), GetDeviceInfo);
         tapo_child_handler!(@trigger_logs $name, $log);
+    };
+
+    // With a camelCase `getDeviceInfo` request
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        camel_case_device_info,
+    ) => {
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info), GetDeviceInfoCamelCase);
     };
 
     // No options
@@ -354,11 +365,11 @@ macro_rules! tapo_child_handler {
         $(#[$meta:meta])*
         $name:ident($device_info:ty),
     ) => {
-        tapo_child_handler!(@base $(#[$meta])* $name($device_info));
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info), GetDeviceInfo);
     };
 
     // Internal: base struct + core methods
-    (@base $(#[$meta:meta])* $name:ident($device_info:ty)) => {
+    (@base $(#[$meta:meta])* $name:ident($device_info:ty), $get_device_info:ident) => {
         $(#[$meta])*
         pub struct $name {
             client: std::sync::Arc<tokio::sync::RwLock<crate::api::ApiClient>>,
@@ -385,7 +396,7 @@ macro_rules! tapo_child_handler {
                 "try `", stringify!($name), "::get_device_info_json` (requires the `debug` feature).",
             ))]
             pub async fn get_device_info(&self) -> Result<$device_info, crate::error::Error> {
-                let request = crate::requests::TapoRequest::GetDeviceInfo(
+                let request = crate::requests::TapoRequest::$get_device_info(
                     crate::requests::TapoParams::new(crate::requests::EmptyParams),
                 );
 
@@ -406,7 +417,7 @@ macro_rules! tapo_child_handler {
             pub async fn get_device_info_json(
                 &self,
             ) -> Result<serde_json::Value, crate::error::Error> {
-                let request = crate::requests::TapoRequest::GetDeviceInfo(
+                let request = crate::requests::TapoRequest::$get_device_info(
                     crate::requests::TapoParams::new(crate::requests::EmptyParams),
                 );
 
@@ -520,8 +531,53 @@ macro_rules! tapo_child_handler {
     };
 }
 
-/// Generates the child device methods shared by hub handlers (H100, H200,
-/// H500): `get_child_device_list`, which pages through the hub's children,
+/// Generates the alarm (siren) methods shared by the hub handlers with a siren (H100, H110):
+/// `get_supported_ringtone_list`, `play_alarm` and `stop_alarm`.
+macro_rules! hub_alarm_handlers {
+    ($name:ident) => {
+        /// Hub alarm methods.
+        impl $name {
+            /// Returns a list of ringtones (alarm types) supported by the hub.
+            /// This information is useful in debugging or when investigating new functionality to add.
+            #[cfg(feature = "debug")]
+            pub async fn get_supported_ringtone_list(
+                &self,
+            ) -> Result<Vec<String>, crate::error::Error> {
+                self.client
+                    .read()
+                    .await
+                    .get_supported_alarm_type_list()
+                    .await
+                    .map(|response| response.alarm_type_list)
+            }
+
+            /// Start playing the hub alarm.
+            pub async fn play_alarm(
+                &self,
+                ringtone: crate::requests::AlarmRingtone,
+                volume: crate::requests::AlarmVolume,
+                duration: crate::requests::AlarmDuration,
+            ) -> Result<(), crate::error::Error> {
+                self.client
+                    .read()
+                    .await
+                    .play_alarm(crate::requests::PlayAlarmParams::new(
+                        ringtone, volume, duration,
+                    )?)
+                    .await
+            }
+
+            /// Stop playing the hub alarm, if it's currently playing.
+            pub async fn stop_alarm(&self) -> Result<(), crate::error::Error> {
+                self.client.read().await.stop_alarm().await
+            }
+        }
+    };
+}
+
+/// Generates the child device methods shared by hub handlers (H100, H110, H200,
+/// H500): `get_child_device_list`, which pages through the hub's children
+/// and returns them as the given child device result type (e.g. `ChildDeviceHubResult`),
 /// its `get_child_device_list_json` counterpart,
 /// `get_child_device_component_list`, the checked `ke100`/`s200`/.../`t31x`
 /// methods that resolve a [`HubDevice`](crate::HubDevice) against that
@@ -533,13 +589,14 @@ macro_rules! tapo_child_handler {
 macro_rules! hub_child_handlers {
     (
         $name:ident,
+        $child:ident,
         $ctor:literal
         $(, child_device_list_note = $child_device_list_note:literal)?
         $(,)?
     ) => {
         impl $name {
             #[doc = concat!(
-                "Returns *child device list* as [`ChildDeviceHubResult`](crate::responses::ChildDeviceHubResult).\n",
+                "Returns *child device list* as [`", stringify!($child), "`](crate::responses::", stringify!($child), ").\n",
                 "It is not guaranteed to contain all the properties returned from the Tapo API\n",
                 "or to support all the possible devices connected to the hub.\n",
                 "If the deserialization fails, or if a property that you care about it's not present,",
@@ -553,7 +610,7 @@ macro_rules! hub_child_handlers {
             $(#[doc = $child_device_list_note])?
             pub async fn get_child_device_list(
                 &self,
-            ) -> Result<Vec<crate::responses::ChildDeviceHubResult>, crate::error::Error> {
+            ) -> Result<Vec<crate::responses::$child>, crate::error::Error> {
                 let mut results = Vec::new();
                 let mut start_index = 0;
                 let mut fetch = true;
@@ -563,7 +620,9 @@ macro_rules! hub_child_handlers {
                         .client
                         .read()
                         .await
-                        .get_child_device_list::<crate::responses::ChildDeviceListHubResult>(
+                        .get_child_device_list::<crate::responses::ChildDeviceListHubResult<
+                            crate::responses::$child,
+                        >>(
                             start_index,
                         )
                         .await
@@ -612,13 +671,13 @@ macro_rules! hub_child_handlers {
 
         /// Child device handler builders.
         impl $name {
-            hub_child_handlers!(@checked ke100, KE100Handler, KE100, $ctor);
-            hub_child_handlers!(@checked s200, S200Handler, S200, $ctor);
-            hub_child_handlers!(@checked s210, S210Handler, S210, $ctor);
-            hub_child_handlers!(@checked t100, T100Handler, T100, $ctor);
-            hub_child_handlers!(@checked t110, T110Handler, T110, $ctor);
-            hub_child_handlers!(@checked t300, T300Handler, T300, $ctor);
-            hub_child_handlers!(@checked t31x, T31XHandler, T31X, $ctor);
+            hub_child_handlers!(@checked $child, ke100, KE100Handler, KE100, $ctor);
+            hub_child_handlers!(@checked $child, s200, S200Handler, S200, $ctor);
+            hub_child_handlers!(@checked $child, s210, S210Handler, S210, $ctor);
+            hub_child_handlers!(@checked $child, t100, T100Handler, T100, $ctor);
+            hub_child_handlers!(@checked $child, t110, T110Handler, T110, $ctor);
+            hub_child_handlers!(@checked $child, t300, T300Handler, T300, $ctor);
+            hub_child_handlers!(@checked $child, t31x, T31XHandler, T31X, $ctor);
         }
 
         /// Unchecked child device handler builders.
@@ -633,7 +692,7 @@ macro_rules! hub_child_handlers {
         }
     };
 
-    (@checked $method:ident, $handler:ident, $variant:ident, $ctor:literal) => {
+    (@checked $child:ident, $method:ident, $handler:ident, $variant:ident, $ctor:literal) => {
         #[doc = concat!(
             "Returns a [`", stringify!($handler), "`](crate::", stringify!($handler),
             ") for the given [`HubDevice`](crate::HubDevice).\n\n",
@@ -666,7 +725,7 @@ macro_rules! hub_child_handlers {
                 .await?
                 .into_iter()
                 .find_map(|child| match child {
-                    crate::responses::ChildDeviceHubResult::$variant(c) => match &identifier {
+                    crate::responses::$child::$variant(c) => match &identifier {
                         crate::api::HubDevice::ByDeviceId(id) if c.device_id == *id => {
                             Some(c.device_id)
                         }

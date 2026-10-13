@@ -1,0 +1,175 @@
+"""H110 Example
+
+Set the optional `IR_REMOTE` and `IR_KEY` environment variables to send one of
+the keys stored on an IR remote. IR remotes must be configured in the Tapo app first.
+
+```bash
+export IR_REMOTE="Living Room TV"
+export IR_KEY=POWER
+```
+"""
+
+import asyncio
+import os
+
+from tapo import ApiClient
+from tapo.requests import AlarmRingtone, AlarmVolume, AlarmDuration
+from tapo.responses import (
+    IrRemoteResult,
+    KE100Result,
+    OtherResult,
+    S200Result,
+    S210Result,
+    T100Result,
+    T110Result,
+    T300Result,
+    T31XResult,
+)
+
+from common import require_env_vars
+
+
+async def main():
+    tapo_username, tapo_password, ip_address = require_env_vars(
+        "TAPO_USERNAME", "TAPO_PASSWORD", "IP_ADDRESS"
+    )
+
+    client = ApiClient(tapo_username, tapo_password)
+    hub = await client.h110(ip_address)
+
+    device_info = await hub.get_device_info()
+    print(f"Device info: {device_info.to_dict()}")
+
+    child_device_list = await hub.get_child_device_list()
+
+    for child in child_device_list:
+        if isinstance(child, OtherResult):
+            print(
+                "Found unsupported child device with nickname: {}, id: {}, model: {}.".format(
+                    child.nickname, child.device_id, child.model
+                )
+            )
+        elif isinstance(child, IrRemoteResult):
+            keys = ", ".join(f"{key.name} ({key.display_name})" for key in child.key_list)
+
+            print(
+                "Found IR remote child device with nickname: {}, id: {}, model: {}, keys: {}.".format(
+                    child.nickname, child.device_id, child.model, keys
+                )
+            )
+        elif isinstance(child, KE100Result):
+            print(
+                "Found KE100 child device with nickname: {}, id: {}, current temperature: {:.2f} {} and target temperature: {:.2f} {}.".format(
+                    child.nickname,
+                    child.device_id,
+                    child.current_temperature,
+                    child.temperature_unit,
+                    child.target_temperature,
+                    child.temperature_unit,
+                )
+            )
+        elif isinstance(child, S200Result):
+            s200 = await hub.s200(device_id=child.device_id)
+            trigger_logs = await s200.get_trigger_logs(5)
+
+            print(
+                "Found S200B/S200D child device with nickname: {}, id: {}, last 5 trigger logs: {}.".format(
+                    child.nickname,
+                    child.device_id,
+                    [log.to_dict() for log in trigger_logs.logs],
+                )
+            )
+        elif isinstance(child, S210Result):
+            s210 = await hub.s210(device_id=child.device_id)
+            device_usage = await s210.get_device_usage()
+
+            print(
+                "Found S210 child device with nickname: {}, id: {}, device_on: {}, device usage: {}.".format(
+                    child.nickname,
+                    child.device_id,
+                    child.device_on,
+                    device_usage.to_dict(),
+                )
+            )
+        elif isinstance(child, T100Result):
+            t100 = await hub.t100(device_id=child.device_id)
+            trigger_logs = await t100.get_trigger_logs(5)
+
+            print(
+                "Found T100 child device with nickname: {}, id: {}, detected: {}, last 5 trigger logs: {}.".format(
+                    child.nickname,
+                    child.device_id,
+                    child.detected,
+                    [log.to_dict() for log in trigger_logs.logs],
+                )
+            )
+        elif isinstance(child, T110Result):
+            t110 = await hub.t110(device_id=child.device_id)
+            trigger_logs = await t110.get_trigger_logs(5)
+
+            print(
+                "Found T110 child device with nickname: {}, id: {}, open: {}, last 5 trigger logs: {}.".format(
+                    child.nickname,
+                    child.device_id,
+                    child.open,
+                    [log.to_dict() for log in trigger_logs.logs],
+                )
+            )
+        elif isinstance(child, T300Result):
+            t300 = await hub.t300(device_id=child.device_id)
+            trigger_logs = await t300.get_trigger_logs(5)
+
+            print(
+                "Found T300 child device with nickname: {}, id: {}, in_alarm: {}, water_leak_status: {}, last 5 trigger logs: {}.".format(
+                    child.nickname,
+                    child.device_id,
+                    child.in_alarm,
+                    child.water_leak_status,
+                    [log.to_dict() for log in trigger_logs.logs],
+                )
+            )
+        elif isinstance(child, T31XResult):
+            t31x = await hub.t31x(device_id=child.device_id)
+            temperature_humidity_records = await t31x.get_temperature_humidity_records()
+
+            print(
+                "Found T310/T315 child device with nickname: {}, id: {}, temperature: {:.2f} {}, humidity: {}%, earliest temperature and humidity record available: {}.".format(
+                    child.nickname,
+                    child.device_id,
+                    child.current_temperature,
+                    child.temperature_unit,
+                    child.current_humidity,
+                    (
+                        temperature_humidity_records.records[0].to_dict()
+                        if temperature_humidity_records.records
+                        else None
+                    ),
+                )
+            )
+
+    remote_nickname = os.environ.get("IR_REMOTE")
+    key_name = os.environ.get("IR_KEY")
+
+    if remote_nickname and key_name:
+        print(f"Sending the '{key_name}' key on the '{remote_nickname}' IR remote...")
+        remote = await hub.ir_remote(nickname=remote_nickname)
+        await remote.send_key_by_name(key_name)
+    else:
+        print("Set the IR_REMOTE and IR_KEY environment variables to send a key on an IR remote.")
+
+    print(f"Triggering the alarm ringtone 'Alarm 1' at a 'Low' volume for '3 Seconds'...")
+    await hub.play_alarm(AlarmRingtone.Alarm1, AlarmVolume.Low, AlarmDuration.Seconds, seconds=3)
+
+    device_info = await hub.get_device_info()
+    print(f"Is device ringing?: {device_info.in_alarm}")
+
+    print("Stopping the alarm after 1 Second...")
+    await asyncio.sleep(1)
+    await hub.stop_alarm()
+
+    device_info = await hub.get_device_info()
+    print(f"Is device ringing?: {device_info.in_alarm}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -33,6 +33,9 @@ class DeviceType:
     Hub: Final[DeviceType]
     """Tapo H100 - smart hub."""
 
+    HubIr: Final[DeviceType]
+    """Tapo H110 - smart hub with an IR blaster."""
+
     CameraHub: Final[DeviceType]
     """Tapo H200, H500 - camera hubs."""
 

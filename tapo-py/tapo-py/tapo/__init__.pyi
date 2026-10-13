@@ -8,6 +8,8 @@ from .device_type import *
 from .discovery_raw_result import *
 from .discovery_result import *
 from .hub_handler import *
+from .hub_ir_handler import *
+from .ir_remote_handler import *
 from .ke100_handler import *
 from .light_handler import *
 from .plug_energy_monitoring_handler import *

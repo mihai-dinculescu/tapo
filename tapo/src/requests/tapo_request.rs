@@ -7,8 +7,8 @@ use super::{
     GetEnergyDataParams, GetPowerDataParams, GetScheduleRulesParams, GetTriggerLogsParams,
     LightingEffect, MultipleRequestParams, PlayAlarmParams, RemoveScheduleRulesParams,
     RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams, SegmentEffect,
-    SmartCamAddMotorPositionParams, SmartCamControlChildParams, SmartCamDeletePresetParams,
-    SmartCamGetChildDeviceListParams, SmartCamGetDeviceInfoParams,
+    SendIrCmdByIdParams, SmartCamAddMotorPositionParams, SmartCamControlChildParams,
+    SmartCamDeletePresetParams, SmartCamGetChildDeviceListParams, SmartCamGetDeviceInfoParams,
     SmartCamGetGeneralDeviceListParams, SmartCamGetPresetConfigParams, SmartCamGetTimezoneParams,
     SmartCamMotorMoveParams, SmartCamMotorMoveToPresetParams, SmartCamSearchDateWithVideoParams,
     SmartCamSearchVideoWithUtcParams,
@@ -52,6 +52,12 @@ pub(crate) enum TapoRequest {
     #[cfg(feature = "debug")]
     #[serde(rename = "get_support_alarm_type_list")]
     GetSupportedAlarmTypeList(TapoParams<EmptyParams>),
+    // IR remote requests. Unlike the other hub children, IR remotes are addressed
+    // with camelCase method names.
+    #[serde(rename = "getDeviceInfo")]
+    GetDeviceInfoCamelCase(TapoParams<EmptyParams>),
+    #[serde(rename = "sendIrCmdById")]
+    SendIrCmdById(TapoParams<SendIrCmdByIdParams>),
     // Smart Camera requests
     #[serde(rename = "getDeviceInfo")]
     SmartCamGetDeviceInfo(TapoParams<SmartCamGetDeviceInfoParams>),

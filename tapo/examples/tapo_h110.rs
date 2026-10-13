@@ -1,0 +1,183 @@
+//! H110 Example
+//!
+//! Set the optional `IR_REMOTE` and `IR_KEY` environment variables to send one of
+//! the keys stored on an IR remote. IR remotes must be configured in the Tapo app first.
+//!
+//! ```bash
+//! export IR_REMOTE="Living Room TV"
+//! export IR_KEY=POWER
+//! ```
+use std::env;
+use std::time::Duration;
+
+use log::info;
+use tapo::requests::{AlarmDuration, AlarmRingtone, AlarmVolume};
+use tapo::responses::ChildDeviceHubIrResult;
+use tapo::{ApiClient, HubDevice};
+
+mod common;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    common::setup_logger();
+
+    let [tapo_username, tapo_password, ip_address] =
+        common::require_env_vars(["TAPO_USERNAME", "TAPO_PASSWORD", "IP_ADDRESS"])?;
+
+    let hub = ApiClient::new(tapo_username, tapo_password)
+        .h110(ip_address)
+        .await?;
+
+    let device_info = hub.get_device_info().await?;
+    info!("Device info: {device_info:?}");
+
+    info!("Getting child devices...");
+    let child_device_list = hub.get_child_device_list().await?;
+
+    for child in child_device_list {
+        match child {
+            ChildDeviceHubIrResult::IrRemote(device) => {
+                let keys = device
+                    .key_list
+                    .iter()
+                    .map(|key| format!("{} ({})", key.name, key.display_name))
+                    .collect::<Vec<_>>();
+
+                info!(
+                    "Found IR remote child device with nickname: {}, id: {}, model: {}, keys: {}.",
+                    device.nickname,
+                    device.device_id,
+                    device.model,
+                    keys.join(", ")
+                );
+            }
+            ChildDeviceHubIrResult::KE100(device) => {
+                info!(
+                    "Found KE100 child device with nickname: {}, id: {}, current temperature: {} {:?} and target temperature: {} {:?}.",
+                    device.nickname,
+                    device.device_id,
+                    device.current_temperature,
+                    device.temperature_unit,
+                    device.target_temperature,
+                    device.temperature_unit,
+                );
+            }
+            ChildDeviceHubIrResult::S200(device) => {
+                let s200 = hub
+                    .s200(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
+                let trigger_logs = s200.get_trigger_logs(5, 0).await?;
+
+                info!(
+                    "Found S200B/S200D child device with nickname: {}, id: {}, last 5 trigger logs: {:?}.",
+                    device.nickname, device.device_id, trigger_logs
+                );
+            }
+            ChildDeviceHubIrResult::S210(device) => {
+                let s210 = hub
+                    .s210(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
+                let device_usage = s210.get_device_usage().await?;
+
+                info!(
+                    "Found S210 child device with nickname: {}, id: {}, device_on: {}, device usage: {:?}.",
+                    device.nickname, device.device_id, device.device_on, device_usage
+                );
+            }
+            ChildDeviceHubIrResult::T100(device) => {
+                let t100 = hub
+                    .t100(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
+                let trigger_logs = t100.get_trigger_logs(5, 0).await?;
+
+                info!(
+                    "Found T100 child device with nickname: {}, id: {}, detected: {}, last 5 trigger logs: {:?}.",
+                    device.nickname, device.device_id, device.detected, trigger_logs
+                );
+            }
+            ChildDeviceHubIrResult::T110(device) => {
+                let t110 = hub
+                    .t110(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
+                let trigger_logs = t110.get_trigger_logs(5, 0).await?;
+
+                info!(
+                    "Found T110 child device with nickname: {}, id: {}, open: {}, last 5 trigger logs: {:?}.",
+                    device.nickname, device.device_id, device.open, trigger_logs
+                );
+            }
+            ChildDeviceHubIrResult::T300(device) => {
+                let t300 = hub
+                    .t300(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
+                let trigger_logs = t300.get_trigger_logs(5, 0).await?;
+
+                info!(
+                    "Found T300 child device with nickname: {}, id: {}, in_alarm: {}, water_leak_status: {:?}, last 5 trigger logs: {:?}.",
+                    device.nickname,
+                    device.device_id,
+                    device.in_alarm,
+                    device.water_leak_status,
+                    trigger_logs
+                );
+            }
+            ChildDeviceHubIrResult::T31X(device) => {
+                let t31x = hub
+                    .t31x(HubDevice::ByDeviceId(device.device_id.clone()))
+                    .await?;
+                let temperature_humidity_records = t31x.get_temperature_humidity_records().await?;
+
+                info!(
+                    "Found T310/T315 child device with nickname: {}, id: {}, temperature: {} {:?}, humidity: {}%, earliest temperature and humidity record available: {:?}.",
+                    device.nickname,
+                    device.device_id,
+                    device.current_temperature,
+                    device.temperature_unit,
+                    device.current_humidity,
+                    temperature_humidity_records.records.first()
+                );
+            }
+            ChildDeviceHubIrResult::Other(device) => {
+                info!(
+                    "Found unsupported child device with nickname: {}, id: {}, model: {}.",
+                    device.nickname, device.device_id, device.model
+                );
+            }
+        }
+    }
+
+    match (env::var("IR_REMOTE"), env::var("IR_KEY")) {
+        (Ok(remote_nickname), Ok(key_name)) => {
+            info!("Sending the '{key_name}' key on the '{remote_nickname}' IR remote...");
+            let remote = hub
+                .ir_remote(HubDevice::ByNickname(remote_nickname))
+                .await?;
+            remote.send_key_by_name(key_name).await?;
+        }
+        _ => {
+            info!(
+                "Set the IR_REMOTE and IR_KEY environment variables to send a key on an IR remote."
+            );
+        }
+    }
+
+    info!("Triggering the alarm ringtone 'Alarm 1' at a 'Low' volume for '3 Seconds'...");
+    hub.play_alarm(
+        AlarmRingtone::Alarm1,
+        AlarmVolume::Low,
+        AlarmDuration::Seconds(3),
+    )
+    .await?;
+
+    let device_info = hub.get_device_info().await?;
+    info!("Is device ringing?: {:?}", device_info.in_alarm);
+
+    info!("Stopping the alarm after 1 Second...");
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    hub.stop_alarm().await?;
+
+    let device_info = hub.get_device_info().await?;
+    info!("Is device ringing?: {:?}", device_info.in_alarm);
+
+    Ok(())
+}

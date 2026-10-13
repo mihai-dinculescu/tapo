@@ -2,6 +2,7 @@ from .hub_result import *
 from .status import *
 from .temperature_unit import *
 
+from .ir_remote_result import *
 from .ke100_result import *
 from .s200_result import *
 from .s210_result import *
