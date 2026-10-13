@@ -6,7 +6,7 @@ use tracing::field::Empty;
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
-use crate::models::{CheckDeviceParams, ControlDeviceParams, SetCapabilityRequest};
+use crate::models::{ControlDeviceParams, SetCapabilityRequest};
 use crate::requests;
 use crate::requests::CheckedDevice;
 use crate::telemetry::run_in_span;
@@ -15,13 +15,9 @@ pub async fn control_device(
     config: &AppConfig,
     params: ControlDeviceParams,
 ) -> Result<CallToolResult, McpError> {
-    let check_params = CheckDeviceParams {
-        id: params.id.clone(),
-        ip: params.ip.clone(),
-    };
-    let checked = requests::check_device(config, check_params).await?;
+    let checked = requests::check_device(config, &params.id, &params.ip).await?;
 
-    for capability in &params.capabilities {
+    for capability in params.capabilities {
         let span = tracing::info_span!(
             "set_capability",
             tapo.capability = capability.name(),
@@ -31,13 +27,13 @@ pub async fn control_device(
         run_in_span(span, async {
             match capability {
                 SetCapabilityRequest::Brightness { value } => {
-                    apply_brightness(&params.id, &checked, *value).await
+                    apply_brightness(&params.id, &checked, value).await
                 }
                 SetCapabilityRequest::Color { value } => {
-                    apply_color(&params.id, &checked, value.clone()).await
+                    apply_color(&params.id, &checked, value).await
                 }
                 SetCapabilityRequest::OnOff { value } => {
-                    apply_on_off(&params.id, &checked, *value).await
+                    apply_on_off(&params.id, &checked, value).await
                 }
             }
         })

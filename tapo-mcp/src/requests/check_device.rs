@@ -8,7 +8,6 @@ use tracing::field::Empty;
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
-use crate::models::CheckDeviceParams;
 use crate::telemetry::run_in_span;
 
 pub enum CheckedDevice {
@@ -39,57 +38,58 @@ pub enum HubParent {
 
 pub async fn check_device(
     config: &AppConfig,
-    params: CheckDeviceParams,
+    id: &str,
+    ip: &str,
 ) -> Result<CheckedDevice, TapoMcpError> {
     let span = tracing::info_span!(
         "check_device",
         otel.status_code = Empty,
         "error.type" = Empty,
     );
-    run_in_span(span, find_device(config, params)).await
+    run_in_span(span, find_device(config, id, ip)).await
 }
 
 async fn find_device(
     config: &AppConfig,
-    params: CheckDeviceParams,
+    id: &str,
+    ip: &str,
 ) -> Result<CheckedDevice, TapoMcpError> {
     let api_client = ApiClient::new(config.username.clone(), config.password.clone());
     let mut discovery = api_client
-        .discover_devices(params.ip.clone(), config.discovery_timeout)
+        .discover_devices(ip, config.discovery_timeout)
         .await?;
 
-    let mut last_seen: Option<(String, String)> = None;
+    let mut last_seen: Option<String> = None;
 
     while let Some(discovery_result) = discovery.next().await {
         let device = discovery_result.map_err(TapoMcpError::InternalDiscovery)?;
-        let device_id = device.device_id().to_string();
-        let device_ip = device.ip().to_string();
+        if device.ip() != ip {
+            continue;
+        }
 
-        if device_ip == params.ip && device_id == params.id {
+        if device.device_id() == id {
             return Ok(CheckedDevice::Parent(device));
         }
 
-        if device_ip == params.ip
-            && let Some(checked) = find_child(device, &params.id).await?
-        {
+        let device_id = last_seen.is_none().then(|| device.device_id().to_string());
+
+        if let Some(checked) = find_child(device, id).await? {
             return Ok(checked);
         }
 
-        if device_ip == params.ip {
-            last_seen.get_or_insert((device_id, device_ip));
-        }
+        last_seen = last_seen.or(device_id);
     }
 
     match last_seen {
-        Some((found_id, found_ip)) => Err(TapoMcpError::DeviceMismatch {
-            expected_id: params.id,
-            expected_ip: params.ip,
+        Some(found_id) => Err(TapoMcpError::DeviceMismatch {
+            expected_id: id.to_string(),
+            expected_ip: ip.to_string(),
             found_id,
-            found_ip,
+            found_ip: ip.to_string(),
         }),
         None => Err(TapoMcpError::DeviceNotFound {
-            id: params.id,
-            ip: params.ip,
+            id: id.to_string(),
+            ip: ip.to_string(),
         }),
     }
 }

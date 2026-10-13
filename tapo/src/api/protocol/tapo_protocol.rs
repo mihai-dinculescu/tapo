@@ -85,13 +85,12 @@ impl TapoProtocol {
 
     pub async fn login(
         &mut self,
-        ip_address: impl Into<String>,
-        username: String,
-        password: String,
+        ip_address: &str,
+        username: &str,
+        password: &str,
         device_family: DeviceFamily,
         auth_protocol: AuthProtocol,
     ) -> Result<(), Error> {
-        let ip_address = ip_address.into();
         self.device_family = device_family;
 
         if self.active.is_none() {
@@ -105,7 +104,7 @@ impl TapoProtocol {
                 // nothing left to do after that.
                 AuthProtocol::TpapThenAesSsl => {
                     return self
-                        .login_tpap_then_aes_ssl(&ip_address, username, password)
+                        .login_tpap_then_aes_ssl(ip_address, username, password)
                         .await;
                 }
                 AuthProtocol::Klap => {
@@ -121,7 +120,7 @@ impl TapoProtocol {
                     )))
                 }
                 AuthProtocol::Unknown => {
-                    match TpapProtocol::discover(&self.client, &ip_address).await? {
+                    match TpapProtocol::discover(&self.client, ip_address).await? {
                         Some(info) => {
                             debug!("Using TPAP protocol (negotiated)...");
                             ActiveProtocol::Tpap(Box::new(TpapProtocol::new(
@@ -143,7 +142,7 @@ impl TapoProtocol {
         let url = match &self.active {
             Some(ActiveProtocol::AesSsl(_)) => format!("https://{ip_address}"),
             Some(ActiveProtocol::Klap(_)) => format!("http://{ip_address}/app"),
-            Some(ActiveProtocol::Tpap(p)) => p.url(&ip_address)?,
+            Some(ActiveProtocol::Tpap(p)) => p.url(ip_address)?,
             None => unreachable!(),
         };
         debug!("Device url: {url}");
@@ -165,8 +164,8 @@ impl TapoProtocol {
     async fn login_tpap_then_aes_ssl(
         &mut self,
         ip_address: &str,
-        username: String,
-        password: String,
+        username: &str,
+        password: &str,
     ) -> Result<(), Error> {
         debug!("Using TPAP protocol (tried first)...");
         let mut tpap =
@@ -175,7 +174,7 @@ impl TapoProtocol {
         let url = tpap.url(ip_address)?;
         debug!("Device url: {url}");
 
-        let tpap_error = match tpap.login(url, username.clone(), password.clone()).await {
+        let tpap_error = match tpap.login(url, username, password).await {
             Ok(()) => {
                 self.active = Some(ActiveProtocol::Tpap(Box::new(tpap)));
                 return Ok(());
@@ -201,11 +200,7 @@ impl TapoProtocol {
         }
     }
 
-    pub async fn refresh_session(
-        &mut self,
-        username: String,
-        password: String,
-    ) -> Result<(), Error> {
+    pub async fn refresh_session(&mut self, username: &str, password: &str) -> Result<(), Error> {
         match &mut self.active {
             Some(ActiveProtocol::AesSsl(p)) => p.refresh_session(username, password).await,
             Some(ActiveProtocol::Klap(p)) => p.refresh_session(username, password).await,

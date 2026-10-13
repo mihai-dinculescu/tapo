@@ -14,8 +14,7 @@ py_handler! {
 #[pymethods]
 impl PyCameraPtzHandler {
     pub async fn get_rtsp_stream_url(&self, username: String, password: String) -> RtspStreamUrl {
-        let handler = self.inner.clone();
-        let handler = handler.read().await;
+        let handler = self.inner.read().await;
         handler.deref().get_rtsp_stream_url(&username, &password)
     }
 

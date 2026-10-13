@@ -9,6 +9,6 @@ pub async fn check_device(
     config: &AppConfig,
     params: CheckDeviceParams,
 ) -> Result<CallToolResult, McpError> {
-    requests::check_device(config, params).await?;
+    requests::check_device(config, &params.id, &params.ip).await?;
     Ok(CallToolResult::success(vec![]))
 }

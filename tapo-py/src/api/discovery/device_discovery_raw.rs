@@ -50,7 +50,7 @@ impl PyDeviceDiscoveryRawIter {
     }
 
     fn __next__(slf: PyRefMut<'_, Self>) -> PyResult<Option<PyMaybeDiscoveryRawResult>> {
-        let inner = (*slf).inner.clone();
+        let inner = &slf.inner;
 
         let result = Python::attach(|py| {
             py.detach(|| {

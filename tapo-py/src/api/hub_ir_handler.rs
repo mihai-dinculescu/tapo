@@ -100,8 +100,7 @@ impl PyHubIrHandler {
     }
 
     pub async fn ir_remote_unchecked(&self, device_id: String) -> PyResult<PyIrRemoteHandler> {
-        let handler = self.inner.clone();
-        let child = handler.read().await.ir_remote_unchecked(device_id);
+        let child = self.inner.read().await.ir_remote_unchecked(device_id);
         Ok(PyIrRemoteHandler::new(child))
     }
 }

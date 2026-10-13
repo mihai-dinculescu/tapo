@@ -37,17 +37,13 @@ impl KlapProtocol {
     pub async fn login(
         &mut self,
         url: String,
-        username: String,
-        password: String,
+        username: &str,
+        password: &str,
     ) -> Result<(), Error> {
         self.handshake(url, username, password).await
     }
 
-    pub async fn refresh_session(
-        &mut self,
-        username: String,
-        password: String,
-    ) -> Result<(), Error> {
+    pub async fn refresh_session(&mut self, username: &str, password: &str) -> Result<(), Error> {
         let url = self.session()?.url.clone();
         self.handshake(url, username, password).await
     }
@@ -61,12 +57,12 @@ impl KlapProtocol {
         let request_string = serde_json::to_string(&request)?;
         debug!("Request: {request_string}");
 
-        let (payload, seq) = session.cipher.encrypt(request_string)?;
+        let (payload, seq) = session.cipher.encrypt(&request_string)?;
 
         let response = self
             .client
             .post(format!("{}/request?seq={seq}", session.url))
-            .header(COOKIE, session.cookie.clone())
+            .header(COOKIE, &session.cookie)
             .body(payload)
             .send()
             .await?;
@@ -78,7 +74,7 @@ impl KlapProtocol {
 
         let response_body = response.bytes().await.map_err(anyhow::Error::from)?;
 
-        let response_decrypted = session.cipher.decrypt(seq, response_body.to_vec())?;
+        let response_decrypted = session.cipher.decrypt(seq, &response_body)?;
         trace!("Device responded with (raw): {response_decrypted}");
 
         let response: TapoResponse<R> = serde_json::from_str(&response_decrypted)?;
@@ -99,8 +95,8 @@ impl KlapProtocol {
     async fn handshake(
         &mut self,
         url: String,
-        username: String,
-        password: String,
+        username: &str,
+        password: &str,
     ) -> Result<(), Error> {
         let auth_hash = crypto::sha256(
             &[
@@ -108,8 +104,7 @@ impl KlapProtocol {
                 crypto::sha1(password.as_bytes()),
             ]
             .concat(),
-        )
-        .to_vec();
+        );
 
         let local_seed: [u8; 16] = rand::rng().random();
 
@@ -118,7 +113,7 @@ impl KlapProtocol {
         self.handshake2(&url, &cookie, &local_seed, &remote_seed, &auth_hash)
             .await?;
 
-        let cipher = KlapCipher::new(local_seed.to_vec(), remote_seed, auth_hash)?;
+        let cipher = KlapCipher::new(&local_seed, &remote_seed, &auth_hash)?;
 
         self.session = Some(KlapSession {
             url,

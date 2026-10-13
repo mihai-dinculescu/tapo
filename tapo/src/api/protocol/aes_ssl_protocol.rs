@@ -55,17 +55,13 @@ impl AesSslProtocol {
     pub async fn login(
         &mut self,
         url: String,
-        username: String,
-        password: String,
+        username: &str,
+        password: &str,
     ) -> Result<AesSslLogin, Error> {
         self.handshake(url, username, password).await
     }
 
-    pub async fn refresh_session(
-        &mut self,
-        username: String,
-        password: String,
-    ) -> Result<(), Error> {
+    pub async fn refresh_session(&mut self, username: &str, password: &str) -> Result<(), Error> {
         let url = self.session()?.url.clone();
 
         self.handshake(url, username, password).await?.into_result()
@@ -144,13 +140,13 @@ impl AesSslProtocol {
     async fn handshake(
         &mut self,
         url: String,
-        username: String,
-        password: String,
+        username: &str,
+        password: &str,
     ) -> Result<AesSslLogin, Error> {
         let local_nonce = generate_nonce();
 
         let handshake1_result = match self
-            .handshake1(&url, &username, &password, &local_nonce)
+            .handshake1(&url, username, password, &local_nonce)
             .await?
         {
             Handshake1::Accepted(result) => result,
@@ -160,7 +156,7 @@ impl AesSslProtocol {
         let handshake2_result = self
             .handshake2(
                 &url,
-                &username,
+                username,
                 &local_nonce,
                 &handshake1_result.server_nonce,
                 &handshake1_result.password_hash,

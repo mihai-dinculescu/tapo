@@ -180,18 +180,14 @@ impl TpapProtocol {
     pub async fn login(
         &mut self,
         url: String,
-        _username: String,
-        password: String,
+        _username: &str,
+        password: &str,
     ) -> Result<(), Error> {
         self.url = Some(url);
         self.handshake(password).await
     }
 
-    pub async fn refresh_session(
-        &mut self,
-        _username: String,
-        password: String,
-    ) -> Result<(), Error> {
+    pub async fn refresh_session(&mut self, _username: &str, password: &str) -> Result<(), Error> {
         self.handshake(password).await
     }
 
@@ -268,7 +264,7 @@ impl TpapProtocol {
 
     // Of the request and response bodies of the handshake only the error
     // code is logged, and nothing that is derived from them.
-    async fn handshake(&mut self, password: String) -> Result<(), Error> {
+    async fn handshake(&mut self, password: &str) -> Result<(), Error> {
         let url = self
             .url
             .as_deref()
@@ -279,7 +275,7 @@ impl TpapProtocol {
         let registration = self.pake_register(url, passcode_type, &user_random).await?;
 
         let credential = tpap_spake2p::credential(
-            &password,
+            password,
             registration.extra_crypt.as_ref(),
             self.device_family,
         )?;

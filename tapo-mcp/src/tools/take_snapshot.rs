@@ -8,7 +8,7 @@ use tracing::field::Empty;
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
-use crate::models::{CheckDeviceParams, GetCapabilityRequest, SnapshotResult, TakeSnapshotParams};
+use crate::models::{GetCapabilityRequest, SnapshotResult, TakeSnapshotParams};
 use crate::requests;
 use crate::requests::CheckedDevice;
 use crate::snapshots::SnapshotStore;
@@ -28,11 +28,7 @@ pub async fn take_snapshot(
         .as_deref()
         .ok_or(TapoMcpError::CameraCredentialsMissing)?;
 
-    let check_params = CheckDeviceParams {
-        id: params.id.clone(),
-        ip: params.ip.clone(),
-    };
-    let checked = requests::check_device(config, check_params).await?;
+    let checked = requests::check_device(config, &params.id, &params.ip).await?;
 
     let snapshot = match checked {
         CheckedDevice::Parent(DiscoveryResult::CameraPtz { handler, .. }) => {

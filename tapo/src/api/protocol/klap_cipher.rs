@@ -7,18 +7,14 @@ use cbc::{Decryptor, Encryptor};
 use super::crypto;
 
 pub(super) struct KlapCipher {
-    key: Vec<u8>,
-    iv: Vec<u8>,
+    key: [u8; 16],
+    iv: [u8; 12],
     seq: AtomicI32,
-    sig: Vec<u8>,
+    sig: [u8; 28],
 }
 
 impl KlapCipher {
-    pub fn new(
-        local_seed: Vec<u8>,
-        remote_seed: Vec<u8>,
-        user_hash: Vec<u8>,
-    ) -> anyhow::Result<Self> {
+    pub fn new(local_seed: &[u8], remote_seed: &[u8], user_hash: &[u8]) -> anyhow::Result<Self> {
         let local_hash = &[local_seed, remote_seed, user_hash].concat();
 
         let (iv, seq) = Self::iv_derive(local_hash)?;
@@ -31,7 +27,7 @@ impl KlapCipher {
         })
     }
 
-    pub fn encrypt(&self, data: String) -> anyhow::Result<(Vec<u8>, i32)> {
+    pub fn encrypt(&self, data: &str) -> anyhow::Result<(Vec<u8>, i32)> {
         let seq = self.seq.fetch_add(1, Ordering::Relaxed).wrapping_add(1);
         let encryptor = Encryptor::<Aes128>::new_from_slices(&self.key, &self.iv_seq(seq))?;
 
@@ -51,7 +47,7 @@ impl KlapCipher {
         Ok((result, seq))
     }
 
-    pub fn decrypt(&self, seq: i32, cipher_bytes: Vec<u8>) -> anyhow::Result<String> {
+    pub fn decrypt(&self, seq: i32, cipher_bytes: &[u8]) -> anyhow::Result<String> {
         let decryptor = Decryptor::<Aes128>::new_from_slices(&self.key, &self.iv_seq(seq))?;
 
         let ciphertext = cipher_bytes.get(32..).ok_or_else(|| {
@@ -71,32 +67,36 @@ impl KlapCipher {
 }
 
 impl KlapCipher {
-    fn key_derive(local_hash: &[u8]) -> Vec<u8> {
+    fn key_derive(local_hash: &[u8]) -> [u8; 16] {
         let local_hash = &["lsk".as_bytes(), local_hash].concat();
         let hash = crypto::sha256(local_hash);
-        let key = &hash[..16];
-        key.to_vec()
+        let mut key = [0u8; 16];
+        key.copy_from_slice(&hash[..16]);
+        key
     }
 
-    fn iv_derive(local_hash: &[u8]) -> anyhow::Result<(Vec<u8>, i32)> {
+    fn iv_derive(local_hash: &[u8]) -> anyhow::Result<([u8; 12], i32)> {
         let local_hash = &["iv".as_bytes(), local_hash].concat();
         let hash = crypto::sha256(local_hash);
-        let iv = &hash[..12];
+        let mut iv = [0u8; 12];
+        iv.copy_from_slice(&hash[..12]);
         let seq: [u8; 4] = hash[hash.len() - 4..].try_into()?;
         let seq = i32::from_be_bytes(seq);
-        Ok((iv.to_vec(), seq))
+        Ok((iv, seq))
     }
 
-    fn sig_derive(local_hash: &[u8]) -> Vec<u8> {
+    fn sig_derive(local_hash: &[u8]) -> [u8; 28] {
         let local_hash = &["ldk".as_bytes(), local_hash].concat();
         let hash = crypto::sha256(local_hash);
-        let key = &hash[..28];
-        key.to_vec()
+        let mut sig = [0u8; 28];
+        sig.copy_from_slice(&hash[..28]);
+        sig
     }
 
-    fn iv_seq(&self, seq: i32) -> Vec<u8> {
-        let mut iv_seq = self.iv.clone();
-        iv_seq.extend_from_slice(&seq.to_be_bytes());
+    fn iv_seq(&self, seq: i32) -> [u8; 16] {
+        let mut iv_seq = [0u8; 16];
+        iv_seq[..12].copy_from_slice(&self.iv);
+        iv_seq[12..].copy_from_slice(&seq.to_be_bytes());
         iv_seq
     }
 }
@@ -107,8 +107,8 @@ mod tests {
 
     #[test]
     fn test_decrypt_rejects_a_response_shorter_than_the_signature() {
-        let cipher = KlapCipher::new(vec![0; 16], vec![0; 16], vec![0; 32]).unwrap();
+        let cipher = KlapCipher::new(&[0; 16], &[0; 16], &[0; 32]).unwrap();
 
-        assert!(cipher.decrypt(1, vec![0; 31]).is_err());
+        assert!(cipher.decrypt(1, &[0; 31]).is_err());
     }
 }

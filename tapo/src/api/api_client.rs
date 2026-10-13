@@ -232,8 +232,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l510(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(LightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -258,8 +262,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l520(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(LightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -284,8 +292,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l530(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(ColorLightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -310,8 +322,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l535(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(ColorLightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -336,8 +352,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l610(mut self, ip_address: impl Into<String>) -> Result<LightHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(LightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -362,8 +382,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn l630(mut self, ip_address: impl Into<String>) -> Result<ColorLightHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(ColorLightHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -391,8 +415,12 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<RgbLightStripHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(RgbLightStripHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -420,8 +448,12 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<RgbicLightStripHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(RgbicLightStripHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -449,8 +481,12 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<RgbicLightStripHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(RgbicLightStripHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -475,8 +511,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn p100(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(PlugHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -501,8 +541,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn p105(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(PlugHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -527,8 +571,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn p125(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(PlugHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -556,8 +604,12 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<PlugEnergyMonitoringHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(PlugEnergyMonitoringHandler::new(Arc::new(RwLock::new(
             self,
@@ -587,8 +639,12 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<PlugEnergyMonitoringHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(PlugEnergyMonitoringHandler::new(Arc::new(RwLock::new(
             self,
@@ -616,8 +672,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn p300(mut self, ip_address: impl Into<String>) -> Result<PowerStripHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(PowerStripHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -646,8 +706,12 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<PowerStripEnergyMonitoringHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(PowerStripEnergyMonitoringHandler::new(Arc::new(
             RwLock::new(self),
@@ -675,8 +739,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn p306(mut self, ip_address: impl Into<String>) -> Result<PowerStripHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(PowerStripHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -705,8 +773,12 @@ impl ApiClient {
         mut self,
         ip_address: impl Into<String>,
     ) -> Result<PowerStripEnergyMonitoringHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(PowerStripEnergyMonitoringHandler::new(Arc::new(
             RwLock::new(self),
@@ -735,8 +807,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn h100(mut self, ip_address: impl Into<String>) -> Result<HubHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(HubHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -763,8 +839,12 @@ impl ApiClient {
     /// # }
     /// ```
     pub async fn h110(mut self, ip_address: impl Into<String>) -> Result<HubIrHandler, Error> {
-        self.login(ip_address, DeviceFamily::Smart, AuthProtocol::Unknown)
-            .await?;
+        self.login(
+            &ip_address.into(),
+            DeviceFamily::Smart,
+            AuthProtocol::Unknown,
+        )
+        .await?;
 
         Ok(HubIrHandler::new(Arc::new(RwLock::new(self))))
     }
@@ -796,12 +876,8 @@ impl ApiClient {
     pub async fn h200(mut self, ip_address: impl Into<String>) -> Result<CameraHubHandler, Error> {
         let ip_address = ip_address.into();
         self.prepare_for_camera_hub();
-        self.login(
-            ip_address.clone(),
-            DeviceFamily::SmartCam,
-            AuthProtocol::AesSsl,
-        )
-        .await?;
+        self.login(&ip_address, DeviceFamily::SmartCam, AuthProtocol::AesSsl)
+            .await?;
 
         Ok(CameraHubHandler::new(
             Arc::new(RwLock::new(self)),
@@ -836,12 +912,8 @@ impl ApiClient {
     pub async fn h500(mut self, ip_address: impl Into<String>) -> Result<CameraHubHandler, Error> {
         let ip_address = ip_address.into();
         self.prepare_for_camera_hub();
-        self.login(
-            ip_address.clone(),
-            DeviceFamily::SmartCam,
-            AuthProtocol::AesSsl,
-        )
-        .await?;
+        self.login(&ip_address, DeviceFamily::SmartCam, AuthProtocol::AesSsl)
+            .await?;
 
         Ok(CameraHubHandler::new(
             Arc::new(RwLock::new(self)),
@@ -873,7 +945,7 @@ impl ApiClient {
     pub async fn c210(mut self, ip_address: impl Into<String>) -> Result<CameraPtzHandler, Error> {
         let ip_address = ip_address.into();
         self.login(
-            ip_address.clone(),
+            &ip_address,
             DeviceFamily::SmartCam,
             AuthProtocol::TpapThenAesSsl,
         )
@@ -909,7 +981,7 @@ impl ApiClient {
     pub async fn c220(mut self, ip_address: impl Into<String>) -> Result<CameraPtzHandler, Error> {
         let ip_address = ip_address.into();
         self.login(
-            ip_address.clone(),
+            &ip_address,
             DeviceFamily::SmartCam,
             AuthProtocol::TpapThenAesSsl,
         )
@@ -945,7 +1017,7 @@ impl ApiClient {
     pub async fn c225(mut self, ip_address: impl Into<String>) -> Result<CameraPtzHandler, Error> {
         let ip_address = ip_address.into();
         self.login(
-            ip_address.clone(),
+            &ip_address,
             DeviceFamily::SmartCam,
             AuthProtocol::TpapThenAesSsl,
         )
@@ -984,7 +1056,7 @@ impl ApiClient {
     ) -> Result<CameraPtzHandler, Error> {
         let ip_address = ip_address.into();
         self.login(
-            ip_address.clone(),
+            &ip_address,
             DeviceFamily::SmartCam,
             AuthProtocol::TpapThenAesSsl,
         )
@@ -1023,7 +1095,7 @@ impl ApiClient {
     ) -> Result<CameraPtzHandler, Error> {
         let ip_address = ip_address.into();
         self.login(
-            ip_address.clone(),
+            &ip_address,
             DeviceFamily::SmartCam,
             AuthProtocol::TpapThenAesSsl,
         )
@@ -1059,7 +1131,7 @@ impl ApiClient {
     pub async fn tc40(mut self, ip_address: impl Into<String>) -> Result<CameraPtzHandler, Error> {
         let ip_address = ip_address.into();
         self.login(
-            ip_address.clone(),
+            &ip_address,
             DeviceFamily::SmartCam,
             AuthProtocol::TpapThenAesSsl,
         )
@@ -1095,7 +1167,7 @@ impl ApiClient {
     pub async fn tc70(mut self, ip_address: impl Into<String>) -> Result<CameraPtzHandler, Error> {
         let ip_address = ip_address.into();
         self.login(
-            ip_address.clone(),
+            &ip_address,
             DeviceFamily::SmartCam,
             AuthProtocol::TpapThenAesSsl,
         )
@@ -1121,13 +1193,10 @@ impl ApiClient {
 
     pub(crate) async fn login(
         &mut self,
-        ip_address: impl Into<String>,
+        ip_address: &str,
         device_family: DeviceFamily,
         auth_protocol: AuthProtocol,
     ) -> Result<(), Error> {
-        let tapo_username = self.tapo_username.clone();
-        let tapo_password = self.tapo_password.clone();
-
         if self.protocol.is_none() {
             let mut builder = Client::builder()
                 .http1_title_case_headers()
@@ -1149,7 +1218,9 @@ impl ApiClient {
             self.protocol = Some(TapoProtocol::new(builder.build()?));
         }
 
-        self.protocol_mut()?
+        let (protocol, tapo_username, tapo_password) = self.protocol_with_credentials()?;
+
+        protocol
             .login(
                 ip_address,
                 tapo_username,
@@ -1161,12 +1232,9 @@ impl ApiClient {
     }
 
     pub(crate) async fn refresh_session(&mut self) -> Result<(), Error> {
-        let tapo_username = self.tapo_username.clone();
-        let tapo_password = self.tapo_password.clone();
+        let (protocol, tapo_username, tapo_password) = self.protocol_with_credentials()?;
 
-        self.protocol_mut()?
-            .refresh_session(tapo_username, tapo_password)
-            .await
+        protocol.refresh_session(tapo_username, tapo_password).await
     }
 
     pub(crate) async fn download_recording<W: tokio::io::AsyncWrite + Unpin + Send>(
@@ -1782,12 +1850,15 @@ impl ApiClient {
         self.timeout.unwrap_or(DEFAULT_TIMEOUT)
     }
 
-    fn protocol_mut(&mut self) -> Result<&mut TapoProtocol, Error> {
-        self.protocol.as_mut().ok_or_else(|| {
+    /// The protocol, along with the username and password it logs in with.
+    fn protocol_with_credentials(&mut self) -> Result<(&mut TapoProtocol, &str, &str), Error> {
+        let protocol = self.protocol.as_mut().ok_or_else(|| {
             Error::Other(anyhow::anyhow!(
                 "The protocol should have been initialized already"
             ))
-        })
+        })?;
+
+        Ok((protocol, &self.tapo_username, &self.tapo_password))
     }
 
     fn protocol(&self) -> Result<&TapoProtocol, Error> {

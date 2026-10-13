@@ -495,8 +495,7 @@ macro_rules! py_hub_child_handlers {
                     &self,
                     device_id: String,
                 ) -> pyo3::prelude::PyResult<$crate::api::$py_handler> {
-                    let handler = self.inner.clone();
-                    let child = handler.read().await.$unchecked(device_id);
+                    let child = self.inner.read().await.$unchecked(device_id);
                     Ok($crate::api::$py_handler::new(child))
                 }
             )*

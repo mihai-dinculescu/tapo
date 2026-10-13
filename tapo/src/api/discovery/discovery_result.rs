@@ -167,7 +167,7 @@ impl DiscoveryResult {
         }
 
         client
-            .login(raw_result.ip.to_string(), device_family, auth_protocol)
+            .login(&raw_result.ip.to_string(), device_family, auth_protocol)
             .await?;
         let device_info: serde_json::Value = client.get_device_info().await?;
 

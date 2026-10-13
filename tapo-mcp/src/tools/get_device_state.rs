@@ -6,7 +6,7 @@ use tracing::field::Empty;
 
 use crate::config::AppConfig;
 use crate::errors::TapoMcpError;
-use crate::models::{CheckDeviceParams, GetCapabilityRequest, GetDeviceStateParams};
+use crate::models::{GetCapabilityRequest, GetDeviceStateParams};
 use crate::requests;
 use crate::requests::{CheckedDevice, HubParent};
 use crate::telemetry::run_in_span;
@@ -15,11 +15,7 @@ pub async fn get_device_state(
     config: &AppConfig,
     params: GetDeviceStateParams,
 ) -> Result<CallToolResult, McpError> {
-    let check_params = CheckDeviceParams {
-        id: params.id.clone(),
-        ip: params.ip.clone(),
-    };
-    let checked = requests::check_device(config, check_params).await?;
+    let checked = requests::check_device(config, &params.id, &params.ip).await?;
 
     let capability = params.capability.name();
     let span = || {
