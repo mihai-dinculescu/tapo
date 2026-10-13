@@ -57,7 +57,7 @@ impl PowerStripPlugEnergyMonitoringHandler {
         &self,
         interval: EnergyDataInterval,
     ) -> Result<EnergyDataResult, Error> {
-        let params = GetEnergyDataParams::new(interval);
+        let params = GetEnergyDataParams::new(interval)?;
         let request = TapoRequest::GetEnergyData(TapoParams::new(params));
 
         self.client

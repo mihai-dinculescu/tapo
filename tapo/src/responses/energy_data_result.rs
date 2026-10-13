@@ -1,9 +1,10 @@
 use anyhow::Context as _;
-use chrono::{DateTime, Local, NaiveDateTime, TimeZone as _, Utc};
+use chrono::{DateTime, Days, Duration, Local, Months, NaiveDateTime, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::error::Error;
 use crate::responses::TapoResponseExt;
-use crate::utils::der_tapo_datetime_format;
+use crate::utils::{der_tapo_datetime_format, local_midnight};
 
 /// Energy data result for the requested [`crate::requests::PowerDataInterval`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -51,31 +52,66 @@ pub(crate) struct EnergyDataResultRaw {
 impl TapoResponseExt for EnergyDataResultRaw {}
 
 impl TryInto<EnergyDataResult> for EnergyDataResultRaw {
-    type Error = crate::error::Error;
+    type Error = Error;
 
     fn try_into(self) -> Result<EnergyDataResult, Self::Error> {
-        let mut entries = Vec::with_capacity(self.data.len());
+        self.in_timezone(&Local)
+    }
+}
 
-        let mut local_date_time = Local
+enum Step {
+    Hour,
+    Day,
+    Month,
+}
+
+impl EnergyDataResultRaw {
+    fn in_timezone<Tz: TimeZone>(self, timezone: &Tz) -> Result<EnergyDataResult, Error> {
+        let start = timezone
             .timestamp_opt(self.start_timestamp, 0)
             .single()
             .context("Failed to map start_timestamp to local time")?;
-        let start_date_time = local_date_time.to_utc();
+        let start_date_time = start.to_utc();
 
-        for energy in self.data {
-            entries.push(EnergyDataIntervalResult {
-                start_date_time: local_date_time.to_utc(),
-                energy,
-            });
-            local_date_time = match self.interval {
-                60 => Ok(local_date_time + chrono::Duration::hours(1)),
-                1440 => Ok(local_date_time + chrono::Duration::days(1)),
-                43200 => Ok(local_date_time + chrono::Months::new(1)),
-                _ => Err(anyhow::anyhow!(
+        let step = match self.interval {
+            60 => Step::Hour,
+            1440 => Step::Day,
+            43200 => Step::Month,
+            _ => {
+                return Err(anyhow::anyhow!(
                     "Unsupported interval duration: {} minutes",
                     self.interval
-                )),
-            }?;
+                )
+                .into());
+            }
+        };
+
+        // Days and months are stepped by calendar date, because their length
+        // in hours changes with DST.
+        let start_date = start.date_naive();
+        let mut entries = Vec::with_capacity(self.data.len());
+
+        for (index, energy) in self.data.into_iter().enumerate() {
+            let entry_start = match step {
+                Step::Hour => start_date_time + Duration::hours(index as i64),
+                Step::Day => {
+                    let date = start_date
+                        .checked_add_days(Days::new(index as u64))
+                        .context("Energy data date is out of range")?;
+                    local_midnight(date, timezone)
+                }
+                Step::Month => {
+                    let date = start_date
+                        .checked_add_months(Months::new(index as u32))
+                        .context("Energy data date is out of range")?;
+                    local_midnight(date, timezone)
+                }
+            };
+
+            entries.push(EnergyDataIntervalResult {
+                start_date_time: entry_start,
+                energy,
+            });
         }
 
         Ok(EnergyDataResult {
@@ -84,5 +120,71 @@ impl TryInto<EnergyDataResult> for EnergyDataResultRaw {
             entries,
             interval_length: self.interval,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use chrono::{NaiveDate, Timelike as _};
+    use chrono_tz::America::Santiago;
+
+    use super::*;
+
+    fn raw(start_date_time: DateTime<Utc>, days: usize, interval: u64) -> EnergyDataResultRaw {
+        EnergyDataResultRaw {
+            local_time: NaiveDateTime::default(),
+            data: vec![0; days],
+            start_timestamp: start_date_time.timestamp(),
+            interval,
+        }
+    }
+
+    fn local_dates_and_times(result: &EnergyDataResult) -> Vec<NaiveDateTime> {
+        result
+            .entries
+            .iter()
+            .map(|entry| entry.start_date_time.with_timezone(&Santiago).naive_local())
+            .collect()
+    }
+
+    #[test]
+    fn test_daily_entries_start_at_local_midnight_across_dst_changes() {
+        let at = |month, day, hour| {
+            NaiveDate::from_ymd_opt(2026, month, day)
+                .unwrap()
+                .and_hms_opt(hour, 0, 0)
+                .unwrap()
+        };
+
+        // Santiago skips midnight on 2026-09-06, so that day starts at 01:00.
+        let expected = vec![at(9, 4, 0), at(9, 5, 0), at(9, 6, 1), at(9, 7, 0)];
+        let start = Santiago.from_local_datetime(&at(9, 4, 0)).unwrap().to_utc();
+        let result = raw(start, 4, 1440).in_timezone(&Santiago).unwrap();
+        assert_eq!(local_dates_and_times(&result), expected);
+
+        // Santiago repeats 23:00 on 2026-04-04, so that day has 25 hours.
+        let expected = vec![at(4, 3, 0), at(4, 4, 0), at(4, 5, 0), at(4, 6, 0)];
+        let start = Santiago.from_local_datetime(&at(4, 3, 0)).unwrap().to_utc();
+        let result = raw(start, 4, 1440).in_timezone(&Santiago).unwrap();
+        assert_eq!(local_dates_and_times(&result), expected);
+    }
+
+    #[test]
+    fn test_monthly_entries_start_on_the_first_of_each_month() {
+        let first_day = NaiveDate::from_ymd_opt(2026, 1, 1).unwrap();
+        let start = local_midnight(first_day, &Santiago);
+
+        let result = raw(start, 12, 43200).in_timezone(&Santiago).unwrap();
+
+        for (index, date_time) in local_dates_and_times(&result).into_iter().enumerate() {
+            assert_eq!(date_time.date(), first_day + Months::new(index as u32));
+            assert_eq!(date_time.hour(), 0);
+        }
+    }
+
+    #[test]
+    fn test_unsupported_interval_is_an_error() {
+        assert!(raw(Utc::now(), 1, 15).in_timezone(&Santiago).is_err());
+        assert!(raw(Utc::now(), 0, 15).in_timezone(&Santiago).is_err());
     }
 }

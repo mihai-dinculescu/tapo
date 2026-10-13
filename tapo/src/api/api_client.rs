@@ -1379,7 +1379,7 @@ impl ApiClient {
         interval: EnergyDataInterval,
     ) -> Result<EnergyDataResult, Error> {
         debug!("Get Energy data...");
-        let params = GetEnergyDataParams::new(interval);
+        let params = GetEnergyDataParams::new(interval)?;
         let request = TapoRequest::GetEnergyData(TapoParams::new(params));
 
         self.protocol()?

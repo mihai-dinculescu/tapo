@@ -13,6 +13,11 @@ file. This change log follows the conventions of
 - `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 - `DiscoveryResult::HubIr` and `DeviceType::HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult::Other`. (thanks to @skoky)
 
+### Fixed
+
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` no longer panics in time zones where the clocks change at midnight, such as America/Santiago. A day whose midnight is skipped now starts when the clocks resume.
+
 ## [Python Unreleased][Unreleased]
 
 ### Added
@@ -21,6 +26,11 @@ file. This change log follows the conventions of
 - `ApiClient`: added the `h110` method for the H110 hub. It returns a `HubIrHandler`, a subclass of `HubHandler` that adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient.discover_devices`. (thanks to @skoky)
 - `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 - `DiscoveryResult.HubIr` and `DeviceType.HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult.Other`. (thanks to @skoky)
+
+### Fixed
+
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` no longer raises a `PanicException` in time zones where the clocks change at midnight, such as America/Santiago. A day whose midnight is skipped now starts when the clocks resume.
 
 ## [MCP Unreleased][Unreleased]
 

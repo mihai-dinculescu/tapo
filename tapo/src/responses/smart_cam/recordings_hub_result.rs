@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use chrono::{DateTime, Duration, MappedLocalTime, NaiveDate, NaiveTime, Offset, TimeZone, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use chrono_tz::Tz;
 use serde::{Deserialize, Serialize};
 
 use crate::responses::TapoResponseExt;
-use crate::utils::datetime_from_unix_seconds_or_rfc3339;
+use crate::utils::{datetime_from_unix_seconds_or_rfc3339, local_day};
 
 /// Recording date list result (`searchDateWithVideo`).
 #[derive(Debug, Deserialize)]
@@ -62,37 +62,13 @@ crate::impl_to_dict!(RecordingDateHubResult);
 /// Turns a day on the hub's calendar into the range of time it covers, from
 /// local midnight to a second before the next local midnight.
 fn hub_day(date: NaiveDate, timezone: Tz) -> Result<RecordingDateHubResult, anyhow::Error> {
-    let next_date = date
-        .succ_opt()
-        .ok_or_else(|| anyhow::anyhow!("{date} is the last date that can be represented"))?;
+    let (start_time, end_time) = local_day(date, &timezone)?;
 
     Ok(RecordingDateHubResult {
         date,
-        start_time: local_midnight(date, timezone),
-        end_time: local_midnight(next_date, timezone) - Duration::seconds(1),
+        start_time,
+        end_time,
     })
-}
-
-/// Local midnight of `date` in `timezone`, in UTC. A midnight that the clocks
-/// go back over happens twice; the earlier of the two starts the day. A
-/// midnight that the clocks jump forward over never happens, so the day starts
-/// where they jump.
-fn local_midnight(date: NaiveDate, timezone: Tz) -> DateTime<Utc> {
-    let midnight = date.and_time(NaiveTime::MIN);
-
-    match timezone.from_local_datetime(&midnight) {
-        MappedLocalTime::Single(time) => time.to_utc(),
-        MappedLocalTime::Ambiguous(earliest, _) => earliest.to_utc(),
-        MappedLocalTime::None => {
-            // Reading midnight with the offset from before the jump lands on
-            // the moment the clocks jumped.
-            let offset = timezone
-                .offset_from_utc_datetime(&(midnight - Duration::days(1)))
-                .fix();
-
-            (midnight - offset).and_utc()
-        }
-    }
 }
 
 /// Recording list result (`searchVideoWithUTC`).

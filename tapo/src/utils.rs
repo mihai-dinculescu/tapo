@@ -1,6 +1,8 @@
 use std::str::FromStr;
 
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{
+    DateTime, Duration, MappedLocalTime, NaiveDate, NaiveDateTime, NaiveTime, Offset, TimeZone, Utc,
+};
 use serde::{Deserialize, Deserializer};
 
 use crate::error::Error;
@@ -84,4 +86,42 @@ pub(crate) fn unix_timestamp_seconds(field: &str, time: DateTime<Utc>) -> Result
         field: field.to_string(),
         message: "Must not be before 1970-01-01T00:00:00Z".to_string(),
     })
+}
+
+/// Local midnight of `date` in `timezone`, in UTC. A midnight that the clocks
+/// go back over happens twice; the earlier of the two starts the day. A
+/// midnight that the clocks jump forward over never happens, so the day starts
+/// where they jump.
+pub(crate) fn local_midnight<Tz: TimeZone>(date: NaiveDate, timezone: &Tz) -> DateTime<Utc> {
+    let midnight = date.and_time(NaiveTime::MIN);
+
+    match timezone.from_local_datetime(&midnight) {
+        MappedLocalTime::Single(time) => time.to_utc(),
+        MappedLocalTime::Ambiguous(earliest, _) => earliest.to_utc(),
+        MappedLocalTime::None => {
+            // Reading midnight with the offset from before the jump lands on
+            // the moment the clocks jumped.
+            let offset = timezone
+                .offset_from_utc_datetime(&(midnight - Duration::days(1)))
+                .fix();
+
+            (midnight - offset).and_utc()
+        }
+    }
+}
+
+/// The range of time `date` covers in `timezone`, as `(start, end)` in UTC,
+/// from local midnight to a second before the next local midnight.
+pub(crate) fn local_day<Tz: TimeZone>(
+    date: NaiveDate,
+    timezone: &Tz,
+) -> Result<(DateTime<Utc>, DateTime<Utc>), anyhow::Error> {
+    let next_date = date
+        .succ_opt()
+        .ok_or_else(|| anyhow::anyhow!("{date} is the last date that can be represented"))?;
+
+    Ok((
+        local_midnight(date, timezone),
+        local_midnight(next_date, timezone) - Duration::seconds(1),
+    ))
 }
