@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import List, Optional
 from tapo.to_dict_ext import ToDictExt
 
 class EnergyUsageResult(ToDictExt):
@@ -7,7 +7,7 @@ class EnergyUsageResult(ToDictExt):
 
     current_power: Optional[int]
     """Current power in milliwatts (mW)."""
-    electricity_charge: Optional[Tuple[int, int, int]]
+    electricity_charge: Optional[List[int]]
     """Electricity charge/cost data reported by the device using the tariff configured in the Tapo app.
     The third element is the total charge for the current month.
     The meaning of the first two elements is not confirmed; please open an issue or pull request if you know."""

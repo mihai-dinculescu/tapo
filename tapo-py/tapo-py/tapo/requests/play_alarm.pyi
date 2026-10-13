@@ -25,6 +25,9 @@ class AlarmVolume:
 class AlarmRingtone:
     """The ringtone of an H100 alarm."""
 
+    Default: Final[AlarmRingtone]
+    """Use the default ringtone for the hub."""
+
     Alarm1: Final[AlarmRingtone]
     """Alarm 1"""
 

@@ -13,8 +13,8 @@ class DeviceInfoCameraResult(ToDictExt):
     has_set_location_info: bool
     hw_id: str
     hw_ver: str
-    latitude: Optional[float]
-    longitude: Optional[float]
+    latitude: Optional[int]
+    longitude: Optional[int]
     mac: str
     model: str
     nickname: str

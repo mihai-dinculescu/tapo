@@ -1,26 +1,47 @@
-from typing import Optional
+from typing import Optional, Protocol
 
-class DeviceInfoSmartExt:
+class DeviceInfoSmartExt(Protocol):
     """Properties common to all device info results in the Smart device family (plugs, lights, power strips, etc.)."""
 
-    avatar: str
-    device_id: str
-    fw_id: str
-    fw_ver: str
-    has_set_location_info: bool
-    hw_id: str
-    hw_ver: str
-    ip: str
-    lang: str
-    latitude: Optional[float]
-    longitude: Optional[float]
-    mac: str
-    model: str
-    oem_id: str
-    region: Optional[str]
-    rssi: int
-    signal_level: int
-    specs: str
-    ssid: str
-    time_diff: Optional[int]
-    type: str
+    @property
+    def avatar(self) -> str: ...
+    @property
+    def device_id(self) -> str: ...
+    @property
+    def fw_id(self) -> str: ...
+    @property
+    def fw_ver(self) -> str: ...
+    @property
+    def has_set_location_info(self) -> bool: ...
+    @property
+    def hw_id(self) -> str: ...
+    @property
+    def hw_ver(self) -> str: ...
+    @property
+    def ip(self) -> str: ...
+    @property
+    def lang(self) -> str: ...
+    @property
+    def latitude(self) -> Optional[int]: ...
+    @property
+    def longitude(self) -> Optional[int]: ...
+    @property
+    def mac(self) -> str: ...
+    @property
+    def model(self) -> str: ...
+    @property
+    def oem_id(self) -> str: ...
+    @property
+    def region(self) -> Optional[str]: ...
+    @property
+    def rssi(self) -> int: ...
+    @property
+    def signal_level(self) -> int: ...
+    @property
+    def specs(self) -> str: ...
+    @property
+    def ssid(self) -> str: ...
+    @property
+    def time_diff(self) -> Optional[int]: ...
+    @property
+    def type(self) -> str: ...

@@ -10,8 +10,8 @@ class DeviceInfoBasicResult(ToDictExt):
     fw_ver: str
     has_set_location_info: bool
     hw_ver: str
-    latitude: Optional[float]
-    longitude: Optional[float]
+    latitude: Optional[int]
+    longitude: Optional[int]
     mac: str
     model: str
     nickname: Optional[str]

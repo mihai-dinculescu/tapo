@@ -45,6 +45,10 @@ file. This change log follows the conventions of
 - `ChargingStatus`, `ChildDeviceComponentList`: can now be imported from `tapo.responses`.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` no longer raises a `PanicException` in time zones where the clocks change at midnight, such as America/Santiago. A day whose midnight is skipped now starts when the clocks resume.
+- `AlarmRingtone`: added the missing `Default` to the type stubs.
+- `DeviceInfoSmartExt`: corrected the type stubs to declare it as a `Protocol`.
+- `DeviceInfoSmartExt`, `DeviceInfoBasicResult`, `DeviceInfoCameraResult`: corrected the type hints of `latitude` and `longitude` to `int`. They were declared as `float`.
+- `EnergyUsageResult`: corrected the type hint of `electricity_charge` to a list of ints. It was declared as a tuple.
 
 ## [MCP Unreleased][Unreleased]
 

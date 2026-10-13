@@ -41,7 +41,7 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
         try `HubHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoHubResult: Device info of Tapo H100.
+            DeviceInfoHubResult: Device info of Tapo H100 and H110.
         """
 
     async def get_child_device_list(
@@ -298,7 +298,7 @@ class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
             hub = await client.h100("192.168.1.100")
 
             # Get a handler for the child device
-            device = await hub.t310(device_id="0000000000000000000000000000000000000000")
+            device = await hub.t31x(device_id="0000000000000000000000000000000000000000")
 
             # Get the device info of the child device
             device_info = await device.get_device_info()
