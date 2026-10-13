@@ -10,8 +10,8 @@ from common import require_env_vars
 
 async def main():
     tapo_username, tapo_password = require_env_vars("TAPO_USERNAME", "TAPO_PASSWORD")
-    target = os.getenv("TARGET", "192.168.1.255")
-    timeout_s = int(os.getenv("TIMEOUT", 10))
+    target = os.getenv("TAPO_DISCOVERY_TARGET", "192.168.1.255")
+    timeout_s = int(os.getenv("TAPO_DISCOVERY_TIMEOUT", 10))
 
     print(f"Discovering Tapo devices on target: {target} for {timeout_s} seconds...")
 
@@ -78,7 +78,14 @@ async def main():
                     print(
                         f"Found '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."
                     )
+                case DiscoveryResult.CameraPtz(device_info, _handler, ip):
+                    print(
+                        f"Found '{device_info.nickname}' of model '{device_info.model}' at IP address '{ip}'."
+                    )
                 case DiscoveryResult.Other(device_info, ip):
+                    # If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
+                    # unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
+                    # to start the discussion.
                     print(
                         f"Found device without a dedicated handler '{device_info.nickname}' of model '{device_info.model}' at IP address '{ip}'."
                     )

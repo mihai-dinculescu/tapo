@@ -32,9 +32,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Turning device off...");
     device.off().await?;
 
-    info!("Waiting 2 seconds...");
-    thread::sleep(Duration::from_secs(2));
-
     let device_info = device.get_device_info().await?;
     info!("Device info: {device_info:?}");
 

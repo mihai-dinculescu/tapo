@@ -29,6 +29,7 @@ async def main():
     device_info = await hub.get_device_info()
     print(f"Device info: {device_info.to_dict()}")
 
+    print("Getting child devices...")
     child_device_list = await hub.get_child_device_list()
 
     for child in child_device_list:
