@@ -8,34 +8,60 @@ class LightingEffectType:
     Static: Final[LightingEffectType]
 
 class LightingEffect(ToDictExt):
-    brightness: int
-    is_custom: bool
-    display_colors: List[Tuple[int, int, int]]
-    """The colors that will be displayed in the Tapo app."""
-    enabled: bool
-    id: str
-    name: str
-    type: str
-    backgrounds: Optional[List[Tuple[int, int, int]]]
-    brightness_range: Optional[List[Tuple[int, int]]]
-    direction: Optional[int]
-    duration: Optional[int]
-    expansion_strategy: Optional[int]
-    fade_off: Optional[int]
-    hue_range: Optional[List[Tuple[int, int]]]
-    init_states: Optional[List[Tuple[int, int, int]]]
-    random_seed: Optional[int]
-    repeat_times: Optional[int]
-    run_time: Optional[int]
-    saturation_range: Optional[List[Tuple[int, int]]]
-    segment_length: Optional[int]
-    segments: Optional[List[int]]
-    sequence: Optional[List[Tuple[int, int, int]]]
-    spread: Optional[int]
-    transition: Optional[int]
-    transition_range: Optional[List[Tuple[int, int]]]
-    transition_sequence: Optional[List[int]]
+    @property
+    def brightness(self) -> int: ...
+    @property
+    def is_custom(self) -> bool: ...
+    @property
+    def display_colors(self) -> List[Tuple[int, int, int]]:
+        """The colors that will be displayed in the Tapo app."""
 
+    @property
+    def enabled(self) -> bool: ...
+    @property
+    def id(self) -> str: ...
+    @property
+    def name(self) -> str: ...
+    @property
+    def type(self) -> LightingEffectType: ...
+    @property
+    def backgrounds(self) -> Optional[List[Tuple[int, int, int]]]: ...
+    @property
+    def brightness_range(self) -> Optional[Tuple[int, int]]: ...
+    @property
+    def direction(self) -> Optional[int]: ...
+    @property
+    def duration(self) -> Optional[int]: ...
+    @property
+    def expansion_strategy(self) -> Optional[int]: ...
+    @property
+    def fade_off(self) -> Optional[int]: ...
+    @property
+    def hue_range(self) -> Optional[Tuple[int, int]]: ...
+    @property
+    def init_states(self) -> Optional[List[Tuple[int, int, int]]]: ...
+    @property
+    def random_seed(self) -> Optional[int]: ...
+    @property
+    def repeat_times(self) -> Optional[int]: ...
+    @property
+    def run_time(self) -> Optional[int]: ...
+    @property
+    def saturation_range(self) -> Optional[Tuple[int, int]]: ...
+    @property
+    def segment_length(self) -> Optional[int]: ...
+    @property
+    def segments(self) -> Optional[List[int]]: ...
+    @property
+    def sequence(self) -> Optional[List[Tuple[int, int, int]]]: ...
+    @property
+    def spread(self) -> Optional[int]: ...
+    @property
+    def transition(self) -> Optional[int]: ...
+    @property
+    def transition_range(self) -> Optional[Tuple[int, int]]: ...
+    @property
+    def transition_sequence(self) -> Optional[List[int]]: ...
     def __init__(
         self,
         name: str,

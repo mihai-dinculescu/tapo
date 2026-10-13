@@ -9,7 +9,7 @@ use tapo::requests::{
 use tapo::responses::{DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult};
 
 use crate::call_handler_method;
-use crate::requests::{PyColorLightSetDeviceInfoParams, PyLightingEffect, PySegmentEffect};
+use crate::requests::PyColorLightSetDeviceInfoParams;
 
 py_handler! {
     PyRgbicLightStripHandler(RgbicLightStripHandler, DeviceInfoRgbicLightStripResult),
@@ -91,9 +91,9 @@ fn map_lighting_effect(lighting_effect: Py<PyAny>) -> PyResult<LightingEffect> {
     }
 
     if let Some(lighting_effect) =
-        Python::attach(|py| lighting_effect.extract::<PyLightingEffect>(py).ok())
+        Python::attach(|py| lighting_effect.extract::<LightingEffect>(py).ok())
     {
-        return Ok(lighting_effect.into());
+        return Ok(lighting_effect);
     }
 
     Err(PyErr::new::<PyTypeError, _>(
@@ -109,9 +109,9 @@ fn map_segment_effect(segment_effect: Py<PyAny>) -> PyResult<SegmentEffect> {
     }
 
     if let Some(segment_effect) =
-        Python::attach(|py| segment_effect.extract::<PySegmentEffect>(py).ok())
+        Python::attach(|py| segment_effect.extract::<SegmentEffect>(py).ok())
     {
-        return Ok(segment_effect.into());
+        return Ok(segment_effect);
     }
 
     Err(PyErr::new::<PyTypeError, _>(

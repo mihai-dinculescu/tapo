@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use serde_with::{BoolFromInt, serde_as};
 
+#[cfg(feature = "python")]
+use pyo3::PyRefMut;
+
 use crate::error::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -20,9 +23,30 @@ pub enum SegmentEffectType {
     None,
 }
 
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl SegmentEffectType {
+    // `None` is a keyword in Python, so `SegmentEffectType.None` is a syntax error.
+    // A `#[pyo3(name)]` on the variant cannot be written behind `cfg_attr`, so the
+    // variant is re-exported as `NONE` instead, and `tapo-py` removes the generated
+    // `None` attribute. `__repr__` uses the same name, since the generated one would
+    // print the Rust variant name.
+    #[classattr]
+    #[pyo3(name = "NONE")]
+    const PY_NONE: SegmentEffectType = SegmentEffectType::None;
+
+    fn __repr__(&self) -> String {
+        match self {
+            Self::None => "SegmentEffectType.NONE".to_string(),
+            other => format!("SegmentEffectType.{other:?}"),
+        }
+    }
+}
+
 /// Parameters for the `apply_segment_effect_rule` request.
 #[serde_as]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object))]
 pub struct SegmentEffect {
     /// Brightness between 0 and 100.
     pub brightness: u8,
@@ -55,6 +79,9 @@ pub struct SegmentEffect {
     #[serde(rename = "type")]
     pub r#type: Option<SegmentEffectType>,
 }
+
+#[cfg(feature = "python")]
+crate::impl_to_dict!(SegmentEffect);
 
 #[allow(missing_docs)]
 impl SegmentEffect {
@@ -177,6 +204,148 @@ impl SegmentEffect {
         }
 
         Ok(())
+    }
+}
+
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl SegmentEffect {
+    // `#[new]` and `#[getter]` are inner attributes of `#[pymethods]`, so they
+    // cannot be written behind `cfg_attr`. The getters replace `get_all`, which
+    // would turn the `Vec<u8>` fields into `bytes` and the fixed-size arrays into lists;
+    // the getters return lists of ints and tuples instead.
+    // The builders mutate in place and return the same object, so the Rust
+    // `with_*` methods, which consume `self`, are not reused.
+    #[new]
+    fn py_new(
+        name: String,
+        r#type: SegmentEffectType,
+        is_custom: bool,
+        enabled: bool,
+        brightness: u8,
+        display_colors: Vec<[u16; 4]>,
+    ) -> Self {
+        Self::new(name, r#type, is_custom, enabled, brightness, display_colors)
+    }
+
+    #[getter]
+    fn brightness(&self) -> u8 {
+        self.brightness
+    }
+
+    #[getter]
+    fn is_custom(&self) -> bool {
+        self.is_custom
+    }
+
+    #[getter]
+    fn device_type(&self) -> Option<String> {
+        self.device_type.clone()
+    }
+
+    #[getter]
+    fn display_colors(&self) -> Vec<(u16, u16, u16, u16)> {
+        self.display_colors
+            .iter()
+            .map(|&[a, b, c, d]| (a, b, c, d))
+            .collect()
+    }
+
+    #[getter]
+    fn enabled(&self) -> bool {
+        self.enabled
+    }
+
+    #[getter]
+    fn id(&self) -> String {
+        self.id.clone()
+    }
+
+    #[getter]
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    #[getter]
+    fn segments(&self) -> Option<Vec<u16>> {
+        self.segments
+            .as_ref()
+            .map(|values| values.iter().copied().map(u16::from).collect())
+    }
+
+    #[getter]
+    fn states(&self) -> Option<Vec<(u16, u16, u16, u16)>> {
+        self.states
+            .as_ref()
+            .map(|states| states.iter().map(|&[a, b, c, d]| (a, b, c, d)).collect())
+    }
+
+    #[getter]
+    fn r#type(&self) -> Option<SegmentEffectType> {
+        self.r#type.clone()
+    }
+
+    #[pyo3(name = "with_brightness")]
+    fn py_with_brightness(mut slf: PyRefMut<'_, Self>, brightness: u8) -> PyRefMut<'_, Self> {
+        slf.brightness = brightness;
+        slf
+    }
+
+    #[pyo3(name = "with_is_custom")]
+    fn py_with_is_custom(mut slf: PyRefMut<'_, Self>, is_custom: bool) -> PyRefMut<'_, Self> {
+        slf.is_custom = is_custom;
+        slf
+    }
+
+    #[pyo3(name = "with_display_colors")]
+    fn py_with_display_colors(
+        mut slf: PyRefMut<'_, Self>,
+        display_colors: Vec<[u16; 4]>,
+    ) -> PyRefMut<'_, Self> {
+        slf.display_colors = display_colors;
+        slf
+    }
+
+    #[pyo3(name = "with_enabled")]
+    fn py_with_enabled(mut slf: PyRefMut<'_, Self>, enabled: bool) -> PyRefMut<'_, Self> {
+        slf.enabled = enabled;
+        slf
+    }
+
+    #[pyo3(name = "with_id")]
+    fn py_with_id(mut slf: PyRefMut<'_, Self>, id: String) -> PyRefMut<'_, Self> {
+        slf.id = id;
+        slf
+    }
+
+    #[pyo3(name = "with_name")]
+    fn py_with_name(mut slf: PyRefMut<'_, Self>, name: String) -> PyRefMut<'_, Self> {
+        slf.name = name;
+        slf
+    }
+
+    #[pyo3(name = "with_type")]
+    fn py_with_type(mut slf: PyRefMut<'_, Self>, r#type: SegmentEffectType) -> PyRefMut<'_, Self> {
+        slf.r#type = Some(r#type);
+        slf
+    }
+
+    #[pyo3(name = "with_device_type")]
+    fn py_with_device_type(mut slf: PyRefMut<'_, Self>, device_type: String) -> PyRefMut<'_, Self> {
+        slf.device_type = Some(device_type);
+        slf
+    }
+
+    #[pyo3(name = "with_segments")]
+    fn py_with_segments(mut slf: PyRefMut<'_, Self>, segments: Vec<u8>) -> PyRefMut<'_, Self> {
+        slf.segments = Some(segments);
+        slf
+    }
+
+    #[pyo3(name = "with_states")]
+    fn py_with_states(mut slf: PyRefMut<'_, Self>, states: Vec<[u16; 4]>) -> PyRefMut<'_, Self> {
+        slf.states = Some(states);
+        slf
     }
 }
 

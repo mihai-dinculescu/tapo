@@ -13,6 +13,10 @@ file. This change log follows the conventions of
 - `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 - `DiscoveryResult::HubIr` and `DeviceType::HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult::Other`. (thanks to @skoky)
 
+### Changed
+
+- `LightingEffect`: changed `brightness_range` from `Option<Vec<u8>>` to `Option<[u8; 2]>`, matching `with_brightness_range` and the other range fields.
+
 ### Fixed
 
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
@@ -26,9 +30,19 @@ file. This change log follows the conventions of
 - `ApiClient`: added the `h110` method for the H110 hub. It returns a `HubIrHandler`, a subclass of `HubHandler` that adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient.discover_devices`. (thanks to @skoky)
 - `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 - `DiscoveryResult.HubIr` and `DeviceType.HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult.Other`. (thanks to @skoky)
+- `LightingEffect`, `SegmentEffect`: the fields of an effect built in Python can now be read, such as `effect.brightness`.
+- `SegmentEffect`: added the `to_dict` method.
+- `SegmentEffectType`: added `NONE`.
+
+### Changed
+
+- `LightingEffect`: `hue_range`, `saturation_range`, `transition_range` and `brightness_range` now return a tuple of two ints, `display_colors`, `backgrounds`, `init_states` and `sequence` return a list of tuples, and `segments` returns a list of ints. In the `lighting_effect` returned by `RgbicLightStripHandler.get_device_info`, the ranges used to be lists, the colors and states used to be lists of lists, and `brightness_range` and `segments` used to be `bytes`.
 
 ### Fixed
 
+- `RgbicLightStripHandler`: `set_lighting_effect` now accepts the `lighting_effect` returned by `get_device_info`. It used to raise a `TypeError`.
+- `ColorLightSetDeviceInfoParams`: can now be imported from `tapo.requests`. The class was registered as `LightSetDeviceInfoParams`.
+- `ChargingStatus`, `ChildDeviceComponentList`: can now be imported from `tapo.responses`.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` no longer raises a `PanicException` in time zones where the clocks change at midnight, such as America/Santiago. A day whose midnight is skipped now starts when the clocks resume.
 

@@ -1,4 +1,5 @@
 from typing import Final, List, Optional, Tuple
+from tapo.to_dict_ext import ToDictExt
 
 class SegmentEffectType:
     Circulating: Final[SegmentEffectType]
@@ -7,19 +8,29 @@ class SegmentEffectType:
     Flicker: Final[SegmentEffectType]
     Bloom: Final[SegmentEffectType]
     Stacking: Final[SegmentEffectType]
+    NONE: Final[SegmentEffectType]
 
-class SegmentEffect:
-    brightness: int
-    is_custom: bool
-    device_type: Optional[str]
-    display_colors: List[Tuple[int, int, int, int]]
-    enabled: bool
-    id: str
-    name: str
-    segments: Optional[List[int]]
-    states: Optional[List[Tuple[int, int, int, int]]]
-    type: Optional[str]
-
+class SegmentEffect(ToDictExt):
+    @property
+    def brightness(self) -> int: ...
+    @property
+    def is_custom(self) -> bool: ...
+    @property
+    def device_type(self) -> Optional[str]: ...
+    @property
+    def display_colors(self) -> List[Tuple[int, int, int, int]]: ...
+    @property
+    def enabled(self) -> bool: ...
+    @property
+    def id(self) -> str: ...
+    @property
+    def name(self) -> str: ...
+    @property
+    def segments(self) -> Optional[List[int]]: ...
+    @property
+    def states(self) -> Optional[List[Tuple[int, int, int, int]]]: ...
+    @property
+    def type(self) -> Optional[SegmentEffectType]: ...
     def __init__(
         self,
         name: str,

@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use serde_with::{BoolFromInt, serde_as};
 
+#[cfg(feature = "python")]
+use pyo3::PyRefMut;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 #[cfg_attr(
@@ -17,7 +20,7 @@ pub enum LightingEffectType {
 
 #[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object))]
 #[allow(missing_docs)]
 pub struct LightingEffect {
     // Mandatory
@@ -37,7 +40,7 @@ pub struct LightingEffect {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub backgrounds: Option<Vec<[u16; 3]>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub brightness_range: Option<Vec<u8>>,
+    pub brightness_range: Option<[u8; 2]>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub direction: Option<u8>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -162,7 +165,7 @@ impl LightingEffect {
     }
 
     pub fn with_brightness_range(mut self, brightness_range: [u8; 2]) -> Self {
-        self.brightness_range = Some(brightness_range.to_vec());
+        self.brightness_range = Some(brightness_range);
         self
     }
 
@@ -249,6 +252,355 @@ impl LightingEffect {
     pub fn with_transition_sequence(mut self, transition_sequence: Vec<u16>) -> Self {
         self.transition_sequence = Some(transition_sequence);
         self
+    }
+}
+
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl LightingEffect {
+    // `#[new]` and `#[getter]` are inner attributes of `#[pymethods]`, so they
+    // cannot be written behind `cfg_attr`. The getters replace `get_all`, which
+    // would turn the `Vec<u8>` fields into `bytes` and the fixed-size arrays into lists;
+    // the getters return lists of ints and tuples instead.
+    // The builders mutate in place and return the same object, so the Rust
+    // `with_*` methods, which consume `self`, are not reused.
+    #[new]
+    fn py_new(
+        name: String,
+        r#type: LightingEffectType,
+        is_custom: bool,
+        enabled: bool,
+        brightness: u8,
+        display_colors: Vec<[u16; 3]>,
+    ) -> Self {
+        Self::new(name, r#type, is_custom, enabled, brightness, display_colors)
+    }
+
+    #[getter]
+    fn brightness(&self) -> u8 {
+        self.brightness
+    }
+
+    #[getter]
+    fn is_custom(&self) -> bool {
+        self.is_custom
+    }
+
+    #[getter]
+    fn display_colors(&self) -> Vec<(u16, u16, u16)> {
+        self.display_colors
+            .iter()
+            .map(|&[a, b, c]| (a, b, c))
+            .collect()
+    }
+
+    #[getter]
+    fn enabled(&self) -> bool {
+        self.enabled
+    }
+
+    #[getter]
+    fn id(&self) -> String {
+        self.id.clone()
+    }
+
+    #[getter]
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    #[getter]
+    fn r#type(&self) -> LightingEffectType {
+        self.r#type.clone()
+    }
+
+    #[getter]
+    fn backgrounds(&self) -> Option<Vec<(u16, u16, u16)>> {
+        self.backgrounds
+            .as_ref()
+            .map(|colors| colors.iter().map(|&[a, b, c]| (a, b, c)).collect())
+    }
+
+    #[getter]
+    fn brightness_range(&self) -> Option<(u8, u8)> {
+        self.brightness_range.map(|[min, max]| (min, max))
+    }
+
+    #[getter]
+    fn direction(&self) -> Option<u8> {
+        self.direction
+    }
+
+    #[getter]
+    fn duration(&self) -> Option<u64> {
+        self.duration
+    }
+
+    #[getter]
+    fn expansion_strategy(&self) -> Option<u8> {
+        self.expansion_strategy
+    }
+
+    #[getter]
+    fn fade_off(&self) -> Option<u16> {
+        self.fade_off
+    }
+
+    #[getter]
+    fn hue_range(&self) -> Option<(u16, u16)> {
+        self.hue_range.map(|[min, max]| (min, max))
+    }
+
+    #[getter]
+    fn init_states(&self) -> Option<Vec<(u16, u16, u16)>> {
+        self.init_states
+            .as_ref()
+            .map(|colors| colors.iter().map(|&[a, b, c]| (a, b, c)).collect())
+    }
+
+    #[getter]
+    fn random_seed(&self) -> Option<u64> {
+        self.random_seed
+    }
+
+    #[getter]
+    fn repeat_times(&self) -> Option<u8> {
+        self.repeat_times
+    }
+
+    #[getter]
+    fn run_time(&self) -> Option<u64> {
+        self.run_time
+    }
+
+    #[getter]
+    fn saturation_range(&self) -> Option<(u8, u8)> {
+        self.saturation_range.map(|[min, max]| (min, max))
+    }
+
+    #[getter]
+    fn segment_length(&self) -> Option<u8> {
+        self.segment_length
+    }
+
+    #[getter]
+    fn segments(&self) -> Option<Vec<u16>> {
+        self.segments
+            .as_ref()
+            .map(|values| values.iter().copied().map(u16::from).collect())
+    }
+
+    #[getter]
+    fn sequence(&self) -> Option<Vec<(u16, u16, u16)>> {
+        self.sequence
+            .as_ref()
+            .map(|colors| colors.iter().map(|&[a, b, c]| (a, b, c)).collect())
+    }
+
+    #[getter]
+    fn spread(&self) -> Option<u8> {
+        self.spread
+    }
+
+    #[getter]
+    fn transition(&self) -> Option<u16> {
+        self.transition
+    }
+
+    #[getter]
+    fn transition_range(&self) -> Option<(u16, u16)> {
+        self.transition_range.map(|[min, max]| (min, max))
+    }
+
+    #[getter]
+    fn transition_sequence(&self) -> Option<Vec<u16>> {
+        self.transition_sequence.clone()
+    }
+
+    #[pyo3(name = "with_brightness")]
+    fn py_with_brightness(mut slf: PyRefMut<'_, Self>, brightness: u8) -> PyRefMut<'_, Self> {
+        slf.brightness = brightness;
+        slf
+    }
+
+    #[pyo3(name = "with_is_custom")]
+    fn py_with_is_custom(mut slf: PyRefMut<'_, Self>, is_custom: bool) -> PyRefMut<'_, Self> {
+        slf.is_custom = is_custom;
+        slf
+    }
+
+    #[pyo3(name = "with_display_colors")]
+    fn py_with_display_colors(
+        mut slf: PyRefMut<'_, Self>,
+        display_colors: Vec<[u16; 3]>,
+    ) -> PyRefMut<'_, Self> {
+        slf.display_colors = display_colors;
+        slf
+    }
+
+    #[pyo3(name = "with_enabled")]
+    fn py_with_enabled(mut slf: PyRefMut<'_, Self>, enabled: bool) -> PyRefMut<'_, Self> {
+        slf.enabled = enabled;
+        slf
+    }
+
+    #[pyo3(name = "with_id")]
+    fn py_with_id(mut slf: PyRefMut<'_, Self>, id: String) -> PyRefMut<'_, Self> {
+        slf.id = id;
+        slf
+    }
+
+    #[pyo3(name = "with_name")]
+    fn py_with_name(mut slf: PyRefMut<'_, Self>, name: String) -> PyRefMut<'_, Self> {
+        slf.name = name;
+        slf
+    }
+
+    #[pyo3(name = "with_type")]
+    fn py_with_type(mut slf: PyRefMut<'_, Self>, r#type: LightingEffectType) -> PyRefMut<'_, Self> {
+        slf.r#type = r#type;
+        slf
+    }
+
+    #[pyo3(name = "with_backgrounds")]
+    fn py_with_backgrounds(
+        mut slf: PyRefMut<'_, Self>,
+        backgrounds: Vec<[u16; 3]>,
+    ) -> PyRefMut<'_, Self> {
+        slf.backgrounds = Some(backgrounds);
+        slf
+    }
+
+    #[pyo3(name = "with_brightness_range")]
+    fn py_with_brightness_range(
+        mut slf: PyRefMut<'_, Self>,
+        brightness_range: [u8; 2],
+    ) -> PyRefMut<'_, Self> {
+        slf.brightness_range = Some(brightness_range);
+        slf
+    }
+
+    #[pyo3(name = "with_direction")]
+    fn py_with_direction(mut slf: PyRefMut<'_, Self>, direction: u8) -> PyRefMut<'_, Self> {
+        slf.direction = Some(direction);
+        slf
+    }
+
+    #[pyo3(name = "with_duration")]
+    fn py_with_duration(mut slf: PyRefMut<'_, Self>, duration: u64) -> PyRefMut<'_, Self> {
+        slf.duration = Some(duration);
+        slf
+    }
+
+    #[pyo3(name = "with_expansion_strategy")]
+    fn py_with_expansion_strategy(
+        mut slf: PyRefMut<'_, Self>,
+        expansion_strategy: u8,
+    ) -> PyRefMut<'_, Self> {
+        slf.expansion_strategy = Some(expansion_strategy);
+        slf
+    }
+
+    #[pyo3(name = "with_fade_off")]
+    fn py_with_fade_off(mut slf: PyRefMut<'_, Self>, fade_off: u16) -> PyRefMut<'_, Self> {
+        slf.fade_off = Some(fade_off);
+        slf
+    }
+
+    #[pyo3(name = "with_hue_range")]
+    fn py_with_hue_range(mut slf: PyRefMut<'_, Self>, hue_range: [u16; 2]) -> PyRefMut<'_, Self> {
+        slf.hue_range = Some(hue_range);
+        slf
+    }
+
+    #[pyo3(name = "with_init_states")]
+    fn py_with_init_states(
+        mut slf: PyRefMut<'_, Self>,
+        init_states: Vec<[u16; 3]>,
+    ) -> PyRefMut<'_, Self> {
+        slf.init_states = Some(init_states);
+        slf
+    }
+
+    #[pyo3(name = "with_random_seed")]
+    fn py_with_random_seed(mut slf: PyRefMut<'_, Self>, random_seed: u64) -> PyRefMut<'_, Self> {
+        slf.random_seed = Some(random_seed);
+        slf
+    }
+
+    #[pyo3(name = "with_repeat_times")]
+    fn py_with_repeat_times(mut slf: PyRefMut<'_, Self>, repeat_times: u8) -> PyRefMut<'_, Self> {
+        slf.repeat_times = Some(repeat_times);
+        slf
+    }
+
+    #[pyo3(name = "with_run_time")]
+    fn py_with_run_time(mut slf: PyRefMut<'_, Self>, run_time: u64) -> PyRefMut<'_, Self> {
+        slf.run_time = Some(run_time);
+        slf
+    }
+
+    #[pyo3(name = "with_saturation_range")]
+    fn py_with_saturation_range(
+        mut slf: PyRefMut<'_, Self>,
+        saturation_range: [u8; 2],
+    ) -> PyRefMut<'_, Self> {
+        slf.saturation_range = Some(saturation_range);
+        slf
+    }
+
+    #[pyo3(name = "with_segment_length")]
+    fn py_with_segment_length(
+        mut slf: PyRefMut<'_, Self>,
+        segment_length: u8,
+    ) -> PyRefMut<'_, Self> {
+        slf.segment_length = Some(segment_length);
+        slf
+    }
+
+    #[pyo3(name = "with_segments")]
+    fn py_with_segments(mut slf: PyRefMut<'_, Self>, segments: Vec<u8>) -> PyRefMut<'_, Self> {
+        slf.segments = Some(segments);
+        slf
+    }
+
+    #[pyo3(name = "with_sequence")]
+    fn py_with_sequence(
+        mut slf: PyRefMut<'_, Self>,
+        sequence: Vec<[u16; 3]>,
+    ) -> PyRefMut<'_, Self> {
+        slf.sequence = Some(sequence);
+        slf
+    }
+
+    #[pyo3(name = "with_spread")]
+    fn py_with_spread(mut slf: PyRefMut<'_, Self>, spread: u8) -> PyRefMut<'_, Self> {
+        slf.spread = Some(spread);
+        slf
+    }
+
+    #[pyo3(name = "with_transition")]
+    fn py_with_transition(mut slf: PyRefMut<'_, Self>, transition: u16) -> PyRefMut<'_, Self> {
+        slf.transition = Some(transition);
+        slf
+    }
+
+    #[pyo3(name = "with_transition_range")]
+    fn py_with_transition_range(
+        mut slf: PyRefMut<'_, Self>,
+        transition_range: [u16; 2],
+    ) -> PyRefMut<'_, Self> {
+        slf.transition_range = Some(transition_range);
+        slf
+    }
+
+    #[pyo3(name = "with_transition_sequence")]
+    fn py_with_transition_sequence(
+        mut slf: PyRefMut<'_, Self>,
+        transition_sequence: Vec<u16>,
+    ) -> PyRefMut<'_, Self> {
+        slf.transition_sequence = Some(transition_sequence);
+        slf
     }
 }
 

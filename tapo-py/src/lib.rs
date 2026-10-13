@@ -9,26 +9,28 @@ use pyo3::prelude::*;
 use pyo3_log::{Caching, Logger};
 
 use tapo::requests::{
-    AlarmRingtone, AlarmVolume, Color, DaysOfWeek, LightingEffectPreset, LightingEffectType,
-    ScheduleRule, ScheduleTime, SegmentEffectPreset, SegmentEffectType,
+    AlarmRingtone, AlarmVolume, Color, DaysOfWeek, LightingEffect, LightingEffectPreset,
+    LightingEffectType, ScheduleRule, ScheduleTime, SegmentEffect, SegmentEffectPreset,
+    SegmentEffectType,
 };
 use tapo::responses::{
-    AiCameraSupport, AutoOffStatus, ColorLightState, Component, CurrentPowerResult,
-    DefaultBrightnessState, DefaultColorLightState, DefaultLightState, DefaultPlugState,
-    DefaultPowerType, DefaultRgbLightStripState, DefaultRgbicLightStripState, DefaultStateType,
-    DeviceInfoBasicResult, DeviceInfoCameraHubResult, DeviceInfoCameraResult,
-    DeviceInfoColorLightResult, DeviceInfoHubResult, DeviceInfoLightResult,
-    DeviceInfoPlugEnergyMonitoringResult, DeviceInfoPlugResult, DeviceInfoPowerStripResult,
-    DeviceInfoRgbLightStripResult, DeviceInfoRgbicLightStripResult,
-    DeviceUsageEnergyMonitoringResult, DeviceUsageResult, EnergyDataIntervalResult,
-    EnergyDataResult, EnergyUsageResult, IrRemoteKey, IrRemoteResult, KE100Result, OtherResult,
-    OvercurrentStatus, OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult,
-    PowerProtectionStatus, PowerState, PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult,
-    Preset, RecordingDateHubResult, RecordingDownloadResult, RgbLightStripState,
-    RgbicLightStripState, RtspStreamUrl, S200Result, S200RotationParams, S210Result,
-    ScheduleRuleResult, Snapshot, Status, T31XResult, T100Event, T100Result, T110Event, T110Result,
-    T300Event, T300Result, TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit,
-    TemperatureUnitKE100, Timer, TimezoneHubResult, UsageByPeriodResult, WaterLeakStatus,
+    AiCameraSupport, AutoOffStatus, ChargingStatus, ChildDeviceComponentList, ColorLightState,
+    Component, CurrentPowerResult, DefaultBrightnessState, DefaultColorLightState,
+    DefaultLightState, DefaultPlugState, DefaultPowerType, DefaultRgbLightStripState,
+    DefaultRgbicLightStripState, DefaultStateType, DeviceInfoBasicResult,
+    DeviceInfoCameraHubResult, DeviceInfoCameraResult, DeviceInfoColorLightResult,
+    DeviceInfoHubResult, DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult,
+    DeviceInfoPlugResult, DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult,
+    DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult, DeviceUsageResult,
+    EnergyDataIntervalResult, EnergyDataResult, EnergyUsageResult, IrRemoteKey, IrRemoteResult,
+    KE100Result, OtherResult, OvercurrentStatus, OverheatStatus, PlugState,
+    PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus, PowerState,
+    PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset, RecordingDateHubResult,
+    RecordingDownloadResult, RgbLightStripState, RgbicLightStripState, RtspStreamUrl, S200Result,
+    S200RotationParams, S210Result, ScheduleRuleResult, Snapshot, Status, T31XResult, T100Event,
+    T100Result, T110Event, T110Result, T300Event, T300Result, TemperatureHumidityRecord,
+    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, Timer, TimezoneHubResult,
+    UsageByPeriodResult, WaterLeakStatus,
 };
 use tapo::{DeviceType, DiscoveryRawResult};
 
@@ -43,8 +45,7 @@ use api::{
     PyT110Handler, PyT300Handler,
 };
 use requests::{
-    PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyLightingEffect,
-    PyPowerDataInterval, PySegmentEffect,
+    PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyPowerDataInterval,
 };
 use responses::{
     PyBackupWifi, PyGeneralDeviceHubResult, PyRecordingHubResult, PyRecordingType, PyS200Event,
@@ -83,12 +84,17 @@ fn tapo_py(py: Python, module: &Bound<'_, PyModule>) -> PyResult<()> {
 
 fn register_requests(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<Color>()?;
-    module.add_class::<PyLightingEffect>()?;
+    module.add_class::<LightingEffect>()?;
     module.add_class::<LightingEffectPreset>()?;
     module.add_class::<LightingEffectType>()?;
-    module.add_class::<PySegmentEffect>()?;
+    module.add_class::<SegmentEffect>()?;
     module.add_class::<SegmentEffectPreset>()?;
     module.add_class::<SegmentEffectType>()?;
+    // The variant is exposed as `NONE`; drop the generated `None` alias.
+    module
+        .py()
+        .get_type::<SegmentEffectType>()
+        .delattr("None")?;
     module.add_class::<PyColorLightSetDeviceInfoParams>()?;
     module.add_class::<PyEnergyDataInterval>()?;
     module.add_class::<PyPowerDataInterval>()?;
@@ -150,6 +156,7 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
 }
 
 fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
+    module.add_class::<ChildDeviceComponentList>()?;
     module.add_class::<Component>()?;
     module.add_class::<CurrentPowerResult>()?;
     module.add_class::<DefaultBrightnessState>()?;
@@ -189,10 +196,11 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DeviceInfoRgbicLightStripResult>()?;
     module.add_class::<DefaultRgbicLightStripState>()?;
     module.add_class::<RgbicLightStripState>()?;
-    module.add_class::<PyLightingEffect>()?;
+    module.add_class::<LightingEffect>()?;
     module.add_class::<LightingEffectType>()?;
 
     // device info: plugs
+    module.add_class::<ChargingStatus>()?;
     module.add_class::<DefaultPlugState>()?;
     module.add_class::<DeviceInfoPlugEnergyMonitoringResult>()?;
     module.add_class::<DeviceInfoPlugResult>()?;

@@ -9,7 +9,7 @@ use crate::api::{
 use crate::runtime::tokio;
 
 #[derive(Clone)]
-#[pyclass(from_py_object, name = "LightSetDeviceInfoParams")]
+#[pyclass(from_py_object, name = "ColorLightSetDeviceInfoParams")]
 pub struct PyColorLightSetDeviceInfoParams {
     params: ColorLightSetDeviceInfoParams,
 }
