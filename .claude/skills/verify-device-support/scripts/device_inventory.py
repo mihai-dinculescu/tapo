@@ -535,7 +535,7 @@ def parse_pyi_handler(name: str) -> tuple[set[str], set[str]] | None:
 
 def stub_base_methods(bases: str) -> set[str]:
     """Methods of the stub classes in a `class X(bases)` list, and of their own
-    bases (HubIrHandler -> HubHandler -> DeviceManagementExt)."""
+    bases (HubHandler -> HubChildrenExt)."""
     methods: set[str] = set()
     for base in (b.strip() for b in bases.replace("\n", " ").split(",") if b.strip()):
         path = PYI / (re.sub(r"(?<!^)(?=[A-Z])", "_", base).lower() + ".pyi")

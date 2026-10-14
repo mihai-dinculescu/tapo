@@ -273,7 +273,7 @@ fn host_with_port(ip_address: &str, port: Option<u16>, default_port: u16) -> Str
 ///
 /// # Errors
 ///
-/// Returns an error if `url` does not name a host.
+/// Returns an error if `url` cannot be parsed or lacks a host or a port.
 fn url_address(url: &str) -> Result<(String, u16), Error> {
     let parsed = Url::parse(url).map_err(|e| anyhow::anyhow!("Invalid URL {url}: {e}"))?;
     let host = parsed

@@ -17,7 +17,7 @@ py_handler! {
     py_name = "CameraHubHandler",
 }
 
-py_hub_child_handlers!(PyCameraHubHandler, CameraHubHandler);
+py_hub_child_handlers!(PyCameraHubHandler, CameraHubHandler, ChildDeviceHubResult);
 
 #[pymethods]
 impl PyCameraHubHandler {

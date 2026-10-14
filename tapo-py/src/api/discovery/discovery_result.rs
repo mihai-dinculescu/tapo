@@ -54,7 +54,7 @@ pub enum PyDiscoveryResult {
     },
     HubIr {
         device_info: DeviceInfoHubResult,
-        handler: Py<PyHubIrHandler>,
+        handler: PyHubIrHandler,
     },
     CameraHub {
         device_info: DeviceInfoCameraHubResult,
@@ -124,7 +124,7 @@ impl PyDiscoveryResult {
             PyDiscoveryResult::PowerStrip { handler, .. } => handler.address(py),
             PyDiscoveryResult::PowerStripEnergyMonitoring { handler, .. } => handler.address(py),
             PyDiscoveryResult::Hub { handler, .. } => handler.address(py),
-            PyDiscoveryResult::HubIr { handler, .. } => handler.borrow(py).as_super().address(py),
+            PyDiscoveryResult::HubIr { handler, .. } => handler.address(py),
             PyDiscoveryResult::CameraHub { handler, .. } => handler.address(py),
             PyDiscoveryResult::CameraPtz { handler, .. } => handler.address(py),
             PyDiscoveryResult::Other { address, .. } => address.clone(),
@@ -283,7 +283,7 @@ fn convert_result_to_py(result: DiscoveryResult) -> PyResult<PyDiscoveryResult> 
             handler,
         } => PyDiscoveryResult::HubIr {
             device_info: *device_info,
-            handler: PyHubIrHandler::into_py(handler)?,
+            handler: PyHubIrHandler::new(handler),
         },
         DiscoveryResult::CameraHub {
             device_info,

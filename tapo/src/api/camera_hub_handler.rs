@@ -20,6 +20,25 @@ use crate::utils::unix_timestamp_seconds;
 /// Handler for camera hubs, such as the
 /// [H200](https://www.tapo.com/en/search/?q=H200) and
 /// [H500](https://www.tapo.com/en/search/?q=H500).
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use tapo::{ApiClient, HubDevice};
+/// # #[tokio::main]
+/// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// // Connect to the hub
+/// let hub = ApiClient::new("tapo-username@example.com", "tapo-password")
+///     .h200("192.168.1.100")
+///     .await?;
+/// // Get a handler for a child device
+/// let device_id = "0000000000000000000000000000000000000000".to_string();
+/// let device = hub.t31x(HubDevice::ByDeviceId(device_id)).await?;
+/// // Get the device info of the child device
+/// let device_info = device.get_device_info().await?;
+/// # Ok(())
+/// # }
+/// ```
 #[derive(Debug)]
 pub struct CameraHubHandler {
     client: Arc<RwLock<ApiClient>>,
@@ -329,7 +348,6 @@ impl CameraHubHandler {
 hub_child_handlers!(
     CameraHubHandler,
     ChildDeviceHubResult,
-    "h200",
     child_device_list_note = "Cameras paired to the hub are not included; use \
         [`CameraHubHandler::get_general_device_list`] for those.",
 );

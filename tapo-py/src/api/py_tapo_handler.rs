@@ -15,7 +15,7 @@
 /// # Generated code
 ///
 /// * Struct with `inner: Arc<RwLock<Handler>>` field and `#[derive(Clone)]`
-/// * `#[pyo3::pyclass(from_py_object, name = ..., subclass)]` attribute
+/// * `#[pyo3::pyclass(from_py_object, name = ...)]` attribute
 /// * `new(handler)` constructor
 /// * `address` getter
 /// * `refresh_session()` method
@@ -71,7 +71,7 @@ macro_rules! py_handler {
     // Internal: base struct + core methods + PyHandlerExt
     (@base $py_name:ident($handler:ident, $device_info:ty), $pyname:literal) => {
         #[derive(Clone)]
-        #[pyo3::pyclass(from_py_object, name = $pyname, subclass)]
+        #[pyo3::pyclass(from_py_object, name = $pyname)]
         pub struct $py_name {
             inner: std::sync::Arc<tokio::sync::RwLock<$handler>>,
         }
@@ -346,14 +346,80 @@ macro_rules! py_child_handler {
     };
 }
 
+/// Generates the hub alarm methods for a handler created with
+/// [`py_handler!`], mirroring `hub_alarm_handlers!` in the `tapo` crate.
+///
+/// # Usage
+///
+/// ```ignore
+/// py_hub_alarm_handlers!(PyHubHandler, HubHandler);
+/// ```
+///
+/// # Generated code
+///
+/// * `get_supported_ringtone_list()` method
+/// * `play_alarm(ringtone, volume, duration, seconds)` method
+/// * `stop_alarm()` method
+macro_rules! py_hub_alarm_handlers {
+    ($py_name:ident, $handler:ident) => {
+        #[pyo3::pymethods]
+        impl $py_name {
+            pub async fn get_supported_ringtone_list(
+                &self,
+            ) -> pyo3::prelude::PyResult<Vec<String>> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_supported_ringtone_list
+                )
+            }
+
+            #[pyo3(signature = (ringtone, volume, duration, seconds=None))]
+            pub async fn play_alarm(
+                &self,
+                ringtone: tapo::requests::AlarmRingtone,
+                volume: tapo::requests::AlarmVolume,
+                duration: $crate::requests::PyAlarmDuration,
+                seconds: Option<u32>,
+            ) -> pyo3::prelude::PyResult<()> {
+                use std::ops::Deref;
+
+                let handler = self.inner.clone();
+                let duration = duration.into_duration(seconds)?;
+
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::play_alarm,
+                    ringtone,
+                    volume,
+                    duration
+                )
+            }
+
+            pub async fn stop_alarm(&self) -> pyo3::prelude::PyResult<()> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(handler.read().await.deref(), $handler::stop_alarm)
+            }
+        }
+    };
+}
+
 /// Generates the hub child device methods for a handler created with
 /// [`py_handler!`], mirroring `hub_child_handlers!` in the `tapo` crate.
 ///
 /// # Usage
 ///
 /// ```ignore
-/// py_hub_child_handlers!(PyHubHandler, HubHandler);
+/// py_hub_child_handlers!(PyHubHandler, HubHandler, ChildDeviceHubResult);
+/// py_hub_child_handlers!(PyHubIrHandler, HubIrHandler, ChildDeviceHubIrResult, IrRemote);
 /// ```
+///
+/// The third argument is the child device result enum returned by the handler's
+/// `get_child_device_list`. It must have the `KE100`, `S200`, `S210`, `T100`,
+/// `T110`, `T300`, `T31X` and `Other` variants; any further variants are listed
+/// after it.
 ///
 /// # Generated code
 ///
@@ -364,9 +430,10 @@ macro_rules! py_child_handler {
 ///   child handler builders, taking a `device_id` or a `nickname`
 /// * the `_unchecked` counterparts, taking a `device_id`
 macro_rules! py_hub_child_handlers {
-    ($py_name:ident, $handler:ident) => {
+    ($py_name:ident, $handler:ident, $child:ident $(, $extra_variant:ident)* $(,)?) => {
         py_hub_child_handlers!(
             @impl $py_name, $handler,
+            $child [$($extra_variant,)* KE100, S200, S210, T100, T110, T300, T31X, Other],
             (ke100, ke100_unchecked, PyKE100Handler),
             (s200, s200_unchecked, PyS200Handler),
             (s210, s210_unchecked, PyS210Handler),
@@ -379,6 +446,7 @@ macro_rules! py_hub_child_handlers {
 
     (
         @impl $py_name:ident, $handler:ident,
+        $child:ident [$($variant:ident),* $(,)?],
         $(($method:ident, $unchecked:ident, $py_handler:ident),)*
     ) => {
         impl $py_name {
@@ -405,7 +473,7 @@ macro_rules! py_hub_child_handlers {
             ) -> pyo3::prelude::PyResult<pyo3::Py<pyo3::types::PyList>> {
                 use pyo3::prelude::*;
                 use std::ops::Deref;
-                use tapo::responses::ChildDeviceHubResult;
+                use tapo::responses::$child;
 
                 let handler = self.inner.clone();
                 let children = $crate::call_handler_method!(
@@ -418,30 +486,11 @@ macro_rules! py_hub_child_handlers {
 
                     for child in children {
                         match child {
-                            ChildDeviceHubResult::KE100(device) => {
-                                results.append(device.into_pyobject(py)?)?;
-                            }
-                            ChildDeviceHubResult::S200(device) => {
-                                results.append(device.into_pyobject(py)?)?;
-                            }
-                            ChildDeviceHubResult::S210(device) => {
-                                results.append(device.into_pyobject(py)?)?;
-                            }
-                            ChildDeviceHubResult::T100(device) => {
-                                results.append(device.into_pyobject(py)?)?;
-                            }
-                            ChildDeviceHubResult::T110(device) => {
-                                results.append(device.into_pyobject(py)?)?;
-                            }
-                            ChildDeviceHubResult::T300(device) => {
-                                results.append(device.into_pyobject(py)?)?;
-                            }
-                            ChildDeviceHubResult::T31X(device) => {
-                                results.append(device.into_pyobject(py)?)?;
-                            }
-                            ChildDeviceHubResult::Other(device) => {
-                                results.append(device.into_pyobject(py)?)?;
-                            }
+                            $(
+                                $child::$variant(device) => {
+                                    results.append(device.into_pyobject(py)?)?;
+                                }
+                            )*
                         }
                     }
 

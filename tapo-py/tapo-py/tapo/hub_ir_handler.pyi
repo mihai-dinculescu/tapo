@@ -1,7 +1,13 @@
 from typing import List, Optional, Union
 
-from tapo import HubHandler, IrRemoteHandler
+from tapo import IrRemoteHandler
+from tapo.debug_ext import DebugExt
+from tapo.device_handler_ext import DeviceHandlerExt
+from tapo.device_management_ext import DeviceManagementExt
+from tapo.hub_alarm_ext import HubAlarmExt
+from tapo.hub_children_ext import HubChildrenExt
 from tapo.responses import (
+    DeviceInfoHubResult,
     IrRemoteResult,
     KE100Result,
     OtherResult,
@@ -13,11 +19,22 @@ from tapo.responses import (
     T31XResult,
 )
 
-class HubIrHandler(HubHandler):
+class HubIrHandler(DeviceHandlerExt, HubAlarmExt, HubChildrenExt, DeviceManagementExt, DebugExt):
     """Handler for the [H110](https://www.tapo.com/en/search/?q=H110) devices.
 
-    It supports everything that `HubHandler` does, and also handles the IR remotes
-    paired with the hub through `HubIrHandler.ir_remote`.
+    Example:
+        ```python
+        # Connect to the hub
+        client = ApiClient("tapo-username@example.com", "tapo-password")
+        hub = await client.h110("192.168.1.100")
+
+        # Get a handler for a child device
+        device = await hub.t31x(device_id="0000000000000000000000000000000000000000")
+
+        # Get the device info of the child device
+        device_info = await device.get_device_info()
+        print(f"Device info: {device_info.to_dict()}")
+        ```
     """
 
     def __init__(self, handler: object):
@@ -25,7 +42,17 @@ class HubIrHandler(HubHandler):
         It should not be called from outside the tapo library.
         """
 
-    async def get_child_device_list(  # type: ignore[override]
+    async def get_device_info(self) -> DeviceInfoHubResult:
+        """Returns *device info* as `DeviceInfoHubResult`.
+        It is not guaranteed to contain all the properties returned from the Tapo API.
+        If the deserialization fails, or if a property that you care about it's not present,
+        try `HubIrHandler.get_device_info_json`.
+
+        Returns:
+            DeviceInfoHubResult: Device info of Tapo H100 and H110.
+        """
+
+    async def get_child_device_list(
         self,
     ) -> List[
         Union[

@@ -560,8 +560,7 @@ macro_rules! hub_alarm_handlers {
 macro_rules! hub_child_handlers {
     (
         $name:ident,
-        $child:ident,
-        $ctor:literal
+        $child:ident
         $(, child_device_list_note = $child_device_list_note:literal)?
         $(,)?
     ) => {
@@ -642,13 +641,13 @@ macro_rules! hub_child_handlers {
 
         /// Child device handler builders.
         impl $name {
-            hub_child_handlers!(@checked $child, ke100, KE100Handler, KE100, $ctor);
-            hub_child_handlers!(@checked $child, s200, S200Handler, S200, $ctor);
-            hub_child_handlers!(@checked $child, s210, S210Handler, S210, $ctor);
-            hub_child_handlers!(@checked $child, t100, T100Handler, T100, $ctor);
-            hub_child_handlers!(@checked $child, t110, T110Handler, T110, $ctor);
-            hub_child_handlers!(@checked $child, t300, T300Handler, T300, $ctor);
-            hub_child_handlers!(@checked $child, t31x, T31XHandler, T31X, $ctor);
+            hub_child_handlers!(@checked $child, ke100, KE100Handler, KE100);
+            hub_child_handlers!(@checked $child, s200, S200Handler, S200);
+            hub_child_handlers!(@checked $child, s210, S210Handler, S210);
+            hub_child_handlers!(@checked $child, t100, T100Handler, T100);
+            hub_child_handlers!(@checked $child, t110, T110Handler, T110);
+            hub_child_handlers!(@checked $child, t300, T300Handler, T300);
+            hub_child_handlers!(@checked $child, t31x, T31XHandler, T31X);
         }
 
         /// Unchecked child device handler builders.
@@ -663,29 +662,12 @@ macro_rules! hub_child_handlers {
         }
     };
 
-    (@checked $child:ident, $method:ident, $handler:ident, $variant:ident, $ctor:literal) => {
+    (@checked $child:ident, $method:ident, $handler:ident, $variant:ident) => {
         #[doc = concat!(
             "Returns a [`", stringify!($handler), "`](crate::", stringify!($handler),
             ") for the given [`HubDevice`](crate::HubDevice).\n\n",
             "# Arguments\n\n",
-            "* `identifier` - a hub device identifier\n\n",
-            "# Example\n\n",
-            "```rust,no_run\n",
-            "# use tapo::{ApiClient, HubDevice};\n",
-            "# #[tokio::main]\n",
-            "# async fn main() -> Result<(), Box<dyn std::error::Error>> {\n",
-            "// Connect to the hub\n",
-            "let hub = ApiClient::new(\"tapo-username@example.com\", \"tapo-password\")\n",
-            "    .", $ctor, "(\"192.168.1.100\")\n",
-            "    .await?;\n",
-            "// Get a handler for the child device\n",
-            "let device_id = \"0000000000000000000000000000000000000000\".to_string();\n",
-            "let device = hub.", stringify!($method), "(HubDevice::ByDeviceId(device_id)).await?;\n",
-            "// Get the device info of the child device\n",
-            "let device_info = device.get_device_info().await?;\n",
-            "# Ok(())\n",
-            "# }\n",
-            "```",
+            "* `identifier` - a hub device identifier",
         )]
         pub async fn $method(
             &self,
