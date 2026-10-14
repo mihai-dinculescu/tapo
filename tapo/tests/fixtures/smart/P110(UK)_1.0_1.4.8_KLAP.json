@@ -1,0 +1,191 @@
+{
+  "discovery_response": {
+    "error_code": 0,
+    "result": {
+      "device_id": "0123456789abcdef0123456789abcdef",
+      "device_model": "P110(UK)",
+      "device_type": "SMART.TAPOPLUG",
+      "factory_default": false,
+      "ip": "192.168.1.100",
+      "is_support_iot_cloud": true,
+      "mac": "AA-BB-CC-DD-EE-FF",
+      "mgt_encrypt_schm": {
+        "encrypt_type": "KLAP",
+        "http_port": 80,
+        "is_support_https": false,
+        "lv": 2
+      },
+      "obd_src": "tplink",
+      "owner": "0123456789ABCDEF0123456789ABCDEF",
+      "protocol_version": 1,
+      "tpap_preferred": false
+    }
+  },
+  "component_nego": {
+    "component_list": [
+      {
+        "id": "device",
+        "ver_code": 2
+      },
+      {
+        "id": "firmware",
+        "ver_code": 2
+      },
+      {
+        "id": "quick_setup",
+        "ver_code": 3
+      },
+      {
+        "id": "time",
+        "ver_code": 1
+      },
+      {
+        "id": "wireless",
+        "ver_code": 1
+      },
+      {
+        "id": "schedule",
+        "ver_code": 2
+      },
+      {
+        "id": "countdown",
+        "ver_code": 2
+      },
+      {
+        "id": "antitheft",
+        "ver_code": 1
+      },
+      {
+        "id": "account",
+        "ver_code": 1
+      },
+      {
+        "id": "synchronize",
+        "ver_code": 1
+      },
+      {
+        "id": "sunrise_sunset",
+        "ver_code": 1
+      },
+      {
+        "id": "led",
+        "ver_code": 1
+      },
+      {
+        "id": "cloud_connect",
+        "ver_code": 1
+      },
+      {
+        "id": "iot_cloud",
+        "ver_code": 1
+      },
+      {
+        "id": "device_local_time",
+        "ver_code": 1
+      },
+      {
+        "id": "default_states",
+        "ver_code": 1
+      },
+      {
+        "id": "auto_off",
+        "ver_code": 2
+      },
+      {
+        "id": "localSmart",
+        "ver_code": 1
+      },
+      {
+        "id": "energy_unit",
+        "ver_code": 1
+      },
+      {
+        "id": "energy_monitoring",
+        "ver_code": 2
+      },
+      {
+        "id": "power_protection",
+        "ver_code": 1
+      },
+      {
+        "id": "charging_protection",
+        "ver_code": 2
+      },
+      {
+        "id": "current_protection",
+        "ver_code": 1
+      },
+      {
+        "id": "tpap",
+        "ver_code": 1
+      },
+      {
+        "id": "realtime_emeter",
+        "ver_code": 1
+      }
+    ]
+  },
+  "login": {
+    "discover": {
+      "sub_method": "discover",
+      "tpap_preferred": false
+    }
+  },
+  "get_device_info": {
+    "auto_off_remain_time": 0,
+    "auto_off_status": "off",
+    "avatar": "plug",
+    "charging_status": "normal",
+    "default_states": {
+      "type": "last_states"
+    },
+    "device_id": "8000000000000000000000000000000000000110",
+    "device_on": false,
+    "fw_id": "00000000000000000000000000000000",
+    "fw_ver": "1.4.8 Build 260804 Rel.045837",
+    "has_set_location_info": true,
+    "hw_id": "0123456789ABCDEF0123456789ABCDEF",
+    "hw_ver": "1.0",
+    "ip": "192.168.1.100",
+    "lang": "en_US",
+    "latitude": 515074,
+    "longitude": -1278,
+    "mac": "AA-BB-CC-DD-EE-FF",
+    "model": "P110",
+    "nickname": "U2ltdWxhdGVkIFBsdWc=",
+    "oem_id": "FEDCBA9876543210FEDCBA9876543210",
+    "on_time": 0,
+    "overcurrent_status": "normal",
+    "power_protection_status": "normal",
+    "region": "Europe/London",
+    "rssi": -51,
+    "signal_level": 2,
+    "specs": "",
+    "ssid": "U2ltdWxhdGVkIFdpLUZp",
+    "time_diff": 0,
+    "type": "SMART.TAPOPLUG"
+  },
+  "get_device_usage": {
+    "time_usage": {
+      "today": 0,
+      "past7": 0,
+      "past30": 0
+    },
+    "power_usage": {
+      "today_mwh": 0,
+      "past7_mwh": 0,
+      "past30_mwh": 0,
+      "today": 0,
+      "past7": 0,
+      "past30": 0
+    },
+    "saved_power": {
+      "today_mwh": 0,
+      "today": 0,
+      "past7_mwh": 0,
+      "past7": 0,
+      "past30_mwh": 0,
+      "past30": 0
+    }
+  }
+}

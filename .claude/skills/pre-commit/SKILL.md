@@ -81,6 +81,22 @@ The decompiled Tapo Android app is a private reverse-engineering aid that lives 
   - OK: ``//! The Tapo app derives the keys from the `Key-Exchange` header``
 - The one intentional mention is the "Reverse Engineering the Tapo API" section in `CONTRIBUTING.md`, which describes the workflow without naming a file. Leave it as is.
 
+### Fixture privacy checks
+
+Run these checks if fixtures under `tapo/tests/fixtures/` were added or changed, including new untracked ones. Fix all issues found.
+
+A fixture is captured from a real device, and only the device's behavior may survive the capture. Read every added or changed fixture in full, not only the fields listed here, and check each value that could identify a person, a home, a network, an account, or a single device:
+
+- **Identifiers**: `device_id`, `owner`, `hw_id`, `fw_id`, `oem_id`, and any other id, token, or key must be an obvious placeholder, such as `0123456789ABCDEF…`, `FEDCBA98…`, `000…`, or `8000…0110` ending in the model number
+- **MAC addresses**: `AA-BB-CC-DD-EE-FF`, or `AA-BB-CC-DD-EE-` followed by a short model suffix such as `35`, in every spelling the device uses (`AABBCCDDEEFF` in the `discover` login result)
+- **IP addresses**: `192.168.1.100`
+- **Base64 fields**: decode `nickname`, `ssid`, and every other base64 string, such as child device names. They must decode to made-up names like "Simulated Plug" and "Simulated Wi-Fi"
+- **Location**: `latitude` and `longitude` must be `0` or the London placeholder `515074` / `-1278`, with `region` set to a time zone that matches it
+- **Account data**: no email addresses, usernames, passwords, cloud tokens, or user ids, in plain text or base64
+- **Anything else personal**: names, room names, schedules, or notes in free-text fields
+
+Do not touch values that only describe the device: model, hardware and firmware versions, component lists, signal strength, settings, and usage or energy counters. The fixture naming and the `fw_ver` it is cut from must still agree, as described in `tapo/tests/simulator/fixture.rs`.
+
 ## Code Review
 
 After fixing all issues found in the checks, review the code changes for correctness, readability, and maintainability and propose improvements.

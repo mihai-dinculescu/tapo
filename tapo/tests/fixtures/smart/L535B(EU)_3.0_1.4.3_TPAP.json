@@ -1,0 +1,237 @@
+{
+  "discovery_response": {
+    "error_code": 0,
+    "result": {
+      "device_id": "fedcba9876543210fedcba9876543210",
+      "device_model": "L535B(EU)",
+      "device_type": "SMART.TAPOBULB",
+      "factory_default": false,
+      "ip": "192.168.1.100",
+      "is_support_iot_cloud": true,
+      "mac": "AA-BB-CC-DD-EE-35",
+      "mgt_encrypt_schm": {
+        "encrypt_type": "TPAP",
+        "http_port": 80,
+        "is_support_https": false,
+        "lv": 2
+      },
+      "obd_src": "tplink",
+      "owner": "0123456789ABCDEF0123456789ABCDEF",
+      "protocol_version": 1,
+      "tpap": {
+        "dac": 1,
+        "noc": 1,
+        "pake": [2],
+        "port": 80,
+        "tls": 0
+      },
+      "tpap_preferred": true
+    }
+  },
+  "component_nego": {
+    "component_list": [
+      {
+        "id": "device",
+        "ver_code": 2
+      },
+      {
+        "id": "firmware",
+        "ver_code": 2
+      },
+      {
+        "id": "quick_setup",
+        "ver_code": 3
+      },
+      {
+        "id": "inherit",
+        "ver_code": 1
+      },
+      {
+        "id": "time",
+        "ver_code": 1
+      },
+      {
+        "id": "wireless",
+        "ver_code": 1
+      },
+      {
+        "id": "schedule",
+        "ver_code": 2
+      },
+      {
+        "id": "countdown",
+        "ver_code": 2
+      },
+      {
+        "id": "antitheft",
+        "ver_code": 1
+      },
+      {
+        "id": "account",
+        "ver_code": 1
+      },
+      {
+        "id": "synchronize",
+        "ver_code": 1
+      },
+      {
+        "id": "sunrise_sunset",
+        "ver_code": 1
+      },
+      {
+        "id": "cloud_connect",
+        "ver_code": 1
+      },
+      {
+        "id": "default_states",
+        "ver_code": 1
+      },
+      {
+        "id": "preset",
+        "ver_code": 3
+      },
+      {
+        "id": "brightness",
+        "ver_code": 1
+      },
+      {
+        "id": "color",
+        "ver_code": 1
+      },
+      {
+        "id": "color_temperature",
+        "ver_code": 1
+      },
+      {
+        "id": "auto_light",
+        "ver_code": 3
+      },
+      {
+        "id": "on_off_gradually",
+        "ver_code": 4
+      },
+      {
+        "id": "device_local_time",
+        "ver_code": 1
+      },
+      {
+        "id": "iot_cloud",
+        "ver_code": 1
+      },
+      {
+        "id": "bulb_quick_control",
+        "ver_code": 1
+      },
+      {
+        "id": "localSmart",
+        "ver_code": 1
+      },
+      {
+        "id": "matter",
+        "ver_code": 3
+      },
+      {
+        "id": "segment_effect",
+        "ver_code": 2
+      },
+      {
+        "id": "tpap",
+        "ver_code": 1
+      },
+      {
+        "id": "noc",
+        "ver_code": 1
+      }
+    ]
+  },
+  "login": {
+    "discover": {
+      "sub_method": "discover",
+      "tpap_preferred": true,
+      "mac": "AABBCCDDEE35",
+      "tpap": {
+        "tls": 0,
+        "dac": 1,
+        "noc": 1,
+        "pake": [2],
+        "port": 80
+      }
+    }
+  },
+  "get_device_info": {
+    "auto_biorhythm_light_enable": false,
+    "auto_biorhythm_light_id": "R0",
+    "avatar": "bulb",
+    "brightness": 50,
+    "color_temp": 2700,
+    "color_temp_range": [2500, 6500],
+    "default_states": {
+      "re_power_type": "always_on",
+      "state": {
+        "brightness": 50,
+        "color_temp": 2700,
+        "hue": 0,
+        "saturation": 100
+      },
+      "type": "last_states"
+    },
+    "device_id": "8000000000000000000000000000000000000535",
+    "device_on": true,
+    "dynamic_light_effect_enable": false,
+    "dynamic_light_effect_id": "L1",
+    "fw_id": "00000000000000000000000000000000",
+    "fw_ver": "1.4.3 Build 260702 Rel.175522",
+    "has_set_location_info": true,
+    "hue": 0,
+    "hw_id": "ABCDEF0123456789ABCDEF0123456789",
+    "hw_ver": "3.0",
+    "ip": "192.168.1.100",
+    "lang": "en_US",
+    "latitude": 515074,
+    "longitude": -1278,
+    "mac": "AA-BB-CC-DD-EE-35",
+    "model": "L535B",
+    "nickname": "U2ltdWxhdGVkIEJ1bGI=",
+    "oem_id": "9876543210FEDCBA9876543210FEDCBA",
+    "overheated": false,
+    "region": "Europe/London",
+    "rssi": -42,
+    "saturation": 100,
+    "segment_effect": {
+      "brightness": 0,
+      "custom": 0,
+      "display_colors": [],
+      "enable": 0,
+      "id": "",
+      "name": ""
+    },
+    "signal_level": 3,
+    "specs": "",
+    "ssid": "U2ltdWxhdGVkIFdpLUZp",
+    "time_diff": 0,
+    "type": "SMART.TAPOBULB"
+  },
+  "get_device_usage": {
+    "time_usage": {
+      "today": 834,
+      "past7": 5734,
+      "past30": 23378
+    },
+    "power_usage": {
+      "today_mwh": 61221,
+      "past7_mwh": 405637,
+      "past30_mwh": 1719846,
+      "today": 61,
+      "past7": 406,
+      "past30": 1720
+    },
+    "saved_power": {
+      "today_mwh": 981279,
+      "today": 981,
+      "past7_mwh": 6761863,
+      "past7": 6762,
+      "past30_mwh": 27502654,
+      "past30": 27503
+    }
+  }
+}

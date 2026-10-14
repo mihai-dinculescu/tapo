@@ -24,9 +24,18 @@ args = ["doc", "--workspace", "--no-deps", "--all-features"]
 command = "cargo"
 args = ["clippy", "--workspace", "--all-targets", "--all-features", "--verbose", "--", "-D", "warnings"]
 
+# `debug` gates code of `tapo` but no test, so one run with it on covers
+# every test, and the build without it is only checked.
 [tasks.test]
+dependencies = ["check-tests-default", "test-debug"]
+
+[tasks.check-tests-default]
 command = "cargo"
-args = ["test", "--verbose"]
+args = ["check", "-p", "tapo", "--tests", "--verbose"]
+
+[tasks.test-debug]
+command = "cargo"
+args = ["test", "--features", "tapo/debug", "--verbose"]
 
 [tasks.ci-flow]
 dependencies = ["format", "check", "check-doc", "clippy", "test"]
