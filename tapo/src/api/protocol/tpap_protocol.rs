@@ -593,6 +593,8 @@ mod tests {
 
     #[tokio::test]
     async fn discover_of_an_unreachable_device_is_an_error() {
+        crate::utils::install_crypto_provider();
+
         let result = TpapProtocol::discover(&Client::new(), "127.0.0.1:0").await;
 
         assert!(matches!(result, Err(Error::Http(_))));

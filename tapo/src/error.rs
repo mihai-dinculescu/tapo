@@ -193,6 +193,8 @@ mod tests {
 
     #[tokio::test]
     async fn http_error_redacts_the_session_token() {
+        crate::utils::install_crypto_provider();
+
         let err: Error = reqwest::Client::new()
             .post("https://127.0.0.1:0/stok=secret-token/ds")
             .send()
