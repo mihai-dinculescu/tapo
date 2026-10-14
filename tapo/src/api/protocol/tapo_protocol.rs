@@ -295,6 +295,8 @@ mod tests {
 
     #[tokio::test]
     async fn unreachable_device_does_not_fall_back_to_aes_ssl() {
+        crate::utils::install_crypto_provider();
+
         let error: Error = Client::new()
             .post("https://127.0.0.1:0/")
             .send()

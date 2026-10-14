@@ -12,6 +12,10 @@ use tapo_mcp::telemetry::init_tracing;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    // `tapo` uses reqwest's `rustls-no-provider` feature, so the provider is ours to
+    // pick. `ring` avoids the `aws-lc-sys` native build; install it before any client.
+    let _ = rustls::crypto::ring::default_provider().install_default();
+
     let tracer_provider = init_tracing()?;
 
     let app_config = Arc::new(AppConfig::from_env()?);

@@ -125,3 +125,12 @@ pub(crate) fn local_day<Tz: TimeZone>(
         local_midnight(next_date, timezone) - Duration::seconds(1),
     ))
 }
+
+/// Installs the rustls crypto provider for tests that build an HTTPS client.
+///
+/// `tapo` is built with reqwest's `rustls-no-provider` feature, so reqwest panics if no
+/// provider is installed before the first client is created.
+#[cfg(test)]
+pub(crate) fn install_crypto_provider() {
+    let _ = rustls::crypto::ring::default_provider().install_default();
+}

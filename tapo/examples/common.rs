@@ -23,7 +23,14 @@ pub fn require_env_vars<const N: usize>(names: [&str; N]) -> Result<[String; N],
     Ok(names.map(|name| env::var(name).expect("checked present above")))
 }
 
+/// Sets up example logging and installs the rustls crypto provider.
+///
+/// `tapo` is built with reqwest's `rustls-no-provider` feature, so a provider must be
+/// installed before the first HTTPS client is created or reqwest panics. Doing it here
+/// keeps every example a single `common::setup_logger()` call, as upstream has it.
 pub fn setup_logger() {
+    let _ = rustls::crypto::ring::default_provider().install_default();
+
     let filters = env::var("RUST_LOG").unwrap_or_else(|_| "tapo=info".to_string());
 
     env_logger::Builder::new().parse_filters(&filters).init();

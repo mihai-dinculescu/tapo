@@ -28,7 +28,10 @@ crc32fast = "1.5"
 itertools = "0.15"
 lazy_static = "1.5"
 log = { workspace = true }
-reqwest = { version = "0.13", default-features = false, features = ["cookies", "json", "rustls"] }
+# `rustls-no-provider` rather than `rustls`: the latter forces reqwest to pull the
+# `aws-lc-rs` provider and its heavy `aws-lc-sys` CMake build. Provider choice belongs
+# to the binary, which must install one before the first client is built.
+reqwest = { version = "0.13", default-features = false, features = ["cookies", "json", "rustls-no-provider"] }
 retina = "0.4"
 serde = { workspace = true, features = ["derive", "serde_derive"] }
 serde_json = { workspace = true }
@@ -63,4 +66,5 @@ pyo3 = { workspace = true, features = ["serde", "chrono", "chrono-tz", "multiple
 [dev-dependencies]
 once_cell = "1.21"
 env_logger = "0.11"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
