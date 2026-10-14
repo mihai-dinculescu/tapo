@@ -1,8 +1,8 @@
 from tapo.debug_ext import DebugExt
-from tapo.refresh_session_ext import RefreshSessionExt
+from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.responses import DeviceInfoCameraResult, Preset, RtspStreamUrl, Snapshot
 
-class CameraPtzHandler(RefreshSessionExt, DebugExt):
+class CameraPtzHandler(DeviceHandlerExt, DebugExt):
     """Handler for Tapo cameras with PTZ, such as the
     [C210](https://www.tapo.com/en/search/?q=C210),
     [C220](https://www.tapo.com/en/search/?q=C220),

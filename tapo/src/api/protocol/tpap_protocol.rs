@@ -32,7 +32,7 @@ pub(crate) struct TpapInfo {
     /// and 2 for TLS with it.
     #[serde(default)]
     tls: i64,
-    port: Option<i64>,
+    port: u16,
     /// The passcode types the device takes: 0 for the default passcode and
     /// 2 for the account password, among others.
     #[serde(default)]
@@ -47,7 +47,7 @@ impl TpapInfo {
     pub fn camera() -> Self {
         Self {
             tls: 1,
-            port: None,
+            port: 443,
             pake: vec![2],
         }
     }
@@ -62,10 +62,17 @@ impl TpapInfo {
         Self::deserialize(tpap).map_err(|_| Error::unsupported_tpap(format!("tpap: {tpap}")))
     }
 
-    fn url(&self, ip_address: &str) -> Result<String, Error> {
-        let (scheme, default_port) = match self.tls {
-            0 => ("http", 80),
-            1 => ("https", 443),
+    /// The URL that the device takes TPAP requests on: at `ip_address`, on
+    /// the port that the device announces for TPAP.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the device takes them over TLS with a verified
+    /// certificate, which is not supported.
+    pub(super) fn url(&self, ip_address: &str) -> Result<String, Error> {
+        let scheme = match self.tls {
+            0 => "http",
+            1 => "https",
             _ => return Err(Error::unsupported_tpap(format!("tls: {}", self.tls))),
         };
 
@@ -75,9 +82,7 @@ impl TpapInfo {
             return Ok(format!("{scheme}://{ip_address}"));
         }
 
-        let port = self.port.filter(|port| *port > 0).unwrap_or(default_port);
-
-        Ok(format!("{scheme}://{ip_address}:{port}"))
+        Ok(format!("{scheme}://{ip_address}:{}", self.port))
     }
 
     fn passcode_type(&self) -> Result<&'static str, Error> {
@@ -94,6 +99,7 @@ impl TpapInfo {
 
 struct TpapSession {
     url_with_token: String,
+    url: String,
     cipher: TpapCipher,
 }
 
@@ -101,7 +107,6 @@ pub(super) struct TpapProtocol {
     client: Client,
     info: TpapInfo,
     device_family: DeviceFamily,
-    url: Option<String>,
     session: Option<TpapSession>,
 }
 
@@ -111,7 +116,6 @@ impl TpapProtocol {
             client,
             info,
             device_family,
-            url: None,
             session: None,
         }
     }
@@ -167,14 +171,9 @@ impl TpapProtocol {
         parse_discover_response(&response_body)
     }
 
-    /// The URL that the device takes TPAP requests on.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the device takes them over TLS with a verified
-    /// certificate, which is not supported.
-    pub fn url(&self, ip_address: &str) -> Result<String, Error> {
-        self.info.url(ip_address)
+    /// How the device takes TPAP requests.
+    pub fn info(&self) -> &TpapInfo {
+        &self.info
     }
 
     pub async fn login(
@@ -183,12 +182,13 @@ impl TpapProtocol {
         _username: &str,
         password: &str,
     ) -> Result<(), Error> {
-        self.url = Some(url);
-        self.handshake(password).await
+        self.handshake(url, password).await
     }
 
     pub async fn refresh_session(&mut self, _username: &str, password: &str) -> Result<(), Error> {
-        self.handshake(password).await
+        let url = self.session()?.url.clone();
+
+        self.handshake(url, password).await
     }
 
     pub async fn execute_request<R>(&self, request: TapoRequest) -> Result<Option<R>, Error>
@@ -264,15 +264,13 @@ impl TpapProtocol {
 
     // Of the request and response bodies of the handshake only the error
     // code is logged, and nothing that is derived from them.
-    async fn handshake(&mut self, password: &str) -> Result<(), Error> {
-        let url = self
-            .url
-            .as_deref()
-            .ok_or_else(|| anyhow::anyhow!("TPAP session not initialized (login first)"))?;
+    async fn handshake(&mut self, url: String, password: &str) -> Result<(), Error> {
         let passcode_type = self.info.passcode_type()?;
         let user_random: [u8; 32] = rand::rng().random();
 
-        let registration = self.pake_register(url, passcode_type, &user_random).await?;
+        let registration = self
+            .pake_register(&url, passcode_type, &user_random)
+            .await?;
 
         let credential = tpap_spake2p::credential(
             password,
@@ -294,10 +292,11 @@ impl TpapProtocol {
         .await
         .map_err(anyhow::Error::from)??;
 
-        let share_result = self.pake_share(url, &proof).await?;
+        let share_result = self.pake_share(&url, &proof).await?;
 
         let session = TpapSession {
             url_with_token: format!("{url}/stok={}/ds", share_result.token),
+            url,
             cipher: TpapCipher::new(&proof.shared_key, share_result.start_sequence)?,
         };
         self.session = Some(session);
@@ -426,14 +425,11 @@ fn parse_discover_response(response_body: &serde_json::Value) -> Result<Option<T
     Ok(Some(info))
 }
 
-/// Whether `address` names a port after its host, as in `192.168.1.100:8080`
-/// or `[::1]:8080`.
+/// Whether `address` names a port after its host, as in `192.168.1.100:8080`.
 fn has_port(address: &str) -> bool {
-    address.rsplit_once(':').is_some_and(|(host, port)| {
-        !port.is_empty()
-            && port.bytes().all(|b| b.is_ascii_digit())
-            && (!host.contains(':') || host.ends_with(']'))
-    })
+    address
+        .rsplit_once(':')
+        .is_some_and(|(_, port)| !port.is_empty() && port.bytes().all(|b| b.is_ascii_digit()))
 }
 
 /// The error of a failed `pake_share`. A camera answers a wrong password
@@ -692,19 +688,26 @@ mod tests {
     }
 
     #[test]
-    fn url_defaults_to_port_80() {
-        assert_eq!(
-            info(json!({ "tls": 0, "pake": [2] }))
-                .url("192.168.1.100")
-                .unwrap(),
-            "http://192.168.1.100:80"
-        );
+    fn url_takes_the_announced_port() {
         assert_eq!(
             info(json!({ "tls": 0, "pake": [2], "port": 8080 }))
                 .url("192.168.1.100")
                 .unwrap(),
             "http://192.168.1.100:8080"
         );
+    }
+
+    #[test]
+    fn announcement_without_a_port_is_an_error() {
+        let tpap = json!({ "tls": 0, "pake": [2] });
+
+        assert!(matches!(
+            TpapInfo::from_announcement(&tpap),
+            Err(Error::UnsupportedProtocol {
+                protocol: "TPAP",
+                ..
+            })
+        ));
     }
 
     #[test]
@@ -716,12 +719,10 @@ mod tests {
             "http://192.168.1.100:8080"
         );
         assert_eq!(info.url("plug.local:80").unwrap(), "http://plug.local:80");
-        assert_eq!(info.url("[::1]:8080").unwrap(), "http://[::1]:8080");
-        assert_eq!(info.url("[::1]").unwrap(), "http://[::1]:80");
     }
 
     #[test]
-    fn url_over_tls_defaults_to_port_443() {
+    fn url_over_tls_takes_the_announced_port() {
         // What a C220 announces over UDP.
         let info = info(json!({ "noc": 1, "pake": [2], "port": 443, "tls": 1 }));
 
@@ -762,7 +763,7 @@ mod tests {
     #[test]
     fn passcode_type_other_than_the_account_password_is_unsupported() {
         for pake in [json!([0]), json!([0, 2]), json!([1]), json!([])] {
-            let error = info(json!({ "tls": 0, "pake": pake }))
+            let error = info(json!({ "tls": 0, "pake": pake, "port": 80 }))
                 .passcode_type()
                 .unwrap_err();
 

@@ -18,7 +18,6 @@ tapo_handler! {
     /// [TC40](https://www.tapo.com/en/search/?q=TC40),
     /// and [TC70](https://www.tapo.com/en/search/?q=TC70).
     CameraPtzHandler(DeviceInfoCameraResult),
-    ip_address,
 }
 
 impl CameraPtzHandler {
@@ -36,7 +35,7 @@ impl CameraPtzHandler {
     }
 
     fn rtsp_url_base(&self, stream: &str) -> String {
-        format!("rtsp://{}:554/{stream}", self.ip_address)
+        format!("rtsp://{}:554/{stream}", self.ip)
     }
 
     fn rtsp_url(&self, stream: &str, username: &str, password: &str) -> String {

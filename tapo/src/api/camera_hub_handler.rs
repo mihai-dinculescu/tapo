@@ -23,7 +23,8 @@ use crate::utils::unix_timestamp_seconds;
 #[derive(Debug)]
 pub struct CameraHubHandler {
     client: Arc<RwLock<ApiClient>>,
-    ip_address: String,
+    ip: String,
+    port: u16,
     /// Identifies this handler to the hub, new for every handler. It is sent
     /// as `player_id` in clip searches (`searchVideoWithUTC`), and on the
     /// media stream as `playerId` in the stream URI and `player_id` in the
@@ -32,10 +33,11 @@ pub struct CameraHubHandler {
 }
 
 impl CameraHubHandler {
-    pub(crate) fn new(client: Arc<RwLock<ApiClient>>, ip_address: String) -> Self {
+    pub(crate) fn new(client: ApiClient, (ip, port): (String, u16)) -> Self {
         Self {
-            client,
-            ip_address,
+            client: Arc::new(RwLock::new(client)),
+            ip,
+            port,
             player_id: uuid::Uuid::new_v4().to_string(),
         }
     }
@@ -313,7 +315,7 @@ impl CameraHubHandler {
             .read()
             .await
             .download_recording(
-                &self.ip_address,
+                &self.ip,
                 &self.player_id,
                 child_device_id.into(),
                 start_time,

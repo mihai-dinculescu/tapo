@@ -2,15 +2,15 @@ from typing import List, Optional
 
 from tapo import PowerStripPlugHandler
 from tapo.debug_ext import DebugExt
+from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.device_management_ext import DeviceManagementExt
-from tapo.refresh_session_ext import RefreshSessionExt
 from tapo.responses import (
     ChildDeviceComponentList,
     DeviceInfoPowerStripResult,
     PowerStripPlugResult,
 )
 
-class PowerStripHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
+class PowerStripHandler(DeviceHandlerExt, DeviceManagementExt, DebugExt):
     """Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
     [P306](https://www.tp-link.com/us/search/?q=P306) devices.
     """

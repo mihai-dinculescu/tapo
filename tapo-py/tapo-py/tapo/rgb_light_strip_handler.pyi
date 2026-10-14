@@ -1,11 +1,11 @@
 from tapo.debug_ext import DebugExt
+from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.device_management_ext import DeviceManagementExt
 from tapo.on_off_ext import OnOffExt
-from tapo.refresh_session_ext import RefreshSessionExt
 from tapo.requests import Color, ColorLightSetDeviceInfoParams
 from tapo.responses import DeviceInfoRgbLightStripResult, DeviceUsageEnergyMonitoringResult
 
-class RgbLightStripHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, DebugExt):
+class RgbLightStripHandler(DeviceHandlerExt, OnOffExt, DeviceManagementExt, DebugExt):
     """Handler for the [L900](https://www.tapo.com/en/search/?q=L900) devices."""
 
     def __init__(self, handler: object):

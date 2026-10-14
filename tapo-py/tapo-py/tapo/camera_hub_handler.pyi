@@ -12,7 +12,7 @@ from tapo import (
     T31XHandler,
 )
 from tapo.debug_ext import DebugExt
-from tapo.refresh_session_ext import RefreshSessionExt
+from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.responses import (
     ChildDeviceComponentList,
     DeviceInfoCameraHubResult,
@@ -31,7 +31,7 @@ from tapo.responses import (
     TimezoneHubResult,
 )
 
-class CameraHubHandler(RefreshSessionExt, DebugExt):
+class CameraHubHandler(DeviceHandlerExt, DebugExt):
     """Handler for camera hubs, such as the
     [H200](https://www.tapo.com/en/search/?q=H200) and
     [H500](https://www.tapo.com/en/search/?q=H500).

@@ -84,7 +84,7 @@ async fn process_device(device: DiscoveryResult) -> DeviceOutcome {
     let id = device.device_id().to_string();
     let name = device.nickname().to_string();
     let model = device.model().to_string();
-    let ip = device.ip().to_string();
+    let (ip, _) = device.address();
 
     if matches!(device, DiscoveryResult::Other { .. }) {
         return DeviceOutcome::Unsupported(UnsupportedDevice { ip, model });

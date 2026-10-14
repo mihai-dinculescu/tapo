@@ -124,8 +124,6 @@ pub enum DiscoveryResult {
         /// [TC40](https://www.tapo.com/en/search/?q=TC40),
         /// and [TC70](https://www.tapo.com/en/search/?q=TC70).
         handler: CameraPtzHandler,
-        /// The IP address of the device.
-        ip: String,
     },
     /// A Tapo device without a specific handler implementation.
     ///
@@ -139,18 +137,19 @@ pub enum DiscoveryResult {
         /// unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
         /// to start the discussion.
         device_info: Box<DeviceInfoBasicResult>,
-        /// The IP address of the device.
-        ip: String,
+        /// The IP address and the port that the device was reached at
+        /// during discovery.
+        address: (String, u16),
     },
 }
 
 macro_rules! map_device_model {
-    ($discovery_result_type:ident, $device_info_type:ident, $handler_type:ident, $device_info:expr, $client:expr) => {{
+    ($discovery_result_type:ident, $device_info_type:ident, $handler_type:ident, $device_info:expr, $client:expr, $address:expr) => {{
         DiscoveryResult::$discovery_result_type {
             device_info: Box::new(
                 serde_json::from_value::<$device_info_type>($device_info)?.decode()?,
             ),
-            handler: $handler_type::new($client.clone()),
+            handler: $handler_type::new($client, $address),
         }
     }};
 }
@@ -167,12 +166,16 @@ impl DiscoveryResult {
             client.prepare_for_camera_hub();
         }
 
-        client
-            .login(&raw_result.ip.to_string(), device_family, auth_protocol)
+        let address = client
+            .login_on_port(
+                &raw_result.ip.to_string(),
+                raw_result.http_port(),
+                device_family,
+                auth_protocol,
+            )
             .await?;
-        let device_info: serde_json::Value = client.get_device_info().await?;
 
-        let client = std::sync::Arc::new(tokio::sync::RwLock::new(client));
+        let device_info: serde_json::Value = client.get_device_info().await?;
 
         let obj = device_info
             .as_object()
@@ -193,7 +196,8 @@ impl DiscoveryResult {
                     DeviceInfoLightResult,
                     LightHandler,
                     device_info,
-                    client
+                    client,
+                    address
                 )
             }
             DeviceType::ColorLight => {
@@ -202,7 +206,8 @@ impl DiscoveryResult {
                     DeviceInfoColorLightResult,
                     ColorLightHandler,
                     device_info,
-                    client
+                    client,
+                    address
                 )
             }
             DeviceType::RgbLightStrip => {
@@ -211,7 +216,8 @@ impl DiscoveryResult {
                     DeviceInfoRgbLightStripResult,
                     RgbLightStripHandler,
                     device_info,
-                    client
+                    client,
+                    address
                 )
             }
             DeviceType::RgbicLightStrip => {
@@ -220,11 +226,19 @@ impl DiscoveryResult {
                     DeviceInfoRgbicLightStripResult,
                     RgbicLightStripHandler,
                     device_info,
-                    client
+                    client,
+                    address
                 )
             }
             DeviceType::Plug => {
-                map_device_model!(Plug, DeviceInfoPlugResult, PlugHandler, device_info, client)
+                map_device_model!(
+                    Plug,
+                    DeviceInfoPlugResult,
+                    PlugHandler,
+                    device_info,
+                    client,
+                    address
+                )
             }
             DeviceType::PlugEnergyMonitoring => {
                 map_device_model!(
@@ -232,7 +246,8 @@ impl DiscoveryResult {
                     DeviceInfoPlugEnergyMonitoringResult,
                     PlugEnergyMonitoringHandler,
                     device_info,
-                    client
+                    client,
+                    address
                 )
             }
             DeviceType::PowerStrip => {
@@ -241,7 +256,8 @@ impl DiscoveryResult {
                     DeviceInfoPowerStripResult,
                     PowerStripHandler,
                     device_info,
-                    client
+                    client,
+                    address
                 )
             }
             DeviceType::PowerStripEnergyMonitoring => {
@@ -250,11 +266,19 @@ impl DiscoveryResult {
                     DeviceInfoPowerStripResult,
                     PowerStripEnergyMonitoringHandler,
                     device_info,
-                    client
+                    client,
+                    address
                 )
             }
             DeviceType::Hub => {
-                map_device_model!(Hub, DeviceInfoHubResult, HubHandler, device_info, client)
+                map_device_model!(
+                    Hub,
+                    DeviceInfoHubResult,
+                    HubHandler,
+                    device_info,
+                    client,
+                    address
+                )
             }
             DeviceType::HubIr => {
                 map_device_model!(
@@ -262,21 +286,21 @@ impl DiscoveryResult {
                     DeviceInfoHubResult,
                     HubIrHandler,
                     device_info,
-                    client
+                    client,
+                    address
                 )
             }
             DeviceType::CameraHub => DiscoveryResult::CameraHub {
                 device_info: Box::new(serde_json::from_value::<DeviceInfoCameraHubResult>(
                     device_info,
                 )?),
-                handler: CameraHubHandler::new(client.clone(), raw_result.ip.to_string()),
+                handler: CameraHubHandler::new(client, address),
             },
             DeviceType::CameraPtz => DiscoveryResult::CameraPtz {
                 device_info: Box::new(serde_json::from_value::<DeviceInfoCameraResult>(
                     device_info,
                 )?),
-                handler: CameraPtzHandler::new(client.clone(), raw_result.ip.to_string()),
-                ip: raw_result.ip.to_string(),
+                handler: CameraPtzHandler::new(client, address),
             },
             DeviceType::Other => {
                 let info: DeviceInfoBasicResult = serde_json::from_value(device_info)?;
@@ -286,7 +310,7 @@ impl DiscoveryResult {
                 };
                 DiscoveryResult::Other {
                     device_info: Box::new(info),
-                    ip: raw_result.ip.to_string(),
+                    address,
                 }
             }
         };
@@ -334,22 +358,24 @@ impl DiscoveryResult {
         }
     }
 
-    /// Returns the IP address of the device.
-    pub fn ip(&self) -> &str {
+    /// Returns the IP address and the port that the device was reached at
+    /// during discovery. Pass them to an [`ApiClient`] builder as
+    /// `"{ip}:{port}"` to reach the device again.
+    pub fn address(&self) -> (String, u16) {
         match self {
-            DiscoveryResult::Light { device_info, .. } => &device_info.ip,
-            DiscoveryResult::ColorLight { device_info, .. } => &device_info.ip,
-            DiscoveryResult::RgbLightStrip { device_info, .. } => &device_info.ip,
-            DiscoveryResult::RgbicLightStrip { device_info, .. } => &device_info.ip,
-            DiscoveryResult::Plug { device_info, .. } => &device_info.ip,
-            DiscoveryResult::PlugEnergyMonitoring { device_info, .. } => &device_info.ip,
-            DiscoveryResult::PowerStrip { device_info, .. } => &device_info.ip,
-            DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.ip,
-            DiscoveryResult::Hub { device_info, .. } => &device_info.ip,
-            DiscoveryResult::HubIr { device_info, .. } => &device_info.ip,
-            DiscoveryResult::CameraHub { device_info, .. } => &device_info.ip,
-            DiscoveryResult::CameraPtz { ip, .. } => ip,
-            DiscoveryResult::Other { ip, .. } => ip,
+            DiscoveryResult::Light { handler, .. } => handler.address(),
+            DiscoveryResult::ColorLight { handler, .. } => handler.address(),
+            DiscoveryResult::RgbLightStrip { handler, .. } => handler.address(),
+            DiscoveryResult::RgbicLightStrip { handler, .. } => handler.address(),
+            DiscoveryResult::Plug { handler, .. } => handler.address(),
+            DiscoveryResult::PlugEnergyMonitoring { handler, .. } => handler.address(),
+            DiscoveryResult::PowerStrip { handler, .. } => handler.address(),
+            DiscoveryResult::PowerStripEnergyMonitoring { handler, .. } => handler.address(),
+            DiscoveryResult::Hub { handler, .. } => handler.address(),
+            DiscoveryResult::HubIr { handler, .. } => handler.address(),
+            DiscoveryResult::CameraHub { handler, .. } => handler.address(),
+            DiscoveryResult::CameraPtz { handler, .. } => handler.address(),
+            DiscoveryResult::Other { address, .. } => address.clone(),
         }
     }
 

@@ -63,11 +63,10 @@ pub enum PyDiscoveryResult {
     CameraPtz {
         device_info: DeviceInfoCameraResult,
         handler: PyCameraPtzHandler,
-        ip: String,
     },
     Other {
         device_info: DeviceInfoBasicResult,
-        ip: String,
+        address: (String, u16),
     },
 }
 
@@ -114,21 +113,21 @@ impl PyDiscoveryResult {
     }
 
     #[getter]
-    pub fn ip(&self) -> &str {
+    pub fn address(&self, py: Python<'_>) -> (String, u16) {
         match self {
-            PyDiscoveryResult::Light { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::ColorLight { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::RgbLightStrip { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::RgbicLightStrip { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::Plug { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::PlugEnergyMonitoring { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::PowerStrip { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::Hub { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::HubIr { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::CameraHub { device_info, .. } => &device_info.ip,
-            PyDiscoveryResult::CameraPtz { ip, .. } => ip,
-            PyDiscoveryResult::Other { ip, .. } => ip,
+            PyDiscoveryResult::Light { handler, .. } => handler.address(py),
+            PyDiscoveryResult::ColorLight { handler, .. } => handler.address(py),
+            PyDiscoveryResult::RgbLightStrip { handler, .. } => handler.address(py),
+            PyDiscoveryResult::RgbicLightStrip { handler, .. } => handler.address(py),
+            PyDiscoveryResult::Plug { handler, .. } => handler.address(py),
+            PyDiscoveryResult::PlugEnergyMonitoring { handler, .. } => handler.address(py),
+            PyDiscoveryResult::PowerStrip { handler, .. } => handler.address(py),
+            PyDiscoveryResult::PowerStripEnergyMonitoring { handler, .. } => handler.address(py),
+            PyDiscoveryResult::Hub { handler, .. } => handler.address(py),
+            PyDiscoveryResult::HubIr { handler, .. } => handler.borrow(py).as_super().address(py),
+            PyDiscoveryResult::CameraHub { handler, .. } => handler.address(py),
+            PyDiscoveryResult::CameraPtz { handler, .. } => handler.address(py),
+            PyDiscoveryResult::Other { address, .. } => address.clone(),
         }
     }
 
@@ -296,15 +295,16 @@ fn convert_result_to_py(result: DiscoveryResult) -> PyResult<PyDiscoveryResult> 
         DiscoveryResult::CameraPtz {
             device_info,
             handler,
-            ip,
         } => PyDiscoveryResult::CameraPtz {
             device_info: *device_info,
             handler: PyCameraPtzHandler::new(handler),
-            ip,
         },
-        DiscoveryResult::Other { device_info, ip } => PyDiscoveryResult::Other {
+        DiscoveryResult::Other {
+            device_info,
+            address,
+        } => PyDiscoveryResult::Other {
             device_info: *device_info,
-            ip,
+            address,
         },
     };
 

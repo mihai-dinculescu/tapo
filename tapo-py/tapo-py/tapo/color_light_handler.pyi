@@ -1,11 +1,11 @@
 from tapo.debug_ext import DebugExt
+from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.device_management_ext import DeviceManagementExt
 from tapo.on_off_ext import OnOffExt
-from tapo.refresh_session_ext import RefreshSessionExt
 from tapo.requests import Color, ColorLightSetDeviceInfoParams
 from tapo.responses import DeviceInfoColorLightResult, DeviceUsageEnergyMonitoringResult
 
-class ColorLightHandler(OnOffExt, DeviceManagementExt, RefreshSessionExt, DebugExt):
+class ColorLightHandler(DeviceHandlerExt, OnOffExt, DeviceManagementExt, DebugExt):
     """Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
     [L535](https://www.tapo.com/en/search/?q=L535) and
     [L630](https://www.tapo.com/en/search/?q=L630) devices.

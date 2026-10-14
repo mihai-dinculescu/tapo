@@ -32,7 +32,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //   let device_id = discovery_result.device_id();
     //   let nickname = discovery_result.nickname();
     //   let model = discovery_result.model();
-    //   let ip = discovery_result.ip();
+    //   let address = discovery_result.address();
     //   let device_type = discovery_result.device_type();
 
     while let Some(discovery_result) = discovery.next().await {
@@ -40,120 +40,134 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             match discovery_result {
                 DiscoveryResult::Light {
                     device_info,
-                    handler: _,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, device_info.ip
+                        "Found {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
                     );
                 }
                 DiscoveryResult::ColorLight {
                     device_info,
-                    handler: _,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, device_info.ip
+                        "Found {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
                     );
                 }
                 DiscoveryResult::RgbLightStrip {
                     device_info,
-                    handler: _,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, device_info.ip
+                        "Found {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
                     );
                 }
                 DiscoveryResult::RgbicLightStrip {
                     device_info,
-                    handler: _,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, device_info.ip
+                        "Found {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
                     );
                 }
                 DiscoveryResult::Plug {
                     device_info,
-                    handler: _,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, device_info.ip
+                        "Found {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
                     );
                 }
                 DiscoveryResult::PlugEnergyMonitoring {
                     device_info,
-                    handler: _,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, device_info.ip
+                        "Found {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
                     );
                 }
                 DiscoveryResult::PowerStrip {
                     device_info,
-                    handler: _,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found Power Strip of model {:?} at IP address {:?}.",
-                        device_info.model, device_info.ip
+                        "Found Power Strip of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::PowerStripEnergyMonitoring {
                     device_info,
-                    handler: _,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found Power Strip with Energy Monitoring of model {:?} at IP address {:?}.",
-                        device_info.model, device_info.ip
+                        "Found Power Strip with Energy Monitoring of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::Hub {
                     device_info,
-                    handler: _,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, device_info.ip
+                        "Found {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
                     );
                 }
                 DiscoveryResult::HubIr {
                     device_info,
-                    handler: _,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, device_info.ip
+                        "Found {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
                     );
                 }
                 DiscoveryResult::CameraHub {
                     device_info,
-                    handler: _,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, device_info.ip
+                        "Found {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
                     );
                 }
                 DiscoveryResult::CameraPtz {
                     device_info,
-                    handler: _,
-                    ip,
+                    handler,
                 } => {
+                    let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, ip
+                        "Found {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
                     );
                 }
-                DiscoveryResult::Other { device_info, ip } => {
+                DiscoveryResult::Other {
+                    device_info,
+                    address: (ip, port),
+                } => {
                     // If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
                     // unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
                     // to start the discussion.
                     warn!(
-                        "Found device without a dedicated handler {:?} of model {:?} at IP address {:?}.",
-                        device_info.nickname, device_info.model, ip
+                        "Found device without a dedicated handler {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
                     );
                 }
             }

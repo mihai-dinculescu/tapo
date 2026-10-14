@@ -16,6 +16,7 @@
 | Feature<br/><br/><br/>              | L510<br/>L520<br/>L610<br/> | L530<br/>L535<br/>L630<br/> | L900<br/><br/><br/> | L920<br/>L930<br/><br/> | P100, P105<br/>P125, P125M<br/>TP10<br/> | P110<br/>P110M<br/>P115<br/> | P300<br/>P306<br/><br/> | P304M<br/>P316M<br/><br/> |
 | ----------------------------------- | :-------------------------- | :-------------------------- | :------------------ | :---------------------- | :--------------------------------------- | :--------------------------- | :---------------------- | :------------------------ |
 | add_schedule_rule                   |                             |                             |                     |                         | &#x2705;                                 | &#x2705;                     |                         |                           |
+| address                             | &#x2705;                    | &#x2705;                    | &#x2705;            | &#x2705;                | &#x2705;                                 | &#x2705;                     | &#x2705;                | &#x2705;                  |
 | clear_timer                         |                             |                             |                     |                         | &#x2705;                                 | &#x2705;                     |                         |                           |
 | device_reboot                       | &#x2705;                    | &#x2705;                    | &#x2705;            | &#x2705;                | &#x2705;                                 | &#x2705;                     | &#x2705;                | &#x2705;                  |
 | device_reset                        | &#x2705;                    | &#x2705;                    | &#x2705;            | &#x2705;                | &#x2705;                                 | &#x2705;                     | &#x2705;                | &#x2705;                  |
@@ -79,6 +80,7 @@
 
 | Feature<br/><br/><br/>   | C210<br/>C220<br/>C225<br/> | C325WB<br/>C520WS<br/><br/> | TC40<br/>TC70<br/><br/> |
 | ------------------------ | :-------------------------- | :-------------------------- | :---------------------- |
+| address                  | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | delete_preset            | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | get_component_list (d)   | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | get_device_info          | &#x2705;                    | &#x2705;                    | &#x2705;                |
@@ -97,26 +99,27 @@
 &#x2705; - Rust and Python\
 (d) - Requires the `debug` feature flag (enabled by default in `tapo-py`)
 
-| Feature<br/><br/>                   | H100<br/>H110 | H200<br/>H500 |
-| ----------------------------------- | :------------ | :------------ |
-| device_reboot                       | &#x2705;      |               |
-| device_reset                        | &#x2705;      |               |
-| download_recording                  |               | &#x2705;      |
-| get_child_device_component_list (d) | &#x2705;      | &#x2705;      |
-| get_child_device_list               | &#x2705;      | &#x2705;      |
-| get_child_device_list_json (d)      | &#x2705;      | &#x2705;      |
-| get_component_list (d)              | &#x2705;      | &#x2705;      |
-| get_device_info                     | &#x2705;      | &#x2705;      |
-| get_device_info_json (d)            | &#x2705;      | &#x2705;      |
-| get_general_device_list             |               | &#x2705;      |
-| get_general_device_list_json (d)    |               | &#x2705;      |
-| get_recording_dates                 |               | &#x2705;      |
-| get_recordings                      |               | &#x2705;      |
-| get_supported_ringtone_list (d)     | &#x2705;      |               |
-| get_timezone                        |               | &#x2705;      |
-| play_alarm                          | &#x2705;      |               |
-| refresh_session                     | &#x2705;      | &#x2705;      |
-| stop_alarm                          | &#x2705;      |               |
+| Feature<br/><br/>                   | H100<br/>H110  | H200<br/>H500 |
+| ----------------------------------- | :------------- | :------------ |
+| address                             | &#x2705;       | &#x2705;      |
+| device_reboot                       | &#x2705;       |               |
+| device_reset                        | &#x2705;       |               |
+| download_recording                  |                | &#x2705;      |
+| get_child_device_component_list (d) | &#x2705;       | &#x2705;      |
+| get_child_device_list               | &#x2705;       | &#x2705;      |
+| get_child_device_list_json (d)      | &#x2705;       | &#x2705;      |
+| get_component_list (d)              | &#x2705;       | &#x2705;      |
+| get_device_info                     | &#x2705;       | &#x2705;      |
+| get_device_info_json (d)            | &#x2705;       | &#x2705;      |
+| get_general_device_list             |                | &#x2705;      |
+| get_general_device_list_json (d)    |                | &#x2705;      |
+| get_recording_dates                 |                | &#x2705;      |
+| get_recordings                      |                | &#x2705;      |
+| get_supported_ringtone_list (d)     | &#x2705;       |               |
+| get_timezone                        |                | &#x2705;      |
+| play_alarm                          | &#x2705;       |               |
+| refresh_session                     | &#x2705;       | &#x2705;      |
+| stop_alarm                          | &#x2705;       |               |
 
 ## Hub Child Devices
 

@@ -22,6 +22,6 @@ impl HubIrHandler {
 #[cfg(feature = "python")]
 impl From<&HubIrHandler> for HubHandler {
     fn from(handler: &HubIrHandler) -> Self {
-        HubHandler::new(handler.client.clone())
+        HubHandler::with_shared_client(handler.client.clone(), handler.ip.clone(), handler.port)
     }
 }

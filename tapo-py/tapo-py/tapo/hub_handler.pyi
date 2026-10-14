@@ -10,8 +10,8 @@ from tapo import (
     T31XHandler,
 )
 from tapo.debug_ext import DebugExt
+from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.device_management_ext import DeviceManagementExt
-from tapo.refresh_session_ext import RefreshSessionExt
 from tapo.requests import AlarmDuration, AlarmRingtone, AlarmVolume
 from tapo.responses import (
     ChildDeviceComponentList,
@@ -26,7 +26,7 @@ from tapo.responses import (
     T31XResult,
 )
 
-class HubHandler(DeviceManagementExt, RefreshSessionExt, DebugExt):
+class HubHandler(DeviceHandlerExt, DeviceManagementExt, DebugExt):
     """Handler for the [H100](https://www.tapo.com/en/search/?q=H100) devices."""
 
     def __init__(self, handler: object):

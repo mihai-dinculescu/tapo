@@ -58,6 +58,13 @@ impl DiscoveryRawResult {
         }
     }
 
+    /// The port that the device announces its web server on.
+    pub(crate) fn http_port(&self) -> Option<u16> {
+        self.message
+            .pointer("/result/mgt_encrypt_schm/http_port")
+            .and_then(|port| u16::try_from(port.as_u64()?).ok())
+    }
+
     pub(crate) fn is_camera_hub(&self) -> bool {
         self.message
             .get("result")
@@ -134,6 +141,18 @@ mod tests {
                 "error_code": 0,
             }),
         }
+    }
+
+    #[test]
+    fn http_port_is_the_announced_web_server_port() {
+        let mut result = raw_result("SMART.TAPOPLUG", "P110", false, Some("KLAP"));
+        assert_eq!(result.http_port(), None);
+
+        result.message["result"]["mgt_encrypt_schm"]["http_port"] = json!(8080);
+        assert_eq!(result.http_port(), Some(8080));
+
+        result.message["result"]["mgt_encrypt_schm"]["http_port"] = json!(70000);
+        assert_eq!(result.http_port(), None);
     }
 
     #[test]

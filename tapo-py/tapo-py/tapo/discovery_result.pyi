@@ -42,8 +42,10 @@ class DiscoveryResultExt(Protocol):
         """Returns the model string (e.g. "L530", "P110")."""
 
     @property
-    def ip(self) -> str:
-        """Returns the IP address of the device."""
+    def address(self) -> tuple[str, int]:
+        """Returns the IP address and the port that the device was reached at
+        during discovery. Pass them to an `ApiClient` method as
+        `f"{ip}:{port}"` to reach the device again."""
 
     @property
     def device_id(self) -> str:
@@ -73,10 +75,10 @@ class Other(DiscoveryResultExt):
     to start the discussion.
     """
 
-    ip: str
-    """The IP address of the device."""
+    address: tuple[str, int]
+    """The IP address and the port that the device was reached at during discovery."""
 
-    __match_args__ = ("device_info", "ip")
+    __match_args__ = ("device_info", "address")
 
 @dataclass
 class Light(DiscoveryResultExt):
@@ -278,14 +280,7 @@ class CameraPtz(DiscoveryResultExt):
     and [TC70](https://www.tapo.com/en/search/?q=TC70).
     """
 
-    ip: str
-    """The IP address of the device."""
-
-    __match_args__ = (
-        "device_info",
-        "handler",
-        "ip",
-    )
+    __match_args__ = ("device_info", "handler")
 
 class MaybeDiscoveryResult:
     """Potential result of the device discovery process. Using `get` will return the actual result or raise an exception."""

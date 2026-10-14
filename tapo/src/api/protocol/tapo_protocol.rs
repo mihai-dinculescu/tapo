@@ -2,7 +2,7 @@ use std::fmt;
 
 use log::debug;
 use reqwest::cookie::Cookie;
-use reqwest::{Client, StatusCode};
+use reqwest::{Client, StatusCode, Url};
 use serde::de::DeserializeOwned;
 
 use crate::Error;
@@ -83,14 +83,20 @@ impl TapoProtocol {
         self.device_family
     }
 
+    /// Logs in to the device at `ip_address` and returns the IP address and
+    /// the port that it was reached at. An `http_port` is the port that the
+    /// device announces its web server on, and only a KLAP login and the
+    /// TPAP discover, both over plain HTTP, take it. A TPAP login takes the
+    /// port that the device announces for TPAP.
     pub async fn login(
         &mut self,
         ip_address: &str,
+        http_port: Option<u16>,
         username: &str,
         password: &str,
         device_family: DeviceFamily,
         auth_protocol: AuthProtocol,
-    ) -> Result<(), Error> {
+    ) -> Result<(String, u16), Error> {
         self.device_family = device_family;
 
         if self.active.is_none() {
@@ -120,7 +126,8 @@ impl TapoProtocol {
                     )))
                 }
                 AuthProtocol::Unknown => {
-                    match TpapProtocol::discover(&self.client, ip_address).await? {
+                    let address = host_with_port(ip_address, http_port, 80);
+                    match TpapProtocol::discover(&self.client, &address).await? {
                         Some(info) => {
                             debug!("Using TPAP protocol (negotiated)...");
                             ActiveProtocol::Tpap(Box::new(TpapProtocol::new(
@@ -141,43 +148,52 @@ impl TapoProtocol {
 
         let url = match &self.active {
             Some(ActiveProtocol::AesSsl(_)) => format!("https://{ip_address}"),
-            Some(ActiveProtocol::Klap(_)) => format!("http://{ip_address}/app"),
-            Some(ActiveProtocol::Tpap(p)) => p.url(ip_address)?,
+            // A TPAP discover and a KLAP login reach the device at the same
+            // address, so a KLAP login that follows a discover that found no
+            // TPAP must take the address that the discover took.
+            Some(ActiveProtocol::Klap(_)) => {
+                format!("http://{}/app", host_with_port(ip_address, http_port, 80))
+            }
+            Some(ActiveProtocol::Tpap(p)) => p.info().url(ip_address)?,
             None => unreachable!(),
         };
         debug!("Device url: {url}");
+        let address = url_address(&url)?;
 
         match &mut self.active {
             Some(ActiveProtocol::AesSsl(p)) => {
-                p.login(url, username, password).await?.into_result()
+                p.login(url, username, password).await?.into_result()?
             }
-            Some(ActiveProtocol::Klap(p)) => p.login(url, username, password).await,
-            Some(ActiveProtocol::Tpap(p)) => p.login(url, username, password).await,
+            Some(ActiveProtocol::Klap(p)) => p.login(url, username, password).await?,
+            Some(ActiveProtocol::Tpap(p)) => p.login(url, username, password).await?,
             None => unreachable!(),
         }
+
+        Ok(address)
     }
 
     /// Logs in to a camera: over TPAP, and over AES SSL if the device does
     /// not take that login. A camera that takes TPAP does so whether or not
-    /// it takes AES SSL, at the same address. It does not announce TPAP when
-    /// asked, so it is not asked.
+    /// it takes AES SSL, at the same URL, so both are tried at the one that
+    /// TPAP names. It does not announce TPAP when asked, so it is not asked.
     async fn login_tpap_then_aes_ssl(
         &mut self,
         ip_address: &str,
         username: &str,
         password: &str,
-    ) -> Result<(), Error> {
-        debug!("Using TPAP protocol (tried first)...");
-        let mut tpap =
-            TpapProtocol::new(self.client.clone(), TpapInfo::camera(), self.device_family);
-
-        let url = tpap.url(ip_address)?;
+    ) -> Result<(String, u16), Error> {
+        let info = TpapInfo::camera();
+        let url = info.url(ip_address)?;
         debug!("Device url: {url}");
+        let address = url_address(&url)?;
 
-        let tpap_error = match tpap.login(url, username, password).await {
+        debug!("Using TPAP protocol (tried first)...");
+        let mut tpap = TpapProtocol::new(self.client.clone(), info, self.device_family);
+
+        let tpap_error = match tpap.login(url.clone(), username, password).await {
             Ok(()) => {
                 self.active = Some(ActiveProtocol::Tpap(Box::new(tpap)));
-                return Ok(());
+                return Ok(address);
             }
             Err(error) if !falls_back_to_aes_ssl(&error) => return Err(error),
             Err(error) => error,
@@ -186,13 +202,10 @@ impl TapoProtocol {
         debug!("Using AES SSL protocol (TPAP login failed: {tpap_error})...");
         let mut aes_ssl = AesSslProtocol::new(self.client.clone());
 
-        let url = format!("https://{ip_address}");
-        debug!("Device url: {url}");
-
         match aes_ssl.login(url, username, password).await {
             Ok(AesSslLogin::LoggedIn) => {
                 self.active = Some(ActiveProtocol::AesSsl(aes_ssl));
-                Ok(())
+                Ok(address)
             }
             // The device takes neither login, and of the two errors the one
             // of the TPAP login says why.
@@ -246,6 +259,33 @@ impl TapoProtocol {
     }
 }
 
+/// `ip_address`, followed by `port` unless it is `default_port`, the port of
+/// the scheme that the address is used with.
+fn host_with_port(ip_address: &str, port: Option<u16>, default_port: u16) -> String {
+    match port.filter(|port| *port != default_port) {
+        Some(port) => format!("{ip_address}:{port}"),
+        None => ip_address.to_string(),
+    }
+}
+
+/// The host of `url` and its port, or the default port of its scheme when it
+/// names none.
+///
+/// # Errors
+///
+/// Returns an error if `url` does not name a host.
+fn url_address(url: &str) -> Result<(String, u16), Error> {
+    let parsed = Url::parse(url).map_err(|e| anyhow::anyhow!("Invalid URL {url}: {e}"))?;
+    let host = parsed
+        .host_str()
+        .ok_or_else(|| anyhow::anyhow!("URL {url} does not name a host"))?;
+    let port = parsed
+        .port_or_known_default()
+        .ok_or_else(|| anyhow::anyhow!("URL {url} does not name a port"))?;
+
+    Ok((host.to_string(), port))
+}
+
 /// Whether a camera whose TPAP login failed with `error` is tried over AES
 /// SSL. A device that cannot be reached is out of reach for AES SSL too,
 /// and a device that has locked itself is left alone.
@@ -292,6 +332,41 @@ mod tests {
     use crate::responses::validate_response;
 
     use super::*;
+
+    #[test]
+    fn host_with_port_names_a_port_other_than_the_default() {
+        assert_eq!(host_with_port("192.168.1.100", None, 80), "192.168.1.100");
+        assert_eq!(
+            host_with_port("192.168.1.100", Some(80), 80),
+            "192.168.1.100"
+        );
+        assert_eq!(
+            host_with_port("192.168.1.100", Some(443), 443),
+            "192.168.1.100"
+        );
+        assert_eq!(
+            host_with_port("192.168.1.100", Some(8080), 80),
+            "192.168.1.100:8080"
+        );
+    }
+
+    #[test]
+    fn url_address_is_the_host_and_the_port_of_the_url_or_the_default_of_its_scheme() {
+        let address = |ip: &str, port| (ip.to_string(), port);
+
+        assert_eq!(
+            url_address("http://192.168.1.100/app").unwrap(),
+            address("192.168.1.100", 80)
+        );
+        assert_eq!(
+            url_address("https://192.168.1.100").unwrap(),
+            address("192.168.1.100", 443)
+        );
+        assert_eq!(
+            url_address("http://192.168.1.100:8080/app").unwrap(),
+            address("192.168.1.100", 8080)
+        );
+    }
 
     #[tokio::test]
     async fn unreachable_device_does_not_fall_back_to_aes_ssl() {

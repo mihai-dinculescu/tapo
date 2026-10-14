@@ -63,7 +63,7 @@ async fn find_device(
 
     while let Some(discovery_result) = discovery.next().await {
         let device = discovery_result.map_err(TapoMcpError::InternalDiscovery)?;
-        if device.ip() != ip {
+        if device.address().0 != ip {
             continue;
         }
 

@@ -13,17 +13,28 @@ file. This change log follows the conventions of
 - `ApiClient`: added the `h110` builder for the H110 hub. It returns a `HubIrHandler`, which supports everything `HubHandler` does and adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient::discover_devices`. (thanks to @skoky)
 - `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 - `DiscoveryResult::HubIr` and `DeviceType::HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult::Other`. (thanks to @skoky)
+- `DiscoveryResult`: added `address()`, the IP address and the port that the device was reached at during discovery. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
+- `ColorLightHandler`, `CameraHubHandler`, `CameraPtzHandler`, `HubHandler`, `HubIrHandler`, `LightHandler`, `PlugEnergyMonitoringHandler`, `PlugHandler`, `PowerStripEnergyMonitoringHandler`, `PowerStripHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: added `address()`, the IP address and the port that the handler reaches the device at. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
 
 ### Changed
 
 - `LightingEffect`: changed `brightness_range` from `Option<Vec<u8>>` to `Option<[u8; 2]>`, matching `with_brightness_range` and the other range fields.
 - `TapoResponseError::Unauthorized`: the `FORBIDDEN` description now suggests turning Third-Party Compatibility off and then connecting to the device again. On cameras and other camera-family devices, such as the H200 and H500 hubs, the `HASH_MISMATCH` description now asks only to check the TP-Link account password.
+- `ApiClient::discover_devices`: a device that announces its web server on a port other than 80 is now reached on that port.
+- `DiscoveryResult::Other`: replaced the `ip` field with `address`, the IP address and the port that the device was reached at during discovery, as `(ip, port)`.
+
+### Removed
+
+- `DiscoveryResult`: removed `ip()`, which returned the IP address in the device info. `address()` carries the address that the device was reached at.
+- `DiscoveryResult::CameraPtz`: removed the `ip` field. The handler's `address()` carries it.
 
 ### Fixed
 
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` no longer panics in time zones where the clocks change at midnight, such as America/Santiago. A day whose midnight is skipped now starts when the clocks resume.
 - `ApiClient`: connecting to a camera by its IP address with a wrong password now fails with `TPAP_CREDENTIALS`, which warns that the device locks itself after too many failed logins, instead of with `HASH_MISMATCH`.
+- `CameraPtzHandler`: `get_rtsp_stream_url` and `get_snapshot` now work when the builder was given an address with a port (`"{ip}:{port}"`). Before, `get_rtsp_stream_url` panicked and `get_snapshot` returned an error.
+- `CameraHubHandler`: `download_recording` now works when the builder was given an address with a port (`"{ip}:{port}"`). Before, it returned an error.
 
 ## [Python Unreleased][Unreleased]
 
@@ -37,11 +48,21 @@ file. This change log follows the conventions of
 - `LightingEffect`, `SegmentEffect`: the fields of an effect built in Python can now be read, such as `effect.brightness`.
 - `SegmentEffect`: added the `to_dict` method.
 - `SegmentEffectType`: added `NONE`.
+- `DiscoveryResult`: added `address`, the IP address and the port that the device was reached at during discovery, as a tuple. Pass them to an `ApiClient` method as `f"{ip}:{port}"` to reach the device again.
+- `ColorLightHandler`, `CameraHubHandler`, `CameraPtzHandler`, `HubHandler`, `HubIrHandler`, `LightHandler`, `PlugEnergyMonitoringHandler`, `PlugHandler`, `PowerStripEnergyMonitoringHandler`, `PowerStripHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: added `address`, the IP address and the port that the handler reaches the device at, as a tuple. Pass them to an `ApiClient` method as `f"{ip}:{port}"` to reach the device again.
 
 ### Changed
 
 - `LightingEffect`: `hue_range`, `saturation_range`, `transition_range` and `brightness_range` now return a tuple of two ints, `display_colors`, `backgrounds`, `init_states` and `sequence` return a list of tuples, and `segments` returns a list of ints. In the `lighting_effect` returned by `RgbicLightStripHandler.get_device_info`, the ranges used to be lists, the colors and states used to be lists of lists, and `brightness_range` and `segments` used to be `bytes`.
 - `ApiClient`: the description of a `FORBIDDEN` exception now suggests turning Third-Party Compatibility off and then connecting to the device again. On cameras and other camera-family devices, such as the H200 and H500 hubs, the description of a `HASH_MISMATCH` exception now asks only to check the TP-Link account password.
+- `ApiClient.discover_devices`: a device that announces its web server on a port other than 80 is now reached on that port.
+- `DiscoveryResult.Other`: replaced the `ip` field with `address`, the IP address and the port that the device was reached at during discovery, as a tuple, so the match arm is now `DiscoveryResult.Other(device_info, address)`.
+- `RefreshSessionExt`: renamed to `DeviceHandlerExt`, which also has `address`.
+
+### Removed
+
+- `DiscoveryResult`: removed `ip`, which returned the IP address in the device info. `address` carries the address that the device was reached at.
+- `DiscoveryResult.CameraPtz`: removed the `ip` field, so the match arm is now `DiscoveryResult.CameraPtz(device_info, handler)`. The handler's `address` carries it.
 
 ### Fixed
 
@@ -55,6 +76,8 @@ file. This change log follows the conventions of
 - `DeviceInfoSmartExt`, `DeviceInfoBasicResult`, `DeviceInfoCameraResult`: corrected the type hints of `latitude` and `longitude` to `int`. They were declared as `float`.
 - `EnergyUsageResult`: corrected the type hint of `electricity_charge` to a list of ints. It was declared as a tuple.
 - `ApiClient`: connecting to a camera by its IP address with a wrong password now raises a `TPAP_CREDENTIALS` exception, which warns that the device locks itself after too many failed logins, instead of a `HASH_MISMATCH` one.
+- `CameraPtzHandler`: `get_rtsp_stream_url` and `get_snapshot` now work when the `ApiClient` method was given an address with a port (`f"{ip}:{port}"`). Before, `get_rtsp_stream_url` panicked and `get_snapshot` returned an error.
+- `CameraHubHandler`: `download_recording` now works when the `ApiClient` method was given an address with a port (`f"{ip}:{port}"`). Before, it returned an error.
 
 ## [MCP Unreleased][Unreleased]
 

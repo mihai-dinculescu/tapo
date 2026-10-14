@@ -17,6 +17,7 @@
 /// * Struct with `inner: Arc<RwLock<Handler>>` field and `#[derive(Clone)]`
 /// * `#[pyo3::pyclass(from_py_object, name = ..., subclass)]` attribute
 /// * `new(handler)` constructor
+/// * `address` getter
 /// * `refresh_session()` method
 /// * `get_device_info()` method (typed)
 /// * `get_device_info_json()` method (returns `Py<PyDict>`)
@@ -85,6 +86,11 @@ macro_rules! py_handler {
 
         #[pyo3::pymethods]
         impl $py_name {
+            #[getter]
+            pub fn address(&self, py: pyo3::Python<'_>) -> (String, u16) {
+                py.detach(|| self.inner.blocking_read().address())
+            }
+
             pub async fn refresh_session(&self) -> pyo3::prelude::PyResult<()> {
                 use std::ops::DerefMut;
                 let handler = self.inner.clone();

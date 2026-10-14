@@ -117,13 +117,14 @@ class ApiClient:
             ```python
             client = ApiClient("tapo-username@example.com", "tapo-password")
 
-            async for device in client.discover_devices("192.168.1.255"):
+            async for discovery_result in client.discover_devices("192.168.1.255"):
                 try:
-                    device = discovery_result.get()
-                    match device:
-                        case DiscoveryResult.PlugEnergyMonitoring(device_info):
+                    discovery_result = discovery_result.get()
+                    match discovery_result:
+                        case DiscoveryResult.PlugEnergyMonitoring(device_info, handler):
+                            ip, port = handler.address
                             print(
-                                f"Found '{device_info.nickname}' of model '{device_info.model}' at IP address '{device_info.ip}'."
+                                f"Found '{device_info.nickname}' of model '{device_info.model}' at '{ip}:{port}'."
                             )
                         # ...
                 except Exception as e:
