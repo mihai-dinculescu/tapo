@@ -19,7 +19,7 @@ RUST_API = ROOT / "tapo" / "src" / "api"
 PY_SRC_API = ROOT / "tapo-py" / "src" / "api"
 PYI = ROOT / "tapo-py" / "tapo-py" / "tapo"
 
-MODEL_RE = re.compile(r"\b(?:L|P|H|C|T|S|KE|TC)\d{2,3}[A-Z]{0,2}\b")
+MODEL_RE = re.compile(r"\b(?:L|P|H|C|T|S|KE|TC|TP)\d{2,3}[A-Z]{0,2}\b")
 # Words that look like a model but are not one: the T310/T315 family
 # placeholder used in type names, and video codecs.
 NOT_MODELS = {"T31X", "H264", "H265"}

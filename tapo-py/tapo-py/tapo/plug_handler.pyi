@@ -10,8 +10,9 @@ class PlugHandler(
     OnOffExt, DeviceManagementExt, RefreshSessionExt, TimerExt, ScheduleExt, DebugExt
 ):
     """Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
-    [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125) and
-    [P125M](https://www.tapo.com/en/search/?q=P125M) devices.
+    [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125),
+    [P125M](https://www.tapo.com/en/search/?q=P125M) and
+    [TP10](https://www.tapo.com/en/search/?q=TP10) devices.
     """
 
     def __init__(self, handler: object):
@@ -26,7 +27,7 @@ class PlugHandler(
         try `PlugHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoPlugResult: Device info of Tapo P100, P105, P125 and P125M.
+            DeviceInfoPlugResult: Device info of Tapo P100, P105, P125, P125M and TP10.
         """
 
     async def get_device_usage(self) -> DeviceUsageResult:
