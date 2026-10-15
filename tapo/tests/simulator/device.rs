@@ -1,6 +1,6 @@
 //! The device itself: built from a fixture, started on a loopback address of
 //! its own, and reachable until it is dropped. It answers discovery only
-//! when asked to.
+//! when asked to, and takes its requests over TLS when its fixture says so.
 
 use std::io::ErrorKind;
 use std::net::Ipv4Addr;
@@ -15,7 +15,7 @@ use tokio::task::JoinHandle;
 use super::fixture::Fixture;
 use super::klap::Klap;
 use super::tpap::Tpap;
-use super::{discovery, http};
+use super::{discovery, http, tls};
 
 /// The port that Tapo devices answer discovery on. The client always asks
 /// on it, so every device takes it on an address of its own.
@@ -73,13 +73,14 @@ impl SimulatedDevice {
 
         let fixture = self.fixture.at(&ip.to_string(), port);
         let announcement = fixture.discovery_response().clone();
+        let tls = fixture.tpap_tls().then(tls::acceptor);
         let device = match fixture.auth_protocol() {
             "TPAP" => Device::Tpap(Box::new(Tpap::new(PASSWORD, fixture))),
             "KLAP" => Device::Klap(Klap::new(USERNAME, PASSWORD, fixture)),
             other => unimplemented!("the simulator does not speak {other}"),
         };
 
-        let mut tasks = vec![tokio::spawn(http::serve(listener, Arc::new(device)))];
+        let mut tasks = vec![tokio::spawn(http::serve(listener, tls, Arc::new(device)))];
         if let Some(discovery_socket) = discovery_socket {
             tasks.push(tokio::spawn(discovery::serve(
                 discovery_socket,

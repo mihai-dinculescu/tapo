@@ -1,4 +1,5 @@
-//! The HTTP side of a device. Every device takes the `login` requests on `/`.
+//! The HTTP side of a device, over TLS when the device takes its requests
+//! that way. Every device takes the `login` requests on `/`.
 //! A device in TPAP mode takes the encrypted requests of a session on
 //! `/stok=<token>/ds`; one in KLAP mode takes its handshake on
 //! `/app/handshake1` and `/app/handshake2` and the encrypted requests on
@@ -16,11 +17,13 @@ use hyper::service::service_fn;
 use hyper::{Request, Response, StatusCode};
 use hyper_util::rt::TokioIo;
 use log::{debug, error};
+use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::net::TcpListener;
+use tokio_rustls::TlsAcceptor;
 
 use super::device::Device;
 
-pub async fn serve(listener: TcpListener, device: Arc<Device>) {
+pub async fn serve(listener: TcpListener, tls: Option<TlsAcceptor>, device: Arc<Device>) {
     loop {
         let stream = match listener.accept().await {
             Ok((stream, _)) => stream,
@@ -41,20 +44,34 @@ pub async fn serve(listener: TcpListener, device: Arc<Device>) {
             }
         };
         let device = device.clone();
+        let tls = tls.clone();
 
         tokio::spawn(async move {
-            let service = service_fn(|request| {
-                let device = device.clone();
-                async move { Ok::<_, Infallible>(handle(&device, request).await) }
-            });
-
-            if let Err(error) = http1::Builder::new()
-                .serve_connection(TokioIo::new(stream), service)
-                .await
-            {
-                debug!("A connection ended with an error: {error}");
+            match tls {
+                Some(tls) => match tls.accept(stream).await {
+                    Ok(stream) => serve_connection(stream, device).await,
+                    Err(error) => error!("A TLS handshake failed: {error}"),
+                },
+                None => serve_connection(stream, device).await,
             }
         });
+    }
+}
+
+async fn serve_connection<S>(stream: S, device: Arc<Device>)
+where
+    S: AsyncRead + AsyncWrite + Unpin + 'static,
+{
+    let service = service_fn(|request| {
+        let device = device.clone();
+        async move { Ok::<_, Infallible>(handle(&device, request).await) }
+    });
+
+    if let Err(error) = http1::Builder::new()
+        .serve_connection(TokioIo::new(stream), service)
+        .await
+    {
+        debug!("A connection ended with an error: {error}");
     }
 }
 
@@ -83,7 +100,12 @@ async fn handle(device: &Device, request: Request<Incoming>) -> Response<Full<By
         .and_then(|rest| rest.strip_suffix("/ds"));
 
     match (device, path.as_str(), tpap_session) {
-        (Device::Tpap(tpap), "/", _) => json(tpap.login(&body)),
+        // A camera also takes an AES SSL login, which the simulator does
+        // not speak.
+        (Device::Tpap(tpap), "/", _) => match tpap.login(&body) {
+            Ok(response) => json(response),
+            Err(reason) => not_implemented(&reason),
+        },
         (Device::Tpap(tpap), _, Some(token)) => octets(tpap.request(token, &body)),
         (Device::Klap(klap), "/", _) => json(klap.discover()),
         (Device::Klap(klap), "/app/handshake1", _) => {
@@ -110,8 +132,20 @@ async fn handle(device: &Device, request: Request<Incoming>) -> Response<Full<By
             let seq = seq.expect("a session request names its sequence number");
             octets(klap.request(&cookie, seq, &body))
         }
-        _ => unimplemented!("the simulator does not answer {path}"),
+        _ => not_implemented(&format!("the simulator does not answer {path}")),
     }
+}
+
+/// A request that the simulator cannot answer. A panic here would only end
+/// the connection, so the reason is logged, which the test prints when it
+/// fails, and sent back as the body of the response.
+fn not_implemented(reason: &str) -> Response<Full<Bytes>> {
+    error!("{reason}");
+
+    Response::builder()
+        .status(StatusCode::NOT_IMPLEMENTED)
+        .body(Full::new(Bytes::from(reason.to_string())))
+        .expect("the response is valid")
 }
 
 fn json(body: serde_json::Value) -> Response<Full<Bytes>> {

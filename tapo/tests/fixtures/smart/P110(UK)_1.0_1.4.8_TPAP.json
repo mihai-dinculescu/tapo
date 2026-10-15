@@ -144,6 +144,21 @@
         "pake": [2],
         "port": 80
       }
+    },
+    "pake_register": {
+      "sub_method": "pake_register",
+      "extra_crypt": {
+        "params": {
+          "passwd_id": 2
+        },
+        "type": "password_shadow"
+      },
+      "encryption": "aes_128_ccm",
+      "cipher_suites": 1,
+      "iterations": 3000
+    },
+    "pake_share": {
+      "error_code": -2203
     }
   },
   "get_device_info": {

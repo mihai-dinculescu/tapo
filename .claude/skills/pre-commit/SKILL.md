@@ -81,21 +81,37 @@ The decompiled Tapo Android app is a private reverse-engineering aid that lives 
   - OK: ``//! The Tapo app derives the keys from the `Key-Exchange` header``
 - The one intentional mention is the "Reverse Engineering the Tapo API" section in `CONTRIBUTING.md`, which describes the workflow without naming a file. Leave it as is.
 
-### Fixture privacy checks
+### Integration test checks
 
-Run these checks if fixtures under `tapo/tests/fixtures/` were added or changed, including new untracked ones. Fix all issues found.
+Run these checks if anything under `tapo/tests/` was added or changed, including new untracked files. Fix all issues found.
 
-A fixture is captured from a real device, and only the device's behavior may survive the capture. Read every added or changed fixture in full, not only the fields listed here, and check each value that could identify a person, a home, a network, an account, or a single device:
+The simulator stands in for a real device, so a test only proves something if the simulator behaves like the device and not like the library. Everything it knows comes from a fixture or from what real devices were seen to do.
 
-- **Identifiers**: `device_id`, `owner`, `hw_id`, `fw_id`, `oem_id`, and any other id, token, or key must be an obvious placeholder, such as `0123456789ABCDEF…`, `FEDCBA98…`, `000…`, or `8000…0110` ending in the model number
-- **MAC addresses**: `AA-BB-CC-DD-EE-FF`, or `AA-BB-CC-DD-EE-` followed by a short model suffix such as `35`, in every spelling the device uses (`AABBCCDDEEFF` in the `discover` login result)
-- **IP addresses**: `192.168.1.100`
-- **Base64 fields**: decode `nickname`, `ssid`, and every other base64 string, such as child device names. They must decode to made-up names like "Simulated Plug" and "Simulated Wi-Fi"
-- **Location**: `latitude` and `longitude` must be `0` or the London placeholder `515074` / `-1278`, with `region` set to a time zone that matches it
-- **Account data**: no email addresses, usernames, passwords, cloud tokens, or user ids, in plain text or base64
-- **Anything else personal**: names, room names, schedules, or notes in free-text fields
+#### Fixtures
 
-Do not touch values that only describe the device: model, hardware and firmware versions, component lists, signal strength, settings, and usage or energy counters. The fixture naming and the `fw_ver` it is cut from must still agree, as described in `tapo/tests/simulator/fixture.rs`.
+Read every added or changed fixture in full.
+
+- **Only device answers**: every key is the discovery response, a method `result`, a `login` answer keyed by `sub_method`, or an error response the device gave. Trimming the per-login fields the simulator computes is fine; adding a flag, setting, or hint that no device sends is not
+- **Folder and name**: a camera or camera hub lives in `fixtures/smartcam/`, everything else in `fixtures/smart/`. The file name follows the convention in `tapo/tests/simulator/fixture.rs` and ends in the protocol the device takes. The simulator reads both, so a wrong folder or suffix changes how it behaves
+- **No personal data**: only the device's behavior may survive the capture. Check every value that could identify a person, home, network, account, or single device:
+  - Ids, tokens, and keys (`device_id`, `owner`, `hw_id`, `fw_id`, `oem_id`, `dev_id`, …) are obvious placeholders: hex counting patterns such as `0123456789ABCDEF…` or `FEDCBA98…`, all zeros, or `8000…0110` ending in the model number
+  - MAC addresses are `AA-BB-CC-DD-EE-FF` or end in a short model suffix such as `-35`, in every spelling the device uses (`AABBCCDDEEFF` in the `discover` login answer)
+  - IP addresses are `192.168.1.100`
+  - Names are made up, like "Simulated Plug" or "Simulated Camera". Decode `nickname`, `ssid`, and every other base64 string to check; camera names such as `device_name` are plain text
+  - `latitude` and `longitude` are `0`, or the London placeholder `515074` / `-1278` with `region` `Europe/London`
+  - No email addresses, usernames, passwords, cloud tokens, user ids, room names, schedules, or other free text
+
+  Leave values that only describe the device: model, versions, component lists, signal strength, settings, and usage or energy counters.
+
+#### Simulator
+
+- The simulator must not use the library it tests. The only allowed hits of this grep are in `assertions.rs`, which checks what the library returned:
+
+  ```bash
+  grep -rnE '\btapo::|use tapo\b' tapo/tests/simulator/
+  ```
+
+- The simulator must not copy the library's rules either. Read every changed function that decides device behavior (protocol, password transform, port, error) and check that it follows the fixture's data, folder, or name, or what a real device did, not the branches in `tapo/src/`. A comment that justifies the simulator with what "the library" does is a sign of this; rewrite it to say what the device does
 
 ## Code Review
 

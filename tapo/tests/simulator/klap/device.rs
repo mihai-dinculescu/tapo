@@ -1,13 +1,13 @@
 //! The handshake and the sessions of a device in KLAP mode.
 
 use std::collections::HashMap;
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 
 use rand::RngExt as _;
 use serde_json::{Value, json};
 
-use crate::simulator::crypto;
 use crate::simulator::fixture::Fixture;
+use crate::simulator::{self, crypto};
 
 use super::cipher::Cipher;
 
@@ -49,7 +49,11 @@ impl Klap {
     /// Answers the `discover` login request, with which a client asks
     /// whether the device is in TPAP mode.
     pub fn discover(&self) -> Value {
-        json!({ "error_code": 0, "result": self.fixture.discover_result() })
+        let result = self
+            .fixture
+            .discover_result()
+            .expect("the fixture has a result for the discover login request");
+        json!({ "error_code": 0, "result": result })
     }
 
     /// Opens a session for the client that sent `local_seed`: its cookie, and
@@ -72,7 +76,7 @@ impl Klap {
             cipher,
             confirmed: false,
         };
-        let mut sessions = self.sessions.lock().unwrap();
+        let mut sessions = self.sessions();
         sessions.retain(|_, session| session.confirmed);
         sessions.insert(cookie.clone(), session);
 
@@ -83,7 +87,7 @@ impl Klap {
     /// device answers a proof that does not with 403 and forgets the
     /// session, so a request on it afterwards is one on an unknown session.
     pub fn handshake2(&self, cookie: &str, proof: &[u8]) -> bool {
-        let mut sessions = self.sessions.lock().unwrap();
+        let mut sessions = self.sessions();
         let session = sessions
             .get_mut(cookie)
             .unwrap_or_else(|| panic!("`handshake2` on the unknown session {cookie}"));
@@ -112,7 +116,7 @@ impl Klap {
     /// `handshake2` has confirmed it, and only a request sent under the
     /// sequence number that follows the previous one.
     pub fn request(&self, cookie: &str, seq: i32, body: &[u8]) -> Vec<u8> {
-        let mut sessions = self.sessions.lock().unwrap();
+        let mut sessions = self.sessions();
         let session = sessions
             .get_mut(cookie)
             .unwrap_or_else(|| panic!("a request on the unknown session {cookie}"));
@@ -138,5 +142,9 @@ impl Klap {
         let response = json!({ "error_code": 0, "result": self.fixture.result(method) });
 
         cipher.encrypt(seq, &response.to_string())
+    }
+
+    fn sessions(&self) -> MutexGuard<'_, HashMap<String, Session>> {
+        simulator::lock(&self.sessions)
     }
 }
