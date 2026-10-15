@@ -69,12 +69,31 @@ pub(super) fn credential(
         // short. Which of the two hashes such a device holds is not known, so
         // the whole password is hashed.
         (Some("password_shadow"), Some(2)) => Ok(crypto::sha1_hex_lower(password.as_bytes())),
-        _ => Err(Error::Tapo(TapoResponseError::ResponseError {
-            description: format!(
-                "The device asks for a password transform that is not supported yet: {extra_crypt}"
-            ),
-        })),
+        (Some("password_shadow"), Some(5)) => {
+            let params = extra_crypt.get("params");
+            let salt = params
+                .and_then(|p| p.get("passwd_salt"))
+                .and_then(|v| v.as_str());
+            let rounds = params
+                .and_then(|p| p.get("passwd_rounds"))
+                .and_then(|v| v.as_u64())
+                .and_then(|v| u32::try_from(v).ok());
+
+            match salt {
+                Some(salt) => Ok(crypto::sha256_crypt(password.as_bytes(), salt, rounds)?),
+                None => Err(unsupported_transform(extra_crypt)),
+            }
+        }
+        _ => Err(unsupported_transform(extra_crypt)),
     }
+}
+
+fn unsupported_transform(extra_crypt: &serde_json::Value) -> Error {
+    Error::Tapo(TapoResponseError::ResponseError {
+        description: format!(
+            "The device asks for a password transform that is not supported yet: {extra_crypt}"
+        ),
+    })
 }
 
 /// Runs the prover with the `credential`, the `salt` and `iterations` of the
@@ -352,12 +371,39 @@ mod tests {
     }
 
     #[test]
-    fn credential_for_an_unsupported_transform_names_it() {
+    fn credential_for_password_shadow_5_is_the_sha256_crypt_of_the_password() {
+        let extra_crypt = json!({
+            "type": "password_shadow",
+            "params": {
+                "passwd_id": 5,
+                "passwd_prefix": "$5$saltstring$",
+                "passwd_rounds": 5000,
+                "passwd_salt": "saltstring"
+            }
+        });
+
+        assert_eq!(
+            credential("Hello world!", Some(&extra_crypt), DeviceFamily::SmartCam).unwrap(),
+            "$5$saltstring$5B8vYYiY.CVt1RlTTf8KbXBH3hsxY/GNooZaBBGWEc5"
+        );
+    }
+
+    #[test]
+    fn credential_for_password_shadow_5_without_a_salt_is_unsupported() {
         let extra_crypt = json!({ "type": "password_shadow", "params": { "passwd_id": 5 } });
+
+        let error = credential("hunter2", Some(&extra_crypt), DeviceFamily::SmartCam).unwrap_err();
+
+        assert!(error.to_string().contains(r#""passwd_id":5"#), "{error}");
+    }
+
+    #[test]
+    fn credential_for_an_unsupported_transform_names_it() {
+        let extra_crypt = json!({ "type": "password_shadow", "params": { "passwd_id": 3 } });
 
         let error = credential("hunter2", Some(&extra_crypt), DeviceFamily::Smart).unwrap_err();
 
         assert!(error.to_string().contains("password_shadow"), "{error}");
-        assert!(error.to_string().contains(r#""passwd_id":5"#), "{error}");
+        assert!(error.to_string().contains(r#""passwd_id":3"#), "{error}");
     }
 }

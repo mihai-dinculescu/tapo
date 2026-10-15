@@ -3053,6 +3053,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha-crypt"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32ee31e0190f9dc366d26b032ac36a99328532f40a237a79385a20d2d7f29810"
+dependencies = [
+ "base64ct",
+ "sha2 0.11.1",
+]
+
+[[package]]
 name = "sha1"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3315,6 +3325,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_with",
+ "sha-crypt",
  "sha1",
  "sha2 0.11.1",
  "thiserror",

@@ -40,6 +40,53 @@ pub fn md5_hex_lower(data: &[u8]) -> String {
     base16ct::lower::encode_string(&md5(data))
 }
 
+/// The SHA-256-crypt (`$5$`) hash of `password` with `salt` and `rounds`
+/// (5000 when `None`), as the `$5$salt$hash` string of crypt(3), which names
+/// `rounds` only when it is not the default.
+pub fn sha256_crypt(password: &[u8], salt: &str, rounds: Option<u32>) -> anyhow::Result<String> {
+    const ALPHABET: &[u8; 64] = b"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    // The bytes of the hash that crypt(3) encodes together, in its order.
+    const GROUPS: [[usize; 3]; 10] = [
+        [0, 10, 20],
+        [21, 1, 11],
+        [12, 22, 2],
+        [3, 13, 23],
+        [24, 4, 14],
+        [15, 25, 5],
+        [6, 16, 26],
+        [27, 7, 17],
+        [18, 28, 8],
+        [9, 19, 29],
+    ];
+
+    let rounds = rounds.unwrap_or(sha_crypt::Params::RECOMMENDED_ROUNDS);
+    // crypt(3) uses at most 16 characters of the salt.
+    let salt = salt.get(..16).unwrap_or(salt);
+    let params = sha_crypt::Params::new(rounds)
+        .map_err(|e| anyhow::anyhow!("Invalid SHA-256-crypt rounds {rounds}: {e:?}"))?;
+    let hash = sha_crypt::sha256_crypt(password, salt.as_bytes(), params);
+
+    let mut encoded = String::with_capacity(43);
+    let mut push = |value: u32, chars: usize| {
+        for i in 0..chars {
+            encoded.push(ALPHABET[((value >> (6 * i)) & 0x3f) as usize] as char);
+        }
+    };
+    for [a, b, c] in GROUPS {
+        push(
+            (u32::from(hash[a]) << 16) | (u32::from(hash[b]) << 8) | u32::from(hash[c]),
+            4,
+        );
+    }
+    push((u32::from(hash[31]) << 8) | u32::from(hash[30]), 3);
+
+    Ok(if rounds == sha_crypt::Params::RECOMMENDED_ROUNDS {
+        format!("$5${salt}${encoded}")
+    } else {
+        format!("$5$rounds={rounds}${salt}${encoded}")
+    })
+}
+
 pub fn aes128_cbc_encrypt(key: &[u8], iv: &[u8], data: &str) -> anyhow::Result<String> {
     let encryptor = Encryptor::<Aes128>::new_from_slices(key, iv)?;
     let cipher_bytes = encryptor.encrypt_padded_vec::<block_padding::Pkcs7>(data.as_bytes());
@@ -100,6 +147,19 @@ pub fn pbkdf2_hmac_sha256(password: &[u8], salt: &[u8], iterations: u32, length:
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // The test vectors of the SHA-crypt specification.
+    #[test]
+    fn test_sha256_crypt() {
+        assert_eq!(
+            sha256_crypt(b"Hello world!", "saltstring", None).unwrap(),
+            "$5$saltstring$5B8vYYiY.CVt1RlTTf8KbXBH3hsxY/GNooZaBBGWEc5"
+        );
+        assert_eq!(
+            sha256_crypt(b"Hello world!", "saltstringsaltstring", Some(10000)).unwrap(),
+            "$5$rounds=10000$saltstringsaltst$3xv.VbSHBb41AL9AvLeujZkZRBAwqFMz2.opqey6IcA"
+        );
+    }
 
     #[test]
     fn test_aes128_cbc_decrypt_bytes_round_trip() {

@@ -35,6 +35,7 @@ file. This change log follows the conventions of
 - `ApiClient`: connecting to a camera by its IP address with a wrong password now fails with `TPAP_CREDENTIALS`, which warns that the device locks itself after too many failed logins, instead of with `HASH_MISMATCH`.
 - `CameraPtzHandler`: `get_rtsp_stream_url` and `get_snapshot` now work when the builder was given an address with a port (`"{ip}:{port}"`). Before, `get_rtsp_stream_url` panicked and `get_snapshot` returned an error.
 - `CameraHubHandler`: `download_recording` now works when the builder was given an address with a port (`"{ip}:{port}"`). Before, it returned an error.
+- `ApiClient`: connecting to cameras with newer firmware, such as the C120 on firmware 1.9.4, now works. It used to fail with `The device asks for a password transform that is not supported yet`.
 
 ## [Python Unreleased][Unreleased]
 
@@ -78,6 +79,7 @@ file. This change log follows the conventions of
 - `ApiClient`: connecting to a camera by its IP address with a wrong password now raises a `TPAP_CREDENTIALS` exception, which warns that the device locks itself after too many failed logins, instead of a `HASH_MISMATCH` one.
 - `CameraPtzHandler`: `get_rtsp_stream_url` and `get_snapshot` now work when the `ApiClient` method was given an address with a port (`f"{ip}:{port}"`). Before, `get_rtsp_stream_url` panicked and `get_snapshot` returned an error.
 - `CameraHubHandler`: `download_recording` now works when the `ApiClient` method was given an address with a port (`f"{ip}:{port}"`). Before, it returned an error.
+- `ApiClient`: connecting to cameras with newer firmware, such as the C120 on firmware 1.9.4, now works. It used to raise `The device asks for a password transform that is not supported yet`.
 
 ## [MCP Unreleased][Unreleased]
 
