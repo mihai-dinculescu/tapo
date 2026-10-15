@@ -406,6 +406,51 @@ macro_rules! py_hub_alarm_handlers {
     };
 }
 
+/// Generates the camera stream methods for a handler created with
+/// [`py_handler!`], mirroring `camera_stream_handlers!` in the `tapo` crate.
+///
+/// # Usage
+///
+/// ```ignore
+/// py_camera_stream_handlers!(PyCameraHandler, CameraHandler);
+/// ```
+///
+/// # Generated code
+///
+/// * `get_rtsp_stream_url(username, password)` method
+/// * `get_snapshot(username, password)` method
+macro_rules! py_camera_stream_handlers {
+    ($py_name:ident, $handler:ident) => {
+        #[pyo3::pymethods]
+        impl $py_name {
+            pub async fn get_rtsp_stream_url(
+                &self,
+                username: String,
+                password: String,
+            ) -> tapo::responses::RtspStreamUrl {
+                use std::ops::Deref;
+                let handler = self.inner.read().await;
+                handler.deref().get_rtsp_stream_url(&username, &password)
+            }
+
+            pub async fn get_snapshot(
+                &self,
+                username: String,
+                password: String,
+            ) -> pyo3::prelude::PyResult<tapo::responses::Snapshot> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_snapshot,
+                    &username,
+                    &password
+                )
+            }
+        }
+    };
+}
+
 /// Generates the hub child device methods for a handler created with
 /// [`py_handler!`], mirroring `hub_child_handlers!` in the `tapo` crate.
 ///

@@ -38,9 +38,9 @@ use super::protocol::media_stream;
 use super::protocol::media_stream::download::DownloadRequest;
 use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
 use super::{
-    CameraHubHandler, CameraPtzHandler, ColorLightHandler, HubHandler, HubIrHandler, LightHandler,
-    PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
-    RgbLightStripHandler, RgbicLightStripHandler,
+    CameraHandler, CameraHubHandler, CameraPtzHandler, ColorLightHandler, HubHandler, HubIrHandler,
+    LightHandler, PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler,
+    PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler,
 };
 
 #[cfg(feature = "debug")]
@@ -962,6 +962,39 @@ impl ApiClient {
             .await?;
 
         Ok(CameraHubHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .c120("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn c120(mut self, ip_address: impl Into<String>) -> Result<CameraHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::SmartCam,
+                AuthProtocol::TpapThenAesSsl,
+            )
+            .await?;
+
+        Ok(CameraHandler::new(self, address))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraPtzHandler`].

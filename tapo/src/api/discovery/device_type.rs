@@ -34,6 +34,8 @@ pub enum DeviceType {
     HubIr,
     /// Tapo H200, H500 - camera hubs.
     CameraHub,
+    /// Tapo C120 - smart cameras without PTZ.
+    Camera,
     /// Tapo C210, C220, C225, C325WB, C520WS, TC40, TC70 - smart cameras with PTZ.
     CameraPtz,
     /// A Tapo device without a specific handler implementation.
@@ -57,6 +59,7 @@ impl DeviceType {
             "H100" => DeviceType::Hub,
             "H110" => DeviceType::HubIr,
             "H200" | "H500" => DeviceType::CameraHub,
+            "C120" => DeviceType::Camera,
             "C210" | "C220" | "C225" | "C325WB" | "C520WS" | "TC40" | "TC70" => {
                 DeviceType::CameraPtz
             }
@@ -80,6 +83,7 @@ impl DeviceType {
             DeviceType::Hub => "Hub",
             DeviceType::HubIr => "Hub with IR",
             DeviceType::CameraHub => "Camera Hub",
+            DeviceType::Camera => "Smart Camera",
             DeviceType::CameraPtz => "Smart Camera with PTZ",
             DeviceType::Other => "Other",
         }
@@ -167,6 +171,11 @@ mod tests {
     fn from_model_camera_hub() {
         assert_eq!(DeviceType::from_model("H200"), DeviceType::CameraHub);
         assert_eq!(DeviceType::from_model("H500"), DeviceType::CameraHub);
+    }
+
+    #[test]
+    fn from_model_smart_cam() {
+        assert_eq!(DeviceType::from_model("C120"), DeviceType::Camera);
     }
 
     #[test]

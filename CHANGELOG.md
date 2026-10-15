@@ -13,6 +13,8 @@ file. This change log follows the conventions of
 - `ApiClient`: added the `h110` builder for the H110 hub. It returns a `HubIrHandler`, which supports everything `HubHandler` does and adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient::discover_devices`. (thanks to @skoky)
 - `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 - `DiscoveryResult::HubIr` and `DeviceType::HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult::Other`. (thanks to @skoky)
+- `ApiClient`: added the `c120` builder for the C120 camera. It returns a `CameraHandler`, which serves cameras without PTZ and has `get_device_info`, `get_rtsp_stream_url` and `get_snapshot`.
+- `DiscoveryResult::Camera` and `DeviceType::Camera`: `discover_devices` now returns C120 cameras with a ready-to-use `CameraHandler`, instead of as `DiscoveryResult::Other`.
 - `DiscoveryResult`: added `address()`, the IP address and the port that the device was reached at during discovery. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
 - `ColorLightHandler`, `CameraHubHandler`, `CameraPtzHandler`, `HubHandler`, `HubIrHandler`, `LightHandler`, `PlugEnergyMonitoringHandler`, `PlugHandler`, `PowerStripEnergyMonitoringHandler`, `PowerStripHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: added `address()`, the IP address and the port that the handler reaches the device at. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
 
@@ -46,6 +48,8 @@ file. This change log follows the conventions of
 - `ApiClient`: added the `h110` method for the H110 hub. It returns a `HubIrHandler`, which supports everything `HubHandler` does and adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient.discover_devices`. (thanks to @skoky)
 - `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 - `DiscoveryResult.HubIr` and `DeviceType.HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult.Other`. (thanks to @skoky)
+- `ApiClient`: added the `c120` method for the C120 camera. It returns a `CameraHandler`, which serves cameras without PTZ and has `get_device_info`, `get_rtsp_stream_url` and `get_snapshot`.
+- `DiscoveryResult.Camera` and `DeviceType.Camera`: `discover_devices` now returns C120 cameras with a ready-to-use `CameraHandler`, instead of as `DiscoveryResult.Other`.
 - `LightingEffect`, `SegmentEffect`: the fields of an effect built in Python can now be read, such as `effect.brightness`.
 - `SegmentEffect`: added the `to_dict` method.
 - `SegmentEffectType`: added `NONE`.
@@ -86,6 +90,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub, with its sensors and IR remotes listed under `children`. `get_device_state` returns the keys stored on each IR remote. (thanks to @skoky)
+- `list_devices`, `check_device`, `get_device_state`, `take_snapshot`: added support for the C120 camera. `list_devices` lists the `Snapshot` capability for it.
 - `take_snapshot`: when `TAPO_MCP_PUBLIC_URL` is set, the result also carries a link to the image that stays valid for 5 minutes, so an agent can share it with the user or download the file.
 - `list_devices`, `tapo://devices`: the result now includes `discovered_at`, the time the discovery that produced the list started.
 - `list_devices`, `tapo://devices`: the result now includes `refresh_error` when the most recent background discovery failed. The devices are then the ones from the last successful discovery, at `discovered_at`.

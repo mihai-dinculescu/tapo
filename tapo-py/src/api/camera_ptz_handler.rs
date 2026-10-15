@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use pyo3::prelude::*;
 use tapo::CameraPtzHandler;
-use tapo::responses::{DeviceInfoCameraResult, Preset, RtspStreamUrl, Snapshot};
+use tapo::responses::{DeviceInfoCameraResult, Preset};
 
 use crate::call_handler_method;
 
@@ -11,23 +11,10 @@ py_handler! {
     py_name = "CameraPtzHandler",
 }
 
+py_camera_stream_handlers!(PyCameraPtzHandler, CameraPtzHandler);
+
 #[pymethods]
 impl PyCameraPtzHandler {
-    pub async fn get_rtsp_stream_url(&self, username: String, password: String) -> RtspStreamUrl {
-        let handler = self.inner.read().await;
-        handler.deref().get_rtsp_stream_url(&username, &password)
-    }
-
-    pub async fn get_snapshot(&self, username: String, password: String) -> PyResult<Snapshot> {
-        let handler = self.inner.clone();
-        call_handler_method!(
-            handler.read().await.deref(),
-            CameraPtzHandler::get_snapshot,
-            &username,
-            &password
-        )
-    }
-
     pub async fn pan_tilt(&self, pan: i32, tilt: i32) -> PyResult<()> {
         let handler = self.inner.clone();
         call_handler_method!(

@@ -86,7 +86,8 @@ async fn get_device_info(checked: CheckedDevice) -> Result<serde_json::Value, Ta
             DiscoveryResult::CameraHub { device_info, .. } => {
                 Ok(serde_json::to_value(&*device_info)?)
             }
-            DiscoveryResult::CameraPtz { device_info, .. } => {
+            DiscoveryResult::Camera { device_info, .. }
+            | DiscoveryResult::CameraPtz { device_info, .. } => {
                 Ok(serde_json::to_value(&*device_info)?)
             }
             DiscoveryResult::Other { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),

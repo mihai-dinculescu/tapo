@@ -2,17 +2,17 @@ use std::time::Duration;
 
 use pyo3::prelude::*;
 use tapo::{
-    ApiClient, CameraHubHandler, CameraPtzHandler, ColorLightHandler, DeviceDiscovery,
-    DeviceDiscoveryRaw, Error, HubHandler, HubIrHandler, LightHandler, PlugEnergyMonitoringHandler,
-    PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler, RgbLightStripHandler,
-    RgbicLightStripHandler,
+    ApiClient, CameraHandler, CameraHubHandler, CameraPtzHandler, ColorLightHandler,
+    DeviceDiscovery, DeviceDiscoveryRaw, Error, HubHandler, HubIrHandler, LightHandler,
+    PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
+    RgbLightStripHandler, RgbicLightStripHandler,
 };
 
 use crate::call_handler_constructor;
 
 use super::{
-    PyCameraHubHandler, PyCameraPtzHandler, PyColorLightHandler, PyDeviceDiscovery,
-    PyDeviceDiscoveryRaw, PyHubHandler, PyHubIrHandler, PyLightHandler,
+    PyCameraHandler, PyCameraHubHandler, PyCameraPtzHandler, PyColorLightHandler,
+    PyDeviceDiscovery, PyDeviceDiscoveryRaw, PyHubHandler, PyHubIrHandler, PyLightHandler,
     PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
     PyPowerStripHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler,
 };
@@ -213,6 +213,12 @@ impl PyApiClient {
         let handler: CameraHubHandler =
             call_handler_constructor!(self, tapo::ApiClient::h500, ip_address);
         Ok(PyCameraHubHandler::new(handler))
+    }
+
+    pub async fn c120(&self, ip_address: String) -> PyResult<PyCameraHandler> {
+        let handler: CameraHandler =
+            call_handler_constructor!(self, tapo::ApiClient::c120, ip_address);
+        Ok(PyCameraHandler::new(handler))
     }
 
     pub async fn c210(&self, ip_address: String) -> PyResult<PyCameraPtzHandler> {

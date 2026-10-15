@@ -114,7 +114,10 @@ async fn process_device(device: DiscoveryResult) -> DeviceOutcome {
     };
 
     let mut get_capabilities = vec![GetCapability::DeviceInfo];
-    if matches!(device, DiscoveryResult::CameraPtz { .. }) {
+    if matches!(
+        device,
+        DiscoveryResult::Camera { .. } | DiscoveryResult::CameraPtz { .. }
+    ) {
         get_capabilities.push(GetCapability::Snapshot);
     }
 

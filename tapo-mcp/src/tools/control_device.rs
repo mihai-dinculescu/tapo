@@ -135,6 +135,7 @@ async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(),
             | DiscoveryResult::Hub { .. }
             | DiscoveryResult::HubIr { .. }
             | DiscoveryResult::CameraHub { .. }
+            | DiscoveryResult::Camera { .. }
             | DiscoveryResult::CameraPtz { .. } => {
                 return Err(TapoMcpError::WrongDeviceType {
                     id: id.to_string(),

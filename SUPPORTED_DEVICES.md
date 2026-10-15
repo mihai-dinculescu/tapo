@@ -1,4 +1,3 @@
-
 # Supported devices
 
 - [Lights, Lighting Strips, Plugs, Power Strips](#lights-lighting-strips-plugs-power-strips)
@@ -78,20 +77,20 @@
 &#x2705; - Rust and Python\
 (d) - Requires the `debug` feature flag (enabled by default in `tapo-py`)
 
-| Feature<br/><br/><br/>   | C210<br/>C220<br/>C225<br/> | C325WB<br/>C520WS<br/><br/> | TC40<br/>TC70<br/><br/> |
-| ------------------------ | :-------------------------- | :-------------------------- | :---------------------- |
-| address                  | &#x2705;                    | &#x2705;                    | &#x2705;                |
-| delete_preset            | &#x2705;                    | &#x2705;                    | &#x2705;                |
-| get_component_list (d)   | &#x2705;                    | &#x2705;                    | &#x2705;                |
-| get_device_info          | &#x2705;                    | &#x2705;                    | &#x2705;                |
-| get_device_info_json (d) | &#x2705;                    | &#x2705;                    | &#x2705;                |
-| get_presets              | &#x2705;                    | &#x2705;                    | &#x2705;                |
-| get_rtsp_stream_url      | &#x2705;                    | &#x2705;                    | &#x2705;                |
-| get_snapshot             | &#x2705;                    | &#x2705;                    | &#x2705;                |
-| goto_preset              | &#x2705;                    | &#x2705;                    | &#x2705;                |
-| pan_tilt                 | &#x2705;                    | &#x2705;                    | &#x2705;                |
-| refresh_session          | &#x2705;                    | &#x2705;                    | &#x2705;                |
-| save_preset              | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| Feature<br/><br/><br/>   | C120<br/><br/><br/> | C210<br/>C220<br/>C225<br/> | C325WB<br/>C520WS<br/><br/> | TC40<br/>TC70<br/><br/> |
+| ------------------------ | :------------------ | :-------------------------- | :-------------------------- | :---------------------- |
+| address                  | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| delete_preset            |                     | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| get_component_list (d)   | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| get_device_info          | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| get_device_info_json (d) | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| get_presets              |                     | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| get_rtsp_stream_url      | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| get_snapshot             | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| goto_preset              |                     | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| pan_tilt                 |                     | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| refresh_session          | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| save_preset              |                     | &#x2705;                    | &#x2705;                    | &#x2705;                |
 
 ## Hubs
 
@@ -99,27 +98,27 @@
 &#x2705; - Rust and Python\
 (d) - Requires the `debug` feature flag (enabled by default in `tapo-py`)
 
-| Feature<br/><br/>                   | H100<br/>H110  | H200<br/>H500 |
-| ----------------------------------- | :------------- | :------------ |
-| address                             | &#x2705;       | &#x2705;      |
-| device_reboot                       | &#x2705;       |               |
-| device_reset                        | &#x2705;       |               |
-| download_recording                  |                | &#x2705;      |
-| get_child_device_component_list (d) | &#x2705;       | &#x2705;      |
-| get_child_device_list               | &#x2705;       | &#x2705;      |
-| get_child_device_list_json (d)      | &#x2705;       | &#x2705;      |
-| get_component_list (d)              | &#x2705;       | &#x2705;      |
-| get_device_info                     | &#x2705;       | &#x2705;      |
-| get_device_info_json (d)            | &#x2705;       | &#x2705;      |
-| get_general_device_list             |                | &#x2705;      |
-| get_general_device_list_json (d)    |                | &#x2705;      |
-| get_recording_dates                 |                | &#x2705;      |
-| get_recordings                      |                | &#x2705;      |
-| get_supported_ringtone_list (d)     | &#x2705;       |               |
-| get_timezone                        |                | &#x2705;      |
-| play_alarm                          | &#x2705;       |               |
-| refresh_session                     | &#x2705;       | &#x2705;      |
-| stop_alarm                          | &#x2705;       |               |
+| Feature<br/><br/>                   | H100<br/>H110 | H200<br/>H500 |
+| ----------------------------------- | :------------ | :------------ |
+| address                             | &#x2705;      | &#x2705;      |
+| device_reboot                       | &#x2705;      |               |
+| device_reset                        | &#x2705;      |               |
+| download_recording                  |               | &#x2705;      |
+| get_child_device_component_list (d) | &#x2705;      | &#x2705;      |
+| get_child_device_list               | &#x2705;      | &#x2705;      |
+| get_child_device_list_json (d)      | &#x2705;      | &#x2705;      |
+| get_component_list (d)              | &#x2705;      | &#x2705;      |
+| get_device_info                     | &#x2705;      | &#x2705;      |
+| get_device_info_json (d)            | &#x2705;      | &#x2705;      |
+| get_general_device_list             |               | &#x2705;      |
+| get_general_device_list_json (d)    |               | &#x2705;      |
+| get_recording_dates                 |               | &#x2705;      |
+| get_recordings                      |               | &#x2705;      |
+| get_supported_ringtone_list (d)     | &#x2705;      |               |
+| get_timezone                        |               | &#x2705;      |
+| play_alarm                          | &#x2705;      |               |
+| refresh_session                     | &#x2705;      | &#x2705;      |
+| stop_alarm                          | &#x2705;      |               |
 
 ## Hub Child Devices
 

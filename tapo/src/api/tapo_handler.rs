@@ -546,6 +546,46 @@ macro_rules! hub_alarm_handlers {
     };
 }
 
+/// Generates the stream methods shared by the camera handlers (`CameraHandler`, `CameraPtzHandler`):
+/// `get_rtsp_stream_url` and `get_snapshot`.
+macro_rules! camera_stream_handlers {
+    ($name:ident) => {
+        /// Camera stream methods.
+        impl $name {
+            /// Returns the RTSP stream URLs for the camera.
+            ///
+            /// The credentials are the **camera account** credentials set in the Tapo app
+            /// (Camera Settings > Advanced Settings > Camera Account), not the TP-Link cloud account credentials.
+            /// They will be URL-encoded automatically.
+            pub fn get_rtsp_stream_url(
+                &self,
+                username: &str,
+                password: &str,
+            ) -> crate::responses::RtspStreamUrl {
+                crate::api::camera_stream::rtsp_stream_url(&self.ip, username, password)
+            }
+
+            /// Captures a JPEG snapshot from the camera's dedicated MJPEG stream.
+            ///
+            /// The output resolution is fixed by the camera's jpegStream profile
+            /// (approximately 640x360 on current models) and is not user-configurable.
+            /// Typical latency is well under a second on a local network: each frame
+            /// arrives already JPEG-encoded, so no decoder is involved.
+            ///
+            /// The credentials are the **camera account** credentials set in the Tapo app
+            /// (Camera Settings > Advanced Settings > Camera Account), not the TP-Link cloud
+            /// account credentials. They are the same credentials accepted by `get_rtsp_stream_url`.
+            pub async fn get_snapshot(
+                &self,
+                username: &str,
+                password: &str,
+            ) -> Result<crate::responses::Snapshot, crate::error::Error> {
+                crate::api::camera_stream::snapshot(&self.ip, username, password).await
+            }
+        }
+    };
+}
+
 /// Generates the child device methods shared by hub handlers (H100, H110, H200,
 /// H500): `get_child_device_list`, which pages through the hub's children
 /// and returns them as the given child device result type (e.g. `ChildDeviceHubResult`),

@@ -148,6 +148,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         device_info.nickname, device_info.model
                     );
                 }
+                DiscoveryResult::Camera {
+                    device_info,
+                    handler,
+                } => {
+                    let (ip, port) = handler.address();
+                    info!(
+                        "Found {:?} of model {:?} at {ip}:{port}.",
+                        device_info.nickname, device_info.model
+                    );
+                }
                 DiscoveryResult::CameraPtz {
                     device_info,
                     handler,

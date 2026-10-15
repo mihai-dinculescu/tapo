@@ -2,7 +2,7 @@
 
 Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P125, P125M, TP10),
 power strips (P300, P304M, P306, P316M), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
-and cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
+and cameras (C120, C210, C220, C225, C325WB, C520WS, TC40, TC70).
 
 Example:
     ```python
@@ -25,6 +25,7 @@ See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/e
 
 from typing import Optional
 
+from .camera_handler import CameraHandler
 from .camera_hub_handler import CameraHubHandler
 from .camera_ptz_handler import CameraPtzHandler
 from .color_light_handler import ColorLightHandler
@@ -45,7 +46,7 @@ class ApiClient:
 
     Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P125, P125M, TP10),
     power strips (P300, P304M, P306, P316M), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
-    and cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
+    and cameras (C120, C210, C220, C225, C325WB, C520WS, TC40, TC70).
 
     Example:
         ```python
@@ -599,6 +600,17 @@ class ApiClient:
             general_device_list = await hub.get_general_device_list()
             print(f"Cameras paired to the hub: {[camera.to_dict() for camera in general_device_list]}")
             ```
+        """
+
+    async def c120(self, ip_address: str) -> CameraHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraHandler: Handler for Tapo cameras without PTZ, such as the
+            [C120](https://www.tapo.com/en/search/?q=C120).
         """
 
     async def c210(self, ip_address: str) -> CameraPtzHandler:

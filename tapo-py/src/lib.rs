@@ -35,14 +35,14 @@ use tapo::responses::{
 use tapo::{DeviceType, DiscoveryRawResult};
 
 use api::{
-    PyApiClient, PyCameraHubHandler, PyCameraPtzHandler, PyColorLightHandler, PyDeviceDiscovery,
-    PyDeviceDiscoveryIter, PyDeviceDiscoveryRaw, PyDeviceDiscoveryRawIter, PyDiscoveryResult,
-    PyHubHandler, PyHubIrHandler, PyIrRemoteHandler, PyKE100Handler, PyLightHandler,
-    PyMaybeDiscoveryRawResult, PyMaybeDiscoveryResult, PyPlugEnergyMonitoringHandler,
-    PyPlugHandler, PyPowerStripEnergyMonitoringHandler, PyPowerStripHandler,
-    PyPowerStripPlugEnergyMonitoringHandler, PyPowerStripPlugHandler, PyRgbLightStripHandler,
-    PyRgbicLightStripHandler, PyS200Handler, PyS210Handler, PyT31XHandler, PyT100Handler,
-    PyT110Handler, PyT300Handler,
+    PyApiClient, PyCameraHandler, PyCameraHubHandler, PyCameraPtzHandler, PyColorLightHandler,
+    PyDeviceDiscovery, PyDeviceDiscoveryIter, PyDeviceDiscoveryRaw, PyDeviceDiscoveryRawIter,
+    PyDiscoveryResult, PyHubHandler, PyHubIrHandler, PyIrRemoteHandler, PyKE100Handler,
+    PyLightHandler, PyMaybeDiscoveryRawResult, PyMaybeDiscoveryResult,
+    PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
+    PyPowerStripHandler, PyPowerStripPlugEnergyMonitoringHandler, PyPowerStripPlugHandler,
+    PyRgbLightStripHandler, PyRgbicLightStripHandler, PyS200Handler, PyS210Handler, PyT31XHandler,
+    PyT100Handler, PyT110Handler, PyT300Handler,
 };
 use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyPowerDataInterval,
@@ -122,6 +122,7 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyRgbLightStripHandler>()?;
     module.add_class::<PyRgbicLightStripHandler>()?;
 
+    module.add_class::<PyCameraHandler>()?;
     module.add_class::<PyCameraPtzHandler>()?;
 
     module.add_class::<PyHubHandler>()?;

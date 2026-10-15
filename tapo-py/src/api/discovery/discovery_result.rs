@@ -8,8 +8,8 @@ use tapo::responses::{
 use tapo::{DeviceType, DiscoveryError, DiscoveryResult};
 
 use crate::api::{
-    PyCameraHubHandler, PyCameraPtzHandler, PyColorLightHandler, PyHubHandler, PyHubIrHandler,
-    PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler,
+    PyCameraHandler, PyCameraHubHandler, PyCameraPtzHandler, PyColorLightHandler, PyHubHandler,
+    PyHubIrHandler, PyLightHandler, PyPlugEnergyMonitoringHandler, PyPlugHandler,
     PyPowerStripEnergyMonitoringHandler, PyPowerStripHandler, PyRgbLightStripHandler,
     PyRgbicLightStripHandler,
 };
@@ -60,6 +60,10 @@ pub enum PyDiscoveryResult {
         device_info: DeviceInfoCameraHubResult,
         handler: PyCameraHubHandler,
     },
+    Camera {
+        device_info: DeviceInfoCameraResult,
+        handler: PyCameraHandler,
+    },
     CameraPtz {
         device_info: DeviceInfoCameraResult,
         handler: PyCameraPtzHandler,
@@ -88,6 +92,7 @@ impl PyDiscoveryResult {
             PyDiscoveryResult::Hub { .. } => DeviceType::Hub,
             PyDiscoveryResult::HubIr { .. } => DeviceType::HubIr,
             PyDiscoveryResult::CameraHub { .. } => DeviceType::CameraHub,
+            PyDiscoveryResult::Camera { .. } => DeviceType::Camera,
             PyDiscoveryResult::CameraPtz { .. } => DeviceType::CameraPtz,
             PyDiscoveryResult::Other { .. } => DeviceType::Other,
         }
@@ -107,6 +112,7 @@ impl PyDiscoveryResult {
             PyDiscoveryResult::Hub { device_info, .. } => &device_info.model,
             PyDiscoveryResult::HubIr { device_info, .. } => &device_info.model,
             PyDiscoveryResult::CameraHub { device_info, .. } => &device_info.model,
+            PyDiscoveryResult::Camera { device_info, .. } => &device_info.model,
             PyDiscoveryResult::CameraPtz { device_info, .. } => &device_info.model,
             PyDiscoveryResult::Other { device_info, .. } => &device_info.model,
         }
@@ -126,6 +132,7 @@ impl PyDiscoveryResult {
             PyDiscoveryResult::Hub { handler, .. } => handler.address(py),
             PyDiscoveryResult::HubIr { handler, .. } => handler.address(py),
             PyDiscoveryResult::CameraHub { handler, .. } => handler.address(py),
+            PyDiscoveryResult::Camera { handler, .. } => handler.address(py),
             PyDiscoveryResult::CameraPtz { handler, .. } => handler.address(py),
             PyDiscoveryResult::Other { address, .. } => address.clone(),
         }
@@ -147,6 +154,7 @@ impl PyDiscoveryResult {
             PyDiscoveryResult::Hub { device_info, .. } => &device_info.device_id,
             PyDiscoveryResult::HubIr { device_info, .. } => &device_info.device_id,
             PyDiscoveryResult::CameraHub { device_info, .. } => &device_info.device_id,
+            PyDiscoveryResult::Camera { device_info, .. } => &device_info.device_id,
             PyDiscoveryResult::CameraPtz { device_info, .. } => &device_info.device_id,
             PyDiscoveryResult::Other { device_info, .. } => &device_info.device_id,
         }
@@ -168,6 +176,7 @@ impl PyDiscoveryResult {
             PyDiscoveryResult::Hub { device_info, .. } => &device_info.nickname,
             PyDiscoveryResult::HubIr { device_info, .. } => &device_info.nickname,
             PyDiscoveryResult::CameraHub { device_info, .. } => &device_info.nickname,
+            PyDiscoveryResult::Camera { device_info, .. } => &device_info.nickname,
             PyDiscoveryResult::CameraPtz { device_info, .. } => &device_info.nickname,
             PyDiscoveryResult::Other { device_info, .. } => device_info
                 .nickname
@@ -291,6 +300,13 @@ fn convert_result_to_py(result: DiscoveryResult) -> PyResult<PyDiscoveryResult> 
         } => PyDiscoveryResult::CameraHub {
             device_info: *device_info,
             handler: PyCameraHubHandler::new(handler),
+        },
+        DiscoveryResult::Camera {
+            device_info,
+            handler,
+        } => PyDiscoveryResult::Camera {
+            device_info: *device_info,
+            handler: PyCameraHandler::new(handler),
         },
         DiscoveryResult::CameraPtz {
             device_info,

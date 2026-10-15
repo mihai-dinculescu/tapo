@@ -4,6 +4,7 @@ use chrono::Utc;
 use rmcp::ErrorData as McpError;
 use rmcp::model::{CallToolResult, ContentBlock};
 use tapo::DiscoveryResult;
+use tapo::responses::Snapshot;
 use tracing::field::Empty;
 
 use crate::config::AppConfig;
@@ -31,18 +32,11 @@ pub async fn take_snapshot(
     let checked = requests::check_device(config, &params.id, &params.ip).await?;
 
     let snapshot = match checked {
+        CheckedDevice::Parent(DiscoveryResult::Camera { handler, .. }) => {
+            capture_snapshot(handler.get_snapshot(camera_username, camera_password)).await?
+        }
         CheckedDevice::Parent(DiscoveryResult::CameraPtz { handler, .. }) => {
-            let span = tracing::info_span!(
-                "capture_snapshot",
-                otel.status_code = Empty,
-                "error.type" = Empty,
-            );
-            run_in_span(span, async {
-                Ok(handler
-                    .get_snapshot(camera_username, camera_password)
-                    .await?)
-            })
-            .await?
+            capture_snapshot(handler.get_snapshot(camera_username, camera_password)).await?
         }
         _ => {
             return Err(TapoMcpError::WrongDeviceType {
@@ -81,4 +75,16 @@ pub async fn take_snapshot(
         ContentBlock::json(result)?,
         ContentBlock::image(encoded, snapshot.content_type),
     ]))
+}
+
+/// Awaits the camera's `snapshot` inside a `capture_snapshot` span.
+async fn capture_snapshot(
+    snapshot: impl Future<Output = Result<Snapshot, tapo::Error>>,
+) -> Result<Snapshot, TapoMcpError> {
+    let span = tracing::info_span!(
+        "capture_snapshot",
+        otel.status_code = Empty,
+        "error.type" = Empty,
+    );
+    run_in_span(span, async { Ok(snapshot.await?) }).await
 }

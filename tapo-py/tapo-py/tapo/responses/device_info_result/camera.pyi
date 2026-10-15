@@ -3,7 +3,7 @@ from typing import Optional
 from tapo.to_dict_ext import ToDictExt
 
 class DeviceInfoCameraResult(ToDictExt):
-    """Device info of Tapo cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70)."""
+    """Device info of Tapo cameras (C120, C210, C220, C225, C325WB, C520WS, TC40, TC70)."""
 
     avatar: str
     device_id: str
@@ -20,6 +20,6 @@ class DeviceInfoCameraResult(ToDictExt):
     nickname: str
     no_rtsp_constrain: Optional[bool]
     """Whether RTSP streaming is available without restrictions.
-    Only present on some models (e.g. C220, C225, C720)."""
+    Only present on some models, such as the C120 and C220."""
     region: Optional[str]
     type: str

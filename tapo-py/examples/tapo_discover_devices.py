@@ -87,6 +87,11 @@ async def main():
                     print(
                         f"Found '{device_info.nickname}' of model '{device_info.model}' at '{ip}:{port}'."
                     )
+                case DiscoveryResult.Camera(device_info, handler):
+                    ip, port = handler.address
+                    print(
+                        f"Found '{device_info.nickname}' of model '{device_info.model}' at '{ip}:{port}'."
+                    )
                 case DiscoveryResult.CameraPtz(device_info, handler):
                     ip, port = handler.address
                     print(

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Protocol, Type, Union
 
 from tapo import (
+    CameraHandler,
     CameraHubHandler,
     CameraPtzHandler,
     ColorLightHandler,
@@ -263,6 +264,20 @@ class CameraHub(DiscoveryResultExt):
     )
 
 @dataclass
+class Camera(DiscoveryResultExt):
+    """Tapo cameras without PTZ (C120)."""
+
+    device_info: DeviceInfoCameraResult
+    """Device info of Tapo cameras without PTZ (C120)."""
+
+    handler: CameraHandler
+    """Handler for Tapo cameras without PTZ, such as the
+    [C120](https://www.tapo.com/en/search/?q=C120).
+    """
+
+    __match_args__ = ("device_info", "handler")
+
+@dataclass
 class CameraPtz(DiscoveryResultExt):
     """Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70)."""
 
@@ -297,6 +312,7 @@ class MaybeDiscoveryResult:
         Hub,
         HubIr,
         CameraHub,
+        Camera,
         CameraPtz,
         Other,
     ]:
@@ -316,5 +332,6 @@ class DiscoveryResult(DiscoveryResultExt):
     Hub: Type[Hub] = Hub
     HubIr: Type[HubIr] = HubIr
     CameraHub: Type[CameraHub] = CameraHub
+    Camera: Type[Camera] = Camera
     CameraPtz: Type[CameraPtz] = CameraPtz
     Other: Type[Other] = Other

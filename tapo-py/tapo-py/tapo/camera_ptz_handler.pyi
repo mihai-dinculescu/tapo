@@ -25,7 +25,7 @@ class CameraPtzHandler(DeviceHandlerExt, DebugExt):
         try `CameraPtzHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoCameraResult: Device info of Tapo cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
+            DeviceInfoCameraResult: Device info of Tapo cameras (C120, C210, C220, C225, C325WB, C520WS, TC40, TC70).
         """
 
     async def get_rtsp_stream_url(self, username: str, password: str) -> RtspStreamUrl:
@@ -40,14 +40,14 @@ class CameraPtzHandler(DeviceHandlerExt, DebugExt):
             password (str): The camera account password.
 
         Returns:
-            RtspStreamUrl: The HD and SD RTSP stream URLs.
+            RtspStreamUrl: The HD, SD and MJPEG RTSP stream URLs.
         """
 
     async def get_snapshot(self, username: str, password: str) -> Snapshot:
         """Captures a JPEG snapshot from the camera's dedicated MJPEG stream.
 
         The output resolution is fixed by the camera's jpegStream profile
-        (approximately 640x360 on current PTZ models) and is not user-configurable.
+        (approximately 640x360 on current models) and is not user-configurable.
         Typical latency is well under a second on a local network: each frame
         arrives already JPEG-encoded, so no decoder is involved.
 
