@@ -13,7 +13,7 @@
 //! A fixture holds nothing that a device does not send. What the simulator
 //! needs to know beyond that comes from where the fixture lives and what it
 //! is named: a fixture in `fixtures/smartcam/` is of a camera or a camera
-//! hub, one in `fixtures/smart/` is not, and the name ends in the protocol
+//! hub, one in `fixtures/smart/` is not, and the name says the protocol
 //! that the device takes.
 //!
 //! A fixture is named `<discovery model>_<hardware version>_<firmware
@@ -22,7 +22,9 @@
 //! versions of the device info, the latter cut at its first space, and the
 //! protocol that the device takes: the `encrypt_type` that the discovery
 //! response announces, or `TPAP` for a camera, which announces a `tpap`
-//! object instead.
+//! object instead. Two fixtures of the same device and firmware that log in
+//! differently tell themselves apart with what differs, after the protocol,
+//! as in `C120_1.0_1.9.4_TPAP_SHA-256-crypt.json`.
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -60,11 +62,11 @@ impl Fixture {
 
         let auth_protocol = path
             .file_stem()
-            .and_then(|name| name.to_str()?.rsplit_once('_'))
-            .map(|(_, auth_protocol)| auth_protocol.to_string())
+            .and_then(|name| name.to_str()?.split('_').nth(3))
+            .map(str::to_string)
             .unwrap_or_else(|| {
                 panic!(
-                    "the name of the fixture {} ends in its auth protocol",
+                    "the name of the fixture {} names its auth protocol fourth",
                     path.display()
                 )
             });

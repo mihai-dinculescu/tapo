@@ -26,7 +26,7 @@ pub struct Tpap {
     fixture: Fixture,
     /// The transform of the password that the device asks the client to
     /// prove it knows.
-    credential: String,
+    credential: Credential,
     /// The error code that `pake_share` answers a wrong password with.
     wrong_password_error_code: i64,
     salt: [u8; 16],
@@ -52,7 +52,7 @@ struct Session {
 
 impl Tpap {
     pub fn new(password: &str, fixture: Fixture) -> Self {
-        let credential = credential(
+        let credential = Credential::new(
             password,
             &fixture.pake_register_result()["extra_crypt"],
             fixture.is_camera(),
@@ -186,9 +186,10 @@ impl Tpap {
             result["encryption"]
         );
 
+        let credential = self.credential.for_login(&mut result);
         let device_random: [u8; 32] = rand::rng().random();
         let verifier = Verifier::new(
-            &self.credential,
+            &credential,
             &self.salt,
             iterations,
             &decode(user_random),
@@ -233,25 +234,69 @@ impl Tpap {
     }
 }
 
-/// The transform of `password` that the device holds and asks the client to
-/// prove it knows. A plug or a bulb names it in the `extra_crypt` of
+/// The transform of the password that the device holds and asks the client
+/// to prove it knows. A plug or a bulb names it in the `extra_crypt` of
 /// `pake_register`, and a P110 or an L535 that names `password_shadow` id 2
-/// holds the SHA-1 of the password. A camera names none and holds the MD5 of
-/// the password, as a C220 does. A device whose fixture lives in
-/// `fixtures/smartcam/` is a camera.
-fn credential(password: &str, extra_crypt: &Value, is_camera: bool) -> String {
-    match extra_crypt {
-        Value::Null if is_camera => crypto::md5_hex(password.as_bytes()),
-        Value::Null => panic!(
-            "the fixture of a device that is not a camera names the password transform in `extra_crypt`"
-        ),
-        extra_crypt
-            if extra_crypt["type"] == "password_shadow"
-                && extra_crypt["params"]["passwd_id"] == 2 =>
-        {
-            crypto::sha1_hex(password.as_bytes())
+/// holds the SHA-1 of the password. A camera that names none holds the MD5 of
+/// the password, as a C220 does. A C120 that names `password_shadow` id 5
+/// holds the SHA-256-crypt of the password, under a salt that it picks for
+/// each `pake_register` and names in its `passwd_salt` and `passwd_prefix`.
+/// A device whose fixture lives in `fixtures/smartcam/` is a camera.
+enum Credential {
+    /// The same transform for every login.
+    Fixed(String),
+    Sha256Crypt {
+        password: String,
+        rounds: u32,
+    },
+}
+
+impl Credential {
+    fn new(password: &str, extra_crypt: &Value, is_camera: bool) -> Self {
+        match extra_crypt {
+            Value::Null if is_camera => Self::Fixed(crypto::md5_hex(password.as_bytes())),
+            Value::Null => panic!(
+                "the fixture of a device that is not a camera names the password transform in `extra_crypt`"
+            ),
+            extra_crypt if extra_crypt["type"] != "password_shadow" => {
+                unimplemented!("the simulator does not know the transform {extra_crypt}")
+            }
+            extra_crypt if extra_crypt["params"]["passwd_id"] == 2 => {
+                Self::Fixed(crypto::sha1_hex(password.as_bytes()))
+            }
+            // A C120 asks for 5000 rounds and leaves them out of its
+            // `passwd_prefix`; no device was seen to ask for others.
+            extra_crypt
+                if extra_crypt["params"]["passwd_id"] == 5
+                    && extra_crypt["params"]["passwd_rounds"] == 5000 =>
+            {
+                Self::Sha256Crypt {
+                    password: password.to_string(),
+                    rounds: 5000,
+                }
+            }
+            extra_crypt => {
+                unimplemented!("the simulator does not know the transform {extra_crypt}")
+            }
         }
-        extra_crypt => unimplemented!("the simulator does not know the transform {extra_crypt}"),
+    }
+
+    /// The transform for one login, which names in the `pake_register`
+    /// `result` what the client needs to compute it.
+    fn for_login(&self, result: &mut Value) -> String {
+        match self {
+            Self::Fixed(credential) => credential.clone(),
+            Self::Sha256Crypt { password, rounds } => {
+                let (salt, hash) = crypto::sha256_crypt(password.as_bytes(), *rounds);
+                let prefix = format!("$5${salt}$");
+
+                let params = &mut result["extra_crypt"]["params"];
+                params["passwd_prefix"] = json!(prefix);
+                params["passwd_salt"] = json!(salt);
+
+                format!("{prefix}{hash}")
+            }
+        }
     }
 }
 

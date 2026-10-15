@@ -92,7 +92,7 @@ The simulator stands in for a real device, so a test only proves something if th
 Read every added or changed fixture in full.
 
 - **Only device answers**: every key is the discovery response, a method `result`, a `login` answer keyed by `sub_method`, or an error response the device gave. Trimming the per-login fields the simulator computes is fine; adding a flag, setting, or hint that no device sends is not
-- **Folder and name**: a camera or camera hub lives in `fixtures/smartcam/`, everything else in `fixtures/smart/`. The file name follows the convention in `tapo/tests/simulator/fixture.rs` and ends in the protocol the device takes. The simulator reads both, so a wrong folder or suffix changes how it behaves
+- **Folder and name**: a camera or camera hub lives in `fixtures/smartcam/`, everything else in `fixtures/smart/`. The file name follows the convention in `tapo/tests/simulator/fixture.rs` and names the protocol the device takes. The simulator reads both, so a wrong folder or protocol changes how it behaves
 - **No personal data**: only the device's behavior may survive the capture. Check every value that could identify a person, home, network, account, or single device:
   - Ids, tokens, and keys (`device_id`, `owner`, `hw_id`, `fw_id`, `oem_id`, `dev_id`, …) are obvious placeholders: hex counting patterns such as `0123456789ABCDEF…` or `FEDCBA98…`, all zeros, or `8000…0110` ending in the model number
   - MAC addresses are `AA-BB-CC-DD-EE-FF` or end in a short model suffix such as `-35`, in every spelling the device uses (`AABBCCDDEEFF` in the `discover` login answer)

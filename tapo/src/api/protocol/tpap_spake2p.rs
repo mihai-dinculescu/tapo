@@ -370,27 +370,37 @@ mod tests {
         );
     }
 
+    // What a C120 on firmware 1.9.4 asked for; the salt changes on every
+    // `pake_register`. The hash is what `openssl passwd -5` computes.
     #[test]
     fn credential_for_password_shadow_5_is_the_sha256_crypt_of_the_password() {
         let extra_crypt = json!({
             "type": "password_shadow",
             "params": {
                 "passwd_id": 5,
-                "passwd_prefix": "$5$saltstring$",
+                "passwd_prefix": "$5$SanLv2iJ5eS/8F85$",
                 "passwd_rounds": 5000,
-                "passwd_salt": "saltstring"
+                "passwd_salt": "SanLv2iJ5eS/8F85"
             }
         });
 
         assert_eq!(
-            credential("Hello world!", Some(&extra_crypt), DeviceFamily::SmartCam).unwrap(),
-            "$5$saltstring$5B8vYYiY.CVt1RlTTf8KbXBH3hsxY/GNooZaBBGWEc5"
+            credential("hunter2", Some(&extra_crypt), DeviceFamily::SmartCam).unwrap(),
+            "$5$SanLv2iJ5eS/8F85$bpyBLtYAtKvh8tnNopK6r.tH3KYe39JLToe4minczu6"
         );
     }
 
+    // What a C120 on firmware 1.9.4 asked for, less its `passwd_salt`.
     #[test]
     fn credential_for_password_shadow_5_without_a_salt_is_unsupported() {
-        let extra_crypt = json!({ "type": "password_shadow", "params": { "passwd_id": 5 } });
+        let extra_crypt = json!({
+            "type": "password_shadow",
+            "params": {
+                "passwd_id": 5,
+                "passwd_prefix": "$5$SanLv2iJ5eS/8F85$",
+                "passwd_rounds": 5000
+            }
+        });
 
         let error = credential("hunter2", Some(&extra_crypt), DeviceFamily::SmartCam).unwrap_err();
 
