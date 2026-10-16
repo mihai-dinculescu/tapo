@@ -47,12 +47,16 @@ impl Klap {
     }
 
     /// Answers the `discover` login request, with which a client asks
-    /// whether the device is in TPAP mode.
+    /// whether the device is in TPAP mode. A device that predates TPAP
+    /// turns the request down with an error code and no result.
     pub fn discover(&self) -> Value {
         let result = self
             .fixture
             .discover_result()
             .expect("the fixture has a result for the discover login request");
+        if result.get("error_code").is_some() {
+            return result.clone();
+        }
         json!({ "error_code": 0, "result": result })
     }
 

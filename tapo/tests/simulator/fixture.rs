@@ -4,7 +4,8 @@
 //! methods inside a `multipleRequest`, and the fixture stores the `result` of
 //! each inner method under its own name. The results of `login` are keyed by
 //! `sub_method`: `discover` in full, which a camera, never asked to
-//! discover, leaves out; `pake_register` without the fields that are
+//! discover, leaves out, and of which a device that turns it down holds
+//! only the `error_code`; `pake_register` without the fields that are
 //! computed for each login; and `pake_share`, whose result is computed in
 //! full, so the fixture holds only the `error_code` that the device answers
 //! a wrong password with. The identifiers in a fixture are made up; the
