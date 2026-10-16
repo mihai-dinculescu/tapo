@@ -129,7 +129,7 @@ async def main():
                 )
             )
 
-    print(f"Triggering the alarm ringtone 'Alarm 1' at a 'Low' volume for '3 Seconds'...")
+    print("Triggering the alarm ringtone 'Alarm 1' at a 'Low' volume for '3 Seconds'...")
     await hub.play_alarm(AlarmRingtone.Alarm1, AlarmVolume.Low, AlarmDuration.Seconds, seconds=3)
 
     device_info = await hub.get_device_info()
