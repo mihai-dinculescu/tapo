@@ -180,6 +180,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         device_info.nickname, device_info.model
                     );
                 }
+                // `DiscoveryResult` is non-exhaustive. Every type it has today is handled above.
+                _ => unreachable!(),
             }
         } else if let Err(e) = discovery_result {
             error!("Error discovering device: {e:?}");

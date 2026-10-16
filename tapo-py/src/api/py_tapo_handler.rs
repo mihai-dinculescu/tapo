@@ -536,6 +536,8 @@ macro_rules! py_hub_child_handlers {
                                     results.append(device.into_pyobject(py)?)?;
                                 }
                             )*
+                            // The child result enum is non-exhaustive. Every type it has today is handled above.
+                            _ => unreachable!(),
                         }
                     }
 

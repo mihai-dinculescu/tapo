@@ -52,6 +52,23 @@ Run the following checks if there are changes in the `tapo-mcp/` directory. Fix 
   - `tapo-mcp/openclaw-skill/references/tapo-mcp-setup.md` — Tools table, Resources table, Configuration env vars, Authentication, Deployment (kept in sync with `tapo-mcp/README.md`)
 - The device family words in `tapo-mcp/src/server.rs` `with_instructions(...)` and the OpenClaw `description:` are checked by `/verify-device-support`, which the Rust and Python checks below run when a model or category changes
 
+### Non-exhaustive enum checks
+
+Run these checks if a change adds a variant to a `#[non_exhaustive]` enum in `tapo/src` (`DeviceType`, `DiscoveryResult`, `ChildDeviceHubResult`, `ChildDeviceHubIrResult`, `RecordingType`, …). Fix all issues found.
+
+`#[non_exhaustive]` lets end users of `tapo` skip new variants with a `_ =>` arm. `tapo-py`, `tapo-mcp` and the examples in `tapo/examples` don't get that choice: they must support every variant `tapo` has. Their matches end in a `_ => unreachable!()` arm only to compile, so the compiler no longer flags a missing variant there. The grep below lists those enums and their `unreachable!()` sites. Other `_ =>` arms (the capability matches in `tapo-mcp`) don't show up in it and are covered by the **MCP capabilities** check:
+
+```bash
+grep -rn -A2 '#\[non_exhaustive\]' tapo/src/api/discovery tapo/src/responses | grep 'pub enum'
+grep -rn 'unreachable!()' tapo-py/src tapo-mcp/src tapo/examples
+```
+
+For each new variant:
+
+- **No `unreachable!()` hits**: every `match` that ends in `_ => unreachable!()` names the new variant. A variant without a capability is still named, in the arm that rejects it (for example, a device without on/off support in the `WrongDeviceType` arm of `control_device`)
+- **Python mirrors**: enums that mirror the Rust one get the variant too, with all their per-variant methods: `PyDiscoveryResult` (`tapo-py/src/api/discovery/discovery_result.rs`), `PyRecordingType` and the hub child list macros. Add it to the `.pyi` stubs, including those for enums exposed directly, such as `DeviceType`
+- **MCP capabilities**: `tapo-mcp/src/requests/get_devices.rs` and `check_device.rs` and the tools under `tapo-mcp/src/tools/` give the new variant every capability it supports, and list its children if it has any
+
 ### Documentation checks
 
 Run the following checks if there are changes in the `tapo/` or `tapo-py/` directories. Fix all issues found.

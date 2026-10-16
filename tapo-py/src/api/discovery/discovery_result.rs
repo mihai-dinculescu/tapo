@@ -322,6 +322,8 @@ fn convert_result_to_py(result: DiscoveryResult) -> PyResult<PyDiscoveryResult> 
             device_info: *device_info,
             address,
         },
+        // `DiscoveryResult` is non-exhaustive. Every type it has today is handled above.
+        _ => unreachable!(),
     };
 
     Ok(result)

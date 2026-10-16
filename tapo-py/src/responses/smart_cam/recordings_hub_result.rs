@@ -120,6 +120,8 @@ impl From<&RecordingType> for PyRecordingType {
             RecordingType::PanoramicVideo => Self::PanoramicVideo,
             RecordingType::Animal => Self::Animal,
             RecordingType::Other(_) => Self::Other,
+            // `RecordingType` is non-exhaustive. Every type it has today is handled above.
+            _ => unreachable!(),
         }
     }
 }

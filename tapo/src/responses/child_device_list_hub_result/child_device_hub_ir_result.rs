@@ -12,6 +12,7 @@ use crate::responses::{
 ///
 /// It has the same variants as [`ChildDeviceHubResult`], plus [`ChildDeviceHubIrResult::IrRemote`].
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub enum ChildDeviceHubIrResult {
     /// IR remote paired with an H110 hub.
     IrRemote(Box<IrRemoteResult>),

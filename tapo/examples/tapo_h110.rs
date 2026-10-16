@@ -143,6 +143,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     device.nickname, device.device_id, device.model
                 );
             }
+            // `ChildDeviceHubIrResult` is non-exhaustive. Every type it has today is handled above.
+            _ => unreachable!(),
         }
     }
 

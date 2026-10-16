@@ -36,6 +36,7 @@ impl<T> TapoResponseExt for ChildDeviceListHubResult<T> {}
 
 /// Hub child device result.
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub enum ChildDeviceHubResult {
     /// KE100 thermostatic radiator valve (TRV).
     KE100(Box<KE100Result>),

@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
     feature = "python",
     pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
 )]
+#[non_exhaustive]
 pub enum DeviceType {
     /// Tapo L510, L520, L610 - dimmable lights.
     Light,

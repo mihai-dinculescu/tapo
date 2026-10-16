@@ -143,6 +143,8 @@ async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(),
                     expected: "an on/off-capable device".to_string(),
                 });
             }
+            // `DiscoveryResult` is non-exhaustive. Every type it has today is handled above.
+            _ => unreachable!(),
         },
         CheckedDevice::PowerStripChild { handler, child_id } => {
             let plug = handler.plug_unchecked(child_id);

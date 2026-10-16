@@ -20,6 +20,7 @@ use super::discovery_raw_result::DiscoveryRawResult;
 
 #[derive(Debug)]
 /// Result of the device discovery process.
+#[non_exhaustive]
 pub enum DiscoveryResult {
     /// Tapo L510, L520 and L610 devices.
     Light {

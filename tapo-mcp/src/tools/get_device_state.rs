@@ -91,6 +91,8 @@ async fn get_device_info(checked: CheckedDevice) -> Result<serde_json::Value, Ta
                 Ok(serde_json::to_value(&*device_info)?)
             }
             DiscoveryResult::Other { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
+            // `DiscoveryResult` is non-exhaustive. Every type it has today is handled above.
+            _ => unreachable!(),
         },
         CheckedDevice::PowerStripChild { handler, child_id } => {
             let plug = handler.plug_unchecked(child_id);

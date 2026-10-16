@@ -24,6 +24,7 @@ file. This change log follows the conventions of
 - `TapoResponseError::Unauthorized`: the `FORBIDDEN` description now suggests turning Third-Party Compatibility off and then connecting to the device again. On cameras and other camera-family devices, such as the H200 and H500 hubs, the `HASH_MISMATCH` description now asks only to check the TP-Link account password.
 - `ApiClient::discover_devices`: a device that announces its web server on a port other than 80 is now reached on that port.
 - `DiscoveryResult::Other`: replaced the `ip` field with `address`, the IP address and the port that the device was reached at during discovery, as `(ip, port)`.
+- `DeviceType`, `DiscoveryResult`, `ChildDeviceHubResult`, `ChildDeviceHubIrResult`, `RecordingType`: marked as `#[non_exhaustive]`, so that future releases can add device and recording types without breaking your code. A `match` on them now needs a wildcard arm (`_ => ...`).
 
 ### Removed
 
