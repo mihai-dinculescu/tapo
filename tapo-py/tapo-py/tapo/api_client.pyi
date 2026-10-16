@@ -459,7 +459,7 @@ class ApiClient:
             power_strip = await client.p300("192.168.1.100")
 
             child_device_list = await power_strip.get_child_device_list()
-            print(f"Child device list: {child_device_list.to_dict()}")
+            print(f"Child device list: {[child.to_dict() for child in child_device_list]}")
             ```
         """
 
@@ -479,7 +479,7 @@ class ApiClient:
             power_strip = await client.p304("192.168.1.100")
 
             child_device_list = await power_strip.get_child_device_list()
-            print(f"Child device list: {child_device_list.to_dict()}")
+            print(f"Child device list: {[child.to_dict() for child in child_device_list]}")
             ```
         """
 
@@ -499,7 +499,7 @@ class ApiClient:
             power_strip = await client.p306("192.168.1.100")
 
             child_device_list = await power_strip.get_child_device_list()
-            print(f"Child device list: {child_device_list.to_dict()}")
+            print(f"Child device list: {[child.to_dict() for child in child_device_list]}")
             ```
         """
 
@@ -519,7 +519,7 @@ class ApiClient:
             power_strip = await client.p316("192.168.1.100")
 
             child_device_list = await power_strip.get_child_device_list()
-            print(f"Child device list: {child_device_list.to_dict()}")
+            print(f"Child device list: {[child.to_dict() for child in child_device_list]}")
             ```
         """
 
@@ -538,7 +538,7 @@ class ApiClient:
             hub = await client.h100("192.168.1.100")
 
             child_device_list = await hub.get_child_device_list()
-            print(f"Child device list: {child_device_list.to_dict()}")
+            print(f"Child device list: {[child.to_dict() for child in child_device_list]}")
             ```
         """
 
@@ -560,7 +560,7 @@ class ApiClient:
             hub = await client.h110("192.168.1.100")
 
             child_device_list = await hub.get_child_device_list()
-            print(f"Child device list: {child_device_list.to_dict()}")
+            print(f"Child device list: {[child.to_dict() for child in child_device_list]}")
             ```
         """
 
