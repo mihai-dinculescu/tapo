@@ -1,5 +1,5 @@
 use anyhow::Context as _;
-use chrono::{DateTime, Days, Duration, Local, Months, NaiveDateTime, TimeZone, Utc};
+use chrono::{DateTime, Days, Duration, Months, NaiveDateTime, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
@@ -51,14 +51,6 @@ pub(crate) struct EnergyDataResultRaw {
 
 impl TapoResponseExt for EnergyDataResultRaw {}
 
-impl TryInto<EnergyDataResult> for EnergyDataResultRaw {
-    type Error = Error;
-
-    fn try_into(self) -> Result<EnergyDataResult, Self::Error> {
-        self.in_timezone(&Local)
-    }
-}
-
 enum Step {
     Hour,
     Day,
@@ -66,7 +58,8 @@ enum Step {
 }
 
 impl EnergyDataResultRaw {
-    fn in_timezone<Tz: TimeZone>(self, timezone: &Tz) -> Result<EnergyDataResult, Error> {
+    /// Dates the entries in `timezone`, the device's.
+    pub fn in_timezone<Tz: TimeZone>(self, timezone: &Tz) -> Result<EnergyDataResult, Error> {
         let start = timezone
             .timestamp_opt(self.start_timestamp, 0)
             .single()

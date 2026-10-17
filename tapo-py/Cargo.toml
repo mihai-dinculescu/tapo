@@ -16,10 +16,12 @@ default = []
 [dependencies]
 anyhow = { workspace = true }
 chrono = { workspace = true }
+chrono-tz = { workspace = true }
 log = { workspace = true }
 pyo3 = { workspace = true, features = [
     "anyhow",
     "chrono",
+    "chrono-tz",
     "experimental-async",
     "extension-module",
     "multiple-pymethods",

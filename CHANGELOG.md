@@ -17,6 +17,7 @@ file. This change log follows the conventions of
 - `DiscoveryResult::Camera` and `DeviceType::Camera`: `discover_devices` now returns C120 cameras with a ready-to-use `CameraHandler`, instead of as `DiscoveryResult::Other`.
 - `DiscoveryResult`: added `address()`, the IP address and the port that the device was reached at during discovery. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
 - `ColorLightHandler`, `CameraHubHandler`, `CameraPtzHandler`, `HubHandler`, `HubIrHandler`, `LightHandler`, `PlugEnergyMonitoringHandler`, `PlugHandler`, `PowerStripEnergyMonitoringHandler`, `PowerStripHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: added `address()`, the IP address and the port that the handler reaches the device at. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: added `get_timezone`, which returns the device's timezone as `TimezoneResult`. The P304M and P316M child plugs return their power strip's.
 
 ### Changed
 
@@ -25,6 +26,7 @@ file. This change log follows the conventions of
 - `ApiClient::discover_devices`: a device that announces its web server on a port other than 80 is now reached on that port.
 - `DiscoveryResult::Other`: replaced the `ip` field with `address`, the IP address and the port that the device was reached at during discovery, as `(ip, port)`.
 - `DeviceType`, `DiscoveryResult`, `ChildDeviceHubResult`, `ChildDeviceHubIrResult`, `RecordingType`: marked as `#[non_exhaustive]`, so that future releases can add device and recording types without breaking your code. A `match` on them now needs a wildcard arm (`_ => ...`).
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now takes a `timezone`, the device's, to read the dates in. Pass the `timezone` from `get_timezone` to read it once for several calls, or `None` to have each call read it, which takes one extra request.
 
 ### Removed
 
@@ -39,6 +41,7 @@ file. This change log follows the conventions of
 - `CameraPtzHandler`: `get_rtsp_stream_url` and `get_snapshot` now work when the builder was given an address with a port (`"{ip}:{port}"`). Before, `get_rtsp_stream_url` panicked and `get_snapshot` returned an error.
 - `CameraHubHandler`: `download_recording` now works when the builder was given an address with a port (`"{ip}:{port}"`). Before, it returned an error.
 - `ApiClient`: connecting to cameras with newer firmware, such as the C120 on firmware 1.9.4, now works. It used to fail with `The device asks for a password transform that is not supported yet`.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now reads the dates in the device's timezone instead of the timezone of the machine running the code, so the entries line up with the Tapo app wherever the code runs. Before, on a machine in another timezone, every entry's `start_date_time` was off by the difference.
 
 ## [Python Unreleased][Unreleased]
 
@@ -56,6 +59,8 @@ file. This change log follows the conventions of
 - `SegmentEffectType`: added `NONE`.
 - `DiscoveryResult`: added `address`, the IP address and the port that the device was reached at during discovery, as a tuple. Pass them to an `ApiClient` method as `f"{ip}:{port}"` to reach the device again.
 - `ColorLightHandler`, `CameraHubHandler`, `CameraPtzHandler`, `HubHandler`, `HubIrHandler`, `LightHandler`, `PlugEnergyMonitoringHandler`, `PlugHandler`, `PowerStripEnergyMonitoringHandler`, `PowerStripHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: added `address`, the IP address and the port that the handler reaches the device at, as a tuple. Pass them to an `ApiClient` method as `f"{ip}:{port}"` to reach the device again.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: added `get_timezone`, which returns the device's timezone as `TimezoneResult`. The P304M and P316M child plugs return their power strip's.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` takes an optional `timezone`, the device's, to read the dates in. Pass the `timezone` from `get_timezone` to read it once for several calls. Without it, each call reads it, which takes one extra request.
 
 ### Changed
 
@@ -85,6 +90,7 @@ file. This change log follows the conventions of
 - `CameraPtzHandler`: `get_rtsp_stream_url` and `get_snapshot` now work when the `ApiClient` method was given an address with a port (`f"{ip}:{port}"`). Before, `get_rtsp_stream_url` panicked and `get_snapshot` returned an error.
 - `CameraHubHandler`: `download_recording` now works when the `ApiClient` method was given an address with a port (`f"{ip}:{port}"`). Before, it returned an error.
 - `ApiClient`: connecting to cameras with newer firmware, such as the C120 on firmware 1.9.4, now works. It used to raise `The device asks for a password transform that is not supported yet`.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now reads the dates in the device's timezone instead of the timezone of the machine running the code, so the entries line up with the Tapo app wherever the code runs. Before, on a machine in another timezone, every entry's `start_date_time` was off by the difference.
 
 ## [MCP Unreleased][Unreleased]
 

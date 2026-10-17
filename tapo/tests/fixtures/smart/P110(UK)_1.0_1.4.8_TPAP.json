@@ -217,5 +217,10 @@
       "past30_mwh": 0,
       "past30": 0
     }
+  },
+  "get_device_time": {
+    "time_diff": 0,
+    "timestamp": 1792244123,
+    "region": "Europe/London"
   }
 }

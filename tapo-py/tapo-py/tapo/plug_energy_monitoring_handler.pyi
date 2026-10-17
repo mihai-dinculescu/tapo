@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 from tapo.debug_ext import DebugExt
 from tapo.device_handler_ext import DeviceHandlerExt
@@ -13,6 +14,7 @@ from tapo.responses import (
     EnergyDataResult,
     EnergyUsageResult,
     PowerDataResult,
+    TimezoneResult,
 )
 from tapo.schedule_ext import ScheduleExt
 from tapo.timer_ext import TimerExt
@@ -55,24 +57,35 @@ class PlugEnergyMonitoringHandler(
             Contains the time usage, the power consumption, and the energy savings of the device.
         """
 
+    async def get_energy_data(
+        self,
+        interval: EnergyDataInterval,
+        start_date: date,
+        end_date: Optional[date] = None,
+        timezone: Optional[ZoneInfo] = None,
+    ) -> EnergyDataResult:
+        """Returns *energy data* as `EnergyDataResult`.
+
+        The dates are read in the device's timezone, so the entries line up
+        with the Tapo app wherever this code runs.
+
+        Pass the `TimezoneResult.timezone` attribute from
+        `PlugEnergyMonitoringHandler.get_timezone` to read it once for several calls.
+        Without it, each call reads it, which takes one extra request.
+
+        Returns:
+            EnergyDataResult: Energy data result for the requested `EnergyDataInterval`.
+
+        Raises:
+            Exception: If the device reports a timezone name that is not in the IANA database.
+        """
+
     async def get_energy_usage(self) -> EnergyUsageResult:
         """Returns *energy usage* as `EnergyUsageResult`.
 
         Returns:
             EnergyUsageResult:
             Contains local time, current power and the energy usage and runtime for today and for the current month.
-        """
-
-    async def get_energy_data(
-        self,
-        interval: EnergyDataInterval,
-        start_date: date,
-        end_date: Optional[date] = None,
-    ) -> EnergyDataResult:
-        """Returns *energy data* as `EnergyDataResult`.
-
-        Returns:
-            EnergyDataResult: Energy data result for the requested `EnergyDataInterval`.
         """
 
     async def get_power_data(
@@ -93,4 +106,14 @@ class PlugEnergyMonitoringHandler(
 
         Raises:
             TypeError: If `start_date_time` or `end_date_time` is a naive datetime.
+        """
+
+    async def get_timezone(self) -> TimezoneResult:
+        """Returns the device's *timezone* as `TimezoneResult`.
+
+        Returns:
+            TimezoneResult: The timezone configured on the device.
+
+        Raises:
+            Exception: If the device reports a timezone name that is not in the IANA database.
         """

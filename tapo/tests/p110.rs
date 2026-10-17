@@ -58,6 +58,7 @@ async fn a_p110_takes_a_login_by_ip_address(#[case] fixture: &str) -> Result<(),
 
     handler.get_device_info().await?;
     handler.get_device_usage().await?;
+    handler.get_timezone().await?;
 
     Ok(())
 }

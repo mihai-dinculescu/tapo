@@ -1,10 +1,13 @@
 use std::time::Duration;
 
+use chrono_tz::Tz;
+
 use crate::error::Error;
 use crate::requests::{EnergyDataInterval, PowerDataInterval, ScheduleRule};
 use crate::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
     EnergyDataResult, EnergyUsageResult, PowerDataResult, PowerState, ScheduleRuleResult, Timer,
+    TimezoneResult,
 };
 
 tapo_handler! {
@@ -23,17 +26,35 @@ impl PlugEnergyMonitoringHandler {
         self.client.read().await.get_current_power().await
     }
 
-    /// Returns *energy usage* as [`EnergyUsageResult`].
-    pub async fn get_energy_usage(&self) -> Result<EnergyUsageResult, Error> {
-        self.client.read().await.get_energy_usage().await
-    }
-
     /// Returns *energy data* as [`EnergyDataResult`].
+    ///
+    /// The dates in `interval` are read in the device's timezone, so the
+    /// entries line up with the Tapo app wherever this code runs.
+    ///
+    /// Pass the [`TimezoneResult::timezone`] field from
+    /// [`PlugEnergyMonitoringHandler::get_timezone`] to read it once for
+    /// several calls. With `None`, each call reads it, which takes one extra
+    /// request.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the device reports a timezone name that is not in
+    /// the IANA database.
     pub async fn get_energy_data(
         &self,
         interval: EnergyDataInterval,
+        timezone: Option<Tz>,
     ) -> Result<EnergyDataResult, Error> {
-        self.client.read().await.get_energy_data(interval).await
+        self.client
+            .read()
+            .await
+            .get_energy_data(interval, timezone)
+            .await
+    }
+
+    /// Returns *energy usage* as [`EnergyUsageResult`].
+    pub async fn get_energy_usage(&self) -> Result<EnergyUsageResult, Error> {
+        self.client.read().await.get_energy_usage().await
     }
 
     /// Returns *power data* as [`PowerDataResult`].
@@ -42,6 +63,16 @@ impl PlugEnergyMonitoringHandler {
         interval: PowerDataInterval,
     ) -> Result<PowerDataResult, Error> {
         self.client.read().await.get_power_data(interval).await
+    }
+
+    /// Returns the device's *timezone* as [`TimezoneResult`].
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the device reports a timezone name that is not in
+    /// the IANA database.
+    pub async fn get_timezone(&self) -> Result<TimezoneResult, Error> {
+        self.client.read().await.get_timezone().await
     }
 
     /// Arms the plug's countdown timer (the "Timer" feature in the

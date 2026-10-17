@@ -3387,6 +3387,7 @@ version = "0.8.10"
 dependencies = [
  "anyhow",
  "chrono",
+ "chrono-tz",
  "log",
  "pyo3",
  "pyo3-async-runtimes",

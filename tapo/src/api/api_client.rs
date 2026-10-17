@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
+use chrono_tz::Tz;
 use log::{debug, warn};
 use reqwest::Client;
 use serde::de::DeserializeOwned;
@@ -21,7 +22,7 @@ use crate::responses::{
     DecodableResultExt, EnergyDataResult, EnergyDataResultRaw, EnergyUsageResult, PowerDataResult,
     PowerDataResultRaw, PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw,
     ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
-    TapoResult, Timer, TimerListResultRaw, validate_response,
+    TapoResult, Timer, TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
 };
 use crate::utils::unix_timestamp_seconds;
 
@@ -1447,6 +1448,16 @@ impl ApiClient {
         }
     }
 
+    pub(crate) async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
+        debug!("Get Current power...");
+        let request = TapoRequest::GetCurrentPower(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
     pub(crate) async fn get_device_usage<R>(&self) -> Result<R, Error>
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
@@ -1458,6 +1469,63 @@ impl ApiClient {
             .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn get_energy_data(
+        &self,
+        interval: EnergyDataInterval,
+        timezone: Option<Tz>,
+    ) -> Result<EnergyDataResult, Error> {
+        let timezone = match timezone {
+            Some(timezone) => timezone,
+            None => self.get_timezone().await?.timezone,
+        };
+
+        debug!("Get Energy data...");
+        let params = GetEnergyDataParams::new(interval, &timezone)?;
+        let request = TapoRequest::GetEnergyData(TapoParams::new(params));
+
+        self.protocol()?
+            .execute_request::<EnergyDataResultRaw>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
+            .in_timezone(&timezone)
+    }
+
+    pub(crate) async fn get_energy_usage(&self) -> Result<EnergyUsageResult, Error> {
+        debug!("Get Energy usage...");
+        let request = TapoRequest::GetEnergyUsage(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn get_power_data(
+        &self,
+        interval: PowerDataInterval,
+    ) -> Result<PowerDataResult, Error> {
+        debug!("Get Power data...");
+        let params = GetPowerDataParams::new(interval);
+        let request = TapoRequest::GetPowerData(TapoParams::new(params));
+
+        self.protocol()?
+            .execute_request::<PowerDataResultRaw>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+            .map(|result| result.try_into())?
+    }
+
+    pub(crate) async fn get_timezone(&self) -> Result<TimezoneResult, Error> {
+        debug!("Get Timezone...");
+        let request = TapoRequest::GetDeviceTime(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request::<TimezoneResultRaw>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+            .map(Into::into)
     }
 
     pub(crate) async fn set_lighting_effect(
@@ -1495,56 +1563,6 @@ impl ApiClient {
             .await?;
 
         Ok(())
-    }
-
-    pub(crate) async fn get_energy_usage(&self) -> Result<EnergyUsageResult, Error> {
-        debug!("Get Energy usage...");
-        let request = TapoRequest::GetEnergyUsage(TapoParams::new(EmptyParams));
-
-        self.protocol()?
-            .execute_request(request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
-    }
-
-    pub(crate) async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
-        debug!("Get Current power...");
-        let request = TapoRequest::GetCurrentPower(TapoParams::new(EmptyParams));
-
-        self.protocol()?
-            .execute_request(request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
-    }
-
-    pub(crate) async fn get_energy_data(
-        &self,
-        interval: EnergyDataInterval,
-    ) -> Result<EnergyDataResult, Error> {
-        debug!("Get Energy data...");
-        let params = GetEnergyDataParams::new(interval)?;
-        let request = TapoRequest::GetEnergyData(TapoParams::new(params));
-
-        self.protocol()?
-            .execute_request::<EnergyDataResultRaw>(request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
-            .map(|result| result.try_into())?
-    }
-
-    pub(crate) async fn get_power_data(
-        &self,
-        interval: PowerDataInterval,
-    ) -> Result<PowerDataResult, Error> {
-        debug!("Get Power data...");
-        let params = GetPowerDataParams::new(interval);
-        let request = TapoRequest::GetPowerData(TapoParams::new(params));
-
-        self.protocol()?
-            .execute_request::<PowerDataResultRaw>(request)
-            .await?
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
-            .map(|result| result.try_into())?
     }
 
     pub(crate) async fn get_child_device_list<R>(&self, start_index: u64) -> Result<R, Error>

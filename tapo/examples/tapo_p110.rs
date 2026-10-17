@@ -40,15 +40,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let energy_usage = device.get_energy_usage().await?;
     info!("Energy usage: {energy_usage:?}");
 
-    let current_date = Utc::now().naive_utc().date();
+    // The dates are read in the device's timezone. Read it once instead of on every call.
+    let device_timezone = device.get_timezone().await?.timezone;
+    let device_today = Utc::now().with_timezone(&device_timezone).date_naive();
 
     // Energy data - Hourly interval
     // `start_date` and `end_date` are an inclusive interval that must not be greater than 8 days.
     let energy_data_hourly = device
-        .get_energy_data(EnergyDataInterval::Hourly {
-            start_date: current_date,
-            end_date: current_date,
-        })
+        .get_energy_data(
+            EnergyDataInterval::Hourly {
+                start_date: device_today,
+                end_date: device_today,
+            },
+            Some(device_timezone),
+        )
         .await?;
     info!(
         "Energy data (hourly): Start date time '{}', Entries {}, First entry: {:?}",
@@ -60,14 +65,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Energy data - Daily interval
     // `start_date` must be the first day of a quarter.
     let energy_data_daily = device
-        .get_energy_data(EnergyDataInterval::Daily {
-            start_date: NaiveDate::from_ymd_opt(
-                current_date.year(),
-                get_quarter_start_month(&current_date),
-                1,
-            )
-            .unwrap(),
-        })
+        .get_energy_data(
+            EnergyDataInterval::Daily {
+                start_date: NaiveDate::from_ymd_opt(
+                    device_today.year(),
+                    get_quarter_start_month(&device_today),
+                    1,
+                )
+                .unwrap(),
+            },
+            Some(device_timezone),
+        )
         .await?;
     info!(
         "Energy data (daily): Start date time '{}', Entries {}, First entry: {:?}",
@@ -79,9 +87,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Energy data - Monthly interval
     // `start_date` must be the first day of a year.
     let energy_data_monthly = device
-        .get_energy_data(EnergyDataInterval::Monthly {
-            start_date: NaiveDate::from_ymd_opt(current_date.year(), 1, 1).unwrap(),
-        })
+        .get_energy_data(
+            EnergyDataInterval::Monthly {
+                start_date: NaiveDate::from_ymd_opt(device_today.year(), 1, 1).unwrap(),
+            },
+            Some(device_timezone),
+        )
         .await?;
     info!(
         "Energy data (monthly): Start date time '{}', Entries {}, First entry: {:?}",
@@ -129,6 +140,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn get_quarter_start_month(current_date: &NaiveDate) -> u32 {
-    ((current_date.month() - 1) / 3) * 3 + 1
+fn get_quarter_start_month(today: &NaiveDate) -> u32 {
+    ((today.month() - 1) / 3) * 3 + 1
 }

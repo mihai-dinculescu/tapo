@@ -23,6 +23,7 @@ mod supported_alarm_type_list_result;
 mod tapo_response;
 mod tapo_result;
 mod timer_result;
+mod timezone_result;
 mod trigger_logs_result;
 
 pub use crate::requests::{LightingEffect, LightingEffectType};
@@ -45,6 +46,7 @@ pub use preset::*;
 pub use schedule_rule_result::*;
 pub use smart_cam::*;
 pub use timer_result::*;
+pub use timezone_result::*;
 pub use trigger_logs_result::*;
 
 pub(crate) use control_child_result::*;

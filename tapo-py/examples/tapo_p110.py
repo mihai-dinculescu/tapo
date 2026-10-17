@@ -39,10 +39,15 @@ async def main():
     print(f"Energy usage: {energy_usage.to_dict()}")
 
     today = datetime.now(timezone.utc)
+    # The dates are read in the device's timezone. Read it once instead of on every call.
+    device_timezone = (await device.get_timezone()).timezone
+    device_today = datetime.now(device_timezone)
 
     # Energy data - Hourly interval
     # `start_date` and `end_date` are an inclusive interval that must not be greater than 8 days.
-    energy_data_hourly = await device.get_energy_data(EnergyDataInterval.Hourly, today)
+    energy_data_hourly = await device.get_energy_data(
+        EnergyDataInterval.Hourly, device_today, timezone=device_timezone
+    )
     print(
         "Energy data (hourly): "
         f"Start date time '{energy_data_hourly.start_date_time}', "
@@ -54,7 +59,8 @@ async def main():
     # `start_date` must be the first day of a quarter.
     energy_data_daily = await device.get_energy_data(
         EnergyDataInterval.Daily,
-        datetime(today.year, get_quarter_start_month(today), 1),
+        datetime(device_today.year, get_quarter_start_month(device_today), 1),
+        timezone=device_timezone,
     )
     print(
         "Energy data (daily): "
@@ -67,7 +73,8 @@ async def main():
     # `start_date` must be the first day of a year.
     energy_data_monthly = await device.get_energy_data(
         EnergyDataInterval.Monthly,
-        datetime(today.year, 1, 1),
+        datetime(device_today.year, 1, 1),
+        timezone=device_timezone,
     )
     print(
         "Energy data (monthly): "

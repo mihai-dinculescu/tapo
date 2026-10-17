@@ -1,4 +1,4 @@
-use chrono::{Local, TimeZone};
+use chrono::TimeZone;
 use serde::Serialize;
 
 use crate::error::Error;
@@ -13,14 +13,8 @@ pub(crate) struct GetEnergyDataParams {
 }
 
 impl GetEnergyDataParams {
-    pub fn new(interval: EnergyDataInterval) -> Result<Self, Error> {
-        Self::in_timezone(interval, &Local)
-    }
-
-    fn in_timezone<Tz: TimeZone>(
-        interval: EnergyDataInterval,
-        timezone: &Tz,
-    ) -> Result<Self, Error> {
+    /// Reads the interval's dates in `timezone`, the device's.
+    pub fn new<Tz: TimeZone>(interval: EnergyDataInterval, timezone: &Tz) -> Result<Self, Error> {
         let params = match interval {
             EnergyDataInterval::Hourly {
                 start_date,
@@ -70,7 +64,7 @@ mod tests {
         for (date, hours) in [((2026, 9, 6), 23), ((2026, 4, 4), 25)] {
             let date = NaiveDate::from_ymd_opt(date.0, date.1, date.2).unwrap();
 
-            let params = GetEnergyDataParams::in_timezone(
+            let params = GetEnergyDataParams::new(
                 EnergyDataInterval::Hourly {
                     start_date: date,
                     end_date: date,
@@ -90,11 +84,9 @@ mod tests {
     fn test_daily_with_skipped_midnight_starts_when_clocks_resume() {
         let date = NaiveDate::from_ymd_opt(2026, 9, 6).unwrap();
 
-        let params = GetEnergyDataParams::in_timezone(
-            EnergyDataInterval::Daily { start_date: date },
-            &Santiago,
-        )
-        .unwrap();
+        let params =
+            GetEnergyDataParams::new(EnergyDataInterval::Daily { start_date: date }, &Santiago)
+                .unwrap();
 
         let expected = date
             .and_time(NaiveTime::MIN)

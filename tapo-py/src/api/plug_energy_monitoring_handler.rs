@@ -2,12 +2,14 @@ use std::ops::Deref;
 use std::time::Duration;
 
 use chrono::NaiveDate;
+use chrono_tz::Tz;
 use pyo3::prelude::*;
 use tapo::PlugEnergyMonitoringHandler;
 use tapo::requests::{EnergyDataInterval, PowerDataInterval, ScheduleRule};
 use tapo::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
     EnergyDataResult, EnergyUsageResult, PowerDataResult, PowerState, ScheduleRuleResult, Timer,
+    TimezoneResult,
 };
 
 use crate::call_handler_method;
@@ -32,20 +34,13 @@ impl PyPlugEnergyMonitoringHandler {
         )
     }
 
-    pub async fn get_energy_usage(&self) -> PyResult<EnergyUsageResult> {
-        let handler = self.inner.clone();
-        call_handler_method!(
-            handler.read().await.deref(),
-            PlugEnergyMonitoringHandler::get_energy_usage,
-        )
-    }
-
-    #[pyo3(signature = (interval, start_date, end_date=None))]
+    #[pyo3(signature = (interval, start_date, end_date=None, timezone=None))]
     pub async fn get_energy_data(
         &self,
         interval: PyEnergyDataInterval,
         start_date: NaiveDate,
         end_date: Option<NaiveDate>,
+        timezone: Option<Tz>,
     ) -> PyResult<EnergyDataResult> {
         let interval = match interval {
             PyEnergyDataInterval::Hourly => EnergyDataInterval::Hourly {
@@ -60,9 +55,18 @@ impl PyPlugEnergyMonitoringHandler {
         let result = call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::get_energy_data,
-            interval
+            interval,
+            timezone
         )?;
         Ok(result)
+    }
+
+    pub async fn get_energy_usage(&self) -> PyResult<EnergyUsageResult> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_energy_usage,
+        )
     }
 
     pub async fn get_power_data(
@@ -89,6 +93,14 @@ impl PyPlugEnergyMonitoringHandler {
             interval
         )?;
         Ok(result)
+    }
+
+    pub async fn get_timezone(&self) -> PyResult<TimezoneResult> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_timezone,
+        )
     }
 
     pub async fn set_timer(

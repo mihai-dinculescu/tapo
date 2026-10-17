@@ -13,3 +13,4 @@ from .preset import *
 from .schedule_rule_result import *
 from .smart_cam import *
 from .timer import *
+from .timezone_result import *
