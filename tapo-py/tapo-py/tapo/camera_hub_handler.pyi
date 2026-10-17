@@ -19,7 +19,7 @@ from tapo.responses import (
     T110Result,
     T300Result,
     T31XResult,
-    TimezoneHubResult,
+    TimezoneResult,
 )
 
 class CameraHubHandler(DeviceHandlerExt, HubChildrenExt, DebugExt):
@@ -77,11 +77,11 @@ class CameraHubHandler(DeviceHandlerExt, HubChildrenExt, DebugExt):
             dict: General device list as a dictionary.
         """
 
-    async def get_timezone(self) -> TimezoneHubResult:
-        """Returns the hub's *timezone* as `TimezoneHubResult`.
+    async def get_timezone(self) -> TimezoneResult:
+        """Returns the hub's *timezone* as `TimezoneResult`.
 
         Returns:
-            TimezoneHubResult: The timezone configured on the hub.
+            TimezoneResult: The timezone configured on the hub.
 
         Raises:
             Exception: If the hub reports a timezone name that is not in the IANA database.

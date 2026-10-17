@@ -13,7 +13,7 @@ use crate::requests::{
 use crate::responses::{
     DeviceInfoCameraHubResult, GeneralDeviceHubResult, GeneralDeviceListHubResultRaw,
     RecordingDateHubResult, RecordingDateListHubResultRaw, RecordingDownloadResult,
-    RecordingHubResult, RecordingListHubResultRaw, TimezoneHubResult, TimezoneHubResultRaw,
+    RecordingHubResult, RecordingListHubResultRaw, TimezoneHubResultRaw, TimezoneResult,
 };
 use crate::utils::unix_timestamp_seconds;
 
@@ -108,13 +108,13 @@ impl CameraHubHandler {
             .await
     }
 
-    /// Returns the hub's *timezone* as [`TimezoneHubResult`].
+    /// Returns the hub's *timezone* as [`TimezoneResult`].
     ///
     /// # Errors
     ///
     /// Returns an error if the hub reports a timezone name that is not in the
     /// IANA database.
-    pub async fn get_timezone(&self) -> Result<TimezoneHubResult, Error> {
+    pub async fn get_timezone(&self) -> Result<TimezoneResult, Error> {
         let request =
             TapoRequest::SmartCamGetTimezone(TapoParams::new(SmartCamGetTimezoneParams::new()));
 
@@ -123,7 +123,7 @@ impl CameraHubHandler {
             .await
             .execute_smart_cam_multiple_request::<TimezoneHubResultRaw>(request)
             .await
-            .map(|result| result.timezone())
+            .map(Into::into)
     }
 
     /// Returns the days that have recordings stored on the hub for the given
@@ -162,7 +162,7 @@ impl CameraHubHandler {
             });
         }
 
-        let timezone = self.get_timezone().await?.zone_id;
+        let timezone = self.get_timezone().await?.timezone;
 
         let request = TapoRequest::SmartCamSearchDateWithVideo(TapoParams::new(
             SmartCamSearchDateWithVideoParams::new(

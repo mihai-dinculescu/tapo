@@ -27,6 +27,7 @@ file. This change log follows the conventions of
 - `DiscoveryResult::Other`: replaced the `ip` field with `address`, the IP address and the port that the device was reached at during discovery, as `(ip, port)`.
 - `DeviceType`, `DiscoveryResult`, `ChildDeviceHubResult`, `ChildDeviceHubIrResult`, `RecordingType`: marked as `#[non_exhaustive]`, so that future releases can add device and recording types without breaking your code. A `match` on them now needs a wildcard arm (`_ => ...`).
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now takes a `timezone`, the device's, to read the dates in. Pass the `timezone` from `get_timezone` to read it once for several calls, or `None` to have each call read it, which takes one extra request.
+- `CameraHubHandler`: `get_timezone` now returns `TimezoneResult`, like the energy-monitoring plugs, and `TimezoneHubResult` was removed. Its `zone_id` is now `timezone`, and its `timezone` label, such as `UTC+01:00`, is now `standard_offset` in minutes.
 
 ### Removed
 
@@ -69,6 +70,7 @@ file. This change log follows the conventions of
 - `ApiClient.discover_devices`: a device that announces its web server on a port other than 80 is now reached on that port.
 - `DiscoveryResult.Other`: replaced the `ip` field with `address`, the IP address and the port that the device was reached at during discovery, as a tuple, so the match arm is now `DiscoveryResult.Other(device_info, address)`.
 - `RefreshSessionExt`: renamed to `DeviceHandlerExt`, which also has `address`.
+- `CameraHubHandler`: `get_timezone` now returns `TimezoneResult`, like the energy-monitoring plugs, and `TimezoneHubResult` was removed. Its `zone_id` is now `timezone`, and its `timezone` label, such as `UTC+01:00`, is now `standard_offset` in minutes.
 
 ### Removed
 

@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use tapo::responses::{
-    DeviceInfoCameraHubResult, RecordingDateHubResult, RecordingDownloadResult, TimezoneHubResult,
+    DeviceInfoCameraHubResult, RecordingDateHubResult, RecordingDownloadResult, TimezoneResult,
 };
 use tapo::{CameraHubHandler, Error};
 
@@ -39,7 +39,7 @@ impl PyCameraHubHandler {
         Python::attach(|py| tapo::python::serde_object_to_py_dict(py, &result))
     }
 
-    pub async fn get_timezone(&self) -> PyResult<TimezoneHubResult> {
+    pub async fn get_timezone(&self) -> PyResult<TimezoneResult> {
         let handler = self.inner.clone();
         call_handler_method!(handler.read().await.deref(), CameraHubHandler::get_timezone)
     }

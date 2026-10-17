@@ -27,9 +27,10 @@ impl From<TimezoneResultRaw> for TimezoneResult {
 pub struct TimezoneResult {
     /// The device's timezone, from the IANA name it reports, e.g. `Europe/London`.
     pub timezone: Tz,
-    /// The device's standard UTC offset in minutes.
-    /// It does not follow daylight saving, so it can be an hour off the
-    /// offset in effect; convert times with `timezone` instead.
+    /// The UTC offset in minutes that the device reports.
+    /// It is usually the standard offset, without daylight saving, but apps
+    /// that set the device's time can leave the offset in effect at that
+    /// moment, or a stale one. Convert times with `timezone` instead.
     pub standard_offset: i32,
 }
 

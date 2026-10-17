@@ -29,8 +29,8 @@ use tapo::responses::{
     RecordingDownloadResult, RgbLightStripState, RgbicLightStripState, RtspStreamUrl, S200Result,
     S200RotationParams, S210Result, ScheduleRuleResult, Snapshot, Status, T31XResult, T100Event,
     T100Result, T110Event, T110Result, T300Event, T300Result, TemperatureHumidityRecord,
-    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, Timer, TimezoneHubResult,
-    TimezoneResult, UsageByPeriodResult, WaterLeakStatus,
+    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, Timer, TimezoneResult,
+    UsageByPeriodResult, WaterLeakStatus,
 };
 use tapo::{DeviceType, DiscoveryRawResult};
 
@@ -261,7 +261,6 @@ fn register_responses_camera_hub(module: &Bound<'_, PyModule>) -> Result<(), PyE
     module.add_class::<AiCameraSupport>()?;
     module.add_class::<PyBackupWifi>()?;
     module.add_class::<PyGeneralDeviceHubResult>()?;
-    module.add_class::<TimezoneHubResult>()?;
     module.add_class::<RecordingDateHubResult>()?;
     module.add_class::<PyRecordingHubResult>()?;
     module.add_class::<PyRecordingType>()?;
