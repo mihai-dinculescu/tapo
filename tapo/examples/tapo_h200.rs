@@ -128,6 +128,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    // The recording dates are read in the hub's timezone. Read it once instead of for every camera.
+    let hub_timezone = hub.get_timezone().await?.timezone;
+
     let general_device_list = hub.get_general_device_list().await?;
 
     // The first recording found for each camera, to download at the end.
@@ -150,7 +153,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let start_time = end_time - chrono::Duration::days(7);
 
         let recording_dates = hub
-            .get_recording_dates(general_device.device_id.clone(), start_time, end_time)
+            .get_recording_dates(
+                general_device.device_id.clone(),
+                start_time,
+                end_time,
+                Some(hub_timezone),
+            )
             .await?;
         info!(
             "{} has recordings stored on the hub on the following dates: {recording_dates:?}.",

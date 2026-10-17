@@ -28,6 +28,7 @@ file. This change log follows the conventions of
 - `DeviceType`, `DiscoveryResult`, `ChildDeviceHubResult`, `ChildDeviceHubIrResult`, `RecordingType`: marked as `#[non_exhaustive]`, so that future releases can add device and recording types without breaking your code. A `match` on them now needs a wildcard arm (`_ => ...`).
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now takes a `timezone`, the device's, to read the dates in. Pass the `timezone` from `get_timezone` to read it once for several calls, or `None` to have each call read it, which takes one extra request.
 - `CameraHubHandler`: `get_timezone` now returns `TimezoneResult`, like the energy-monitoring plugs, and `TimezoneHubResult` was removed. Its `zone_id` is now `timezone`, and its `timezone` label, such as `UTC+01:00`, is now `standard_offset` in minutes.
+- `CameraHubHandler`: `get_recording_dates` now takes a `timezone`, the hub's, to search the days in. Pass the `timezone` from `get_timezone` to read it once for several calls, or `None` to have each call read it, which takes one extra request.
 
 ### Removed
 
@@ -62,6 +63,7 @@ file. This change log follows the conventions of
 - `ColorLightHandler`, `CameraHubHandler`, `CameraPtzHandler`, `HubHandler`, `HubIrHandler`, `LightHandler`, `PlugEnergyMonitoringHandler`, `PlugHandler`, `PowerStripEnergyMonitoringHandler`, `PowerStripHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: added `address`, the IP address and the port that the handler reaches the device at, as a tuple. Pass them to an `ApiClient` method as `f"{ip}:{port}"` to reach the device again.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: added `get_timezone`, which returns the device's timezone as `TimezoneResult`. The P304M and P316M child plugs return their power strip's.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` takes an optional `timezone`, the device's, to read the dates in. Pass the `timezone` from `get_timezone` to read it once for several calls. Without it, each call reads it, which takes one extra request.
+- `CameraHubHandler`: `get_recording_dates` takes an optional `timezone`, the hub's, to search the days in. Pass the `timezone` from `get_timezone` to read it once for several calls. Without it, each call reads it, which takes one extra request.
 
 ### Changed
 

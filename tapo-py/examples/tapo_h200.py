@@ -132,6 +132,9 @@ async def main():
                 )
             )
 
+    # The recording dates are read in the hub's timezone. Read it once instead of for every camera.
+    hub_timezone = (await hub.get_timezone()).timezone
+
     general_device_list = await hub.get_general_device_list()
 
     # The first recording found for each camera, to download at the end.
@@ -154,7 +157,7 @@ async def main():
         start_time = end_time - timedelta(days=7)
 
         recording_dates = await hub.get_recording_dates(
-            general_device.device_id, start_time, end_time
+            general_device.device_id, start_time, end_time, timezone=hub_timezone
         )
         print(
             "{} has recordings stored on the hub on the following dates: {}.".format(

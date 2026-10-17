@@ -1,6 +1,7 @@
 use std::ops::Deref;
 use std::path::PathBuf;
 
+use chrono_tz::Tz;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use tapo::responses::{
@@ -44,11 +45,13 @@ impl PyCameraHubHandler {
         call_handler_method!(handler.read().await.deref(), CameraHubHandler::get_timezone)
     }
 
+    #[pyo3(signature = (child_device_id, start_time, end_time, timezone=None))]
     pub async fn get_recording_dates(
         &self,
         child_device_id: String,
         start_time: UtcDateTime,
         end_time: UtcDateTime,
+        timezone: Option<Tz>,
     ) -> PyResult<Vec<RecordingDateHubResult>> {
         let handler = self.inner.clone();
         call_handler_method!(
@@ -56,7 +59,8 @@ impl PyCameraHubHandler {
             CameraHubHandler::get_recording_dates,
             child_device_id,
             start_time.0,
-            end_time.0
+            end_time.0,
+            timezone
         )
     }
 

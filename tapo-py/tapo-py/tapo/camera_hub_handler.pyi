@@ -1,6 +1,7 @@
 from datetime import datetime
 from os import PathLike
-from typing import List, Union
+from typing import List, Optional, Union
+from zoneinfo import ZoneInfo
 
 from tapo.debug_ext import DebugExt
 from tapo.device_handler_ext import DeviceHandlerExt
@@ -92,25 +93,28 @@ class CameraHubHandler(DeviceHandlerExt, HubChildrenExt, DebugExt):
         child_device_id: str,
         start_time: datetime,
         end_time: datetime,
+        timezone: Optional[ZoneInfo] = None,
     ) -> List[RecordingDateHubResult]:
         """Returns the days that have recordings stored on the hub for the given
         camera, as `List[RecordingDateHubResult]`.
         Each day comes with the range of time it covers on the hub, ready to
         pass to `CameraHubHandler.get_recordings`.
 
-        The hub searches its own calendar, so the search runs over the days
-        that the given range touches in the hub's timezone, whole. A range that
-        starts at 00:30 covers all of that day, and a returned day can reach
-        past the range at either end.
+        The days are searched in the hub's timezone, so they line up with the
+        Tapo app wherever this code runs. Each day that the range touches is
+        searched whole: a range that starts at 00:30 covers all of that day,
+        and a returned day can reach past the range at either end.
 
-        Reading the hub's timezone takes one extra request
-        (see `CameraHubHandler.get_timezone`).
+        Pass the `TimezoneResult.timezone` attribute from
+        `CameraHubHandler.get_timezone` to read it once for several calls.
+        Without it, each call reads it, which takes one extra request.
 
         Args:
             child_device_id (str): The `device_id` of a camera returned by
                 `CameraHubHandler.get_general_device_list`.
             start_time (datetime): The start of the search range. Must be timezone-aware.
             end_time (datetime): The end of the search range. Must be timezone-aware.
+            timezone (Optional[ZoneInfo]): The hub's timezone. Without it, it is read from the hub.
 
         Returns:
             List[RecordingDateHubResult]: The days with recordings, in the order the hub reports them.

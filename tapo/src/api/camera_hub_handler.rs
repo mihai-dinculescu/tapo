@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
+use chrono_tz::Tz;
 use tokio::io::AsyncWrite;
 use tokio::sync::RwLock;
 
@@ -131,19 +132,21 @@ impl CameraHubHandler {
     /// Each day comes with the range of time it covers on the hub, ready to
     /// pass to [`CameraHubHandler::get_recordings`].
     ///
-    /// The hub searches its own calendar, so the search runs over the days
-    /// that the given range touches in the hub's timezone, whole. A range that
-    /// starts at 00:30 covers all of that day, and a returned day can reach
-    /// past the range at either end.
+    /// The days are searched in the hub's timezone, so they line up with the
+    /// Tapo app wherever this code runs. Each day that the range touches is
+    /// searched whole: a range that starts at 00:30 covers all of that day,
+    /// and a returned day can reach past the range at either end.
     ///
-    /// Reading the hub's timezone takes one extra request
-    /// (see [`CameraHubHandler::get_timezone`]).
+    /// Pass the [`TimezoneResult::timezone`] field from
+    /// [`CameraHubHandler::get_timezone`] to read it once for several calls.
+    /// With `None`, each call reads it, which takes one extra request.
     ///
     /// # Arguments
     ///
     /// * `child_device_id` - the `device_id` of a camera returned by [`CameraHubHandler::get_general_device_list`].
     /// * `start_time` - the start of the search range.
     /// * `end_time` - the end of the search range.
+    /// * `timezone` - the hub's timezone, or `None` to read it from the hub.
     ///
     /// # Errors
     ///
@@ -154,6 +157,7 @@ impl CameraHubHandler {
         child_device_id: impl Into<String>,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
+        timezone: Option<Tz>,
     ) -> Result<Vec<RecordingDateHubResult>, Error> {
         if end_time < start_time {
             return Err(Error::Validation {
@@ -162,7 +166,10 @@ impl CameraHubHandler {
             });
         }
 
-        let timezone = self.get_timezone().await?.timezone;
+        let timezone = match timezone {
+            Some(timezone) => timezone,
+            None => self.get_timezone().await?.timezone,
+        };
 
         let request = TapoRequest::SmartCamSearchDateWithVideo(TapoParams::new(
             SmartCamSearchDateWithVideoParams::new(
