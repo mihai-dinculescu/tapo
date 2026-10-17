@@ -1,4 +1,6 @@
-use chrono::{DateTime, Utc};
+use std::ops::RangeInclusive;
+
+use chrono::{DateTime, NaiveDate, Utc};
 use rmcp::schemars;
 use rmcp::schemars::JsonSchema;
 use serde::de;
@@ -39,6 +41,10 @@ pub enum SetCapability {
 pub enum GetCapability {
     /// Read the device's current state.
     DeviceInfo,
+    /// Read the energy used per hour, day or month, in watt-hours (P110, P110M, P115, P304M, P316M).
+    EnergyData,
+    /// Read the power draw every 5 minutes or every hour, in watts (P110, P110M, P115, P304M, P316M).
+    PowerData,
     /// Capture a still JPEG snapshot via the `take_snapshot` tool.
     Snapshot,
     /// Read the last 24 hours of temperature and humidity records (T310, T315) at 15 minute intervals.
@@ -161,6 +167,20 @@ impl SetCapabilityRequest {
 pub enum GetCapabilityRequest {
     /// Read the device's current state (on/off, brightness, etc.).
     DeviceInfo,
+    /// Read the energy used per hour, day or month, in watt-hours, from an
+    /// energy-monitoring plug (P110, P110M, P115) or power strip outlet
+    /// (P304M, P316M).
+    EnergyData {
+        /// The period to read and how finely to split it.
+        interval: EnergyDataIntervalRequest,
+    },
+    /// Read the power draw every 5 minutes or every hour, in watts, from an
+    /// energy-monitoring plug (P110, P110M, P115) or power strip outlet
+    /// (P304M, P316M).
+    PowerData {
+        /// The period to read and how finely to split it.
+        interval: PowerDataIntervalRequest,
+    },
     /// Not callable via `get_device_state`. Returns an error pointing to the
     /// dedicated `take_snapshot` tool. Listed here so the schema can give a
     /// helpful error rather than `unknown variant 'Snapshot'`.
@@ -186,6 +206,72 @@ impl GetCapabilityRequest {
     pub fn name(&self) -> &'static str {
         self.into()
     }
+}
+
+/// The years energy and power data can be read for. Tapo plugs postdate 2000,
+/// and the bounds keep every date's timestamp positive and finite.
+pub const DATA_YEARS: RangeInclusive<i32> = 2000..=9999;
+/// The number of days `EnergyDataIntervalRequest::Hourly` can read.
+pub const ENERGY_HOURLY_DAYS: RangeInclusive<u8> = 1..=8;
+/// The quarters of a year.
+pub const QUARTERS: RangeInclusive<u8> = 1..=4;
+/// The number of hours `PowerDataIntervalRequest::Every5Minutes` can read.
+pub const POWER_5_MINUTE_HOURS: RangeInclusive<u8> = 1..=12;
+/// The number of days `PowerDataIntervalRequest::Hourly` can read.
+pub const POWER_HOURLY_DAYS: RangeInclusive<u8> = 1..=6;
+
+/// The period to read energy data for. Dates are in the plug's time zone.
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[serde(tag = "type")]
+pub enum EnergyDataIntervalRequest {
+    /// One entry per hour, for whole days.
+    Hourly {
+        /// The first day to read, in the years 2000 to 9999.
+        start_date: NaiveDate,
+        /// The number of days to read, including `start_date`.
+        #[schemars(range(min = *ENERGY_HOURLY_DAYS.start(), max = *ENERGY_HOURLY_DAYS.end()))]
+        days: u8,
+    },
+    /// One entry per day, for a quarter of a year.
+    Daily {
+        /// The year the quarter is in.
+        #[schemars(range(min = *DATA_YEARS.start(), max = *DATA_YEARS.end()))]
+        year: i32,
+        /// The quarter: 1 for January to March, 2 for April to June,
+        /// 3 for July to September, 4 for October to December.
+        #[schemars(range(min = *QUARTERS.start(), max = *QUARTERS.end()))]
+        quarter: u8,
+    },
+    /// One entry per month, for a year.
+    Monthly {
+        /// The year to read.
+        #[schemars(range(min = *DATA_YEARS.start(), max = *DATA_YEARS.end()))]
+        year: i32,
+    },
+}
+
+/// The period to read power data for.
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[serde(tag = "type")]
+pub enum PowerDataIntervalRequest {
+    /// One entry every 5 minutes.
+    Every5Minutes {
+        /// When to start reading, in UTC, in the years 2000 to 9999. Rounded up
+        /// to the next 5 minute mark.
+        start_date_time: DateTime<Utc>,
+        /// The number of hours to read.
+        #[schemars(range(min = *POWER_5_MINUTE_HOURS.start(), max = *POWER_5_MINUTE_HOURS.end()))]
+        hours: u8,
+    },
+    /// One entry every hour.
+    Hourly {
+        /// When to start reading, in UTC, in the years 2000 to 9999. Rounded up
+        /// to the next hour.
+        start_date_time: DateTime<Utc>,
+        /// The number of days to read.
+        #[schemars(range(min = *POWER_HOURLY_DAYS.start(), max = *POWER_HOURLY_DAYS.end()))]
+        days: u8,
+    },
 }
 
 /// Parameters for `control_device`.
@@ -274,6 +360,15 @@ mod tests {
 
         let get_requests = [
             GetCapabilityRequest::DeviceInfo,
+            GetCapabilityRequest::EnergyData {
+                interval: EnergyDataIntervalRequest::Monthly { year: 2026 },
+            },
+            GetCapabilityRequest::PowerData {
+                interval: PowerDataIntervalRequest::Every5Minutes {
+                    start_date_time: DateTime::UNIX_EPOCH,
+                    hours: 1,
+                },
+            },
             GetCapabilityRequest::Snapshot,
             GetCapabilityRequest::TemperatureHumidityRecords,
             GetCapabilityRequest::TriggerLogs {
@@ -282,9 +377,23 @@ mod tests {
             },
         ];
         for request in get_requests {
-            let parsed: GetCapabilityRequest = serde_json::from_value(
-                json!({ "type": request.name(), "page_size": 10, "start_id": 0 }),
-            )
+            let interval = match &request {
+                GetCapabilityRequest::EnergyData { .. } => {
+                    json!({ "type": "Monthly", "year": 2026 })
+                }
+                GetCapabilityRequest::PowerData { .. } => json!({
+                    "type": "Every5Minutes",
+                    "start_date_time": "2026-10-17T00:00:00Z",
+                    "hours": 1,
+                }),
+                _ => json!(null),
+            };
+            let parsed: GetCapabilityRequest = serde_json::from_value(json!({
+                "type": request.name(),
+                "interval": interval,
+                "page_size": 10,
+                "start_id": 0,
+            }))
             .unwrap();
             assert_eq!(discriminant(&parsed), discriminant(&request));
         }

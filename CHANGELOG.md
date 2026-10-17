@@ -108,6 +108,7 @@ file. This change log follows the conventions of
 - `TAPO_MCP_DISCOVERY_INTERVAL`: added the number of seconds between background discoveries that refresh the device list. Defaults to 600 and must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most 86400 (one day).
 - OpenTelemetry: each tool call is now exported as a trace that shows how long the device check and the device request took, and marks failed calls. When the MCP client or a tracing reverse proxy sends trace context, the call joins that trace.
 - `control_device`: each `Color` preset name now comes with its color temperature, or its hue and saturation, so an agent can pick the preset closest to what the user asked for.
+- `get_device_state`: added the `EnergyData` and `PowerData` capabilities for the P110, P110M and P115 plugs and the P304M and P316M outlets. `EnergyData` returns the energy used per hour, day or month, and `PowerData` the power draw every 5 minutes or every hour. `list_devices` lists both for these devices. `EnergyData` reads days, quarters and years in the plug's time zone, so the entries match the Tapo app.
 - MCP Registry: the server entry now lists `TAPO_MCP_CAMERA_USERNAME`, `TAPO_MCP_CAMERA_PASSWORD` and `TAPO_MCP_ALLOWED_HOSTS`, so clients that install from the registry can set them.
 
 ### Changed

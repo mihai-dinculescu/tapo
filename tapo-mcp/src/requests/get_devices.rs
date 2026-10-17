@@ -114,11 +114,15 @@ async fn process_device(device: DiscoveryResult) -> DeviceOutcome {
     };
 
     let mut get_capabilities = vec![GetCapability::DeviceInfo];
-    if matches!(
-        device,
-        DiscoveryResult::Camera { .. } | DiscoveryResult::CameraPtz { .. }
-    ) {
-        get_capabilities.push(GetCapability::Snapshot);
+    match &device {
+        DiscoveryResult::PlugEnergyMonitoring { .. } => {
+            get_capabilities.push(GetCapability::EnergyData);
+            get_capabilities.push(GetCapability::PowerData);
+        }
+        DiscoveryResult::Camera { .. } | DiscoveryResult::CameraPtz { .. } => {
+            get_capabilities.push(GetCapability::Snapshot);
+        }
+        _ => {}
     }
 
     tracing::debug!(name, model, ip, "Found device");
@@ -162,7 +166,11 @@ async fn fetch_children(
                         name: c.nickname,
                         model: c.model,
                         set_capabilities: vec![SetCapability::OnOff],
-                        get_capabilities: vec![GetCapability::DeviceInfo],
+                        get_capabilities: vec![
+                            GetCapability::DeviceInfo,
+                            GetCapability::EnergyData,
+                            GetCapability::PowerData,
+                        ],
                     })
                     .collect()
             })

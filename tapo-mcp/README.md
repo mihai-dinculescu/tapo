@@ -25,6 +25,10 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 > "Show me the last 24 hours of temperature from the living room temperature and humidity sensor"
 >
 > "List the 5 most recent events on the smart button"
+>
+> "How much energy did the washing machine plug use each day this month?"
+>
+> "Show me the TV's power draw over the last 6 hours"
 
 ## Tools
 
@@ -59,6 +63,8 @@ Devices and child devices expose separate lists of set and get capabilities they
 | Capability                   | Description                                                                                          |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `DeviceInfo`                 | Read the device's current state                                                                      |
+| `EnergyData`                 | Read the energy used per hour, day or month, in Wh (P110, P110M, P115, P304M, P316M)                 |
+| `PowerData`                  | Read the power draw every 5 minutes or every hour, in W (P110, P110M, P115, P304M, P316M)            |
 | `Snapshot`                   | Capture a still JPEG snapshot. Served by the dedicated `take_snapshot` tool (binary, not JSON state) |
 | `TemperatureHumidityRecords` | Read the last 24 hours of temperature and humidity records (T310, T315) at 15 minute intervals       |
 | `TriggerLogs`                | Read paginated trigger logs from a hub child sensor (S200, T100, T110, T300)                         |
