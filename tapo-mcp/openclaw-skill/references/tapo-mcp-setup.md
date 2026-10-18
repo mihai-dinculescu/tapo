@@ -13,7 +13,7 @@ Tapo MCP is an HTTP server (Streamable HTTP transport) that exposes TP-Link Tapo
 | `list_devices`     | List available Tapo devices on the network (includes set and get capabilities).                                                            |
 | `check_device`     | Verify a device ID matches at a given IP.                                                                                                  |
 | `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Runs `check_device` first.                                                   |
-| `control_device`   | Control a device by applying one or more set capabilities. Runs `check_device` first.                                                      |
+| `control_device`   | Control a device by applying up to 12 set capabilities. Checks the count, then runs `check_device`.                                        |
 | `take_snapshot`    | Capture a still JPEG snapshot from a Tapo camera (~640x360), with the device id, capture time and size as text, plus a short-lived link when `TAPO_MCP_PUBLIC_URL` is set (see Snapshot links). Runs `check_device` first. |
 
 ### Resources

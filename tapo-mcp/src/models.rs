@@ -267,6 +267,8 @@ pub const QUARTERS: RangeInclusive<u8> = 1..=4;
 pub const POWER_5_MINUTE_HOURS: RangeInclusive<u8> = 1..=12;
 /// The number of days `GetCapabilityRequest::PowerDataHourly` can read.
 pub const POWER_HOURLY_DAYS: RangeInclusive<u8> = 1..=6;
+/// The number of set capabilities one `control_device` call can apply.
+pub const CONTROL_CAPABILITIES: RangeInclusive<usize> = 1..=12;
 
 /// Parameters for `control_device`.
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -277,7 +279,7 @@ pub struct ControlDeviceParams {
     pub ip: String,
     /// The set capabilities to apply.
     #[serde(deserialize_with = "deserialize_from_stringified_json")]
-    #[schemars(length(min = 1))]
+    #[schemars(length(min = *CONTROL_CAPABILITIES.start(), max = *CONTROL_CAPABILITIES.end()))]
     pub capabilities: Vec<SetCapabilityRequest>,
 }
 

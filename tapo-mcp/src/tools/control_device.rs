@@ -7,7 +7,7 @@ use tracing::field::Empty;
 use crate::config::AppConfig;
 use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
-use crate::models::{ControlDeviceParams, SetCapabilityRequest};
+use crate::models::{CONTROL_CAPABILITIES, ControlDeviceParams, SetCapabilityRequest};
 use crate::requests;
 use crate::requests::CheckedDevice;
 use crate::telemetry::run_in_span;
@@ -17,6 +17,19 @@ pub async fn control_device(
     locks: &DeviceLocks,
     params: ControlDeviceParams,
 ) -> Result<CallToolResult, McpError> {
+    let count = params.capabilities.len();
+    if !CONTROL_CAPABILITIES.contains(&count) {
+        return Err(TapoMcpError::InvalidParameter {
+            name: "capabilities".to_string(),
+            message: format!(
+                "must have between {} and {} entries, got {count}",
+                CONTROL_CAPABILITIES.start(),
+                CONTROL_CAPABILITIES.end()
+            ),
+        }
+        .into());
+    }
+
     let (checked, _device) = requests::check_device(config, locks, &params.id, &params.ip).await?;
 
     for capability in params.capabilities {
