@@ -16,8 +16,14 @@ pub(crate) fn rtsp_stream_url(ip: &str, username: &str, password: &str) -> RtspS
     }
 }
 
-/// Captures a JPEG snapshot from the MJPEG stream of the camera at `ip`.
-pub(crate) async fn snapshot(ip: &str, username: &str, password: &str) -> Result<Snapshot, Error> {
+/// Captures a JPEG snapshot from the MJPEG stream of the camera at `ip`, giving
+/// up after `timeout`.
+pub(crate) async fn snapshot(
+    ip: &str,
+    username: &str,
+    password: &str,
+    timeout: Duration,
+) -> Result<Snapshot, Error> {
     // retina rejects URLs with embedded credentials when creds are also
     // passed via SessionOptions, so use the bare base URL here.
     let url = rtsp_url_base(ip, "stream8");
@@ -25,7 +31,7 @@ pub(crate) async fn snapshot(ip: &str, username: &str, password: &str) -> Result
         username: username.into(),
         password: password.into(),
     };
-    let data = grab_mjpeg_frame(&url, creds, Duration::from_secs(5)).await?;
+    let data = grab_mjpeg_frame(&url, creds, timeout).await?;
 
     Ok(Snapshot {
         data,

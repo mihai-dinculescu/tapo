@@ -55,4 +55,8 @@ class CameraHandler(DeviceHandlerExt, DebugExt):
 
         Returns:
             Snapshot: The captured JPEG frame and its MIME content type.
+
+        Raises:
+            Exception: If the camera rejects the credentials, if it has no MJPEG stream,
+                or if the snapshot doesn't finish within the `timeout_s` passed to `ApiClient`.
         """

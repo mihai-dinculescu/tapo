@@ -1939,7 +1939,7 @@ impl ApiClient {
         Ok(())
     }
 
-    fn timeout(&self) -> Duration {
+    pub(crate) fn timeout(&self) -> Duration {
         self.timeout.unwrap_or(DEFAULT_TIMEOUT)
     }
 

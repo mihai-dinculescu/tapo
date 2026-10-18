@@ -44,6 +44,7 @@ file. This change log follows the conventions of
 - `CameraHubHandler`: `download_recording` now works when the builder was given an address with a port (`"{ip}:{port}"`). Before, it returned an error.
 - `ApiClient`: connecting to cameras with newer firmware, such as the C120 on firmware 1.9.4, now works. It used to fail with `The device asks for a password transform that is not supported yet`.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now reads the dates in the device's timezone instead of the timezone of the machine running the code, so the entries line up with the Tapo app wherever the code runs. Before, on a machine in another timezone, every entry's `start_date_time` was off by the difference.
+- `CameraPtzHandler`: `get_snapshot` now gives up after the client's timeout, 30 seconds unless changed with `ApiClient::with_timeout`, wherever the camera stops responding. It used to wait forever when the camera stopped responding while the video stream was being opened, and gave up after 5 seconds while waiting for the frame.
 
 ## [Python Unreleased][Unreleased]
 
@@ -86,6 +87,7 @@ file. This change log follows the conventions of
 - `ChargingStatus`, `ChildDeviceComponentList`: can now be imported from `tapo.responses`.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` no longer raises a `PanicException` in time zones where the clocks change at midnight, such as America/Santiago. A day whose midnight is skipped now starts when the clocks resume.
+- `CameraPtzHandler`: `get_snapshot` now gives up after the client's timeout, 30 seconds unless changed with the `timeout_s` of `ApiClient`, wherever the camera stops responding. It used to wait forever when the camera stopped responding while the video stream was being opened, and gave up after 5 seconds while waiting for the frame.
 - `AlarmRingtone`: added the missing `Default` to the type stubs.
 - `DeviceInfoSmartExt`: corrected the type stubs to declare it as a `Protocol`.
 - `DeviceInfoSmartExt`, `DeviceInfoBasicResult`, `DeviceInfoCameraResult`: corrected the type hints of `latitude` and `longitude` to `int`. They were declared as `float`.
@@ -119,6 +121,10 @@ file. This change log follows the conventions of
 - `TAPO_MCP_DISCOVERY_TIMEOUT`: a value outside 1 to 60 now stops the server at startup with an error naming the setting, instead of making every device listing fail.
 - `check_device`, `get_device_state`, `control_device`, `take_snapshot`: calls to the same device, such as several outlets of one power strip, now run one at a time instead of failing when made together. Calls to different devices still run in parallel. While a background discovery runs, these calls wait for it to finish.
 - `control_device`: `capabilities` now takes at most 12 entries. A call with more, or with none, fails before the device is contacted.
+
+### Fixed
+
+- `take_snapshot`: now fails after 30 seconds when the camera stops responding. It used to wait forever when the camera stopped responding while the video stream was being opened, and gave up after 5 seconds while waiting for the frame.
 
 ## [MCP v0.5.3][tapo-mcp-v0.5.3] - 2026-10-04
 

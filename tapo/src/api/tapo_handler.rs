@@ -575,12 +575,19 @@ macro_rules! camera_stream_handlers {
             /// The credentials are the **camera account** credentials set in the Tapo app
             /// (Camera Settings > Advanced Settings > Camera Account), not the TP-Link cloud
             /// account credentials. They are the same credentials accepted by `get_rtsp_stream_url`.
+            ///
+            /// # Errors
+            ///
+            /// Returns an error if the camera rejects the credentials, if it has no MJPEG stream,
+            /// or if the snapshot doesn't finish within the client's timeout, set with
+            /// [`ApiClient::with_timeout`](crate::ApiClient::with_timeout).
             pub async fn get_snapshot(
                 &self,
                 username: &str,
                 password: &str,
             ) -> Result<crate::responses::Snapshot, crate::error::Error> {
-                crate::api::camera_stream::snapshot(&self.ip, username, password).await
+                let timeout = self.client.read().await.timeout();
+                crate::api::camera_stream::snapshot(&self.ip, username, password, timeout).await
             }
         }
     };
