@@ -7,6 +7,7 @@ use tapo::{
 use tracing::field::Empty;
 
 use crate::config::AppConfig;
+use crate::device_locks::{DeviceGuard, DeviceLocks};
 use crate::errors::TapoMcpError;
 use crate::telemetry::run_in_span;
 
@@ -36,17 +37,22 @@ pub enum HubParent {
     CameraHub(CameraHubHandler),
 }
 
-pub async fn check_device(
+/// Finds the device `id` at `ip`, after taking the lock on `ip`. The returned guard
+/// must be held until the tool is done contacting the device.
+pub async fn check_device<'a>(
     config: &AppConfig,
+    locks: &'a DeviceLocks,
     id: &str,
     ip: &str,
-) -> Result<CheckedDevice, TapoMcpError> {
+) -> Result<(CheckedDevice, DeviceGuard<'a>), TapoMcpError> {
+    let guard = locks.lock_device(ip).await;
     let span = tracing::info_span!(
         "check_device",
         otel.status_code = Empty,
         "error.type" = Empty,
     );
-    run_in_span(span, find_device(config, id, ip)).await
+    let checked = run_in_span(span, find_device(config, id, ip)).await?;
+    Ok((checked, guard))
 }
 
 async fn find_device(

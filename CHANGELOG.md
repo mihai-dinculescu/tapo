@@ -117,6 +117,7 @@ file. This change log follows the conventions of
 - `take_snapshot`: the result now includes the device id, capture time and size as text alongside the image.
 - `list_devices`, `tapo://devices`: now return the device list from the most recent background discovery immediately, instead of waiting for a new discovery on every call. Until a discovery has succeeded, they return a "device discovery unavailable" error, which gives the reason when discovery failed.
 - `TAPO_MCP_DISCOVERY_TIMEOUT`: a value outside 1 to 60 now stops the server at startup with an error naming the setting, instead of making every device listing fail.
+- `check_device`, `get_device_state`, `control_device`, `take_snapshot`: calls to the same device, such as several outlets of one power strip, now run one at a time instead of failing when made together. Calls to different devices still run in parallel. While a background discovery runs, these calls wait for it to finish.
 
 ## [MCP v0.5.3][tapo-mcp-v0.5.3] - 2026-10-04
 

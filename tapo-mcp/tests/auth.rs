@@ -46,6 +46,7 @@ async fn status(api_key: Option<&str>, authorization: Option<&str>) -> StatusCod
         test_config(api_key).into(),
         Default::default(),
         Default::default(),
+        Default::default(),
     );
     app.oneshot(mcp_request(authorization))
         .await
@@ -112,6 +113,7 @@ async fn unauthorized_includes_www_authenticate_header() {
         test_config(Some("test-key")).into(),
         Default::default(),
         Default::default(),
+        Default::default(),
     );
     let response = app.oneshot(mcp_request(None)).await.unwrap();
     assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
@@ -127,6 +129,7 @@ async fn rejects_foreign_host_header() {
         test_config(None).into(),
         Default::default(),
         Default::default(),
+        Default::default(),
     );
     let request = mcp_request_with_host(None, "attacker.example:3000");
     let response = app.oneshot(request).await.unwrap();
@@ -137,6 +140,7 @@ async fn rejects_foreign_host_header() {
 async fn allows_loopback_host_header() {
     let app = tapo_mcp::router(
         test_config(None).into(),
+        Default::default(),
         Default::default(),
         Default::default(),
     );

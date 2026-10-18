@@ -16,7 +16,7 @@ rand = { workspace = true }
 subtle = "2.6"
 strum = { version = "0.28", features = ["derive"] }
 thiserror = { workspace = true }
-tokio = { workspace = true, features = ["rt-multi-thread", "signal", "macros", "time"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "signal", "macros", "sync", "time"] }
 url = "2.5"
 
 opentelemetry = "0.33"

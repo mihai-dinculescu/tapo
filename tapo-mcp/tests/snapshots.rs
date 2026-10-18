@@ -40,7 +40,7 @@ async fn get(config: AppConfig, store: Arc<SnapshotStore>, path: &str) -> Respon
         .header("Host", "localhost")
         .body(Body::empty())
         .unwrap();
-    tapo_mcp::router(config.into(), Default::default(), store)
+    tapo_mcp::router(config.into(), Default::default(), Default::default(), store)
         .oneshot(request)
         .await
         .unwrap()
@@ -66,7 +66,7 @@ async fn mcp_endpoint_still_requires_bearer_token() {
         .header("Accept", "application/json, text/event-stream")
         .body(Body::from(MCP_INITIALIZE))
         .unwrap();
-    let response = tapo_mcp::router(config.into(), Default::default(), store)
+    let response = tapo_mcp::router(config.into(), Default::default(), Default::default(), store)
         .oneshot(request)
         .await
         .unwrap();

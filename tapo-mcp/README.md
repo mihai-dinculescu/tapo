@@ -84,13 +84,15 @@ All configuration is via environment variables prefixed with `TAPO_MCP_`:
 | `TAPO_MCP_CAMERA_PASSWORD`    | No       | —                | Camera account password[^camera]. Required by `take_snapshot`.                                                                  |
 | `TAPO_MCP_DISCOVERY_TARGET`   | Yes      | —                | Network target for device discovery (e.g. `192.168.1.255`)                                                                      |
 | `TAPO_MCP_HTTP_ADDR`          | No       | `127.0.0.1:3000` | Address the server listens on                                                                                                   |
-| `TAPO_MCP_DISCOVERY_TIMEOUT`  | No       | `5`              | Discovery timeout in seconds. Must be between `1` and `60`                                                                       |
-| `TAPO_MCP_DISCOVERY_INTERVAL` | No       | `600`            | Seconds between background discoveries that refresh the device list. Must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most `86400` (one day) |
+| `TAPO_MCP_DISCOVERY_TIMEOUT`  | No       | `5`              | Discovery timeout in seconds. Must be between `1` and `60`[^discovery]                                                                       |
+| `TAPO_MCP_DISCOVERY_INTERVAL` | No       | `600`            | Seconds between background discoveries that refresh the device list. Must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most `86400` (one day)[^discovery] |
 | `TAPO_MCP_API_KEY`            | No       | —                | Bearer token for HTTP authentication (see below)                                                                                |
 | `TAPO_MCP_ALLOWED_HOSTS`      | No       | loopback only    | Comma-separated `Host` header allowlist (see Network exposure)                                                                  |
 | `TAPO_MCP_PUBLIC_URL`         | No       | —                | Base URL clients reach the server at (e.g. `https://tapo.example.com`). Enables short-lived snapshot links (see Snapshot links) |
 
 [^camera]: Set on each camera in the Tapo app under Camera Settings > Advanced Settings > Camera Account. Distinct from your TP-Link cloud account.
+
+[^discovery]: While a background discovery runs, tool calls that contact a device wait for it to finish, and the discovery waits for calls already in progress. A run takes about `TAPO_MCP_DISCOVERY_TIMEOUT` seconds plus a few more to log in to the devices, and longer if a device is slow to respond. A short interval means these pauses happen often: at `15` with the default timeout, tool calls can be held up for several seconds out of every 15. `list_devices` and the `tapo://devices` resource never wait.
 
 ## Authentication
 

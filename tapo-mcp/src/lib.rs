@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod config;
+pub mod device_locks;
 pub mod discovery;
 pub mod server;
 pub mod snapshots;
@@ -15,17 +16,19 @@ use std::sync::Arc;
 
 use axum::Router;
 use config::AppConfig;
+use device_locks::DeviceLocks;
 use discovery::DeviceCache;
 use snapshots::SnapshotStore;
 
 pub fn router(
     config: Arc<AppConfig>,
     devices: Arc<DeviceCache>,
+    locks: Arc<DeviceLocks>,
     snapshots: Arc<SnapshotStore>,
 ) -> Router {
     let api_key = config.api_key.clone();
     let serve_snapshots = config.public_url.is_some();
-    let mcp_service = server::new_service(config, devices, Arc::clone(&snapshots));
+    let mcp_service = server::new_service(config, devices, locks, Arc::clone(&snapshots));
     let router = Router::new().route_service("/", mcp_service);
 
     let router = if let Some(key) = api_key {

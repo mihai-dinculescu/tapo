@@ -60,6 +60,7 @@ fn router() -> Router {
         Arc::new(test_config()),
         Default::default(),
         Default::default(),
+        Default::default(),
     )
 }
 

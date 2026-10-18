@@ -5,6 +5,7 @@ use tokio::time::MissedTickBehavior;
 use tracing::Instrument as _;
 
 use crate::config::AppConfig;
+use crate::device_locks::DeviceLocks;
 use crate::errors::{TapoMcpError, error_message};
 use crate::models::DevicesList;
 use crate::requests::get_devices;
@@ -58,8 +59,9 @@ impl DeviceCache {
 }
 
 /// Spawns a task that runs discovery at startup and then every `discovery_interval`
-/// seconds, storing each result in `cache`.
-pub fn spawn_discovery(config: Arc<AppConfig>, cache: Arc<DeviceCache>) {
+/// seconds, storing each result in `cache`. Each run holds back the tool calls that
+/// contact a device, and waits for those in progress.
+pub fn spawn_discovery(config: Arc<AppConfig>, locks: Arc<DeviceLocks>, cache: Arc<DeviceCache>) {
     let period = Duration::from_secs(config.discovery_interval);
     tokio::spawn(async move {
         let mut interval = tokio::time::interval(period);
@@ -72,6 +74,7 @@ pub fn spawn_discovery(config: Arc<AppConfig>, cache: Arc<DeviceCache>) {
                 errors = tracing::field::Empty,
             );
             async {
+                let _discovery = locks.lock_discovery().await;
                 let outcome = run_discovery(Arc::clone(&config)).await;
                 match &outcome {
                     Ok(list) => {

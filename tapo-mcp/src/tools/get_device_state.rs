@@ -10,6 +10,7 @@ use tapo::responses::ChildDeviceHubIrResult;
 use tracing::field::Empty;
 
 use crate::config::AppConfig;
+use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
 use crate::models::{
     DATA_YEARS, ENERGY_HOURLY_DAYS, GetCapabilityRequest, GetDeviceStateParams,
@@ -21,13 +22,14 @@ use crate::telemetry::run_in_span;
 
 pub async fn get_device_state(
     config: &AppConfig,
+    locks: &DeviceLocks,
     params: GetDeviceStateParams,
 ) -> Result<CallToolResult, McpError> {
     let capability = params.capability.name();
     // Checked before the device is contacted, so that a bad parameter fails fast.
     let read = read_request(params.capability)?;
 
-    let checked = requests::check_device(config, &params.id, &params.ip).await?;
+    let (checked, device) = requests::check_device(config, locks, &params.id, &params.ip).await?;
 
     let span = tracing::info_span!(
         "get_capability",
@@ -69,6 +71,7 @@ pub async fn get_device_state(
             .await?
         }
     };
+    drop(device);
 
     let content = vec![ContentBlock::json(value)?];
     Ok(CallToolResult::success(content))

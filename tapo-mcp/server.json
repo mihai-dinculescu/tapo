@@ -76,7 +76,7 @@
         },
         {
           "name": "TAPO_MCP_DISCOVERY_INTERVAL",
-          "description": "Seconds between background device discoveries that refresh the device list; must be at least TAPO_MCP_DISCOVERY_TIMEOUT and at most 86400 (one day)",
+          "description": "Seconds between background device discoveries that refresh the device list; must be at least TAPO_MCP_DISCOVERY_TIMEOUT and at most 86400 (one day); tool calls wait while a discovery runs, so a short interval delays them more often",
           "isRequired": false,
           "isSecret": false,
           "format": "number",

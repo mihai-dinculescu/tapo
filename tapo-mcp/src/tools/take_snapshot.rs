@@ -8,6 +8,7 @@ use tapo::responses::Snapshot;
 use tracing::field::Empty;
 
 use crate::config::AppConfig;
+use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
 use crate::models::{GetCapabilityRequest, SnapshotResult, TakeSnapshotParams};
 use crate::requests;
@@ -17,6 +18,7 @@ use crate::telemetry::run_in_span;
 
 pub async fn take_snapshot(
     config: &AppConfig,
+    locks: &DeviceLocks,
     snapshots: &SnapshotStore,
     params: TakeSnapshotParams,
 ) -> Result<CallToolResult, McpError> {
@@ -29,7 +31,7 @@ pub async fn take_snapshot(
         .as_deref()
         .ok_or(TapoMcpError::CameraCredentialsMissing)?;
 
-    let checked = requests::check_device(config, &params.id, &params.ip).await?;
+    let (checked, device) = requests::check_device(config, locks, &params.id, &params.ip).await?;
 
     let snapshot = match checked {
         CheckedDevice::Parent(DiscoveryResult::Camera { handler, .. }) => {
@@ -47,6 +49,7 @@ pub async fn take_snapshot(
             .into());
         }
     };
+    drop(device);
 
     let captured_at = Utc::now();
     let size_bytes = snapshot.data.len();

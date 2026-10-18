@@ -5,6 +5,7 @@ use tapo::requests::Color;
 use tracing::field::Empty;
 
 use crate::config::AppConfig;
+use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
 use crate::models::{ControlDeviceParams, SetCapabilityRequest};
 use crate::requests;
@@ -13,9 +14,10 @@ use crate::telemetry::run_in_span;
 
 pub async fn control_device(
     config: &AppConfig,
+    locks: &DeviceLocks,
     params: ControlDeviceParams,
 ) -> Result<CallToolResult, McpError> {
-    let checked = requests::check_device(config, &params.id, &params.ip).await?;
+    let (checked, _device) = requests::check_device(config, locks, &params.id, &params.ip).await?;
 
     for capability in params.capabilities {
         let span = tracing::info_span!(

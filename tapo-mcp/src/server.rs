@@ -15,6 +15,7 @@ use rmcp::{ErrorData as McpError, ServerHandler, tool, tool_handler, tool_router
 use tracing::Instrument as _;
 
 use crate::config::AppConfig;
+use crate::device_locks::DeviceLocks;
 use crate::discovery::DeviceCache;
 use crate::models::{
     CheckDeviceParams, ControlDeviceParams, GetDeviceStateParams, TakeSnapshotParams,
@@ -28,6 +29,7 @@ use crate::tools;
 pub struct TapoMcp {
     config: Arc<AppConfig>,
     devices: Arc<DeviceCache>,
+    locks: Arc<DeviceLocks>,
     snapshots: Arc<SnapshotStore>,
 }
 
@@ -36,11 +38,13 @@ impl TapoMcp {
     pub(crate) fn new(
         config: Arc<AppConfig>,
         devices: Arc<DeviceCache>,
+        locks: Arc<DeviceLocks>,
         snapshots: Arc<SnapshotStore>,
     ) -> Self {
         Self {
             config,
             devices,
+            locks,
             snapshots,
         }
     }
@@ -58,7 +62,7 @@ impl TapoMcp {
         &self,
         Parameters(params): Parameters<CheckDeviceParams>,
     ) -> Result<CallToolResult, McpError> {
-        tools::check_device(&self.config, params).await
+        tools::check_device(&self.config, &self.locks, params).await
     }
 
     #[tool(
@@ -74,7 +78,7 @@ impl TapoMcp {
         &self,
         Parameters(params): Parameters<GetDeviceStateParams>,
     ) -> Result<CallToolResult, McpError> {
-        tools::get_device_state(&self.config, params).await
+        tools::get_device_state(&self.config, &self.locks, params).await
     }
 
     #[tool(
@@ -90,7 +94,7 @@ impl TapoMcp {
         &self,
         Parameters(params): Parameters<ControlDeviceParams>,
     ) -> Result<CallToolResult, McpError> {
-        tools::control_device(&self.config, params).await
+        tools::control_device(&self.config, &self.locks, params).await
     }
 
     #[tool(
@@ -122,7 +126,7 @@ impl TapoMcp {
         &self,
         Parameters(params): Parameters<TakeSnapshotParams>,
     ) -> Result<CallToolResult, McpError> {
-        tools::take_snapshot(&self.config, &self.snapshots, params).await
+        tools::take_snapshot(&self.config, &self.locks, &self.snapshots, params).await
     }
 }
 
@@ -185,6 +189,7 @@ impl ServerHandler for TapoMcp {
 pub fn new_service(
     app_config: Arc<AppConfig>,
     devices: Arc<DeviceCache>,
+    locks: Arc<DeviceLocks>,
     snapshots: Arc<SnapshotStore>,
 ) -> StreamableHttpService<TapoMcp, LocalSessionManager> {
     let session_manager = Arc::new(LocalSessionManager::default());
@@ -200,6 +205,7 @@ pub fn new_service(
             Ok(TapoMcp::new(
                 Arc::clone(&app_config),
                 Arc::clone(&devices),
+                Arc::clone(&locks),
                 Arc::clone(&snapshots),
             ))
         },
