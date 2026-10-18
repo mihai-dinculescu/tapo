@@ -157,7 +157,7 @@ pub enum SetCapabilityRequest {
     /// Set the device brightness. Also turns the device on if it's off.
     Brightness {
         /// Brightness level.
-        #[schemars(range(min = 1, max = 100))]
+        #[schemars(range(min = *BRIGHTNESS_LEVELS.start(), max = *BRIGHTNESS_LEVELS.end()))]
         value: u8,
     },
     /// Set the device color using a preset name. Also turns the device on if it's off.
@@ -274,6 +274,8 @@ pub const QUARTERS: RangeInclusive<u8> = 1..=4;
 pub const POWER_5_MINUTE_HOURS: RangeInclusive<u8> = 1..=12;
 /// The number of days `GetCapabilityRequest::PowerDataHourly` can read.
 pub const POWER_HOURLY_DAYS: RangeInclusive<u8> = 1..=6;
+/// The brightness levels `SetCapabilityRequest::Brightness` can set.
+pub const BRIGHTNESS_LEVELS: RangeInclusive<u8> = 1..=100;
 /// The number of set capabilities one `control_device` call can apply.
 pub const CONTROL_CAPABILITIES: RangeInclusive<usize> = 1..=12;
 

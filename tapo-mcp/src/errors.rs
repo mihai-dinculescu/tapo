@@ -1,6 +1,7 @@
 use rmcp::ErrorData as McpError;
 use rmcp::model::{ContentBlock, IntoContents};
 use strum::IntoStaticStr;
+use tapo::TapoResponseError;
 use thiserror::Error;
 
 #[derive(Debug, Error, IntoStaticStr)]
@@ -49,6 +50,19 @@ pub enum TapoMcpError {
         in_flight: Option<&'static str>,
     },
 
+    #[error(
+        "{}",
+        failed_progress(*.applied, *.total, .failed, .source)
+    )]
+    ControlFailed {
+        applied: usize,
+        total: usize,
+        /// The name of the capability the device failed to apply.
+        failed: &'static str,
+        #[source]
+        source: tapo::Error,
+    },
+
     #[error("Capability '{capability}' requires {expected}; device id '{id}' is not eligible")]
     WrongDeviceType {
         id: String,
@@ -69,19 +83,50 @@ pub enum TapoMcpError {
     DiscoveryUnavailable { reason: String },
 }
 
-fn control_progress(applied: usize, total: usize, in_flight: Option<&str>) -> String {
+fn applied_progress(applied: usize, total: usize) -> String {
     let noun = if total == 1 {
         "capability"
     } else {
         "capabilities"
     };
-    let progress = format!("Applied {applied} of {total} {noun} before the timeout");
+    format!("Applied {applied} of {total} {noun}")
+}
+
+fn control_progress(applied: usize, total: usize, in_flight: Option<&str>) -> String {
+    let progress = format!("{} before the timeout", applied_progress(applied, total));
     match in_flight {
         Some(name) => format!(
             "{progress}; capability {} ({name}) may also have been applied",
             applied + 1
         ),
         None => progress,
+    }
+}
+
+fn failed_progress(applied: usize, total: usize, failed: &str, source: &tapo::Error) -> String {
+    let progress = applied_progress(applied, total);
+    let position = applied + 1;
+    if may_have_applied(source) {
+        format!(
+            "{progress}; capability {position} ({failed}) failed and may still have been applied"
+        )
+    } else {
+        format!("{progress} before capability {position} ({failed}) failed")
+    }
+}
+
+/// Whether the device may have applied a request that failed with `source`.
+fn may_have_applied(source: &tapo::Error) -> bool {
+    match source {
+        // The device processed the request and answered with an error, or
+        // refused the session.
+        tapo::Error::Tapo(
+            TapoResponseError::DeviceError { .. } | TapoResponseError::Unauthorized { .. },
+        ) => false,
+        // The request never reached the device.
+        tapo::Error::Validation { .. } => false,
+        tapo::Error::Http(err) => !err.is_connect(),
+        _ => true,
     }
 }
 
@@ -189,6 +234,39 @@ mod tests {
         assert_eq!(
             err.to_string(),
             "Device timed out: id 'id' at ip '192.168.1.100' did not finish within 70 seconds. Applied 0 of 1 capability before the timeout"
+        );
+    }
+
+    #[test]
+    fn control_failed_says_how_many_capabilities_were_applied() {
+        let err = TapoMcpError::ControlFailed {
+            applied: 1,
+            total: 2,
+            failed: "Color",
+            source: tapo::Error::Tapo(TapoResponseError::DeviceError {
+                code: -1008,
+                kind: "INVALID_PARAMS",
+            }),
+        };
+
+        assert_eq!(
+            err.to_string(),
+            "Applied 1 of 2 capabilities before capability 2 (Color) failed"
+        );
+    }
+
+    #[test]
+    fn control_failed_may_have_applied_the_failed_capability() {
+        let err = TapoMcpError::ControlFailed {
+            applied: 1,
+            total: 2,
+            failed: "Color",
+            source: tapo::Error::Other(anyhow::anyhow!("connection reset by peer")),
+        };
+
+        assert_eq!(
+            error_message(&err),
+            "Applied 1 of 2 capabilities; capability 2 (Color) failed and may still have been applied: connection reset by peer"
         );
     }
 

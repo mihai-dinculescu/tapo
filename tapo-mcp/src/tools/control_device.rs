@@ -1,3 +1,5 @@
+use std::pin::Pin;
+
 use rmcp::model::CallToolResult;
 use tapo::DiscoveryResult;
 use tapo::requests::Color;
@@ -6,7 +8,9 @@ use tracing::field::Empty;
 use crate::config::AppConfig;
 use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
-use crate::models::{CONTROL_CAPABILITIES, ControlDeviceParams, SetCapabilityRequest};
+use crate::models::{
+    BRIGHTNESS_LEVELS, CONTROL_CAPABILITIES, ControlDeviceParams, SetCapabilityRequest,
+};
 use crate::requests;
 use crate::requests::CheckedDevice;
 use crate::telemetry::run_in_span;
@@ -28,30 +32,49 @@ pub async fn control_device(
         });
     }
 
+    check_brightness(&params.capabilities)?;
+
     // Counted outside the device future, which a timeout drops partway through.
     let mut applied = 0;
     let mut in_flight = None;
     requests::with_device(config, locks, &params.id, &params.ip, async |checked| {
-        for capability in params.capabilities {
+        // Every capability is checked against the device before any is applied,
+        // so one the device lacks fails the call with nothing changed.
+        let requests = params
+            .capabilities
+            .into_iter()
+            .map(|capability| {
+                let name = capability.name();
+                let request = match capability {
+                    SetCapabilityRequest::Brightness { value } => {
+                        brightness_request(&params.id, &checked, value)?
+                    }
+                    SetCapabilityRequest::Color { value } => {
+                        color_request(&params.id, &checked, value)?
+                    }
+                    SetCapabilityRequest::OnOff { value } => {
+                        on_off_request(&params.id, &checked, value)?
+                    }
+                };
+                Ok((name, request))
+            })
+            .collect::<Result<Vec<_>, TapoMcpError>>()?;
+
+        for (name, request) in requests {
             let span = tracing::info_span!(
                 "set_capability",
-                tapo.capability = capability.name(),
+                tapo.capability = name,
                 otel.status_code = Empty,
                 "error.type" = Empty,
             );
-            in_flight = Some(capability.name());
+            in_flight = Some(name);
             run_in_span(span, async {
-                match capability {
-                    SetCapabilityRequest::Brightness { value } => {
-                        apply_brightness(&params.id, &checked, value).await
-                    }
-                    SetCapabilityRequest::Color { value } => {
-                        apply_color(&params.id, &checked, value).await
-                    }
-                    SetCapabilityRequest::OnOff { value } => {
-                        apply_on_off(&params.id, &checked, value).await
-                    }
-                }
+                request.await.map_err(|source| TapoMcpError::ControlFailed {
+                    applied,
+                    total: count,
+                    failed: name,
+                    source,
+                })
             })
             .await?;
             in_flight = None;
@@ -75,22 +98,47 @@ pub async fn control_device(
     Ok(CallToolResult::success(vec![]))
 }
 
-async fn apply_brightness(
+/// Checks every `Brightness` value before any capability is applied. The device
+/// handlers check it too, but only when the request is sent.
+fn check_brightness(capabilities: &[SetCapabilityRequest]) -> Result<(), TapoMcpError> {
+    for (index, capability) in capabilities.iter().enumerate() {
+        if let SetCapabilityRequest::Brightness { value } = capability
+            && !BRIGHTNESS_LEVELS.contains(value)
+        {
+            return Err(TapoMcpError::InvalidParameter {
+                name: "capabilities".to_string(),
+                message: format!(
+                    "capability {} (Brightness) must be between {} and {}, got {value}",
+                    index + 1,
+                    BRIGHTNESS_LEVELS.start(),
+                    BRIGHTNESS_LEVELS.end()
+                ),
+            });
+        }
+    }
+
+    Ok(())
+}
+
+/// A capability's request to the device, sent when awaited.
+type DeviceRequest<'a> = Pin<Box<dyn Future<Output = Result<(), tapo::Error>> + Send + 'a>>;
+
+fn brightness_request<'a>(
     id: &str,
-    checked: &CheckedDevice,
+    checked: &'a CheckedDevice,
     brightness: u8,
-) -> Result<(), TapoMcpError> {
-    match checked {
+) -> Result<DeviceRequest<'a>, TapoMcpError> {
+    let request: DeviceRequest<'a> = match checked {
         CheckedDevice::Parent(device) => match device {
-            DiscoveryResult::Light { handler, .. } => handler.set_brightness(brightness).await?,
+            DiscoveryResult::Light { handler, .. } => Box::pin(handler.set_brightness(brightness)),
             DiscoveryResult::ColorLight { handler, .. } => {
-                handler.set_brightness(brightness).await?
+                Box::pin(handler.set_brightness(brightness))
             }
             DiscoveryResult::RgbLightStrip { handler, .. } => {
-                handler.set_brightness(brightness).await?
+                Box::pin(handler.set_brightness(brightness))
             }
             DiscoveryResult::RgbicLightStrip { handler, .. } => {
-                handler.set_brightness(brightness).await?
+                Box::pin(handler.set_brightness(brightness))
             }
             _ => {
                 return Err(TapoMcpError::WrongDeviceType {
@@ -109,17 +157,21 @@ async fn apply_brightness(
                 expected: "a light device".to_string(),
             });
         }
-    }
+    };
 
-    Ok(())
+    Ok(request)
 }
 
-async fn apply_color(id: &str, checked: &CheckedDevice, color: Color) -> Result<(), TapoMcpError> {
-    match checked {
+fn color_request<'a>(
+    id: &str,
+    checked: &'a CheckedDevice,
+    color: Color,
+) -> Result<DeviceRequest<'a>, TapoMcpError> {
+    let request: DeviceRequest<'a> = match checked {
         CheckedDevice::Parent(device) => match device {
-            DiscoveryResult::ColorLight { handler, .. } => handler.set_color(color).await?,
-            DiscoveryResult::RgbLightStrip { handler, .. } => handler.set_color(color).await?,
-            DiscoveryResult::RgbicLightStrip { handler, .. } => handler.set_color(color).await?,
+            DiscoveryResult::ColorLight { handler, .. } => Box::pin(handler.set_color(color)),
+            DiscoveryResult::RgbLightStrip { handler, .. } => Box::pin(handler.set_color(color)),
+            DiscoveryResult::RgbicLightStrip { handler, .. } => Box::pin(handler.set_color(color)),
             _ => {
                 return Err(TapoMcpError::WrongDeviceType {
                     id: id.to_string(),
@@ -137,23 +189,29 @@ async fn apply_color(id: &str, checked: &CheckedDevice, color: Color) -> Result<
                 expected: "a color light device".to_string(),
             });
         }
-    }
+    };
 
-    Ok(())
+    Ok(request)
 }
 
-async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(), TapoMcpError> {
+fn on_off_request<'a>(
+    id: &str,
+    checked: &'a CheckedDevice,
+    on: bool,
+) -> Result<DeviceRequest<'a>, TapoMcpError> {
     macro_rules! on_off {
         ($handler:expr) => {
-            if on {
-                $handler.on().await?
-            } else {
-                $handler.off().await?
-            }
+            Box::pin(async move {
+                if on {
+                    $handler.on().await
+                } else {
+                    $handler.off().await
+                }
+            })
         };
     }
 
-    match checked {
+    let request: DeviceRequest<'a> = match checked {
         CheckedDevice::Parent(device) => match device {
             DiscoveryResult::Light { handler, .. } => on_off!(handler),
             DiscoveryResult::ColorLight { handler, .. } => on_off!(handler),
@@ -180,11 +238,11 @@ async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(),
         },
         CheckedDevice::PowerStripChild { handler, child_id } => {
             let plug = handler.plug_unchecked(child_id);
-            on_off!(plug);
+            on_off!(plug)
         }
         CheckedDevice::PowerStripEnergyMonitoringChild { handler, child_id } => {
             let plug = handler.plug_unchecked(child_id);
-            on_off!(plug);
+            on_off!(plug)
         }
         CheckedDevice::HubChild { .. } => {
             return Err(TapoMcpError::WrongDeviceType {
@@ -193,7 +251,40 @@ async fn apply_on_off(id: &str, checked: &CheckedDevice, on: bool) -> Result<(),
                 expected: "a power strip child".to_string(),
             });
         }
+    };
+
+    Ok(request)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn check_brightness_accepts_values_in_range() {
+        let capabilities = [
+            SetCapabilityRequest::OnOff { value: true },
+            SetCapabilityRequest::Brightness { value: 1 },
+            SetCapabilityRequest::Brightness { value: 100 },
+        ];
+
+        assert!(check_brightness(&capabilities).is_ok());
     }
 
-    Ok(())
+    #[test]
+    fn check_brightness_rejects_values_out_of_range() {
+        for value in [0, 101] {
+            let capabilities = [
+                SetCapabilityRequest::OnOff { value: true },
+                SetCapabilityRequest::Brightness { value },
+            ];
+
+            assert!(matches!(
+                check_brightness(&capabilities),
+                Err(TapoMcpError::InvalidParameter { name, message })
+                    if name == "capabilities"
+                        && message == format!("capability 2 (Brightness) must be between 1 and 100, got {value}")
+            ));
+        }
+    }
 }

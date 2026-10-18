@@ -129,6 +129,7 @@ file. This change log follows the conventions of
 ### Fixed
 
 - `check_device`, `get_device_state`, `control_device`, `take_snapshot`: now fail with a "device timed out" error when the device is still not done after `TAPO_MCP_DISCOVERY_TIMEOUT` plus 60 seconds. A device that stopped responding used to hold up every later call to it, and once a background discovery started, every call to every device. For `control_device`, the error also says how many of the capabilities were applied before the device timed out, and whether the next one may have been applied too.
+- `control_device`: a capability the device does not support, or one with an invalid value, now fails the call before any capability is applied. It used to fail only when its turn came, after the ones before it had already changed the device. When the device returns an error partway through, the error now says how many of the capabilities were applied, which one failed, and whether that one may still have been applied.
 - `take_snapshot`: now fails after 30 seconds when the camera stops responding. It used to wait forever when the camera stopped responding while the video stream was being opened, and gave up after 5 seconds while waiting for the frame.
 
 ## [MCP v0.5.3][tapo-mcp-v0.5.3] - 2026-10-04
