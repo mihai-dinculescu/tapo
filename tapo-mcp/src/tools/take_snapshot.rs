@@ -1,7 +1,6 @@
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
 use chrono::Utc;
-use rmcp::ErrorData as McpError;
 use rmcp::model::{CallToolResult, ContentBlock};
 use tapo::DiscoveryResult;
 use tapo::responses::Snapshot;
@@ -21,7 +20,7 @@ pub async fn take_snapshot(
     locks: &DeviceLocks,
     snapshots: &SnapshotStore,
     params: TakeSnapshotParams,
-) -> Result<CallToolResult, McpError> {
+) -> Result<CallToolResult, TapoMcpError> {
     let camera_username = config
         .camera_username
         .as_deref()
@@ -77,7 +76,7 @@ pub async fn take_snapshot(
     };
 
     Ok(CallToolResult::success(vec![
-        ContentBlock::json(result)?,
+        ContentBlock::text(serde_json::to_string(&result)?),
         ContentBlock::image(encoded, snapshot.content_type),
     ]))
 }

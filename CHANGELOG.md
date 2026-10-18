@@ -124,6 +124,7 @@ file. This change log follows the conventions of
 - `check_device`, `get_device_state`, `control_device`, `take_snapshot`: calls to the same device, such as several outlets of one power strip, now run one at a time instead of failing when made together. Calls to different devices still run in parallel. While a background discovery runs, these calls wait for it to finish.
 - `control_device`: `capabilities` now takes at most 12 entries. A call with more, or with none, fails before the device is contacted.
 - `get_device_state`: `Snapshot` is no longer listed among the capabilities it takes, and its description now points to `take_snapshot` for a camera's `Snapshot` capability. Asking for it fails as an unknown capability.
+- `check_device`, `get_device_state`, `control_device`, `list_devices`, `take_snapshot`: a failed call now gives the agent the error message as the call's result, so the agent sees why it failed. Calls to an unknown tool are still rejected as before.
 
 ### Fixed
 

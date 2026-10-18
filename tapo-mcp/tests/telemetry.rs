@@ -352,8 +352,8 @@ async fn failing_tool_call_has_error_status() {
     )
     .await;
     assert!(
-        body.contains("-32603"),
-        "expected an internal error: {body}"
+        body.contains(r#""isError":true"#),
+        "expected an error result: {body}"
     );
 
     let span = tool_span(&exporter);
@@ -362,11 +362,8 @@ async fn failing_tool_call_has_error_status() {
         "unexpected status: {:?}",
         span.status
     );
-    assert_eq!(attr(&span, "error.type").as_deref(), Some("-32603"));
-    assert_eq!(
-        attr(&span, "rpc.response.status_code").as_deref(),
-        Some("-32603")
-    );
+    assert_eq!(attr(&span, "error.type").as_deref(), Some("tool_error"));
+    assert_eq!(attr(&span, "rpc.response.status_code"), None);
 }
 
 #[tokio::test]

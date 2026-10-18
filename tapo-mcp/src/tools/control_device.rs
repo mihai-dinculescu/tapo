@@ -1,4 +1,3 @@
-use rmcp::ErrorData as McpError;
 use rmcp::model::CallToolResult;
 use tapo::DiscoveryResult;
 use tapo::requests::Color;
@@ -16,7 +15,7 @@ pub async fn control_device(
     config: &AppConfig,
     locks: &DeviceLocks,
     params: ControlDeviceParams,
-) -> Result<CallToolResult, McpError> {
+) -> Result<CallToolResult, TapoMcpError> {
     let count = params.capabilities.len();
     if !CONTROL_CAPABILITIES.contains(&count) {
         return Err(TapoMcpError::InvalidParameter {
@@ -26,8 +25,7 @@ pub async fn control_device(
                 CONTROL_CAPABILITIES.start(),
                 CONTROL_CAPABILITIES.end()
             ),
-        }
-        .into());
+        });
     }
 
     requests::with_device(config, locks, &params.id, &params.ip, async |checked| {

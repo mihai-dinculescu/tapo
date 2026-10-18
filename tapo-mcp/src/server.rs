@@ -17,6 +17,7 @@ use tracing::Instrument as _;
 use crate::config::AppConfig;
 use crate::device_locks::DeviceLocks;
 use crate::discovery::DeviceCache;
+use crate::errors::TapoMcpError;
 use crate::models::{
     CheckDeviceParams, ControlDeviceParams, GetDeviceStateParams, TakeSnapshotParams,
 };
@@ -61,7 +62,7 @@ impl TapoMcp {
     async fn check_device(
         &self,
         Parameters(params): Parameters<CheckDeviceParams>,
-    ) -> Result<CallToolResult, McpError> {
+    ) -> Result<CallToolResult, TapoMcpError> {
         tools::check_device(&self.config, &self.locks, params).await
     }
 
@@ -77,7 +78,7 @@ impl TapoMcp {
     async fn get_device_state(
         &self,
         Parameters(params): Parameters<GetDeviceStateParams>,
-    ) -> Result<CallToolResult, McpError> {
+    ) -> Result<CallToolResult, TapoMcpError> {
         tools::get_device_state(&self.config, &self.locks, params).await
     }
 
@@ -93,7 +94,7 @@ impl TapoMcp {
     async fn control_device(
         &self,
         Parameters(params): Parameters<ControlDeviceParams>,
-    ) -> Result<CallToolResult, McpError> {
+    ) -> Result<CallToolResult, TapoMcpError> {
         tools::control_device(&self.config, &self.locks, params).await
     }
 
@@ -106,7 +107,7 @@ impl TapoMcp {
             open_world_hint = true
         )
     )]
-    async fn list_devices(&self) -> Result<CallToolResult, McpError> {
+    async fn list_devices(&self) -> Result<CallToolResult, TapoMcpError> {
         tools::list_devices(&self.devices)
     }
 
@@ -125,7 +126,7 @@ impl TapoMcp {
     async fn take_snapshot(
         &self,
         Parameters(params): Parameters<TakeSnapshotParams>,
-    ) -> Result<CallToolResult, McpError> {
+    ) -> Result<CallToolResult, TapoMcpError> {
         tools::take_snapshot(&self.config, &self.locks, &self.snapshots, params).await
     }
 }

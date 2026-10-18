@@ -2,7 +2,6 @@ use std::fmt::Display;
 use std::ops::RangeInclusive;
 
 use chrono::{DateTime, Datelike, Days, Duration, NaiveDate, Utc};
-use rmcp::ErrorData as McpError;
 use rmcp::model::{CallToolResult, ContentBlock};
 use tapo::DiscoveryResult;
 use tapo::requests::{EnergyDataInterval, PowerDataInterval};
@@ -24,7 +23,7 @@ pub async fn get_device_state(
     config: &AppConfig,
     locks: &DeviceLocks,
     params: GetDeviceStateParams,
-) -> Result<CallToolResult, McpError> {
+) -> Result<CallToolResult, TapoMcpError> {
     let capability = params.capability.name();
     // Checked before the device is contacted, so that a bad parameter fails fast.
     let read = read_request(params.capability)?;
@@ -73,7 +72,7 @@ pub async fn get_device_state(
     })
     .await?;
 
-    let content = vec![ContentBlock::json(value)?];
+    let content = vec![ContentBlock::text(serde_json::to_string(&value)?)];
     Ok(CallToolResult::success(content))
 }
 

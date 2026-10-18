@@ -1,4 +1,5 @@
 use rmcp::ErrorData as McpError;
+use rmcp::model::{ContentBlock, IntoContents};
 use strum::IntoStaticStr;
 use thiserror::Error;
 
@@ -53,25 +54,21 @@ pub enum TapoMcpError {
     DiscoveryUnavailable { reason: String },
 }
 
+/// A tool's failure becomes a tool result with `is_error` set and the error
+/// message as text, so the model sees what went wrong.
+impl IntoContents for TapoMcpError {
+    fn into_contents(self) -> Vec<ContentBlock> {
+        vec![ContentBlock::text(error_message(&self))]
+    }
+}
+
+/// Only reading the `tapo://devices` resource fails with a protocol error, since
+/// resource reads have no `is_error` equivalent.
 impl From<TapoMcpError> for McpError {
     fn from(err: TapoMcpError) -> Self {
         let message = error_message(&err);
         let data = Some(serde_json::json!({ "error": format!("{err:?}") }));
-        match err {
-            TapoMcpError::Internal(tapo::Error::Validation { .. }) => {
-                McpError::invalid_params(message, data)
-            }
-            TapoMcpError::Internal(_)
-            | TapoMcpError::InternalDiscovery(_)
-            | TapoMcpError::Serialization(_) => McpError::internal_error(message, data),
-            TapoMcpError::DeviceMismatch { .. } => McpError::invalid_params(message, data),
-            TapoMcpError::DeviceNotFound { .. } => McpError::resource_not_found(message, data),
-            TapoMcpError::DeviceTimeout { .. } => McpError::internal_error(message, data),
-            TapoMcpError::WrongDeviceType { .. } => McpError::invalid_params(message, data),
-            TapoMcpError::CameraCredentialsMissing => McpError::invalid_params(message, data),
-            TapoMcpError::InvalidParameter { .. } => McpError::invalid_params(message, data),
-            TapoMcpError::DiscoveryUnavailable { .. } => McpError::internal_error(message, data),
-        }
+        McpError::internal_error(message, data)
     }
 }
 
