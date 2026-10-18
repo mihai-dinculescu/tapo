@@ -26,6 +26,13 @@ pub enum TapoMcpError {
     #[error("Device not found: id '{id}' at ip '{ip}'")]
     DeviceNotFound { id: String, ip: String },
 
+    #[error("Device timed out: id '{id}' at ip '{ip}' did not finish within {seconds} seconds")]
+    DeviceTimeout {
+        id: String,
+        ip: String,
+        seconds: u64,
+    },
+
     #[error("Capability '{capability}' requires {expected}; device id '{id}' is not eligible")]
     WrongDeviceType {
         id: String,
@@ -62,6 +69,7 @@ impl From<TapoMcpError> for McpError {
             | TapoMcpError::Serialization(_) => McpError::internal_error(message, data),
             TapoMcpError::DeviceMismatch { .. } => McpError::invalid_params(message, data),
             TapoMcpError::DeviceNotFound { .. } => McpError::resource_not_found(message, data),
+            TapoMcpError::DeviceTimeout { .. } => McpError::internal_error(message, data),
             TapoMcpError::WrongDeviceType { .. } => McpError::invalid_params(message, data),
             TapoMcpError::CameraCredentialsMissing => McpError::invalid_params(message, data),
             TapoMcpError::WrongTool { .. } => McpError::invalid_params(message, data),

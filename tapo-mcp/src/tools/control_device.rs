@@ -30,30 +30,32 @@ pub async fn control_device(
         .into());
     }
 
-    let (checked, _device) = requests::check_device(config, locks, &params.id, &params.ip).await?;
-
-    for capability in params.capabilities {
-        let span = tracing::info_span!(
-            "set_capability",
-            tapo.capability = capability.name(),
-            otel.status_code = Empty,
-            "error.type" = Empty,
-        );
-        run_in_span(span, async {
-            match capability {
-                SetCapabilityRequest::Brightness { value } => {
-                    apply_brightness(&params.id, &checked, value).await
+    requests::with_device(config, locks, &params.id, &params.ip, async |checked| {
+        for capability in params.capabilities {
+            let span = tracing::info_span!(
+                "set_capability",
+                tapo.capability = capability.name(),
+                otel.status_code = Empty,
+                "error.type" = Empty,
+            );
+            run_in_span(span, async {
+                match capability {
+                    SetCapabilityRequest::Brightness { value } => {
+                        apply_brightness(&params.id, &checked, value).await
+                    }
+                    SetCapabilityRequest::Color { value } => {
+                        apply_color(&params.id, &checked, value).await
+                    }
+                    SetCapabilityRequest::OnOff { value } => {
+                        apply_on_off(&params.id, &checked, value).await
+                    }
                 }
-                SetCapabilityRequest::Color { value } => {
-                    apply_color(&params.id, &checked, value).await
-                }
-                SetCapabilityRequest::OnOff { value } => {
-                    apply_on_off(&params.id, &checked, value).await
-                }
-            }
-        })
-        .await?;
-    }
+            })
+            .await?;
+        }
+        Ok(())
+    })
+    .await?;
 
     Ok(CallToolResult::success(vec![]))
 }

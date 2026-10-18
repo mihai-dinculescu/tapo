@@ -1,13 +1,15 @@
+use std::time::Duration;
+
 use tapo::{
     ApiClient, CameraHubHandler, DiscoveryResult, HubHandler, HubIrHandler,
     PowerStripEnergyMonitoringHandler, PowerStripHandler, StreamExt as _,
     responses::ChildDeviceHubIrResult,
 };
-
+use tokio::time::timeout;
 use tracing::field::Empty;
 
 use crate::config::AppConfig;
-use crate::device_locks::{DeviceGuard, DeviceLocks};
+use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
 use crate::telemetry::run_in_span;
 
@@ -37,22 +39,41 @@ pub enum HubParent {
     CameraHub(CameraHubHandler),
 }
 
-/// Finds the device `id` at `ip`, after taking the lock on `ip`. The returned guard
-/// must be held until the tool is done contacting the device.
-pub async fn check_device<'a>(
+/// How long a tool call may contact a device for, on top of the discovery timeout,
+/// which is how long finding the device waits when nothing answers at its IP.
+const DEVICE_CONTACT_TIMEOUT: Duration = Duration::from_secs(60);
+
+/// Takes the lock on `ip`, finds the device `id` there and passes it to `contact`.
+///
+/// Gives up once the device has been contacted for longer than the discovery
+/// timeout plus [`DEVICE_CONTACT_TIMEOUT`], so that a device that stops responding
+/// does not hold the lock on `ip`, and through it every tool call, forever.
+pub async fn with_device<T>(
     config: &AppConfig,
-    locks: &'a DeviceLocks,
+    locks: &DeviceLocks,
     id: &str,
     ip: &str,
-) -> Result<(CheckedDevice, DeviceGuard<'a>), TapoMcpError> {
-    let guard = locks.lock_device(ip).await;
+    contact: impl AsyncFnOnce(CheckedDevice) -> Result<T, TapoMcpError>,
+) -> Result<T, TapoMcpError> {
+    let _guard = locks.lock_device(ip).await;
+    let limit = Duration::from_secs(config.discovery_timeout) + DEVICE_CONTACT_TIMEOUT;
     let span = tracing::info_span!(
         "check_device",
         otel.status_code = Empty,
         "error.type" = Empty,
     );
-    let checked = run_in_span(span, find_device(config, id, ip)).await?;
-    Ok((checked, guard))
+    // On timeout the tool's device future is dropped here, before `_guard`. A login
+    // that discovery has already spawned keeps running until its request ends.
+    timeout(limit, async {
+        let checked = run_in_span(span, find_device(config, id, ip)).await?;
+        contact(checked).await
+    })
+    .await
+    .map_err(|_| TapoMcpError::DeviceTimeout {
+        id: id.to_string(),
+        ip: ip.to_string(),
+        seconds: limit.as_secs(),
+    })?
 }
 
 async fn find_device(

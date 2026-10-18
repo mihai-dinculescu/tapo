@@ -29,49 +29,49 @@ pub async fn get_device_state(
     // Checked before the device is contacted, so that a bad parameter fails fast.
     let read = read_request(params.capability)?;
 
-    let (checked, device) = requests::check_device(config, locks, &params.id, &params.ip).await?;
-
-    let span = tracing::info_span!(
-        "get_capability",
-        tapo.capability = capability,
-        otel.status_code = Empty,
-        "error.type" = Empty,
-    );
-    let value = match read {
-        ReadRequest::DeviceInfo => run_in_span(span, get_device_info(checked)).await?,
-        ReadRequest::EnergyData(interval) => {
-            run_in_span(
-                span,
-                get_energy_data(&params.id, capability, checked, interval),
-            )
-            .await?
+    let value = requests::with_device(config, locks, &params.id, &params.ip, async |checked| {
+        let span = tracing::info_span!(
+            "get_capability",
+            tapo.capability = capability,
+            otel.status_code = Empty,
+            "error.type" = Empty,
+        );
+        match read {
+            ReadRequest::DeviceInfo => run_in_span(span, get_device_info(checked)).await,
+            ReadRequest::EnergyData(interval) => {
+                run_in_span(
+                    span,
+                    get_energy_data(&params.id, capability, checked, interval),
+                )
+                .await
+            }
+            ReadRequest::PowerData(interval) => {
+                run_in_span(
+                    span,
+                    get_power_data(&params.id, capability, checked, interval),
+                )
+                .await
+            }
+            ReadRequest::TriggerLogs {
+                page_size,
+                start_id,
+            } => {
+                run_in_span(
+                    span,
+                    get_trigger_logs(&params.id, capability, checked, page_size, start_id),
+                )
+                .await
+            }
+            ReadRequest::TemperatureHumidityRecords => {
+                run_in_span(
+                    span,
+                    get_temperature_humidity_records(&params.id, capability, checked),
+                )
+                .await
+            }
         }
-        ReadRequest::PowerData(interval) => {
-            run_in_span(
-                span,
-                get_power_data(&params.id, capability, checked, interval),
-            )
-            .await?
-        }
-        ReadRequest::TriggerLogs {
-            page_size,
-            start_id,
-        } => {
-            run_in_span(
-                span,
-                get_trigger_logs(&params.id, capability, checked, page_size, start_id),
-            )
-            .await?
-        }
-        ReadRequest::TemperatureHumidityRecords => {
-            run_in_span(
-                span,
-                get_temperature_humidity_records(&params.id, capability, checked),
-            )
-            .await?
-        }
-    };
-    drop(device);
+    })
+    .await?;
 
     let content = vec![ContentBlock::json(value)?];
     Ok(CallToolResult::success(content))

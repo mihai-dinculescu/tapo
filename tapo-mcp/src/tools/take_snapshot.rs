@@ -31,25 +31,27 @@ pub async fn take_snapshot(
         .as_deref()
         .ok_or(TapoMcpError::CameraCredentialsMissing)?;
 
-    let (checked, device) = requests::check_device(config, locks, &params.id, &params.ip).await?;
-
-    let snapshot = match checked {
-        CheckedDevice::Parent(DiscoveryResult::Camera { handler, .. }) => {
-            capture_snapshot(handler.get_snapshot(camera_username, camera_password)).await?
-        }
-        CheckedDevice::Parent(DiscoveryResult::CameraPtz { handler, .. }) => {
-            capture_snapshot(handler.get_snapshot(camera_username, camera_password)).await?
-        }
-        _ => {
-            return Err(TapoMcpError::WrongDeviceType {
-                id: params.id,
-                capability: GetCapabilityRequest::Snapshot.name().to_string(),
-                expected: "a camera".to_string(),
-            }
-            .into());
-        }
-    };
-    drop(device);
+    let snapshot =
+        requests::with_device(
+            config,
+            locks,
+            &params.id,
+            &params.ip,
+            async |checked| match checked {
+                CheckedDevice::Parent(DiscoveryResult::Camera { handler, .. }) => {
+                    capture_snapshot(handler.get_snapshot(camera_username, camera_password)).await
+                }
+                CheckedDevice::Parent(DiscoveryResult::CameraPtz { handler, .. }) => {
+                    capture_snapshot(handler.get_snapshot(camera_username, camera_password)).await
+                }
+                _ => Err(TapoMcpError::WrongDeviceType {
+                    id: params.id.clone(),
+                    capability: GetCapabilityRequest::Snapshot.name().to_string(),
+                    expected: "a camera".to_string(),
+                }),
+            },
+        )
+        .await?;
 
     let captured_at = Utc::now();
     let size_bytes = snapshot.data.len();
