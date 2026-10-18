@@ -39,6 +39,7 @@ file. This change log follows the conventions of
 
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` no longer panics in time zones where the clocks change at midnight, such as America/Santiago. A day whose midnight is skipped now starts when the clocks resume.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now leaves out the hours, days and months that have not started yet on the device. They used to be returned with 0 Wh, as if no energy had been used.
 - `ApiClient`: connecting to a camera by its IP address with a wrong password now fails with `TPAP_CREDENTIALS`, which warns that the device locks itself after too many failed logins, instead of with `HASH_MISMATCH`.
 - `CameraPtzHandler`: `get_rtsp_stream_url` and `get_snapshot` now work when the builder was given an address with a port (`"{ip}:{port}"`). Before, `get_rtsp_stream_url` panicked and `get_snapshot` returned an error.
 - `CameraHubHandler`: `download_recording` now works when the builder was given an address with a port (`"{ip}:{port}"`). Before, it returned an error.
@@ -87,6 +88,7 @@ file. This change log follows the conventions of
 - `ChargingStatus`, `ChildDeviceComponentList`: can now be imported from `tapo.responses`.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` no longer raises a `PanicException` in time zones where the clocks change at midnight, such as America/Santiago. A day whose midnight is skipped now starts when the clocks resume.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now leaves out the hours, days and months that have not started yet on the device. They used to be returned with 0 Wh, as if no energy had been used.
 - `CameraPtzHandler`: `get_snapshot` now gives up after the client's timeout, 30 seconds unless changed with the `timeout_s` of `ApiClient`, wherever the camera stops responding. It used to wait forever when the camera stopped responding while the video stream was being opened, and gave up after 5 seconds while waiting for the frame.
 - `AlarmRingtone`: added the missing `Default` to the type stubs.
 - `DeviceInfoSmartExt`: corrected the type stubs to declare it as a `Protocol`.
@@ -111,7 +113,7 @@ file. This change log follows the conventions of
 - `TAPO_MCP_DISCOVERY_INTERVAL`: added the number of seconds between background discoveries that refresh the device list. Defaults to 600 and must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most 86400 (one day).
 - OpenTelemetry: each tool call is now exported as a trace that shows how long the device check and the device request took, and marks failed calls. When the MCP client or a tracing reverse proxy sends trace context, the call joins that trace.
 - `control_device`: each `Color` preset name now comes with its color temperature, or its hue and saturation, so an agent can pick the preset closest to what the user asked for.
-- `get_device_state`: added the `EnergyDataHourly`, `EnergyDataDaily` and `EnergyDataMonthly` capabilities, which return the energy used per hour, day or month, and the `PowerDataEvery5Minutes` and `PowerDataHourly` capabilities, which return the power draw every 5 minutes or every hour, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists all five for these devices. The energy capabilities read days, quarters and years in the plug's time zone, so the entries match the Tapo app.
+- `get_device_state`: added the `EnergyDataHourly`, `EnergyDataDaily` and `EnergyDataMonthly` capabilities, which return the energy used per hour, day or month, and the `PowerDataEvery5Minutes` and `PowerDataHourly` capabilities, which return the power draw every 5 minutes or every hour, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists all five for these devices. The energy capabilities read days, quarters and years in the plug's time zone, so the entries match the Tapo app, and leave out the hours, days and months that have not started yet.
 - MCP Registry: the server entry now lists `TAPO_MCP_CAMERA_USERNAME`, `TAPO_MCP_CAMERA_PASSWORD` and `TAPO_MCP_ALLOWED_HOSTS`, so clients that install from the registry can set them.
 
 ### Changed

@@ -16,7 +16,9 @@ pub struct EnergyDataResult {
     /// This value is provided in the `get_energy_data` request and is passed through.
     /// Note that it may not align with the returned data if the method is used beyond its specified capabilities.
     pub start_date_time: DateTime<Utc>,
-    /// List of energy data entries.
+    /// List of energy data entries, up to the device's local time. It is shorter
+    /// than the requested interval when the interval has not ended yet, and
+    /// empty when it has not started.
     pub entries: Vec<EnergyDataIntervalResult>,
     /// Interval length in minutes.
     pub interval_length: u64,
@@ -58,7 +60,9 @@ enum Step {
 }
 
 impl EnergyDataResultRaw {
-    /// Dates the entries in `timezone`, the device's.
+    /// Dates the entries in `timezone`, the device's, and leaves out the ones
+    /// that start after the device's local time. The device returns those as
+    /// 0 Wh, which would read as no energy used.
     pub fn in_timezone<Tz: TimeZone>(self, timezone: &Tz) -> Result<EnergyDataResult, Error> {
         let start = timezone
             .timestamp_opt(self.start_timestamp, 0)
@@ -82,6 +86,11 @@ impl EnergyDataResultRaw {
         // Days and months are stepped by calendar date, because their length
         // in hours changes with DST.
         let start_date = start.date_naive();
+        // During a repeated hour, the later reading keeps the current entry.
+        let now = timezone
+            .from_local_datetime(&self.local_time)
+            .latest()
+            .map(|now| now.to_utc());
         let mut entries = Vec::with_capacity(self.data.len());
 
         for (index, energy) in self.data.into_iter().enumerate() {
@@ -101,6 +110,10 @@ impl EnergyDataResultRaw {
                 }
             };
 
+            if now.is_some_and(|now| entry_start > now) {
+                break;
+            }
+
             entries.push(EnergyDataIntervalResult {
                 start_date_time: entry_start,
                 energy,
@@ -118,14 +131,16 @@ impl EnergyDataResultRaw {
 
 #[cfg(test)]
 mod tests {
-    use chrono::{NaiveDate, Timelike as _};
+    use chrono::{NaiveDate, NaiveTime, Timelike as _};
     use chrono_tz::America::Santiago;
 
     use super::*;
 
     fn raw(start_date_time: DateTime<Utc>, days: usize, interval: u64) -> EnergyDataResultRaw {
         EnergyDataResultRaw {
-            local_time: NaiveDateTime::default(),
+            local_time: NaiveDate::from_ymd_opt(2100, 1, 1)
+                .unwrap()
+                .and_time(NaiveTime::MIN),
             data: vec![0; days],
             start_timestamp: start_date_time.timestamp(),
             interval,
@@ -173,6 +188,22 @@ mod tests {
             assert_eq!(date_time.date(), first_day + Months::new(index as u32));
             assert_eq!(date_time.hour(), 0);
         }
+    }
+
+    #[test]
+    fn test_entries_after_the_local_time_are_left_out() {
+        let date = |day| NaiveDate::from_ymd_opt(2026, 10, day).unwrap();
+        let start = local_midnight(date(1), &Santiago);
+        let mut quarter = raw(start, 92, 1440);
+        quarter.local_time = date(18).and_hms_opt(12, 0, 0).unwrap();
+
+        let result = quarter.in_timezone(&Santiago).unwrap();
+
+        let dates: Vec<_> = local_dates_and_times(&result)
+            .into_iter()
+            .map(|date_time| date_time.date())
+            .collect();
+        assert_eq!(dates, (1..=18).map(date).collect::<Vec<_>>());
     }
 
     #[test]

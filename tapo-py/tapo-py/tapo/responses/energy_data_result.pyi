@@ -14,7 +14,9 @@ class EnergyDataResult(ToDictExt):
     Note that it may not align with the returned data if the method is used beyond its specified capabilities."""
 
     entries: List[EnergyDataIntervalResult]
-    """List of energy data entries."""
+    """List of energy data entries, up to the device's local time. It is shorter
+    than the requested interval when the interval has not ended yet, and empty
+    when it has not started."""
 
     interval_length: int
     """Interval length in minutes."""

@@ -180,7 +180,8 @@ pub enum GetCapabilityRequest {
     DeviceInfo,
     /// Read the energy used per hour, in watt-hours, for whole days, from an
     /// energy-monitoring plug (P110, P110M, P115) or power strip outlet
-    /// (P304M, P316M). Dates are in the plug's time zone.
+    /// (P304M, P316M). Dates are in the plug's time zone. Hours that have not
+    /// started yet are left out.
     EnergyDataHourly {
         /// The first day to read, in the years 2000 to 9999.
         start_date: NaiveDate,
@@ -190,7 +191,8 @@ pub enum GetCapabilityRequest {
     },
     /// Read the energy used per day, in watt-hours, for a quarter of a year,
     /// from an energy-monitoring plug (P110, P110M, P115) or power strip
-    /// outlet (P304M, P316M). Dates are in the plug's time zone.
+    /// outlet (P304M, P316M). Dates are in the plug's time zone. Days that
+    /// have not started yet are left out.
     EnergyDataDaily {
         /// The year the quarter is in.
         #[schemars(range(min = *DATA_YEARS.start(), max = *DATA_YEARS.end()))]
@@ -202,7 +204,8 @@ pub enum GetCapabilityRequest {
     },
     /// Read the energy used per month, in watt-hours, for a year, from an
     /// energy-monitoring plug (P110, P110M, P115) or power strip outlet
-    /// (P304M, P316M). Dates are in the plug's time zone.
+    /// (P304M, P316M). Dates are in the plug's time zone. Months that have not
+    /// started yet are left out.
     EnergyDataMonthly {
         /// The year to read.
         #[schemars(range(min = *DATA_YEARS.start(), max = *DATA_YEARS.end()))]

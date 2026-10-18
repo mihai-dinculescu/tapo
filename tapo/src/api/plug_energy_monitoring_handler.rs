@@ -29,7 +29,8 @@ impl PlugEnergyMonitoringHandler {
     /// Returns *energy data* as [`EnergyDataResult`].
     ///
     /// The dates in `interval` are read in the device's timezone, so the
-    /// entries line up with the Tapo app wherever this code runs.
+    /// entries line up with the Tapo app wherever this code runs. Entries that
+    /// start after the device's local time are left out.
     ///
     /// Pass the [`TimezoneResult::timezone`] field from
     /// [`PlugEnergyMonitoringHandler::get_timezone`] to read it once for

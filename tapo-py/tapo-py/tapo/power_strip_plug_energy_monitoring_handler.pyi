@@ -60,7 +60,8 @@ class PowerStripPlugEnergyMonitoringHandler(OnOffExt, DebugExt):
         """Returns *energy data* as `EnergyDataResult`.
 
         The dates are read in the power strip's timezone, so the entries line up
-        with the Tapo app wherever this code runs.
+        with the Tapo app wherever this code runs. Entries that start after the
+        power strip's local time are left out.
 
         Pass the `TimezoneResult.timezone` attribute from
         `PowerStripPlugEnergyMonitoringHandler.get_timezone` to read it once for several
