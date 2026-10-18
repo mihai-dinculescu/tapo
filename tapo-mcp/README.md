@@ -36,7 +36,7 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `list_devices`     | List available Tapo devices on the network (includes set and get capabilities).                                                                                                                                                               |
 | `check_device`     | Verify a device ID matches at a given IP.                                                                                                                                                                                                     |
-| `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Runs `check_device` first.                                                                                                                                                      |
+| `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Checks the capability's parameters, then runs `check_device`.                                                                                                                   |
 | `control_device`   | Control a device by applying one or more set capabilities. Runs `check_device` first.                                                                                                                                                         |
 | `take_snapshot`    | Capture a still JPEG snapshot from a Tapo camera (~640x360), with the device id, capture time and size as text, plus a short-lived link when `TAPO_MCP_PUBLIC_URL` is set (see [Snapshot links](#snapshot-links)). Runs `check_device` first. |
 
@@ -63,8 +63,11 @@ Devices and child devices expose separate lists of set and get capabilities they
 | Capability                   | Description                                                                                          |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------- |
 | `DeviceInfo`                 | Read the device's current state                                                                      |
-| `EnergyData`                 | Read the energy used per hour, day or month, in Wh (P110, P110M, P115, P304M, P316M)                 |
-| `PowerData`                  | Read the power draw every 5 minutes or every hour, in W (P110, P110M, P115, P304M, P316M)            |
+| `EnergyDataHourly`           | Read the energy used per hour, in Wh, for up to 8 days (P110, P110M, P115, P304M, P316M)             |
+| `EnergyDataDaily`            | Read the energy used per day, in Wh, for a quarter of a year (P110, P110M, P115, P304M, P316M)       |
+| `EnergyDataMonthly`          | Read the energy used per month, in Wh, for a year (P110, P110M, P115, P304M, P316M)                  |
+| `PowerDataEvery5Minutes`     | Read the power draw every 5 minutes, in W, for up to 12 hours (P110, P110M, P115, P304M, P316M)      |
+| `PowerDataHourly`            | Read the power draw every hour, in W, for up to 6 days (P110, P110M, P115, P304M, P316M)             |
 | `Snapshot`                   | Capture a still JPEG snapshot. Served by the dedicated `take_snapshot` tool (binary, not JSON state) |
 | `TemperatureHumidityRecords` | Read the last 24 hours of temperature and humidity records (T310, T315) at 15 minute intervals       |
 | `TriggerLogs`                | Read paginated trigger logs from a hub child sensor (S200, T100, T110, T300)                         |

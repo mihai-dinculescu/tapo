@@ -38,13 +38,20 @@ pub enum SetCapability {
 
 /// A capability that can be read from a device with `get_device_state`.
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
+#[cfg_attr(test, derive(strum::EnumIter))]
 pub enum GetCapability {
     /// Read the device's current state.
     DeviceInfo,
-    /// Read the energy used per hour, day or month, in watt-hours (P110, P110M, P115, P304M, P316M).
-    EnergyData,
-    /// Read the power draw every 5 minutes or every hour, in watts (P110, P110M, P115, P304M, P316M).
-    PowerData,
+    /// Read the energy used per hour, in watt-hours (P110, P110M, P115, P304M, P316M).
+    EnergyDataHourly,
+    /// Read the energy used per day, in watt-hours (P110, P110M, P115, P304M, P316M).
+    EnergyDataDaily,
+    /// Read the energy used per month, in watt-hours (P110, P110M, P115, P304M, P316M).
+    EnergyDataMonthly,
+    /// Read the power draw every 5 minutes, in watts (P110, P110M, P115, P304M, P316M).
+    PowerDataEvery5Minutes,
+    /// Read the power draw every hour, in watts (P110, P110M, P115, P304M, P316M).
+    PowerDataHourly,
     /// Capture a still JPEG snapshot via the `take_snapshot` tool.
     Snapshot,
     /// Read the last 24 hours of temperature and humidity records (T310, T315) at 15 minute intervals.
@@ -166,23 +173,61 @@ impl SetCapabilityRequest {
 
 /// A capability to read from a device, with its parameters.
 #[derive(Debug, Clone, Deserialize, JsonSchema, IntoStaticStr)]
+#[cfg_attr(test, derive(strum::VariantNames))]
 #[serde(tag = "type")]
 pub enum GetCapabilityRequest {
     /// Read the device's current state (on/off, brightness, etc.).
     DeviceInfo,
-    /// Read the energy used per hour, day or month, in watt-hours, from an
+    /// Read the energy used per hour, in watt-hours, for whole days, from an
     /// energy-monitoring plug (P110, P110M, P115) or power strip outlet
-    /// (P304M, P316M).
-    EnergyData {
-        /// The period to read and how finely to split it.
-        interval: EnergyDataIntervalRequest,
+    /// (P304M, P316M). Dates are in the plug's time zone.
+    EnergyDataHourly {
+        /// The first day to read, in the years 2000 to 9999.
+        start_date: NaiveDate,
+        /// The number of days to read, including `start_date`.
+        #[schemars(range(min = *ENERGY_HOURLY_DAYS.start(), max = *ENERGY_HOURLY_DAYS.end()))]
+        days: u8,
     },
-    /// Read the power draw every 5 minutes or every hour, in watts, from an
+    /// Read the energy used per day, in watt-hours, for a quarter of a year,
+    /// from an energy-monitoring plug (P110, P110M, P115) or power strip
+    /// outlet (P304M, P316M). Dates are in the plug's time zone.
+    EnergyDataDaily {
+        /// The year the quarter is in.
+        #[schemars(range(min = *DATA_YEARS.start(), max = *DATA_YEARS.end()))]
+        year: i32,
+        /// The quarter: 1 for January to March, 2 for April to June,
+        /// 3 for July to September, 4 for October to December.
+        #[schemars(range(min = *QUARTERS.start(), max = *QUARTERS.end()))]
+        quarter: u8,
+    },
+    /// Read the energy used per month, in watt-hours, for a year, from an
+    /// energy-monitoring plug (P110, P110M, P115) or power strip outlet
+    /// (P304M, P316M). Dates are in the plug's time zone.
+    EnergyDataMonthly {
+        /// The year to read.
+        #[schemars(range(min = *DATA_YEARS.start(), max = *DATA_YEARS.end()))]
+        year: i32,
+    },
+    /// Read the power draw every 5 minutes, in watts, from an
     /// energy-monitoring plug (P110, P110M, P115) or power strip outlet
     /// (P304M, P316M).
-    PowerData {
-        /// The period to read and how finely to split it.
-        interval: PowerDataIntervalRequest,
+    PowerDataEvery5Minutes {
+        /// When to start reading, in UTC, in the years 2000 to 9999. Rounded up
+        /// to the next 5 minute mark.
+        start_date_time: DateTime<Utc>,
+        /// The number of hours to read.
+        #[schemars(range(min = *POWER_5_MINUTE_HOURS.start(), max = *POWER_5_MINUTE_HOURS.end()))]
+        hours: u8,
+    },
+    /// Read the power draw every hour, in watts, from an energy-monitoring
+    /// plug (P110, P110M, P115) or power strip outlet (P304M, P316M).
+    PowerDataHourly {
+        /// When to start reading, in UTC, in the years 2000 to 9999. Rounded up
+        /// to the next hour.
+        start_date_time: DateTime<Utc>,
+        /// The number of days to read.
+        #[schemars(range(min = *POWER_HOURLY_DAYS.start(), max = *POWER_HOURLY_DAYS.end()))]
+        days: u8,
     },
     /// Not callable via `get_device_state`. Returns an error pointing to the
     /// dedicated `take_snapshot` tool. Listed here so the schema can give a
@@ -214,68 +259,14 @@ impl GetCapabilityRequest {
 /// The years energy and power data can be read for. Tapo plugs postdate 2000,
 /// and the bounds keep every date's timestamp positive and finite.
 pub const DATA_YEARS: RangeInclusive<i32> = 2000..=9999;
-/// The number of days `EnergyDataIntervalRequest::Hourly` can read.
+/// The number of days `GetCapabilityRequest::EnergyDataHourly` can read.
 pub const ENERGY_HOURLY_DAYS: RangeInclusive<u8> = 1..=8;
 /// The quarters of a year.
 pub const QUARTERS: RangeInclusive<u8> = 1..=4;
-/// The number of hours `PowerDataIntervalRequest::Every5Minutes` can read.
+/// The number of hours `GetCapabilityRequest::PowerDataEvery5Minutes` can read.
 pub const POWER_5_MINUTE_HOURS: RangeInclusive<u8> = 1..=12;
-/// The number of days `PowerDataIntervalRequest::Hourly` can read.
+/// The number of days `GetCapabilityRequest::PowerDataHourly` can read.
 pub const POWER_HOURLY_DAYS: RangeInclusive<u8> = 1..=6;
-
-/// The period to read energy data for. Dates are in the plug's time zone.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
-#[serde(tag = "type")]
-pub enum EnergyDataIntervalRequest {
-    /// One entry per hour, for whole days.
-    Hourly {
-        /// The first day to read, in the years 2000 to 9999.
-        start_date: NaiveDate,
-        /// The number of days to read, including `start_date`.
-        #[schemars(range(min = *ENERGY_HOURLY_DAYS.start(), max = *ENERGY_HOURLY_DAYS.end()))]
-        days: u8,
-    },
-    /// One entry per day, for a quarter of a year.
-    Daily {
-        /// The year the quarter is in.
-        #[schemars(range(min = *DATA_YEARS.start(), max = *DATA_YEARS.end()))]
-        year: i32,
-        /// The quarter: 1 for January to March, 2 for April to June,
-        /// 3 for July to September, 4 for October to December.
-        #[schemars(range(min = *QUARTERS.start(), max = *QUARTERS.end()))]
-        quarter: u8,
-    },
-    /// One entry per month, for a year.
-    Monthly {
-        /// The year to read.
-        #[schemars(range(min = *DATA_YEARS.start(), max = *DATA_YEARS.end()))]
-        year: i32,
-    },
-}
-
-/// The period to read power data for.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
-#[serde(tag = "type")]
-pub enum PowerDataIntervalRequest {
-    /// One entry every 5 minutes.
-    Every5Minutes {
-        /// When to start reading, in UTC, in the years 2000 to 9999. Rounded up
-        /// to the next 5 minute mark.
-        start_date_time: DateTime<Utc>,
-        /// The number of hours to read.
-        #[schemars(range(min = *POWER_5_MINUTE_HOURS.start(), max = *POWER_5_MINUTE_HOURS.end()))]
-        hours: u8,
-    },
-    /// One entry every hour.
-    Hourly {
-        /// When to start reading, in UTC, in the years 2000 to 9999. Rounded up
-        /// to the next hour.
-        start_date_time: DateTime<Utc>,
-        /// The number of days to read.
-        #[schemars(range(min = *POWER_HOURLY_DAYS.start(), max = *POWER_HOURLY_DAYS.end()))]
-        days: u8,
-    },
-}
 
 /// Parameters for `control_device`.
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -337,6 +328,7 @@ mod tests {
     use std::mem::discriminant;
 
     use serde_json::json;
+    use strum::{IntoEnumIterator as _, VariantNames as _};
 
     use super::*;
 
@@ -363,14 +355,22 @@ mod tests {
 
         let get_requests = [
             GetCapabilityRequest::DeviceInfo,
-            GetCapabilityRequest::EnergyData {
-                interval: EnergyDataIntervalRequest::Monthly { year: 2026 },
+            GetCapabilityRequest::EnergyDataHourly {
+                start_date: NaiveDate::MIN,
+                days: 1,
             },
-            GetCapabilityRequest::PowerData {
-                interval: PowerDataIntervalRequest::Every5Minutes {
-                    start_date_time: DateTime::UNIX_EPOCH,
-                    hours: 1,
-                },
+            GetCapabilityRequest::EnergyDataDaily {
+                year: 2026,
+                quarter: 4,
+            },
+            GetCapabilityRequest::EnergyDataMonthly { year: 2026 },
+            GetCapabilityRequest::PowerDataEvery5Minutes {
+                start_date_time: DateTime::UNIX_EPOCH,
+                hours: 1,
+            },
+            GetCapabilityRequest::PowerDataHourly {
+                start_date_time: DateTime::UNIX_EPOCH,
+                days: 1,
             },
             GetCapabilityRequest::Snapshot,
             GetCapabilityRequest::TemperatureHumidityRecords,
@@ -380,25 +380,45 @@ mod tests {
             },
         ];
         for request in get_requests {
-            let interval = match &request {
-                GetCapabilityRequest::EnergyData { .. } => {
-                    json!({ "type": "Monthly", "year": 2026 })
+            let mut value = match &request {
+                GetCapabilityRequest::EnergyDataHourly { .. } => {
+                    json!({ "start_date": "2026-10-17", "days": 1 })
                 }
-                GetCapabilityRequest::PowerData { .. } => json!({
-                    "type": "Every5Minutes",
-                    "start_date_time": "2026-10-17T00:00:00Z",
-                    "hours": 1,
-                }),
-                _ => json!(null),
+                GetCapabilityRequest::EnergyDataDaily { .. } => {
+                    json!({ "year": 2026, "quarter": 4 })
+                }
+                GetCapabilityRequest::EnergyDataMonthly { .. } => json!({ "year": 2026 }),
+                GetCapabilityRequest::PowerDataEvery5Minutes { .. } => {
+                    json!({ "start_date_time": "2026-10-17T00:00:00Z", "hours": 1 })
+                }
+                GetCapabilityRequest::PowerDataHourly { .. } => {
+                    json!({ "start_date_time": "2026-10-17T00:00:00Z", "days": 1 })
+                }
+                GetCapabilityRequest::TriggerLogs { .. } => {
+                    json!({ "page_size": 10, "start_id": 0 })
+                }
+                GetCapabilityRequest::DeviceInfo
+                | GetCapabilityRequest::Snapshot
+                | GetCapabilityRequest::TemperatureHumidityRecords => json!({}),
             };
-            let parsed: GetCapabilityRequest = serde_json::from_value(json!({
-                "type": request.name(),
-                "interval": interval,
-                "page_size": 10,
-                "start_id": 0,
-            }))
-            .unwrap();
+            value["type"] = json!(request.name());
+            let parsed: GetCapabilityRequest = serde_json::from_value(value).unwrap();
             assert_eq!(discriminant(&parsed), discriminant(&request));
         }
+    }
+
+    /// Every capability that `list_devices` lists must be a `type` that
+    /// `get_device_state` accepts, and the other way around.
+    #[test]
+    fn listed_capabilities_match_request_types() {
+        let mut listed: Vec<String> = GetCapability::iter()
+            .map(|capability| serde_json::to_value(capability).unwrap())
+            .map(|value| value.as_str().unwrap().to_string())
+            .collect();
+        let mut requested = GetCapabilityRequest::VARIANTS.to_vec();
+        listed.sort_unstable();
+        requested.sort_unstable();
+
+        assert_eq!(listed, requested);
     }
 }

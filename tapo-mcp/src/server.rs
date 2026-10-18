@@ -62,7 +62,7 @@ impl TapoMcp {
     }
 
     #[tool(
-        description = "Get a Tapo device's current state. Runs check_device first to verify the device ID matches at the given IP.",
+        description = "Get a Tapo device's current state. Checks the capability's parameters, then runs check_device to verify the device ID matches at the given IP.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,

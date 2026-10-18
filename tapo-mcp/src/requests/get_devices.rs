@@ -72,6 +72,16 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
     })
 }
 
+/// The get capabilities of the energy-monitoring plugs and power strip outlets,
+/// besides `DeviceInfo`.
+const ENERGY_MONITORING_CAPABILITIES: [GetCapability; 5] = [
+    GetCapability::EnergyDataHourly,
+    GetCapability::EnergyDataDaily,
+    GetCapability::EnergyDataMonthly,
+    GetCapability::PowerDataEvery5Minutes,
+    GetCapability::PowerDataHourly,
+];
+
 enum DeviceOutcome {
     Device {
         device: Device,
@@ -116,8 +126,7 @@ async fn process_device(device: DiscoveryResult) -> DeviceOutcome {
     let mut get_capabilities = vec![GetCapability::DeviceInfo];
     match &device {
         DiscoveryResult::PlugEnergyMonitoring { .. } => {
-            get_capabilities.push(GetCapability::EnergyData);
-            get_capabilities.push(GetCapability::PowerData);
+            get_capabilities.extend(ENERGY_MONITORING_CAPABILITIES);
         }
         DiscoveryResult::Camera { .. } | DiscoveryResult::CameraPtz { .. } => {
             get_capabilities.push(GetCapability::Snapshot);
@@ -168,11 +177,10 @@ async fn fetch_children(
                         model: c.model,
                         ip: ip.to_string(),
                         set_capabilities: vec![SetCapability::OnOff],
-                        get_capabilities: vec![
-                            GetCapability::DeviceInfo,
-                            GetCapability::EnergyData,
-                            GetCapability::PowerData,
-                        ],
+                        get_capabilities: [GetCapability::DeviceInfo]
+                            .into_iter()
+                            .chain(ENERGY_MONITORING_CAPABILITIES)
+                            .collect(),
                     })
                     .collect()
             })
