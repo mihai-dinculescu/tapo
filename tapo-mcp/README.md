@@ -48,7 +48,7 @@ Built on the `tapo` crate and the [rmcp](https://crates.io/crates/rmcp) SDK. Run
 
 ## Capabilities
 
-Devices and child devices expose separate lists of set and get capabilities they support.
+Devices and child devices expose separate lists of set and get capabilities they support. Child devices have no IP of their own; their `ip` is their parent's, which is the one to pass with the child's `id`.
 
 ### Set Capabilities
 

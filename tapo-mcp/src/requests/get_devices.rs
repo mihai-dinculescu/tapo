@@ -152,6 +152,7 @@ async fn fetch_children(
                         id: c.device_id,
                         name: c.nickname,
                         model: c.model,
+                        ip: ip.to_string(),
                         set_capabilities: vec![SetCapability::OnOff],
                         get_capabilities: vec![GetCapability::DeviceInfo],
                     })
@@ -165,6 +166,7 @@ async fn fetch_children(
                         id: c.device_id,
                         name: c.nickname,
                         model: c.model,
+                        ip: ip.to_string(),
                         set_capabilities: vec![SetCapability::OnOff],
                         get_capabilities: vec![
                             GetCapability::DeviceInfo,
@@ -177,17 +179,20 @@ async fn fetch_children(
         }
         DiscoveryResult::Hub { handler, .. } => handler.get_child_device_list().await.map(|list| {
             list.into_iter()
-                .map(|c| hub_child_to_child_device(c.into()))
+                .map(|c| hub_child_to_child_device(c.into(), ip))
                 .collect()
         }),
-        DiscoveryResult::HubIr { handler, .. } => handler
-            .get_child_device_list()
-            .await
-            .map(|list| list.into_iter().map(hub_child_to_child_device).collect()),
+        DiscoveryResult::HubIr { handler, .. } => {
+            handler.get_child_device_list().await.map(|list| {
+                list.into_iter()
+                    .map(|c| hub_child_to_child_device(c, ip))
+                    .collect()
+            })
+        }
         DiscoveryResult::CameraHub { handler, .. } => {
             handler.get_child_device_list().await.map(|list| {
                 list.into_iter()
-                    .map(|c| hub_child_to_child_device(c.into()))
+                    .map(|c| hub_child_to_child_device(c.into(), ip))
                     .collect()
             })
         }
@@ -209,7 +214,7 @@ async fn fetch_children(
     }
 }
 
-fn hub_child_to_child_device(child: ChildDeviceHubIrResult) -> ChildDevice {
+fn hub_child_to_child_device(child: ChildDeviceHubIrResult, ip: &str) -> ChildDevice {
     let mut get_capabilities = vec![GetCapability::DeviceInfo];
     match &child {
         ChildDeviceHubIrResult::S200(_)
@@ -225,6 +230,7 @@ fn hub_child_to_child_device(child: ChildDeviceHubIrResult) -> ChildDevice {
         id: child.device_id().to_string(),
         name: child.nickname().to_string(),
         model: child.model().to_string(),
+        ip: ip.to_string(),
         set_capabilities: vec![],
         get_capabilities,
     }

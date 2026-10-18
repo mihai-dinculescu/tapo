@@ -104,6 +104,7 @@ file. This change log follows the conventions of
 - `list_devices`, `check_device`, `get_device_state`, `take_snapshot`: added support for the C120 camera. `list_devices` lists the `Snapshot` capability for it.
 - `take_snapshot`: when `TAPO_MCP_PUBLIC_URL` is set, the result also carries a link to the image that stays valid for 5 minutes, so an agent can share it with the user or download the file.
 - `list_devices`, `tapo://devices`: the result now includes `discovered_at`, the time the discovery that produced the list started.
+- `list_devices`, `tapo://devices`: each child device now includes `ip`, its parent's IP address, which is the one to pass with the child's `id` to the other tools.
 - `list_devices`, `tapo://devices`: the result now includes `refresh_error` when the most recent background discovery failed. The devices are then the ones from the last successful discovery, at `discovered_at`.
 - `TAPO_MCP_DISCOVERY_INTERVAL`: added the number of seconds between background discoveries that refresh the device list. Defaults to 600 and must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most 86400 (one day).
 - OpenTelemetry: each tool call is now exported as a trace that shows how long the device check and the device request took, and marks failed calls. When the MCP client or a tracing reverse proxy sends trace context, the call joins that trace.

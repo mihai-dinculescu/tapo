@@ -81,6 +81,9 @@ pub struct ChildDevice {
     pub name: String,
     /// Child device model.
     pub model: String,
+    /// IP address of the parent device. Child devices have no IP of their own;
+    /// they are reached through their parent's.
+    pub ip: String,
     /// Capabilities that can be set on this child device.
     pub set_capabilities: Vec<SetCapability>,
     /// Capabilities that can be read from this child device.
@@ -128,7 +131,7 @@ pub struct SnapshotResult {
 pub struct CheckDeviceParams {
     /// Device ID from `list_devices`.
     pub id: String,
-    /// Device IP address from `list_devices`.
+    /// Device IP address from `list_devices`. For a child device, its `ip`, which is the parent's.
     pub ip: String,
 }
 
@@ -279,7 +282,7 @@ pub enum PowerDataIntervalRequest {
 pub struct ControlDeviceParams {
     /// Device ID from `list_devices`.
     pub id: String,
-    /// Device IP address from `list_devices`.
+    /// Device IP address from `list_devices`. For a child device, its `ip`, which is the parent's.
     pub ip: String,
     /// The set capabilities to apply.
     #[serde(deserialize_with = "deserialize_from_stringified_json")]
@@ -292,7 +295,7 @@ pub struct ControlDeviceParams {
 pub struct GetDeviceStateParams {
     /// Device ID from `list_devices`.
     pub id: String,
-    /// Device IP address from `list_devices`.
+    /// Device IP address from `list_devices`. For a child device, its `ip`, which is the parent's.
     pub ip: String,
     /// The get capability to read.
     #[serde(deserialize_with = "deserialize_from_stringified_json")]
