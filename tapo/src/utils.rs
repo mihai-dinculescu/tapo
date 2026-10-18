@@ -98,16 +98,24 @@ pub(crate) fn local_midnight<Tz: TimeZone>(date: NaiveDate, timezone: &Tz) -> Da
     match timezone.from_local_datetime(&midnight) {
         MappedLocalTime::Single(time) => time.to_utc(),
         MappedLocalTime::Ambiguous(earliest, _) => earliest.to_utc(),
-        MappedLocalTime::None => {
-            // Reading midnight with the offset from before the jump lands on
-            // the moment the clocks jumped.
-            let offset = timezone
-                .offset_from_utc_datetime(&(midnight - Duration::days(1)))
-                .fix();
-
-            (midnight - offset).and_utc()
-        }
+        // When the jump starts at midnight, this lands on the moment the
+        // clocks jumped.
+        MappedLocalTime::None => skipped_local_time(midnight, timezone),
     }
+}
+
+/// `time`, a local time that the clocks jump forward over in `timezone`, read
+/// with the offset from before the jump, in UTC. It lands as far past the jump
+/// as `time` is past the start of the skipped range.
+pub(crate) fn skipped_local_time<Tz: TimeZone>(
+    time: NaiveDateTime,
+    timezone: &Tz,
+) -> DateTime<Utc> {
+    let offset = timezone
+        .offset_from_utc_datetime(&(time - Duration::days(1)))
+        .fix();
+
+    (time - offset).and_utc()
 }
 
 /// The range of time `date` covers in `timezone`, as `(start, end)` in UTC,

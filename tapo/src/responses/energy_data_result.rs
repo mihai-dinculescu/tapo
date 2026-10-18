@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::responses::TapoResponseExt;
-use crate::utils::{der_tapo_datetime_format, local_midnight};
+use crate::utils::{der_tapo_datetime_format, local_midnight, skipped_local_time};
 
 /// Energy data result for the requested [`crate::requests::PowerDataInterval`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -87,10 +87,16 @@ impl EnergyDataResultRaw {
         // in hours changes with DST.
         let start_date = start.date_naive();
         // During a repeated hour, the later reading keeps the current entry.
+        // A device whose offsets disagree with `timezone` can report a time
+        // that `timezone` skips. Reading it with the offset from before the
+        // jump also gives the later reading.
         let now = timezone
             .from_local_datetime(&self.local_time)
             .latest()
-            .map(|now| now.to_utc());
+            .map_or_else(
+                || skipped_local_time(self.local_time, timezone),
+                |now| now.to_utc(),
+            );
         let mut entries = Vec::with_capacity(self.data.len());
 
         for (index, energy) in self.data.into_iter().enumerate() {
@@ -110,7 +116,7 @@ impl EnergyDataResultRaw {
                 }
             };
 
-            if now.is_some_and(|now| entry_start > now) {
+            if entry_start > now {
                 break;
             }
 
@@ -136,12 +142,12 @@ mod tests {
 
     use super::*;
 
-    fn raw(start_date_time: DateTime<Utc>, days: usize, interval: u64) -> EnergyDataResultRaw {
+    fn raw(start_date_time: DateTime<Utc>, count: usize, interval: u64) -> EnergyDataResultRaw {
         EnergyDataResultRaw {
             local_time: NaiveDate::from_ymd_opt(2100, 1, 1)
                 .unwrap()
                 .and_time(NaiveTime::MIN),
-            data: vec![0; days],
+            data: vec![0; count],
             start_timestamp: start_date_time.timestamp(),
             interval,
         }
@@ -204,6 +210,31 @@ mod tests {
             .map(|date_time| date_time.date())
             .collect();
         assert_eq!(dates, (1..=18).map(date).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn test_skipped_local_time_is_read_with_the_offset_from_before_the_jump() {
+        let at = |day, hour| {
+            NaiveDate::from_ymd_opt(2026, 9, day)
+                .unwrap()
+                .and_hms_opt(hour, 0, 0)
+                .unwrap()
+        };
+
+        // Santiago skips 00:00 to 01:00 on 2026-09-06.
+        let start = Santiago.from_local_datetime(&at(5, 22)).unwrap().to_utc();
+        let mut hours = raw(start, 6, 60);
+        hours.local_time = NaiveDate::from_ymd_opt(2026, 9, 6)
+            .unwrap()
+            .and_hms_opt(0, 30, 0)
+            .unwrap();
+
+        let result = hours.in_timezone(&Santiago).unwrap();
+
+        assert_eq!(
+            local_dates_and_times(&result),
+            vec![at(5, 22), at(5, 23), at(6, 1)]
+        );
     }
 
     #[test]
