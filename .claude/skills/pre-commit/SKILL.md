@@ -96,7 +96,6 @@ The decompiled Tapo Android app is a private reverse-engineering aid that lives 
 - Rewrite every hit to state what the app does, not where that was read. Keep wire-level names (JSON methods and fields, HTTP headers, request and response shapes as they travel); drop file, class, and line-number citations.
   - Not OK: ``//! The Tapo app (`ab1/c.java`, `xy2/b.java`) derives the keys from the `Key-Exchange` header``
   - OK: ``//! The Tapo app derives the keys from the `Key-Exchange` header``
-- The one intentional mention is the "Reverse Engineering the Tapo API" section in `CONTRIBUTING.md`, which describes the workflow without naming a file. Leave it as is.
 
 ### Integration test checks
 
