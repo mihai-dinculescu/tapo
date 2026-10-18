@@ -86,7 +86,7 @@ enum ReadRequest {
     TriggerLogs { page_size: u64, start_id: u64 },
 }
 
-/// Checks the parameters of `capability`, and that it is read by this tool.
+/// Checks the parameters of `capability`.
 fn read_request(capability: GetCapabilityRequest) -> Result<ReadRequest, TapoMcpError> {
     Ok(match capability {
         GetCapabilityRequest::DeviceInfo => ReadRequest::DeviceInfo,
@@ -107,12 +107,6 @@ fn read_request(capability: GetCapabilityRequest) -> Result<ReadRequest, TapoMcp
             start_date_time,
             days,
         } => ReadRequest::PowerData(power_data_hourly(start_date_time, days)?),
-        GetCapabilityRequest::Snapshot => {
-            return Err(TapoMcpError::WrongTool {
-                capability: capability.name().to_string(),
-                tool: "take_snapshot".to_string(),
-            });
-        }
         GetCapabilityRequest::TemperatureHumidityRecords => ReadRequest::TemperatureHumidityRecords,
         GetCapabilityRequest::TriggerLogs {
             page_size,

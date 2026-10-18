@@ -46,9 +46,6 @@ pub enum TapoMcpError {
     )]
     CameraCredentialsMissing,
 
-    #[error("Capability '{capability}' must be invoked via the dedicated `{tool}` tool")]
-    WrongTool { capability: String, tool: String },
-
     #[error("Invalid parameter '{name}': {message}")]
     InvalidParameter { name: String, message: String },
 
@@ -72,7 +69,6 @@ impl From<TapoMcpError> for McpError {
             TapoMcpError::DeviceTimeout { .. } => McpError::internal_error(message, data),
             TapoMcpError::WrongDeviceType { .. } => McpError::invalid_params(message, data),
             TapoMcpError::CameraCredentialsMissing => McpError::invalid_params(message, data),
-            TapoMcpError::WrongTool { .. } => McpError::invalid_params(message, data),
             TapoMcpError::InvalidParameter { .. } => McpError::invalid_params(message, data),
             TapoMcpError::DiscoveryUnavailable { .. } => McpError::internal_error(message, data),
         }

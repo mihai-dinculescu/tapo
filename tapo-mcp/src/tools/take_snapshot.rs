@@ -10,7 +10,7 @@ use tracing::field::Empty;
 use crate::config::AppConfig;
 use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
-use crate::models::{GetCapabilityRequest, SnapshotResult, TakeSnapshotParams};
+use crate::models::{GetCapability, SnapshotResult, TakeSnapshotParams};
 use crate::requests;
 use crate::requests::CheckedDevice;
 use crate::snapshots::SnapshotStore;
@@ -46,7 +46,7 @@ pub async fn take_snapshot(
                 }
                 _ => Err(TapoMcpError::WrongDeviceType {
                     id: params.id.clone(),
-                    capability: GetCapabilityRequest::Snapshot.name().to_string(),
+                    capability: GetCapability::Snapshot.name().to_string(),
                     expected: "a camera".to_string(),
                 }),
             },

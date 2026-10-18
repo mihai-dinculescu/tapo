@@ -36,8 +36,9 @@ pub enum SetCapability {
     OnOff,
 }
 
-/// A capability that can be read from a device with `get_device_state`.
-#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
+/// A capability that can be read from a device: `Snapshot` with `take_snapshot`, the
+/// others with `get_device_state`.
+#[derive(Debug, Clone, Deserialize, Serialize, JsonSchema, IntoStaticStr)]
 #[cfg_attr(test, derive(strum::EnumIter))]
 pub enum GetCapability {
     /// Read the device's current state.
@@ -58,6 +59,13 @@ pub enum GetCapability {
     TemperatureHumidityRecords,
     /// Read paginated trigger logs from a hub child sensor (S200, T100, T110, T300).
     TriggerLogs,
+}
+
+impl GetCapability {
+    /// The capability's name, as `list_devices` lists it.
+    pub fn name(&self) -> &'static str {
+        self.into()
+    }
 }
 
 /// A supported Tapo device found on the local network.
@@ -232,10 +240,6 @@ pub enum GetCapabilityRequest {
         #[schemars(range(min = *POWER_HOURLY_DAYS.start(), max = *POWER_HOURLY_DAYS.end()))]
         days: u8,
     },
-    /// Not callable via `get_device_state`. Returns an error pointing to the
-    /// dedicated `take_snapshot` tool. Listed here so the schema can give a
-    /// helpful error rather than `unknown variant 'Snapshot'`.
-    Snapshot,
     /// Read the last 24 hours of temperature and humidity records (T310, T315)
     /// at 15 minute intervals.
     TemperatureHumidityRecords,
@@ -377,7 +381,6 @@ mod tests {
                 start_date_time: DateTime::UNIX_EPOCH,
                 days: 1,
             },
-            GetCapabilityRequest::Snapshot,
             GetCapabilityRequest::TemperatureHumidityRecords,
             GetCapabilityRequest::TriggerLogs {
                 page_size: 10,
@@ -403,7 +406,6 @@ mod tests {
                     json!({ "page_size": 10, "start_id": 0 })
                 }
                 GetCapabilityRequest::DeviceInfo
-                | GetCapabilityRequest::Snapshot
                 | GetCapabilityRequest::TemperatureHumidityRecords => json!({}),
             };
             value["type"] = json!(request.name());
@@ -412,11 +414,12 @@ mod tests {
         }
     }
 
-    /// Every capability that `list_devices` lists must be a `type` that
-    /// `get_device_state` accepts, and the other way around.
+    /// Every capability that `list_devices` lists, except `Snapshot`, must be a
+    /// `type` that `get_device_state` accepts, and the other way around.
     #[test]
     fn listed_capabilities_match_request_types() {
         let mut listed: Vec<String> = GetCapability::iter()
+            .filter(|capability| !matches!(capability, GetCapability::Snapshot))
             .map(|capability| serde_json::to_value(capability).unwrap())
             .map(|value| value.as_str().unwrap().to_string())
             .collect();
