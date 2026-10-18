@@ -34,6 +34,21 @@ pub enum TapoMcpError {
         seconds: u64,
     },
 
+    #[error(
+        "Device timed out: id '{id}' at ip '{ip}' did not finish within {seconds} seconds. {}",
+        control_progress(*.applied, *.total, *.in_flight)
+    )]
+    ControlTimeout {
+        id: String,
+        ip: String,
+        seconds: u64,
+        applied: usize,
+        total: usize,
+        /// The name of the capability after the applied ones, when applying it
+        /// had started as the timeout fired, so the device may have applied it too.
+        in_flight: Option<&'static str>,
+    },
+
     #[error("Capability '{capability}' requires {expected}; device id '{id}' is not eligible")]
     WrongDeviceType {
         id: String,
@@ -52,6 +67,22 @@ pub enum TapoMcpError {
 
     #[error("Device discovery unavailable: {reason}")]
     DiscoveryUnavailable { reason: String },
+}
+
+fn control_progress(applied: usize, total: usize, in_flight: Option<&str>) -> String {
+    let noun = if total == 1 {
+        "capability"
+    } else {
+        "capabilities"
+    };
+    let progress = format!("Applied {applied} of {total} {noun} before the timeout");
+    match in_flight {
+        Some(name) => format!(
+            "{progress}; capability {} ({name}) may also have been applied",
+            applied + 1
+        ),
+        None => progress,
+    }
 }
 
 /// A tool's failure becomes a tool result with `is_error` set and the error
@@ -124,6 +155,40 @@ mod tests {
         assert_eq!(
             error_message(&err),
             "Failed to discover device at 192.168.1.126: error sending request: connection reset by peer"
+        );
+    }
+
+    #[test]
+    fn control_timeout_names_the_capability_in_flight() {
+        let err = TapoMcpError::ControlTimeout {
+            id: "id".to_string(),
+            ip: "192.168.1.100".to_string(),
+            seconds: 70,
+            applied: 1,
+            total: 2,
+            in_flight: Some("Brightness"),
+        };
+
+        assert_eq!(
+            err.to_string(),
+            "Device timed out: id 'id' at ip '192.168.1.100' did not finish within 70 seconds. Applied 1 of 2 capabilities before the timeout; capability 2 (Brightness) may also have been applied"
+        );
+    }
+
+    #[test]
+    fn control_timeout_before_any_capability_was_sent() {
+        let err = TapoMcpError::ControlTimeout {
+            id: "id".to_string(),
+            ip: "192.168.1.100".to_string(),
+            seconds: 70,
+            applied: 0,
+            total: 1,
+            in_flight: None,
+        };
+
+        assert_eq!(
+            err.to_string(),
+            "Device timed out: id 'id' at ip '192.168.1.100' did not finish within 70 seconds. Applied 0 of 1 capability before the timeout"
         );
     }
 

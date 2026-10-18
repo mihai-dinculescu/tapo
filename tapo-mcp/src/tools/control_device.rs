@@ -28,6 +28,9 @@ pub async fn control_device(
         });
     }
 
+    // Counted outside the device future, which a timeout drops partway through.
+    let mut applied = 0;
+    let mut in_flight = None;
     requests::with_device(config, locks, &params.id, &params.ip, async |checked| {
         for capability in params.capabilities {
             let span = tracing::info_span!(
@@ -36,6 +39,7 @@ pub async fn control_device(
                 otel.status_code = Empty,
                 "error.type" = Empty,
             );
+            in_flight = Some(capability.name());
             run_in_span(span, async {
                 match capability {
                     SetCapabilityRequest::Brightness { value } => {
@@ -50,10 +54,23 @@ pub async fn control_device(
                 }
             })
             .await?;
+            in_flight = None;
+            applied += 1;
         }
         Ok(())
     })
-    .await?;
+    .await
+    .map_err(|err| match err {
+        TapoMcpError::DeviceTimeout { id, ip, seconds } => TapoMcpError::ControlTimeout {
+            id,
+            ip,
+            seconds,
+            applied,
+            total: count,
+            in_flight,
+        },
+        err => err,
+    })?;
 
     Ok(CallToolResult::success(vec![]))
 }
