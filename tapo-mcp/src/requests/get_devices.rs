@@ -223,6 +223,11 @@ async fn fetch_children(
 }
 
 fn hub_child_to_child_device(child: ChildDeviceHubIrResult, ip: &str) -> ChildDevice {
+    let set_capabilities = match &child {
+        ChildDeviceHubIrResult::S210(_) => vec![SetCapability::OnOff],
+        _ => vec![],
+    };
+
     let mut get_capabilities = vec![GetCapability::DeviceInfo];
     match &child {
         ChildDeviceHubIrResult::S200(_)
@@ -239,7 +244,7 @@ fn hub_child_to_child_device(child: ChildDeviceHubIrResult, ip: &str) -> ChildDe
         name: child.nickname().to_string(),
         model: child.model().to_string(),
         ip: ip.to_string(),
-        set_capabilities: vec![],
+        set_capabilities,
         get_capabilities,
     }
 }

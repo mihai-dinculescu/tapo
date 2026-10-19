@@ -116,6 +116,7 @@ file. This change log follows the conventions of
 - OpenTelemetry: each tool call is now exported as a trace that shows how long the device check and the device request took, and marks failed calls. When the MCP client or a tracing reverse proxy sends trace context, the call joins that trace.
 - `control_device`: each `Color` preset name now comes with its color temperature, or its hue and saturation, so an agent can pick the preset closest to what the user asked for.
 - `get_device_state`: added the `EnergyDataHourly`, `EnergyDataDaily` and `EnergyDataMonthly` capabilities, which return the energy used per hour, day or month, and the `PowerDataEvery5Minutes` and `PowerDataHourly` capabilities, which return the power draw every 5 minutes or every hour, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists all five for these devices. The energy capabilities read days, quarters and years in the plug's time zone, so the entries match the Tapo app, and leave out the hours, days and months that have not started yet.
+- `list_devices`, `control_device`: S210 light switches paired to a hub now have the `OnOff` capability, so they can be turned on and off.
 - MCP Registry: the server entry now lists `TAPO_MCP_CAMERA_USERNAME`, `TAPO_MCP_CAMERA_PASSWORD` and `TAPO_MCP_ALLOWED_HOSTS`, so clients that install from the registry can set them.
 
 ### Changed

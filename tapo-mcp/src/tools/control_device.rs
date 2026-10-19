@@ -3,6 +3,7 @@ use std::pin::Pin;
 use rmcp::model::CallToolResult;
 use tapo::DiscoveryResult;
 use tapo::requests::Color;
+use tapo::responses::ChildDeviceHubIrResult;
 use tracing::field::Empty;
 
 use crate::config::AppConfig;
@@ -12,7 +13,7 @@ use crate::models::{
     BRIGHTNESS_LEVELS, CONTROL_CAPABILITIES, ControlDeviceParams, SetCapabilityRequest,
 };
 use crate::requests;
-use crate::requests::CheckedDevice;
+use crate::requests::{CheckedDevice, HubParent};
 use crate::telemetry::run_in_span;
 
 pub async fn control_device(
@@ -244,11 +245,23 @@ fn on_off_request<'a>(
             let plug = handler.plug_unchecked(child_id);
             on_off!(plug)
         }
+        CheckedDevice::HubChild {
+            hub,
+            child_id,
+            child: ChildDeviceHubIrResult::S210(_),
+        } => {
+            let switch = match hub {
+                HubParent::Hub(hub) => hub.s210_unchecked(child_id.clone()),
+                HubParent::HubIr(hub) => hub.s210_unchecked(child_id.clone()),
+                HubParent::CameraHub(hub) => hub.s210_unchecked(child_id.clone()),
+            };
+            on_off!(switch)
+        }
         CheckedDevice::HubChild { .. } => {
             return Err(TapoMcpError::WrongDeviceType {
                 id: id.to_string(),
                 capability: "OnOff".to_string(),
-                expected: "a power strip child".to_string(),
+                expected: "a power strip child or an S210 switch".to_string(),
             });
         }
     };
