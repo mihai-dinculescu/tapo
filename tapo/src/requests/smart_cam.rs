@@ -8,9 +8,11 @@ mod get_preset_config;
 mod get_timezone;
 mod motor_move;
 mod motor_move_to_preset;
+mod reboot_device;
 mod search_date_with_video;
 mod search_video_with_utc;
 mod section_names;
+mod soft_reset;
 
 #[cfg(feature = "debug")]
 mod get_app_component_list;
@@ -25,9 +27,11 @@ pub(crate) use get_preset_config::*;
 pub(crate) use get_timezone::*;
 pub(crate) use motor_move::*;
 pub(crate) use motor_move_to_preset::*;
+pub(crate) use reboot_device::*;
 pub(crate) use search_date_with_video::*;
 pub(crate) use search_video_with_utc::*;
 pub(crate) use section_names::*;
+pub(crate) use soft_reset::*;
 
 #[cfg(feature = "debug")]
 pub(crate) use get_app_component_list::*;

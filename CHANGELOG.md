@@ -18,6 +18,7 @@ file. This change log follows the conventions of
 - `DiscoveryResult`: added `address()`, the IP address and the port that the device was reached at during discovery. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
 - `ColorLightHandler`, `CameraHubHandler`, `CameraPtzHandler`, `HubHandler`, `HubIrHandler`, `LightHandler`, `PlugEnergyMonitoringHandler`, `PlugHandler`, `PowerStripEnergyMonitoringHandler`, `PowerStripHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: added `address()`, the IP address and the port that the handler reaches the device at. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: added `get_timezone`, which returns the device's timezone as `TimezoneResult`. The P304M and P316M child plugs return their power strip's.
+- `CameraHandler`, `CameraPtzHandler`: added `device_reboot` and `device_reset`. Unlike those of the other handlers, `device_reboot` takes no delay.
 
 ### Changed
 
@@ -66,6 +67,7 @@ file. This change log follows the conventions of
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: added `get_timezone`, which returns the device's timezone as `TimezoneResult`. The P304M and P316M child plugs return their power strip's.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` takes an optional `timezone`, the device's, to read the dates in. Pass the `timezone` from `get_timezone` to read it once for several calls. Without it, each call reads it, which takes one extra request.
 - `CameraHubHandler`: `get_recording_dates` takes an optional `timezone`, the hub's, to search the days in. Pass the `timezone` from `get_timezone` to read it once for several calls. Without it, each call reads it, which takes one extra request.
+- `CameraHandler`, `CameraPtzHandler`: added `device_reboot` and `device_reset`. Unlike those of the other handlers, `device_reboot` takes no delay.
 
 ### Changed
 

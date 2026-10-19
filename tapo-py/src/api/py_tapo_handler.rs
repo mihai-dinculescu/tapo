@@ -406,6 +406,38 @@ macro_rules! py_hub_alarm_handlers {
     };
 }
 
+/// Generates the device management methods for a handler created with
+/// [`py_handler!`], mirroring `camera_device_management_handlers!` in the `tapo` crate.
+///
+/// # Usage
+///
+/// ```ignore
+/// py_camera_device_management_handlers!(PyCameraHandler, CameraHandler);
+/// ```
+///
+/// # Generated code
+///
+/// * `device_reboot()` method
+/// * `device_reset()` method
+macro_rules! py_camera_device_management_handlers {
+    ($py_name:ident, $handler:ident) => {
+        #[pyo3::pymethods]
+        impl $py_name {
+            pub async fn device_reboot(&self) -> pyo3::prelude::PyResult<()> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(handler.read().await.deref(), $handler::device_reboot)
+            }
+
+            pub async fn device_reset(&self) -> pyo3::prelude::PyResult<()> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(handler.read().await.deref(), $handler::device_reset)
+            }
+        }
+    };
+}
+
 /// Generates the camera stream methods for a handler created with
 /// [`py_handler!`], mirroring `camera_stream_handlers!` in the `tapo` crate.
 ///

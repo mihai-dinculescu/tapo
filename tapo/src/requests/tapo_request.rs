@@ -10,8 +10,8 @@ use super::{
     SendIrCmdByIdParams, SmartCamAddMotorPositionParams, SmartCamControlChildParams,
     SmartCamDeletePresetParams, SmartCamGetChildDeviceListParams, SmartCamGetDeviceInfoParams,
     SmartCamGetGeneralDeviceListParams, SmartCamGetPresetConfigParams, SmartCamGetTimezoneParams,
-    SmartCamMotorMoveParams, SmartCamMotorMoveToPresetParams, SmartCamSearchDateWithVideoParams,
-    SmartCamSearchVideoWithUtcParams,
+    SmartCamMotorMoveParams, SmartCamMotorMoveToPresetParams, SmartCamRebootDeviceParams,
+    SmartCamSearchDateWithVideoParams, SmartCamSearchVideoWithUtcParams, SmartCamSoftResetParams,
 };
 
 #[cfg(feature = "debug")]
@@ -73,6 +73,10 @@ pub(crate) enum TapoRequest {
     SmartCamMotorMoveToPreset(TapoParams<SmartCamMotorMoveToPresetParams>),
     #[serde(rename = "deletePreset")]
     SmartCamDeletePreset(TapoParams<SmartCamDeletePresetParams>),
+    #[serde(rename = "rebootDevice")]
+    SmartCamRebootDevice(TapoParams<SmartCamRebootDeviceParams>),
+    #[serde(rename = "softReset")]
+    SmartCamSoftReset(TapoParams<SmartCamSoftResetParams>),
     #[serde(rename = "getChildDeviceList")]
     SmartCamGetChildDeviceList(TapoParams<SmartCamGetChildDeviceListParams>),
     // Shares the `childControl` pagination payload with `getChildDeviceList`.

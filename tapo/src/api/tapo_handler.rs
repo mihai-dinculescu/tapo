@@ -546,6 +546,54 @@ macro_rules! hub_alarm_handlers {
     };
 }
 
+/// Generates `device_reboot` and `device_reset` for SmartCam handlers, which
+/// take neither the delay nor the requests of the Smart protocol ones.
+macro_rules! camera_device_management_handlers {
+    ($name:ident) => {
+        impl $name {
+            /// *Reboots* the device.
+            ///
+            /// The device reboots right away. Subsequent commands may fail if sent during
+            /// the reboot process or before the device reconnects to the network.
+            pub async fn device_reboot(&self) -> Result<(), crate::error::Error> {
+                let request = crate::requests::TapoRequest::SmartCamRebootDevice(
+                    crate::requests::TapoParams::new(
+                        crate::requests::SmartCamRebootDeviceParams::new(),
+                    ),
+                );
+
+                self.client
+                    .read()
+                    .await
+                    .execute_smart_cam_command(request)
+                    .await
+            }
+
+            /// *Hardware resets* the device.
+            ///
+            /// **Warning**: This action will reset the device to its factory settings.
+            /// The connection to the Wi-Fi network and the Tapo app will be lost,
+            /// and the device will need to be reconfigured.
+            ///
+            /// This feature is especially useful when the device is difficult to access
+            /// and requires reconfiguration.
+            pub async fn device_reset(&self) -> Result<(), crate::error::Error> {
+                let request = crate::requests::TapoRequest::SmartCamSoftReset(
+                    crate::requests::TapoParams::new(
+                        crate::requests::SmartCamSoftResetParams::factory(),
+                    ),
+                );
+
+                self.client
+                    .read()
+                    .await
+                    .execute_smart_cam_command(request)
+                    .await
+            }
+        }
+    };
+}
+
 /// Generates the stream methods shared by the camera handlers (`CameraHandler`, `CameraPtzHandler`):
 /// `get_rtsp_stream_url` and `get_snapshot`.
 macro_rules! camera_stream_handlers {

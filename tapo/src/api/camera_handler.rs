@@ -6,4 +6,5 @@ tapo_handler! {
     CameraHandler(DeviceInfoCameraResult),
 }
 
+camera_device_management_handlers!(CameraHandler);
 camera_stream_handlers!(CameraHandler);

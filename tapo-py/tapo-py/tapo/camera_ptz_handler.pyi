@@ -28,6 +28,25 @@ class CameraPtzHandler(DeviceHandlerExt, DebugExt):
             DeviceInfoCameraResult: Device info of Tapo cameras (C120, C210, C220, C225, C325WB, C520WS, TC40, TC70).
         """
 
+    async def device_reboot(self) -> None:
+        """*Reboots* the device.
+
+        The device reboots right away. Subsequent commands may fail if sent during
+        the reboot process or before the device reconnects to the network.
+        """
+
+    async def device_reset(self) -> None:
+        """*Hardware resets* the device.
+
+        Warning:
+            This action will reset the device to its factory settings.
+            The connection to the Wi-Fi network and the Tapo app will be lost,
+            and the device will need to be reconfigured.
+
+        This feature is especially useful when the device is difficult to access
+        and requires reconfiguration.
+        """
+
     async def get_rtsp_stream_url(self, username: str, password: str) -> RtspStreamUrl:
         """Returns the RTSP stream URLs for the camera.
 

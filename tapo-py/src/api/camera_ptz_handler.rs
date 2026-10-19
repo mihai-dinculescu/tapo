@@ -11,6 +11,7 @@ py_handler! {
     py_name = "CameraPtzHandler",
 }
 
+py_camera_device_management_handlers!(PyCameraPtzHandler, CameraPtzHandler);
 py_camera_stream_handlers!(PyCameraPtzHandler, CameraPtzHandler);
 
 #[pymethods]

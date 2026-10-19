@@ -7,4 +7,5 @@ py_handler! {
     py_name = "CameraHandler",
 }
 
+py_camera_device_management_handlers!(PyCameraHandler, CameraHandler);
 py_camera_stream_handlers!(PyCameraHandler, CameraHandler);

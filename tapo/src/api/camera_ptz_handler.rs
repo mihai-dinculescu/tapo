@@ -17,6 +17,7 @@ tapo_handler! {
     CameraPtzHandler(DeviceInfoCameraResult),
 }
 
+camera_device_management_handlers!(CameraPtzHandler);
 camera_stream_handlers!(CameraPtzHandler);
 
 impl CameraPtzHandler {
