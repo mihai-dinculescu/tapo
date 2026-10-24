@@ -8,28 +8,29 @@ file. This change log follows the conventions of
 
 ### Added
 
-- `ApiClient`: added the `p125` builder for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient::discover_devices`.
-- `ApiClient`: added the `tp10` builder for the TP10 plug. It is served by `PlugHandler`, like the P100 and P105, and is recognised by `ApiClient::discover_devices`. (thanks to @rw-r-r-0644)
+- `ApiClient`: added the `c120` builder for the C120 camera. It returns a `CameraHandler`, which serves cameras without PTZ and has `get_device_info`, `get_rtsp_stream_url` and `get_snapshot`.
+- `DiscoveryResult::Camera` and `DeviceType::Camera`: `discover_devices` now returns C120 cameras with a ready-to-use `CameraHandler`, instead of as `DiscoveryResult::Other`.
 - `ApiClient`: added the `h110` builder for the H110 hub. It returns a `HubIrHandler`, which supports everything `HubHandler` does and adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient::discover_devices`. (thanks to @skoky)
 - `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 - `DiscoveryResult::HubIr` and `DeviceType::HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult::Other`. (thanks to @skoky)
-- `ApiClient`: added the `c120` builder for the C120 camera. It returns a `CameraHandler`, which serves cameras without PTZ and has `get_device_info`, `get_rtsp_stream_url` and `get_snapshot`.
-- `DiscoveryResult::Camera` and `DeviceType::Camera`: `discover_devices` now returns C120 cameras with a ready-to-use `CameraHandler`, instead of as `DiscoveryResult::Other`.
-- `DiscoveryResult`: added `address()`, the IP address and the port that the device was reached at during discovery. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
-- `ColorLightHandler`, `CameraHubHandler`, `CameraPtzHandler`, `HubHandler`, `HubIrHandler`, `LightHandler`, `PlugEnergyMonitoringHandler`, `PlugHandler`, `PowerStripEnergyMonitoringHandler`, `PowerStripHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: added `address()`, the IP address and the port that the handler reaches the device at. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
+- `ApiClient`: added the `p125` builder for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient::discover_devices`.
+- `ApiClient`: added the `tp10` builder for the TP10 plug. It is served by `PlugHandler`, like the P100 and P105, and is recognised by `ApiClient::discover_devices`. (thanks to @rw-r-r-0644)
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: added `get_timezone`, which returns the device's timezone as `TimezoneResult`. The P304M and P316M child plugs return their power strip's.
+- `ColorLightHandler`, `CameraHandler`, `CameraHubHandler`, `CameraPtzHandler`, `HubHandler`, `HubIrHandler`, `LightHandler`, `PlugEnergyMonitoringHandler`, `PlugHandler`, `PowerStripEnergyMonitoringHandler`, `PowerStripHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: added `address()`, the IP address and the port that the handler reaches the device at. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
+- `DiscoveryResult`: added `address()`, the IP address and the port that the device was reached at during discovery. Pass them to an `ApiClient` builder as `"{ip}:{port}"` to reach the device again.
 - `CameraHandler`, `CameraPtzHandler`: added `device_reboot` and `device_reset`. Unlike those of the other handlers, `device_reboot` takes no delay.
 
 ### Changed
 
-- `LightingEffect`: changed `brightness_range` from `Option<Vec<u8>>` to `Option<[u8; 2]>`, matching `with_brightness_range` and the other range fields.
-- `TapoResponseError::Unauthorized`: the `FORBIDDEN` description now suggests turning Third-Party Compatibility off and then connecting to the device again. On cameras and other camera-family devices, such as the H200 and H500 hubs, the `HASH_MISMATCH` description now asks only to check the TP-Link account password.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now takes a `timezone`, the device's, to read the dates in. Pass the `timezone` from `get_timezone` to read it once for several calls, or `None` to have each call read it, which takes one extra request.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now leaves out the hours, days and months that have not started yet on the device. They used to be returned with 0 Wh, as if no energy had been used.
+- `DeviceType`, `DiscoveryResult`, `ChildDeviceHubResult`, `ChildDeviceHubIrResult`, `RecordingType`: marked as `#[non_exhaustive]`, so that future releases can add device and recording types without breaking your code. A `match` on them now needs a wildcard arm (`_ => ...`).
 - `ApiClient::discover_devices`: a device that announces its web server on a port other than 80 is now reached on that port.
 - `DiscoveryResult::Other`: replaced the `ip` field with `address`, the IP address and the port that the device was reached at during discovery, as `(ip, port)`.
-- `DeviceType`, `DiscoveryResult`, `ChildDeviceHubResult`, `ChildDeviceHubIrResult`, `RecordingType`: marked as `#[non_exhaustive]`, so that future releases can add device and recording types without breaking your code. A `match` on them now needs a wildcard arm (`_ => ...`).
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now takes a `timezone`, the device's, to read the dates in. Pass the `timezone` from `get_timezone` to read it once for several calls, or `None` to have each call read it, which takes one extra request.
 - `CameraHubHandler`: `get_timezone` now returns `TimezoneResult`, like the energy-monitoring plugs, and `TimezoneHubResult` was removed. Its `zone_id` is now `timezone`, and its `timezone` label, such as `UTC+01:00`, is now `standard_offset` in minutes.
 - `CameraHubHandler`: `get_recording_dates` now takes a `timezone`, the hub's, to search the days in. Pass the `timezone` from `get_timezone` to read it once for several calls, or `None` to have each call read it, which takes one extra request.
+- `LightingEffect`: changed `brightness_range` from `Option<Vec<u8>>` to `Option<[u8; 2]>`, matching `with_brightness_range` and the other range fields.
+- `TapoResponseError::Unauthorized`: the `FORBIDDEN` description now suggests turning Third-Party Compatibility off and then connecting to the device again. On cameras and other camera-family devices, such as the H200 and H500 hubs, the `HASH_MISMATCH` description now asks only to check the TP-Link account password.
 
 ### Removed
 
@@ -38,45 +39,45 @@ file. This change log follows the conventions of
 
 ### Fixed
 
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now reads the dates in the device's timezone instead of the timezone of the machine running the code, so the entries line up with the Tapo app wherever the code runs. Before, on a machine in another timezone, every entry's `start_date_time` was off by the difference.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` no longer panics in time zones where the clocks change at midnight, such as America/Santiago. A day whose midnight is skipped now starts when the clocks resume.
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now leaves out the hours, days and months that have not started yet on the device. They used to be returned with 0 Wh, as if no energy had been used.
+- `ApiClient`: connecting to a camera that asks for a SHA-256-crypt password, as the C120 on firmware 1.9.4 does after a firmware update, now works. It used to fail with `The device asks for a password transform that is not supported yet`.
+- `CameraPtzHandler`: `get_snapshot` now gives up after the client's timeout, 30 seconds unless changed with `ApiClient::with_timeout`, wherever the camera stops responding. It used to wait forever when the camera stopped responding while the video stream was being opened, and gave up after 5 seconds while waiting for the frame.
 - `ApiClient`: connecting to a camera by its IP address with a wrong password now fails with `TPAP_CREDENTIALS`, which warns that the device locks itself after too many failed logins, instead of with `HASH_MISMATCH`.
 - `CameraPtzHandler`: `get_rtsp_stream_url` and `get_snapshot` now work when the builder was given an address with a port (`"{ip}:{port}"`). Before, `get_rtsp_stream_url` panicked and `get_snapshot` returned an error.
 - `CameraHubHandler`: `download_recording` now works when the builder was given an address with a port (`"{ip}:{port}"`). Before, it returned an error.
-- `ApiClient`: connecting to cameras with newer firmware, such as the C120 on firmware 1.9.4, now works. It used to fail with `The device asks for a password transform that is not supported yet`.
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now reads the dates in the device's timezone instead of the timezone of the machine running the code, so the entries line up with the Tapo app wherever the code runs. Before, on a machine in another timezone, every entry's `start_date_time` was off by the difference.
-- `CameraPtzHandler`: `get_snapshot` now gives up after the client's timeout, 30 seconds unless changed with `ApiClient::with_timeout`, wherever the camera stops responding. It used to wait forever when the camera stopped responding while the video stream was being opened, and gave up after 5 seconds while waiting for the frame.
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
-- `ApiClient`: added the `p125` method for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient.discover_devices`.
-- `ApiClient`: added the `tp10` method for the TP10 plug. It is served by `PlugHandler`, like the P100 and P105, and is recognised by `ApiClient.discover_devices`. (thanks to @rw-r-r-0644)
+- `ApiClient`: added the `c120` method for the C120 camera. It returns a `CameraHandler`, which serves cameras without PTZ and has `get_device_info`, `get_rtsp_stream_url` and `get_snapshot`.
+- `DiscoveryResult.Camera` and `DeviceType.Camera`: `discover_devices` now returns C120 cameras with a ready-to-use `CameraHandler`, instead of as `DiscoveryResult.Other`.
 - `ApiClient`: added the `h110` method for the H110 hub. It returns a `HubIrHandler`, which supports everything `HubHandler` does and adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient.discover_devices`. (thanks to @skoky)
 - `IrRemoteHandler`: added for the IR remotes. `send_key_by_name` sends one of the keys stored on the remote, which `get_device_info` lists in `key_list`. (thanks to @skoky)
 - `DiscoveryResult.HubIr` and `DeviceType.HubIr`: `discover_devices` now returns H110 hubs with a ready-to-use `HubIrHandler`, instead of as `DiscoveryResult.Other`. (thanks to @skoky)
-- `ApiClient`: added the `c120` method for the C120 camera. It returns a `CameraHandler`, which serves cameras without PTZ and has `get_device_info`, `get_rtsp_stream_url` and `get_snapshot`.
-- `DiscoveryResult.Camera` and `DeviceType.Camera`: `discover_devices` now returns C120 cameras with a ready-to-use `CameraHandler`, instead of as `DiscoveryResult.Other`.
-- `LightingEffect`, `SegmentEffect`: the fields of an effect built in Python can now be read, such as `effect.brightness`.
-- `SegmentEffect`: added the `to_dict` method.
-- `SegmentEffectType`: added `NONE`.
-- `DiscoveryResult`: added `address`, the IP address and the port that the device was reached at during discovery, as a tuple. Pass them to an `ApiClient` method as `f"{ip}:{port}"` to reach the device again.
-- `ColorLightHandler`, `CameraHubHandler`, `CameraPtzHandler`, `HubHandler`, `HubIrHandler`, `LightHandler`, `PlugEnergyMonitoringHandler`, `PlugHandler`, `PowerStripEnergyMonitoringHandler`, `PowerStripHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: added `address`, the IP address and the port that the handler reaches the device at, as a tuple. Pass them to an `ApiClient` method as `f"{ip}:{port}"` to reach the device again.
+- `ApiClient`: added the `p125` method for the P125 and P125M plugs. Both are served by `PlugHandler`, like the P100 and P105, and are recognised by `ApiClient.discover_devices`.
+- `ApiClient`: added the `tp10` method for the TP10 plug. It is served by `PlugHandler`, like the P100 and P105, and is recognised by `ApiClient.discover_devices`. (thanks to @rw-r-r-0644)
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: added `get_timezone`, which returns the device's timezone as `TimezoneResult`. The P304M and P316M child plugs return their power strip's.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` takes an optional `timezone`, the device's, to read the dates in. Pass the `timezone` from `get_timezone` to read it once for several calls. Without it, each call reads it, which takes one extra request.
 - `CameraHubHandler`: `get_recording_dates` takes an optional `timezone`, the hub's, to search the days in. Pass the `timezone` from `get_timezone` to read it once for several calls. Without it, each call reads it, which takes one extra request.
+- `ColorLightHandler`, `CameraHandler`, `CameraHubHandler`, `CameraPtzHandler`, `HubHandler`, `HubIrHandler`, `LightHandler`, `PlugEnergyMonitoringHandler`, `PlugHandler`, `PowerStripEnergyMonitoringHandler`, `PowerStripHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`: added `address`, the IP address and the port that the handler reaches the device at, as a tuple. Pass them to an `ApiClient` method as `f"{ip}:{port}"` to reach the device again.
+- `DiscoveryResult`: added `address`, the IP address and the port that the device was reached at during discovery, as a tuple. Pass them to an `ApiClient` method as `f"{ip}:{port}"` to reach the device again.
 - `CameraHandler`, `CameraPtzHandler`: added `device_reboot` and `device_reset`. Unlike those of the other handlers, `device_reboot` takes no delay.
+- `LightingEffect`, `SegmentEffect`: the fields of an effect built in Python can now be read, such as `effect.brightness`.
+- `SegmentEffect`: added the `to_dict` method.
+- `SegmentEffectType`: added `NONE`.
 
 ### Changed
 
-- `LightingEffect`: `hue_range`, `saturation_range`, `transition_range` and `brightness_range` now return a tuple of two ints, `display_colors`, `backgrounds`, `init_states` and `sequence` return a list of tuples, and `segments` returns a list of ints. In the `lighting_effect` returned by `RgbicLightStripHandler.get_device_info`, the ranges used to be lists, the colors and states used to be lists of lists, and `brightness_range` and `segments` used to be `bytes`.
-- `ApiClient`: the description of a `FORBIDDEN` exception now suggests turning Third-Party Compatibility off and then connecting to the device again. On cameras and other camera-family devices, such as the H200 and H500 hubs, the description of a `HASH_MISMATCH` exception now asks only to check the TP-Link account password.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now leaves out the hours, days and months that have not started yet on the device. They used to be returned with 0 Wh, as if no energy had been used.
 - `ApiClient.discover_devices`: a device that announces its web server on a port other than 80 is now reached on that port.
 - `DiscoveryResult.Other`: replaced the `ip` field with `address`, the IP address and the port that the device was reached at during discovery, as a tuple, so the match arm is now `DiscoveryResult.Other(device_info, address)`.
 - `RefreshSessionExt`: renamed to `DeviceHandlerExt`, which also has `address`.
 - `CameraHubHandler`: `get_timezone` now returns `TimezoneResult`, like the energy-monitoring plugs, and `TimezoneHubResult` was removed. Its `zone_id` is now `timezone`, and its `timezone` label, such as `UTC+01:00`, is now `standard_offset` in minutes.
+- `LightingEffect`: `hue_range`, `saturation_range`, `transition_range` and `brightness_range` now return a tuple of two ints, `display_colors`, `backgrounds`, `init_states` and `sequence` return a list of tuples, and `segments` returns a list of ints. In the `lighting_effect` returned by `RgbicLightStripHandler.get_device_info`, the ranges used to be lists, the colors and states used to be lists of lists, and `brightness_range` and `segments` used to be `bytes`.
+- `ApiClient`: the description of a `FORBIDDEN` exception now suggests turning Third-Party Compatibility off and then connecting to the device again. On cameras and other camera-family devices, such as the H200 and H500 hubs, the description of a `HASH_MISMATCH` exception now asks only to check the TP-Link account password.
 
 ### Removed
 
@@ -85,54 +86,54 @@ file. This change log follows the conventions of
 
 ### Fixed
 
-- `RgbicLightStripHandler`: `set_lighting_effect` now accepts the `lighting_effect` returned by `get_device_info`. It used to raise a `TypeError`.
-- `ColorLightSetDeviceInfoParams`: can now be imported from `tapo.requests`. The class was registered as `LightSetDeviceInfoParams`.
-- `ChargingStatus`, `ChildDeviceComponentList`: can now be imported from `tapo.responses`.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now reads the dates in the device's timezone instead of the timezone of the machine running the code, so the entries line up with the Tapo app wherever the code runs. Before, on a machine in another timezone, every entry's `start_date_time` was off by the difference.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: corrected `get_energy_data` with the daily interval so that every entry starts at local midnight. Entries after a daylight saving time change used to start an hour before or after it.
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` no longer raises a `PanicException` in time zones where the clocks change at midnight, such as America/Santiago. A day whose midnight is skipped now starts when the clocks resume.
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now leaves out the hours, days and months that have not started yet on the device. They used to be returned with 0 Wh, as if no energy had been used.
+- `ApiClient`: connecting to a camera that asks for a SHA-256-crypt password, as the C120 on firmware 1.9.4 does after a firmware update, now works. It used to raise `The device asks for a password transform that is not supported yet`.
 - `CameraPtzHandler`: `get_snapshot` now gives up after the client's timeout, 30 seconds unless changed with the `timeout_s` of `ApiClient`, wherever the camera stops responding. It used to wait forever when the camera stopped responding while the video stream was being opened, and gave up after 5 seconds while waiting for the frame.
+- `ApiClient`: connecting to a camera by its IP address with a wrong password now raises a `TPAP_CREDENTIALS` exception, which warns that the device locks itself after too many failed logins, instead of a `HASH_MISMATCH` one.
+- `RgbicLightStripHandler`: `set_lighting_effect` now accepts the `lighting_effect` returned by `get_device_info`. It used to raise a `TypeError`.
+- `CameraPtzHandler`: `get_rtsp_stream_url` and `get_snapshot` now work when the `ApiClient` method was given an address with a port (`f"{ip}:{port}"`). Before, `get_rtsp_stream_url` panicked and `get_snapshot` returned an error.
+- `CameraHubHandler`: `download_recording` now works when the `ApiClient` method was given an address with a port (`f"{ip}:{port}"`). Before, it returned an error.
+- `ColorLightSetDeviceInfoParams`: can now be imported from `tapo.requests`. The class was registered as `LightSetDeviceInfoParams`.
+- `ChargingStatus`, `ChildDeviceComponentList`: can now be imported from `tapo.responses`.
 - `AlarmRingtone`: added the missing `Default` to the type stubs.
 - `DeviceInfoSmartExt`: corrected the type stubs to declare it as a `Protocol`.
 - `DeviceInfoSmartExt`, `DeviceInfoBasicResult`, `DeviceInfoCameraResult`: corrected the type hints of `latitude` and `longitude` to `int`. They were declared as `float`.
 - `EnergyUsageResult`: corrected the type hint of `electricity_charge` to a list of ints. It was declared as a tuple.
-- `ApiClient`: connecting to a camera by its IP address with a wrong password now raises a `TPAP_CREDENTIALS` exception, which warns that the device locks itself after too many failed logins, instead of a `HASH_MISMATCH` one.
-- `CameraPtzHandler`: `get_rtsp_stream_url` and `get_snapshot` now work when the `ApiClient` method was given an address with a port (`f"{ip}:{port}"`). Before, `get_rtsp_stream_url` panicked and `get_snapshot` returned an error.
-- `CameraHubHandler`: `download_recording` now works when the `ApiClient` method was given an address with a port (`f"{ip}:{port}"`). Before, it returned an error.
-- `ApiClient`: connecting to cameras with newer firmware, such as the C120 on firmware 1.9.4, now works. It used to raise `The device asks for a password transform that is not supported yet`.
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` now reads the dates in the device's timezone instead of the timezone of the machine running the code, so the entries line up with the Tapo app wherever the code runs. Before, on a machine in another timezone, every entry's `start_date_time` was off by the difference.
 
 ## [MCP Unreleased][Unreleased]
 
 ### Added
 
-- `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub, with its sensors and IR remotes listed under `children`. `get_device_state` returns the keys stored on each IR remote. (thanks to @skoky)
+- `get_device_state`: added the `EnergyDataHourly`, `EnergyDataDaily` and `EnergyDataMonthly` capabilities, which return the energy used per hour, day or month, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists them for these devices. The days, quarters and years are read in the plug's time zone, so the entries match the Tapo app, and the hours, days and months that have not started yet are left out.
+- `get_device_state`: added the `PowerDataEvery5Minutes` and `PowerDataHourly` capabilities, which return the power draw every 5 minutes or every hour, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists them for these devices.
 - `list_devices`, `check_device`, `get_device_state`, `take_snapshot`: added support for the C120 camera. `list_devices` lists the `Snapshot` capability for it.
+- `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub, with its sensors and IR remotes listed under `children`. `get_device_state` returns the keys stored on each IR remote. (thanks to @skoky)
+- `list_devices`, `control_device`: S210 light switches paired to a hub now have the `OnOff` capability, so they can be turned on and off.
 - `take_snapshot`: when `TAPO_MCP_PUBLIC_URL` is set, the result also carries a link to the image that stays valid for 5 minutes, so an agent can share it with the user or download the file.
-- `list_devices`, `tapo://devices`: the result now includes `discovered_at`, the time the discovery that produced the list started.
+- `control_device`: each `Color` preset name now comes with its color temperature, or its hue and saturation, so an agent can pick the preset closest to what the user asked for.
 - `list_devices`, `tapo://devices`: each child device now includes `ip`, its parent's IP address, which is the one to pass with the child's `id` to the other tools.
+- `list_devices`, `tapo://devices`: the result now includes `discovered_at`, the time the discovery that produced the list started.
 - `list_devices`, `tapo://devices`: the result now includes `refresh_error` when the most recent background discovery failed. The devices are then the ones from the last successful discovery, at `discovered_at`.
 - `TAPO_MCP_DISCOVERY_INTERVAL`: added the number of seconds between background discoveries that refresh the device list. Defaults to 600 and must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most 86400 (one day).
 - OpenTelemetry: each tool call is now exported as a trace that shows how long the device check and the device request took, and marks failed calls. When the MCP client or a tracing reverse proxy sends trace context, the call joins that trace.
-- `control_device`: each `Color` preset name now comes with its color temperature, or its hue and saturation, so an agent can pick the preset closest to what the user asked for.
-- `get_device_state`: added the `EnergyDataHourly`, `EnergyDataDaily` and `EnergyDataMonthly` capabilities, which return the energy used per hour, day or month, and the `PowerDataEvery5Minutes` and `PowerDataHourly` capabilities, which return the power draw every 5 minutes or every hour, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists all five for these devices. The energy capabilities read days, quarters and years in the plug's time zone, so the entries match the Tapo app, and leave out the hours, days and months that have not started yet.
-- `list_devices`, `control_device`: S210 light switches paired to a hub now have the `OnOff` capability, so they can be turned on and off.
 - MCP Registry: the server entry now lists `TAPO_MCP_CAMERA_USERNAME`, `TAPO_MCP_CAMERA_PASSWORD` and `TAPO_MCP_ALLOWED_HOSTS`, so clients that install from the registry can set them.
 
 ### Changed
 
-- `take_snapshot`: the result now includes the device id, capture time and size as text alongside the image.
 - `list_devices`, `tapo://devices`: now return the device list from the most recent background discovery immediately, instead of waiting for a new discovery on every call. Until a discovery has succeeded, they return a "device discovery unavailable" error, which gives the reason when discovery failed.
-- `TAPO_MCP_DISCOVERY_TIMEOUT`: a value outside 1 to 60 now stops the server at startup with an error naming the setting, instead of making every device listing fail.
 - `check_device`, `get_device_state`, `control_device`, `take_snapshot`: calls to the same device, such as several outlets of one power strip, now run one at a time instead of failing when made together. Calls to different devices still run in parallel. While a background discovery runs, these calls wait for it to finish.
+- `check_device`, `get_device_state`, `control_device`, `list_devices`, `take_snapshot`: a failed call now gives the agent the error message as the call's result, so the agent sees why it failed. Calls to an unknown tool are still rejected as before.
+- `control_device`: a capability the device does not support, or one with an invalid value, now fails the call before any capability is applied. It used to fail only when its turn came, after the ones before it had already changed the device. When the device returns an error partway through, the error now says how many of the capabilities were applied, which one failed, and whether that one may still have been applied.
 - `control_device`: `capabilities` now takes at most 12 entries. A call with more, or with none, fails before the device is contacted.
 - `get_device_state`: `Snapshot` is no longer listed among the capabilities it takes, and its description now points to `take_snapshot` for a camera's `Snapshot` capability. Asking for it fails as an unknown capability.
-- `check_device`, `get_device_state`, `control_device`, `list_devices`, `take_snapshot`: a failed call now gives the agent the error message as the call's result, so the agent sees why it failed. Calls to an unknown tool are still rejected as before.
+- `take_snapshot`: the result now includes the device id, capture time and size as text alongside the image.
+- `TAPO_MCP_DISCOVERY_TIMEOUT`: a value outside 1 to 60 now stops the server at startup with an error naming the setting, instead of making every device listing fail.
 
 ### Fixed
 
 - `check_device`, `get_device_state`, `control_device`, `take_snapshot`: now fail with a "device timed out" error when the device is still not done after `TAPO_MCP_DISCOVERY_TIMEOUT` plus 60 seconds. A device that stopped responding used to hold up every later call to it, and once a background discovery started, every call to every device. For `control_device`, the error also says how many of the capabilities were applied before the device timed out, and whether the next one may have been applied too.
-- `control_device`: a capability the device does not support, or one with an invalid value, now fails the call before any capability is applied. It used to fail only when its turn came, after the ones before it had already changed the device. When the device returns an error partway through, the error now says how many of the capabilities were applied, which one failed, and whether that one may still have been applied.
 - `take_snapshot`: now fails after 30 seconds when the camera stops responding. It used to wait forever when the camera stopped responding while the video stream was being opened, and gave up after 5 seconds while waiting for the frame.
 
 ## [MCP v0.5.3][tapo-mcp-v0.5.3] - 2026-10-04
