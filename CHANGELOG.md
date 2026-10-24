@@ -6,6 +6,44 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+## [Python Unreleased][Unreleased]
+
+## [MCP Unreleased][Unreleased]
+
+### Added
+
+- `get_device_state`: added the `EnergyDataHourly`, `EnergyDataDaily` and `EnergyDataMonthly` capabilities, which return the energy used per hour, day or month, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists them for these devices. The days, quarters and years are read in the plug's time zone, so the entries match the Tapo app, and the hours, days and months that have not started yet are left out.
+- `get_device_state`: added the `PowerDataEvery5Minutes` and `PowerDataHourly` capabilities, which return the power draw every 5 minutes or every hour, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists them for these devices.
+- `list_devices`, `check_device`, `get_device_state`, `take_snapshot`: added support for the C120 camera. `list_devices` lists the `Snapshot` capability for it.
+- `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub, with its sensors and IR remotes listed under `children`. `get_device_state` returns the keys stored on each IR remote. (thanks to @skoky)
+- `list_devices`, `control_device`: S210 light switches paired to a hub now have the `OnOff` capability, so they can be turned on and off.
+- `take_snapshot`: when `TAPO_MCP_PUBLIC_URL` is set, the result also carries a link to the image that stays valid for 5 minutes, so an agent can share it with the user or download the file.
+- `control_device`: each `Color` preset name now comes with its color temperature, or its hue and saturation, so an agent can pick the preset closest to what the user asked for.
+- `list_devices`, `tapo://devices`: each child device now includes `ip`, its parent's IP address, which is the one to pass with the child's `id` to the other tools.
+- `list_devices`, `tapo://devices`: the result now includes `discovered_at`, the time the discovery that produced the list started.
+- `list_devices`, `tapo://devices`: the result now includes `refresh_error` when the most recent background discovery failed. The devices are then the ones from the last successful discovery, at `discovered_at`.
+- `TAPO_MCP_DISCOVERY_INTERVAL`: added the number of seconds between background discoveries that refresh the device list. Defaults to 600 and must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most 86400 (one day).
+- OpenTelemetry: each tool call is now exported as a trace that shows how long the device check and the device request took, and marks failed calls. When the MCP client or a tracing reverse proxy sends trace context, the call joins that trace.
+- MCP Registry: the server entry now lists `TAPO_MCP_CAMERA_USERNAME`, `TAPO_MCP_CAMERA_PASSWORD` and `TAPO_MCP_ALLOWED_HOSTS`, so clients that install from the registry can set them.
+
+### Changed
+
+- `list_devices`, `tapo://devices`: now return the device list from the most recent background discovery immediately, instead of waiting for a new discovery on every call. Until a discovery has succeeded, they return a "device discovery unavailable" error, which gives the reason when discovery failed.
+- `check_device`, `get_device_state`, `control_device`, `take_snapshot`: calls to the same device, such as several outlets of one power strip, now run one at a time instead of failing when made together. Calls to different devices still run in parallel. While a background discovery runs, these calls wait for it to finish.
+- `check_device`, `get_device_state`, `control_device`, `list_devices`, `take_snapshot`: a failed call now gives the agent the error message as the call's result, so the agent sees why it failed. Calls to an unknown tool are still rejected as before.
+- `control_device`: a capability the device does not support, or one with an invalid value, now fails the call before any capability is applied. It used to fail only when its turn came, after the ones before it had already changed the device. When the device returns an error partway through, the error now says how many of the capabilities were applied, which one failed, and whether that one may still have been applied.
+- `control_device`: `capabilities` now takes at most 12 entries. A call with more, or with none, fails before the device is contacted.
+- `get_device_state`: `Snapshot` is no longer listed among the capabilities it takes, and its description now points to `take_snapshot` for a camera's `Snapshot` capability. Asking for it fails as an unknown capability.
+- `take_snapshot`: the result now includes the device id, capture time and size as text alongside the image.
+- `TAPO_MCP_DISCOVERY_TIMEOUT`: a value outside 1 to 60 now stops the server at startup with an error naming the setting, instead of making every device listing fail.
+
+### Fixed
+
+- `check_device`, `get_device_state`, `control_device`, `take_snapshot`: now fail with a "device timed out" error when the device is still not done after `TAPO_MCP_DISCOVERY_TIMEOUT` plus 60 seconds. A device that stopped responding used to hold up every later call to it, and once a background discovery started, every call to every device. For `control_device`, the error also says how many of the capabilities were applied before the device timed out, and whether the next one may have been applied too.
+- `take_snapshot`: now fails after 30 seconds when the camera stops responding. It used to wait forever when the camera stopped responding while the video stream was being opened, and gave up after 5 seconds while waiting for the frame.
+
+## [Rust v0.12.0][v0.12.0] - 2026-10-24
+
 ### Added
 
 - `ApiClient`: added the `c120` builder for the C120 camera. It returns a `CameraHandler`, which serves cameras without PTZ and has `get_device_info`, `get_rtsp_stream_url` and `get_snapshot`.
@@ -48,7 +86,7 @@ file. This change log follows the conventions of
 - `CameraPtzHandler`: `get_rtsp_stream_url` and `get_snapshot` now work when the builder was given an address with a port (`"{ip}:{port}"`). Before, `get_rtsp_stream_url` panicked and `get_snapshot` returned an error.
 - `CameraHubHandler`: `download_recording` now works when the builder was given an address with a port (`"{ip}:{port}"`). Before, it returned an error.
 
-## [Python Unreleased][Unreleased]
+## [Python v0.12.0][v0.12.0] - 2026-10-24
 
 ### Added
 
@@ -102,40 +140,6 @@ file. This change log follows the conventions of
 - `DeviceInfoSmartExt`: corrected the type stubs to declare it as a `Protocol`.
 - `DeviceInfoSmartExt`, `DeviceInfoBasicResult`, `DeviceInfoCameraResult`: corrected the type hints of `latitude` and `longitude` to `int`. They were declared as `float`.
 - `EnergyUsageResult`: corrected the type hint of `electricity_charge` to a list of ints. It was declared as a tuple.
-
-## [MCP Unreleased][Unreleased]
-
-### Added
-
-- `get_device_state`: added the `EnergyDataHourly`, `EnergyDataDaily` and `EnergyDataMonthly` capabilities, which return the energy used per hour, day or month, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists them for these devices. The days, quarters and years are read in the plug's time zone, so the entries match the Tapo app, and the hours, days and months that have not started yet are left out.
-- `get_device_state`: added the `PowerDataEvery5Minutes` and `PowerDataHourly` capabilities, which return the power draw every 5 minutes or every hour, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists them for these devices.
-- `list_devices`, `check_device`, `get_device_state`, `take_snapshot`: added support for the C120 camera. `list_devices` lists the `Snapshot` capability for it.
-- `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub, with its sensors and IR remotes listed under `children`. `get_device_state` returns the keys stored on each IR remote. (thanks to @skoky)
-- `list_devices`, `control_device`: S210 light switches paired to a hub now have the `OnOff` capability, so they can be turned on and off.
-- `take_snapshot`: when `TAPO_MCP_PUBLIC_URL` is set, the result also carries a link to the image that stays valid for 5 minutes, so an agent can share it with the user or download the file.
-- `control_device`: each `Color` preset name now comes with its color temperature, or its hue and saturation, so an agent can pick the preset closest to what the user asked for.
-- `list_devices`, `tapo://devices`: each child device now includes `ip`, its parent's IP address, which is the one to pass with the child's `id` to the other tools.
-- `list_devices`, `tapo://devices`: the result now includes `discovered_at`, the time the discovery that produced the list started.
-- `list_devices`, `tapo://devices`: the result now includes `refresh_error` when the most recent background discovery failed. The devices are then the ones from the last successful discovery, at `discovered_at`.
-- `TAPO_MCP_DISCOVERY_INTERVAL`: added the number of seconds between background discoveries that refresh the device list. Defaults to 600 and must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most 86400 (one day).
-- OpenTelemetry: each tool call is now exported as a trace that shows how long the device check and the device request took, and marks failed calls. When the MCP client or a tracing reverse proxy sends trace context, the call joins that trace.
-- MCP Registry: the server entry now lists `TAPO_MCP_CAMERA_USERNAME`, `TAPO_MCP_CAMERA_PASSWORD` and `TAPO_MCP_ALLOWED_HOSTS`, so clients that install from the registry can set them.
-
-### Changed
-
-- `list_devices`, `tapo://devices`: now return the device list from the most recent background discovery immediately, instead of waiting for a new discovery on every call. Until a discovery has succeeded, they return a "device discovery unavailable" error, which gives the reason when discovery failed.
-- `check_device`, `get_device_state`, `control_device`, `take_snapshot`: calls to the same device, such as several outlets of one power strip, now run one at a time instead of failing when made together. Calls to different devices still run in parallel. While a background discovery runs, these calls wait for it to finish.
-- `check_device`, `get_device_state`, `control_device`, `list_devices`, `take_snapshot`: a failed call now gives the agent the error message as the call's result, so the agent sees why it failed. Calls to an unknown tool are still rejected as before.
-- `control_device`: a capability the device does not support, or one with an invalid value, now fails the call before any capability is applied. It used to fail only when its turn came, after the ones before it had already changed the device. When the device returns an error partway through, the error now says how many of the capabilities were applied, which one failed, and whether that one may still have been applied.
-- `control_device`: `capabilities` now takes at most 12 entries. A call with more, or with none, fails before the device is contacted.
-- `get_device_state`: `Snapshot` is no longer listed among the capabilities it takes, and its description now points to `take_snapshot` for a camera's `Snapshot` capability. Asking for it fails as an unknown capability.
-- `take_snapshot`: the result now includes the device id, capture time and size as text alongside the image.
-- `TAPO_MCP_DISCOVERY_TIMEOUT`: a value outside 1 to 60 now stops the server at startup with an error naming the setting, instead of making every device listing fail.
-
-### Fixed
-
-- `check_device`, `get_device_state`, `control_device`, `take_snapshot`: now fail with a "device timed out" error when the device is still not done after `TAPO_MCP_DISCOVERY_TIMEOUT` plus 60 seconds. A device that stopped responding used to hold up every later call to it, and once a background discovery started, every call to every device. For `control_device`, the error also says how many of the capabilities were applied before the device timed out, and whether the next one may have been applied too.
-- `take_snapshot`: now fails after 30 seconds when the camera stops responding. It used to wait forever when the camera stopped responding while the video stream was being opened, and gave up after 5 seconds while waiting for the frame.
 
 ## [MCP v0.5.3][tapo-mcp-v0.5.3] - 2026-10-04
 
@@ -1275,6 +1279,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.12.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.12.0
 [tapo-mcp-v0.5.3]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.3
 [v0.11.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.11.1
 [tapo-mcp-v0.5.2]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.2
