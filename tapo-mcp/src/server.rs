@@ -19,7 +19,8 @@ use crate::device_locks::DeviceLocks;
 use crate::discovery::DeviceCache;
 use crate::errors::TapoMcpError;
 use crate::models::{
-    CheckDeviceParams, ControlDeviceParams, GetDeviceStateParams, TakeSnapshotParams,
+    CONTROL_CAPABILITIES, CheckDeviceParams, ControlDeviceParams, GetDeviceStateParams,
+    TakeSnapshotParams,
 };
 use crate::resources;
 use crate::snapshots::{SNAPSHOT_TTL, SnapshotStore};
@@ -83,7 +84,11 @@ impl TapoMcp {
     }
 
     #[tool(
-        description = "Control a Tapo device by applying a set capability. Runs check_device first to verify the device ID matches at the given IP.",
+        description = format!(
+            "Control a Tapo device by applying {} to {} set capabilities, in order. Checks the count and every value before contacting the device, then runs check_device to verify the device ID matches at the given IP. A capability the device does not support fails the call before any capability is applied. When the device returns an error partway through, the error says how many capabilities were applied and which one failed.",
+            CONTROL_CAPABILITIES.start(),
+            CONTROL_CAPABILITIES.end()
+        ),
         annotations(
             read_only_hint = false,
             destructive_hint = true,
