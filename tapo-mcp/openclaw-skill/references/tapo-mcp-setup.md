@@ -12,8 +12,8 @@ Tapo MCP is an HTTP server (Streamable HTTP transport) that exposes TP-Link Tapo
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `list_devices`     | List available Tapo devices on the network (includes set and get capabilities).                                                            |
 | `check_device`     | Verify a device ID matches at a given IP.                                                                                                  |
-| `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Runs `check_device` first.                                                   |
-| `control_device`   | Control a device by applying up to 12 set capabilities. Checks the count and values, then runs `check_device`.                             |
+| `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Checks the capability's parameters, then runs `check_device`.                |
+| `control_device`   | Control a device by applying 1 to 12 set capabilities, in order. Checks the count and values, then runs `check_device`; a capability the device does not support fails before any is applied. |
 | `take_snapshot`    | Capture a still JPEG snapshot from a Tapo camera (~640x360), with the device id, capture time and size as text, plus a short-lived link when `TAPO_MCP_PUBLIC_URL` is set (see Snapshot links). Runs `check_device` first. |
 
 ### Resources
@@ -34,13 +34,15 @@ All configuration is via environment variables prefixed with `TAPO_MCP_`:
 | `TAPO_MCP_CAMERA_PASSWORD`   | No       | —                | Camera account password[^camera]. Required by `take_snapshot`. |
 | `TAPO_MCP_DISCOVERY_TARGET`  | Yes      | —                | Network target for device discovery (e.g. `192.168.1.255`) |
 | `TAPO_MCP_HTTP_ADDR`         | No       | `127.0.0.1:3000` | Address the server listens on                              |
-| `TAPO_MCP_DISCOVERY_TIMEOUT` | No       | `5`              | Discovery timeout in seconds. Must be between `1` and `60` |
-| `TAPO_MCP_DISCOVERY_INTERVAL` | No      | `600`            | Seconds between background discoveries that refresh the device list. Must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most `86400` (one day) |
+| `TAPO_MCP_DISCOVERY_TIMEOUT` | No       | `5`              | Discovery timeout in seconds. Must be between `1` and `60`[^discovery] |
+| `TAPO_MCP_DISCOVERY_INTERVAL` | No      | `600`            | Seconds between background discoveries that refresh the device list. Must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most `86400` (one day)[^discovery] |
 | `TAPO_MCP_API_KEY`           | No       | —                | Bearer token for HTTP authentication (see below)           |
 | `TAPO_MCP_ALLOWED_HOSTS`     | No       | loopback only    | Comma-separated `Host` header allowlist (see Network exposure) |
 | `TAPO_MCP_PUBLIC_URL`        | No       | —                | Base URL clients reach the server at (e.g. `https://tapo.example.com`). Enables short-lived snapshot links (see Snapshot links) |
 
 [^camera]: Set on each camera in the Tapo app under Camera Settings > Advanced Settings > Camera Account. Distinct from your TP-Link cloud account.
+
+[^discovery]: While a background discovery runs, tool calls that contact a device wait for it to finish, and the discovery waits for calls already in progress. A run takes about `TAPO_MCP_DISCOVERY_TIMEOUT` seconds plus a few more to log in to the devices, and longer if a device is slow to respond. A short interval means these pauses happen often: at `15` with the default timeout, tool calls can be held up for several seconds out of every 15. `list_devices` and the `tapo://devices` resource never wait.
 
 ## Authentication
 
@@ -65,6 +67,12 @@ Some MCP clients don't pass image results on to the model, and others show the i
 - Behind an authenticating reverse proxy (Cloudflare Access and similar), links opened in a browser that is already signed in to the proxy work. Non-browser fetches (`curl`, an agent downloading the file) need the proxy's own credential or a policy exception for `/snapshots/`.
 
 When `TAPO_MCP_PUBLIC_URL` is unset, no link is returned and the `/snapshots/` route is not served.
+
+## OpenTelemetry
+
+To export traces, set `OTEL_EXPORTER_OTLP_ENDPOINT` to the full URL of an OTLP/HTTP traces endpoint, including the path (e.g. `http://alloy.monitoring:4318/v1/traces`). `OTEL_RESOURCE_ATTRIBUTES` adds resource attributes, and `RUST_LOG` (default `tapo_mcp=info`) also decides which spans are exported.
+
+Each tool call is exported as one span that covers the whole call, with the device check and the device request as child spans, and a failed call has error status. The background device discoveries and the sweeps of expired snapshot links are traced too. Credentials, the API key and image data are never recorded. Incoming W3C trace context is honoured: when the MCP client sends `traceparent` in the request's `params._meta`, the call joins the client's trace and a `traceparent` HTTP header from a tracing reverse proxy is recorded as a span link; without the `_meta` context, the call joins the proxy's trace instead. See the [README](https://github.com/mihai-dinculescu/tapo/blob/main/tapo-mcp/README.md#opentelemetry) for the span names and attributes.
 
 ## Deployment
 

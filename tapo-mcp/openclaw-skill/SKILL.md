@@ -1,7 +1,7 @@
 ---
 name: tapo
 description: Control TP-Link Tapo smart home devices (lights, plugs, power strips, hubs and their child devices, cameras) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp).
-version: 0.5.1
+version: 0.6.0
 metadata:
   {
     "openclaw":
@@ -18,7 +18,7 @@ Control Tapo devices using `npx mcporter call tapo.<tool>`.
 
 ## Setup
 
-You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp) server (v0.5.1 or later) running on your network (HTTP transport). Bearer token auth is recommended (and required when the server binds to a non-loopback address). When connecting by LAN IP or hostname, the server's `TAPO_MCP_ALLOWED_HOSTS` must include that host, or requests get `403 Forbidden`.
+You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp) server (v0.6.0 or later) running on your network (HTTP transport). Bearer token auth is recommended (and required when the server binds to a non-loopback address). When connecting by LAN IP or hostname, the server's `TAPO_MCP_ALLOWED_HOSTS` must include that host, or requests get `403 Forbidden`.
 
 1. **Add the Tapo server**:
 
@@ -47,7 +47,7 @@ List all Tapo devices on the network.
 npx mcporter call tapo.list_devices
 ```
 
-Returns each device's `id`, `name`, `model`, `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips and the H100, H110, H200 and H500 hubs).
+Returns `discovered_at`, the time the discovery that produced the list started, and each device's `id`, `name`, `model`, `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips and the H100, H110, H200 and H500 hubs). The server refreshes the list in the background (every 10 minutes by default), so the call returns immediately. Until a discovery has succeeded after the server starts, it fails with "Device discovery unavailable" and the message says why: either the first discovery is still running, so wait a little longer than `TAPO_MCP_DISCOVERY_TIMEOUT` seconds and retry, or every discovery so far has failed, in which case the message carries the reason and the retry interval, so report the reason instead of retrying. A device that joined the network after `discovered_at` appears after the next refresh, which is at most `TAPO_MCP_DISCOVERY_INTERVAL` seconds (600 by default) away. A device that answered the discovery but could not be logged in to is listed under `errors` with its `ip` and the reason. A hub or power strip whose children could not be read stays under `devices` with an empty `children` list, and the reason is under `errors` with the parent's `ip`. A Tapo device the server cannot control is listed under `unsupported`. When the most recent refresh failed, the result also includes `refresh_error` with the reason, and the devices are the ones from the last successful discovery.
 
 ### check_device
 
@@ -59,11 +59,26 @@ npx mcporter call tapo.check_device id="<DEVICE_ID>" ip="<IP>"
 
 ### get_device_state
 
-Get a device's current state. Automatically runs `check_device` first.
+Get a device's current state. Checks the capability's parameters, then automatically runs `check_device`.
 
 ```bash
 # Device info
 npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "DeviceInfo"}'
+
+# Energy used per hour, in Wh, for 1-8 days from start_date (P110, P110M, P115 plugs; for a P304M or P316M outlet, pass the outlet's id as <DEVICE_ID> and the strip's ip as <IP>)
+npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "EnergyDataHourly", "start_date": "2026-01-01", "days": 1}'
+
+# Energy used per day, in Wh, for a quarter (1-4) of a year
+npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "EnergyDataDaily", "year": 2026, "quarter": 1}'
+
+# Energy used per month, in Wh, for a year
+npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "EnergyDataMonthly", "year": 2026}'
+
+# Power draw every 5 minutes, in W, for 1-12 hours from start_date_time (UTC, rounded up to the next 5 minute mark)
+npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "PowerDataEvery5Minutes", "start_date_time": "2026-01-01T06:00:00Z", "hours": 6}'
+
+# Power draw every hour, in W, for 1-6 days from start_date_time (UTC, rounded up to the next hour)
+npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "PowerDataHourly", "start_date_time": "2026-01-01T00:00:00Z", "days": 2}'
 
 # Trigger logs (S200, T100, T110, T300 hub children) — newest first
 npx mcporter call tapo.get_device_state id="<CHILD_ID>" ip="<HUB_IP>" capability='{"type": "TriggerLogs", "page_size": 20, "start_id": 0}'
@@ -72,12 +87,14 @@ npx mcporter call tapo.get_device_state id="<CHILD_ID>" ip="<HUB_IP>" capability
 npx mcporter call tapo.get_device_state id="<CHILD_ID>" ip="<HUB_IP>" capability='{"type": "TemperatureHumidityRecords"}'
 ```
 
+Energy dates are read in the plug's time zone, so the entries match the Tapo app. Hours, days and months that have not started yet are left out.
+
 ### control_device
 
-Control a device. Automatically runs `check_device` first.
+Control a device by applying 1 to 12 set capabilities, in order. The count and every value are checked before the device is contacted; then it automatically runs `check_device`, and a capability the device does not support fails the call before any capability is applied. `Brightness` and `Color` also turn the device on if it is off. When the device returns an error partway through, the error says how many capabilities were applied and which one failed.
 
 ```bash
-# Turn on
+# Turn on (plugs, lights, power strip outlets, and S210 switches paired to a hub)
 npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "OnOff", "value": true}]'
 
 # Turn off
@@ -103,6 +120,6 @@ npx mcporter call tapo.take_snapshot id="<DEVICE_ID>" ip="<IP>"
 
 ## Usage rules
 
-1. Always run `list_devices` first if you don't have a recent device list. Cache results for up to 30 minutes.
-2. Use the device `id` and `ip` from the list — never guess or hardcopy these values.
+1. Always run `list_devices` first if you don't have a recent device list. It returns immediately from the server's background discovery, so there is no need to cache it. If a device the user expects is missing, check `errors`, `unsupported`, `discovered_at` and `refresh_error` as described under `list_devices` before concluding it is gone. A device that joined after `discovered_at` shows up within `TAPO_MCP_DISCOVERY_INTERVAL` seconds; do not poll `list_devices` in a loop.
+2. Use the device `id` and `ip` from the list — never guess or hardcode these values.
 3. For power strips (e.g. P304M) and the H100, H110, H200 and H500 hubs, children have their own `id`. Use the child `id` with the parent's `ip`.
