@@ -9,7 +9,7 @@ axum = "0.8"
 base64 = { workspace = true }
 chrono = { workspace = true, features = ["clock", "serde"] }
 config = "0.15"
-rmcp = { version = "3.5", features = ["server", "macros", "transport-streamable-http-server"] }
+rmcp = { version = "3.7", features = ["server", "macros", "transport-streamable-http-server"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 rand = { workspace = true }
