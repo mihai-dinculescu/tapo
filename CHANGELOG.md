@@ -52,6 +52,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- Added support for Python 3.15.
 - `ApiClient`: added the `c120` method for the C120 camera. It returns a `CameraHandler`, which serves cameras without PTZ and has `get_device_info`, `get_rtsp_stream_url` and `get_snapshot`.
 - `DiscoveryResult.Camera` and `DeviceType.Camera`: `discover_devices` now returns C120 cameras with a ready-to-use `CameraHandler`, instead of as `DiscoveryResult.Other`.
 - `ApiClient`: added the `h110` method for the H110 hub. It returns a `HubIrHandler`, which supports everything `HubHandler` does and adds `ir_remote` and `ir_remote_unchecked` for the IR remotes paired with the hub. H110 hubs are recognised by `ApiClient.discover_devices`. (thanks to @skoky)
