@@ -10,6 +10,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.6.0][tapo-mcp-v0.6.0] - 2026-10-24
+
 ### Added
 
 - `get_device_state`: added the `EnergyDataHourly`, `EnergyDataDaily` and `EnergyDataMonthly` capabilities, which return the energy used per hour, day or month, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists them for these devices. The days, quarters and years are read in the plug's time zone, so the entries match the Tapo app, and the hours, days and months that have not started yet are left out.
@@ -1279,6 +1281,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.6.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.6.0
 [v0.12.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.12.0
 [tapo-mcp-v0.5.3]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.5.3
 [v0.11.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.11.1
