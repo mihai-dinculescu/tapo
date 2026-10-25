@@ -155,19 +155,13 @@ impl Tpap {
     }
 
     /// The response to a request for `method`: its result, or, for a method
-    /// that the device turns down, of which the fixture holds only the error
-    /// code, that code with an empty result, as a camera without an SD card
-    /// answers a search of its detections.
+    /// that the device turns down, the error code with an empty result, as a
+    /// camera without an SD card answers a search of its detections.
     fn response(&self, method: &str) -> Value {
-        let result = self.fixture.result(method);
-        if let Some(error_code) = result
-            .as_object()
-            .filter(|result| result.len() == 1)
-            .and_then(|result| result.get("error_code"))
-        {
+        if let Some(error_code) = self.fixture.refusal(method) {
             return json!({ "error_code": error_code, "result": {} });
         }
-        json!({ "error_code": 0, "result": result })
+        json!({ "error_code": 0, "result": self.fixture.result(method) })
     }
 
     fn state(&self) -> MutexGuard<'_, State> {

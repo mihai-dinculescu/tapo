@@ -608,7 +608,7 @@ macro_rules! camera_detection_handlers {
             /// Each comes with its start, its end, the event the camera filed it
             /// under and every event detected in that span, such as a person
             /// and motion. Like the Tapo app, all pages are fetched, up to
-            /// 12,300 detections.
+            /// 12,300 detections, oldest first.
             ///
             /// The camera keeps this index on its SD card, whether it records
             /// continuously or on detection only.

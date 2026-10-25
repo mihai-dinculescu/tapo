@@ -60,7 +60,7 @@ class CameraPtzHandler(DeviceHandlerExt, DebugExt):
         Each comes with its start, its end, the event the camera filed it
         under and every event detected in that span, such as a person
         and motion. Like the Tapo app, all pages are fetched, up to
-        12,300 detections.
+        12,300 detections, oldest first.
 
         The camera keeps this index on its SD card, whether it records
         continuously or on detection only.
@@ -71,7 +71,7 @@ class CameraPtzHandler(DeviceHandlerExt, DebugExt):
                 after `start_time`. Must be timezone-aware.
 
         Returns:
-            List[DetectionResult]: The detections, in the order the camera reports them.
+            List[DetectionResult]: The detections, oldest first.
 
         Raises:
             TypeError: If `start_time` or `end_time` is a naive datetime.

@@ -12,8 +12,8 @@ use crate::config::AppConfig;
 use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
 use crate::models::{
-    DATA_YEARS, ENERGY_HOURLY_DAYS, GetCapabilityRequest, GetDeviceStateParams,
-    POWER_5_MINUTE_HOURS, POWER_HOURLY_DAYS, QUARTERS,
+    DATA_YEARS, DETECTIONS_WINDOW_HOURS, DetectionsResult, ENERGY_HOURLY_DAYS,
+    GetCapabilityRequest, GetDeviceStateParams, POWER_5_MINUTE_HOURS, POWER_HOURLY_DAYS, QUARTERS,
 };
 use crate::requests;
 use crate::requests::{CheckedDevice, HubParent};
@@ -36,6 +36,22 @@ pub async fn get_device_state(
             "error.type" = Empty,
         );
         match read {
+            ReadRequest::Detections {
+                start_date_time,
+                end_date_time,
+            } => {
+                run_in_span(
+                    span,
+                    get_detections(
+                        &params.id,
+                        capability,
+                        checked,
+                        start_date_time,
+                        end_date_time,
+                    ),
+                )
+                .await
+            }
             ReadRequest::DeviceInfo => run_in_span(span, get_device_info(checked)).await,
             ReadRequest::EnergyData(interval) => {
                 run_in_span(
@@ -78,16 +94,33 @@ pub async fn get_device_state(
 
 /// A capability to read, with its parameters checked against what the device accepts.
 enum ReadRequest {
+    Detections {
+        start_date_time: DateTime<Utc>,
+        end_date_time: DateTime<Utc>,
+    },
     DeviceInfo,
     EnergyData(EnergyDataInterval),
     PowerData(PowerDataInterval),
     TemperatureHumidityRecords,
-    TriggerLogs { page_size: u64, start_id: u64 },
+    TriggerLogs {
+        page_size: u64,
+        start_id: u64,
+    },
 }
 
 /// Checks the parameters of `capability`.
 fn read_request(capability: GetCapabilityRequest) -> Result<ReadRequest, TapoMcpError> {
     Ok(match capability {
+        GetCapabilityRequest::Detections {
+            start_date_time,
+            end_date_time,
+        } => {
+            detections_window(start_date_time, end_date_time)?;
+            ReadRequest::Detections {
+                start_date_time,
+                end_date_time,
+            }
+        }
         GetCapabilityRequest::DeviceInfo => ReadRequest::DeviceInfo,
         GetCapabilityRequest::EnergyDataHourly { start_date, days } => {
             ReadRequest::EnergyData(energy_data_hourly(start_date, days)?)
@@ -115,6 +148,62 @@ fn read_request(capability: GetCapabilityRequest) -> Result<ReadRequest, TapoMcp
             start_id,
         },
     })
+}
+
+async fn get_detections(
+    id: &str,
+    capability: &str,
+    checked: CheckedDevice,
+    start_date_time: DateTime<Utc>,
+    end_date_time: DateTime<Utc>,
+) -> Result<serde_json::Value, TapoMcpError> {
+    let detections = match checked {
+        CheckedDevice::Parent(DiscoveryResult::Camera { handler, .. }) => {
+            handler
+                .get_detections(start_date_time, end_date_time)
+                .await?
+        }
+        CheckedDevice::Parent(DiscoveryResult::CameraPtz { handler, .. }) => {
+            handler
+                .get_detections(start_date_time, end_date_time)
+                .await?
+        }
+        _ => {
+            return Err(TapoMcpError::WrongDeviceType {
+                id: id.to_string(),
+                capability: capability.to_string(),
+                expected: "a camera".to_string(),
+            });
+        }
+    };
+    Ok(serde_json::to_value(&DetectionsResult { detections })?)
+}
+
+/// Checks that the detections window runs forward, within [`DATA_YEARS`], for
+/// at most [`DETECTIONS_WINDOW_HOURS`].
+fn detections_window(
+    start_date_time: DateTime<Utc>,
+    end_date_time: DateTime<Utc>,
+) -> Result<(), TapoMcpError> {
+    if !DATA_YEARS.contains(&start_date_time.year()) {
+        return Err(year_out_of_range("start_date_time"));
+    }
+    if !DATA_YEARS.contains(&end_date_time.year()) {
+        return Err(year_out_of_range("end_date_time"));
+    }
+    if end_date_time < start_date_time {
+        return Err(invalid_parameter(
+            "end_date_time",
+            "must not be before start_date_time",
+        ));
+    }
+    if end_date_time - start_date_time > Duration::hours(DETECTIONS_WINDOW_HOURS) {
+        return Err(invalid_parameter(
+            "end_date_time",
+            &format!("must be at most {DETECTIONS_WINDOW_HOURS} hours after start_date_time"),
+        ));
+    }
+    Ok(())
 }
 
 async fn get_device_info(checked: CheckedDevice) -> Result<serde_json::Value, TapoMcpError> {
@@ -418,6 +507,29 @@ mod tests {
 
     fn date(year: i32, month: u32, day: u32) -> NaiveDate {
         NaiveDate::from_ymd_opt(year, month, day).unwrap()
+    }
+
+    #[test]
+    fn detections_window_accepts_up_to_a_day() {
+        let start = "2026-10-17T08:00:00Z".parse::<DateTime<Utc>>().unwrap();
+
+        assert!(detections_window(start, start).is_ok());
+        assert!(detections_window(start, start + Duration::minutes(30)).is_ok());
+        assert!(detections_window(start, start + Duration::hours(24)).is_ok());
+    }
+
+    #[test]
+    fn detections_window_rejects_out_of_range_parameters() {
+        let start = "2026-10-17T08:00:00Z".parse::<DateTime<Utc>>().unwrap();
+        let results = [
+            detections_window(start, start - Duration::seconds(1)),
+            detections_window(start, start + Duration::hours(24) + Duration::seconds(1)),
+            detections_window("1999-12-31T23:00:00Z".parse().unwrap(), start),
+            detections_window(start, DateTime::<Utc>::MAX_UTC),
+        ];
+        for result in results {
+            assert!(matches!(result, Err(TapoMcpError::InvalidParameter { .. })));
+        }
     }
 
     #[test]

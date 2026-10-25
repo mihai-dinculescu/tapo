@@ -26,6 +26,10 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+### Added
+
+- `get_device_state`: added the `Detections` capability, which returns, as `detections`, the detections stored on a camera's SD card for a window of up to 24 hours. Each comes with its start, its end, the event the camera filed it under and every event detected in that span (person, motion, baby cry, ...). `list_devices` lists it for cameras.
+
 ## [MCP v0.6.0][tapo-mcp-v0.6.0] - 2026-10-24
 
 ### Added

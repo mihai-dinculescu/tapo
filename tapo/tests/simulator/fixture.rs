@@ -169,6 +169,16 @@ impl Fixture {
             .unwrap_or_else(|| unimplemented!("the fixture has no result for {method}"))
     }
 
+    /// The error code that the device turns `method` down with, when the
+    /// fixture holds only that code for it.
+    pub fn refusal(&self, method: &str) -> Option<i64> {
+        let result = self.result(method).as_object()?;
+        if result.len() != 1 {
+            return None;
+        }
+        result.get("error_code")?.as_i64()
+    }
+
     /// The `result` of the discovery response.
     fn announced(&self) -> &Value {
         &self.discovery_response["result"]

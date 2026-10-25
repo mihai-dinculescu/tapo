@@ -85,6 +85,9 @@ npx mcporter call tapo.get_device_state id="<CHILD_ID>" ip="<HUB_IP>" capability
 
 # Last 24h temperature/humidity records (T310, T315 hub children)
 npx mcporter call tapo.get_device_state id="<CHILD_ID>" ip="<HUB_IP>" capability='{"type": "TemperatureHumidityRecords"}'
+
+# Detections stored on a camera's SD card between start_date_time and end_date_time (UTC, at most 24 hours apart), as `detections`, oldest first, each with its start, end, trigger and the events detected (Person, Motion, BabyCry, ...). Fails with STORAGE_NOT_EXIST when the camera has no SD card
+npx mcporter call tapo.get_device_state id="<CAMERA_ID>" ip="<IP>" capability='{"type": "Detections", "start_date_time": "2026-01-01T00:00:00Z", "end_date_time": "2026-01-02T00:00:00Z"}'
 ```
 
 Energy dates are read in the plug's time zone, so the entries match the Tapo app. Hours, days and months that have not started yet are left out.

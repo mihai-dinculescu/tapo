@@ -129,7 +129,7 @@ async fn process_device(device: DiscoveryResult) -> DeviceOutcome {
             get_capabilities.extend(ENERGY_MONITORING_CAPABILITIES);
         }
         DiscoveryResult::Camera { .. } | DiscoveryResult::CameraPtz { .. } => {
-            get_capabilities.push(GetCapability::Snapshot);
+            get_capabilities.extend([GetCapability::Detections, GetCapability::Snapshot]);
         }
         _ => {}
     }

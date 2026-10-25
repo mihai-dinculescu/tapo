@@ -7,6 +7,7 @@ use serde::de;
 use serde::{Deserialize, Serialize};
 use strum::IntoStaticStr;
 use tapo::requests::Color;
+use tapo::responses::DetectionResult;
 
 /// The Tapo devices found on the local network by the most recent discovery.
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
@@ -41,6 +42,10 @@ pub enum SetCapability {
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema, IntoStaticStr)]
 #[cfg_attr(test, derive(strum::EnumIter))]
 pub enum GetCapability {
+    /// Read the detections stored on a camera's SD card, with the events
+    /// detected, for a window of up to 24 hours (C120, C210, C220, C225,
+    /// C325WB, C520WS, TC40, TC70).
+    Detections,
     /// Read the device's current state.
     DeviceInfo,
     /// Read the energy used per hour, in watt-hours (P110, P110M, P115, P304M, P316M).
@@ -123,6 +128,15 @@ pub struct DiscoveryError {
     pub message: String,
 }
 
+/// The detections stored on a camera's SD card within the window that was read.
+#[derive(Debug, Serialize)]
+pub struct DetectionsResult {
+    /// The detections, oldest first. Each has its `start_time`, its `end_time`,
+    /// the event the camera filed it under (`trigger`) and every event detected
+    /// in that span (`events`).
+    pub detections: Vec<DetectionResult>,
+}
+
 /// A still JPEG snapshot taken from a Tapo camera.
 #[derive(Debug, Serialize, JsonSchema)]
 pub struct SnapshotResult {
@@ -184,6 +198,18 @@ impl SetCapabilityRequest {
 #[cfg_attr(test, derive(strum::VariantNames))]
 #[serde(tag = "type")]
 pub enum GetCapabilityRequest {
+    /// Read the detections stored on a camera's SD card between
+    /// `start_date_time` and `end_date_time`. Each comes with its start, its
+    /// end, the event the camera filed it under (`trigger`) and every event
+    /// detected in that span (`events`), such as `Person` and `Motion`. Fails
+    /// with `STORAGE_NOT_EXIST` when the camera has no SD card.
+    Detections {
+        /// The start of the window, in UTC, in the years 2000 to 9999.
+        start_date_time: DateTime<Utc>,
+        /// The end of the window, in UTC, at most 24 hours after
+        /// `start_date_time`.
+        end_date_time: DateTime<Utc>,
+    },
     /// Read the device's current state (on/off, brightness, etc.).
     DeviceInfo,
     /// Read the energy used per hour, in watt-hours, for whole days, from an
@@ -263,9 +289,12 @@ impl GetCapabilityRequest {
     }
 }
 
-/// The years energy and power data can be read for. Tapo plugs postdate 2000,
-/// and the bounds keep every date's timestamp positive and finite.
+/// The years energy, power and detection data can be read for. Tapo devices
+/// postdate 2000, and the bounds keep every date's timestamp positive and finite.
 pub const DATA_YEARS: RangeInclusive<i32> = 2000..=9999;
+/// The longest window `GetCapabilityRequest::Detections` can read, in hours.
+/// The camera rejects a longer one.
+pub const DETECTIONS_WINDOW_HOURS: i64 = 24;
 /// The number of days `GetCapabilityRequest::EnergyDataHourly` can read.
 pub const ENERGY_HOURLY_DAYS: RangeInclusive<u8> = 1..=8;
 /// The quarters of a year.
@@ -365,6 +394,10 @@ mod tests {
         }
 
         let get_requests = [
+            GetCapabilityRequest::Detections {
+                start_date_time: DateTime::UNIX_EPOCH,
+                end_date_time: DateTime::UNIX_EPOCH,
+            },
             GetCapabilityRequest::DeviceInfo,
             GetCapabilityRequest::EnergyDataHourly {
                 start_date: NaiveDate::MIN,
@@ -391,6 +424,9 @@ mod tests {
         ];
         for request in get_requests {
             let mut value = match &request {
+                GetCapabilityRequest::Detections { .. } => {
+                    json!({ "start_date_time": "2026-10-17T00:00:00Z", "end_date_time": "2026-10-17T01:00:00Z" })
+                }
                 GetCapabilityRequest::EnergyDataHourly { .. } => {
                     json!({ "start_date": "2026-10-17", "days": 1 })
                 }
