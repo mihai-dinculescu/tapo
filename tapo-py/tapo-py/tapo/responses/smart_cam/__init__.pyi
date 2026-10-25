@@ -1,3 +1,4 @@
+from .detection_result import *
 from .general_device_hub_result import *
 from .recording_download_result import *
 from .recordings_hub_result import *

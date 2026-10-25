@@ -86,6 +86,7 @@
 | device_reboot            | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | device_reset             | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | get_component_list (d)   | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
+| get_detections           | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | get_device_info          | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | get_device_info_json (d) | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | get_presets              |                     | &#x2705;                    | &#x2705;                    | &#x2705;                |

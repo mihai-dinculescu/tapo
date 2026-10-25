@@ -46,7 +46,7 @@ tapo::impl_to_dict!(PyRecordingHubResult);
 // one, so this plain enum mirrors `RecordingType`, with every unknown wire
 // value folded into `Other`.
 /// The type of event that produced a recording. A type this library does not
-/// know yet is `Other`; its raw wire value is still in `to_dict()["video_type"]`.
+/// know yet is `Other`; its raw wire value is still in the result's `to_dict()`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[pyclass(name = "RecordingType", from_py_object, eq, hash, frozen)]
 #[allow(missing_docs)]

@@ -1,6 +1,9 @@
+from datetime import datetime
+from typing import List
+
 from tapo.debug_ext import DebugExt
 from tapo.device_handler_ext import DeviceHandlerExt
-from tapo.responses import DeviceInfoCameraResult, RtspStreamUrl, Snapshot
+from tapo.responses import DetectionResult, DeviceInfoCameraResult, RtspStreamUrl, Snapshot
 
 class CameraHandler(DeviceHandlerExt, DebugExt):
     """Handler for Tapo cameras without PTZ, such as the
@@ -39,6 +42,51 @@ class CameraHandler(DeviceHandlerExt, DebugExt):
 
         This feature is especially useful when the device is difficult to access
         and requires reconfiguration.
+        """
+
+    async def get_detections(
+        self,
+        start_time: datetime,
+        end_time: datetime,
+    ) -> List[DetectionResult]:
+        """Returns the detections stored on the camera's SD card within the
+        given time range, as `List[DetectionResult]`.
+        Each comes with its start, its end, the event the camera filed it
+        under and every event detected in that span, such as a person
+        and motion. Like the Tapo app, all pages are fetched, up to
+        12,300 detections.
+
+        The camera keeps this index on its SD card, whether it records
+        continuously or on detection only.
+
+        Args:
+            start_time (datetime): The start of the search range. Must be timezone-aware.
+            end_time (datetime): The end of the search range, at most 24 hours
+                after `start_time`. Must be timezone-aware.
+
+        Returns:
+            List[DetectionResult]: The detections, in the order the camera reports them.
+
+        Raises:
+            TypeError: If `start_time` or `end_time` is a naive datetime.
+            Exception: If `end_time` is before `start_time` or more than 24 hours
+                after it, which the camera would reject, if either is before 1970,
+                or if the camera has no SD card (`STORAGE_NOT_EXIST`).
+
+        Example:
+            ```python
+            from datetime import datetime, timedelta, timezone
+
+            end_time = datetime.now(timezone.utc)
+            start_time = end_time - timedelta(hours=1)
+            detections = await device.get_detections(start_time, end_time)
+
+            for detection in detections:
+                print(
+                    f"{detection.start_time} to {detection.end_time}: "
+                    f"{detection.trigger} ({detection.events})"
+                )
+            ```
         """
 
     async def get_rtsp_stream_url(self, username: str, password: str) -> RtspStreamUrl:

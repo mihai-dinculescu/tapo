@@ -16,9 +16,9 @@ class RecordingDateHubResult(ToDictExt):
     """The last second of the day on the hub, in UTC."""
 
 class RecordingType:
-    """The type of event that produced a recording. The names follow the
-    Tapo app's playback event table. A type this library does not know yet
-    is ``Other``; its raw wire value is still in ``to_dict()["video_type"]``."""
+    """The type of event that produced a recording or a detection. The names
+    follow the Tapo app's playback event table. A type this library does not
+    know yet is ``Other``; its raw wire value is still in the result's ``to_dict()``."""
 
     Timing: Final[RecordingType]
     """Continuous (timing) recording."""

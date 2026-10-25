@@ -48,9 +48,9 @@ use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyPowerDataInterval,
 };
 use responses::{
-    PyBackupWifi, PyGeneralDeviceHubResult, PyRecordingHubResult, PyRecordingType, PyS200Event,
-    PyS200Log, PyT100Log, PyT110Log, PyT300Log, TriggerLogsS200Result, TriggerLogsT100Result,
-    TriggerLogsT110Result, TriggerLogsT300Result,
+    PyBackupWifi, PyDetectionResult, PyGeneralDeviceHubResult, PyRecordingHubResult,
+    PyRecordingType, PyS200Event, PyS200Log, PyT100Log, PyT110Log, PyT300Log,
+    TriggerLogsS200Result, TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
 };
 
 #[pymodule]
@@ -212,6 +212,7 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
 
     // device info: camera
     module.add_class::<DeviceInfoCameraResult>()?;
+    module.add_class::<PyDetectionResult>()?;
     module.add_class::<Preset>()?;
     module.add_class::<RtspStreamUrl>()?;
     module.add_class::<Snapshot>()?;

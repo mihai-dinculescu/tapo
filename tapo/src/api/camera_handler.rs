@@ -7,4 +7,5 @@ tapo_handler! {
 }
 
 camera_device_management_handlers!(CameraHandler);
+camera_detection_handlers!(CameraHandler, builder = c120);
 camera_stream_handlers!(CameraHandler);

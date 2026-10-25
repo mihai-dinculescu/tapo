@@ -6,7 +6,23 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `CameraHandler`, `CameraPtzHandler`: added `get_detections`, which lists the detections stored on the camera's SD card for a time range of up to 24 hours, as `DetectionResult`. Each comes with its start, its end, the event the camera filed it under and every event detected in that span (person, motion, baby cry, ...), as `RecordingType`.
+
+### Fixed
+
+- `CameraHandler`, `CameraPtzHandler`, `CameraHubHandler`: a request the device refuses now fails with the device's error code, such as `STORAGE_NOT_EXIST` for a camera without an SD card, instead of with a deserialization error about a missing field.
+
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- `CameraHandler`, `CameraPtzHandler`: added `get_detections`, which lists the detections stored on the camera's SD card for a time range of up to 24 hours, as `DetectionResult`. Each comes with its start, its end, the event the camera filed it under and every event detected in that span (person, motion, baby cry, ...), as `RecordingType`.
+
+### Fixed
+
+- `CameraHandler`, `CameraPtzHandler`, `CameraHubHandler`: a request the device refuses now fails with the device's error code, such as `STORAGE_NOT_EXIST` for a camera without an SD card, instead of with a deserialization error about a missing field.
 
 ## [MCP Unreleased][Unreleased]
 

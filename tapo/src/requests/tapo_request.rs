@@ -11,7 +11,8 @@ use super::{
     SmartCamDeletePresetParams, SmartCamGetChildDeviceListParams, SmartCamGetDeviceInfoParams,
     SmartCamGetGeneralDeviceListParams, SmartCamGetPresetConfigParams, SmartCamGetTimezoneParams,
     SmartCamMotorMoveParams, SmartCamMotorMoveToPresetParams, SmartCamRebootDeviceParams,
-    SmartCamSearchDateWithVideoParams, SmartCamSearchVideoWithUtcParams, SmartCamSoftResetParams,
+    SmartCamSearchDateWithVideoParams, SmartCamSearchDetectionListParams,
+    SmartCamSearchVideoWithUtcParams, SmartCamSoftResetParams,
 };
 
 #[cfg(feature = "debug")]
@@ -94,6 +95,8 @@ pub(crate) enum TapoRequest {
     SmartCamSearchDateWithVideo(TapoParams<SmartCamSearchDateWithVideoParams>),
     #[serde(rename = "searchVideoWithUTC")]
     SmartCamSearchVideoWithUtc(TapoParams<SmartCamSearchVideoWithUtcParams>),
+    #[serde(rename = "searchDetectionList")]
+    SmartCamSearchDetectionList(TapoParams<SmartCamSearchDetectionListParams>),
     #[serde(rename = "controlChild")]
     SmartCamControlChild(Box<TapoParams<SmartCamControlChildParams>>),
     // Plug "Timer" (countdown) requests

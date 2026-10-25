@@ -18,6 +18,7 @@ tapo_handler! {
 }
 
 camera_device_management_handlers!(CameraPtzHandler);
+camera_detection_handlers!(CameraPtzHandler, builder = c220);
 camera_stream_handlers!(CameraPtzHandler);
 
 impl CameraPtzHandler {

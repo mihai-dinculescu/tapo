@@ -594,6 +594,80 @@ macro_rules! camera_device_management_handlers {
     };
 }
 
+/// Generates the detection methods shared by the camera handlers
+/// (`CameraHandler`, `CameraPtzHandler`): `get_detections`. The `builder`
+/// is the [`ApiClient`](crate::ApiClient) method that the doc example
+/// creates the handler with.
+macro_rules! camera_detection_handlers {
+    ($name:ident, builder = $builder:ident) => {
+        /// Camera detection methods.
+        impl $name {
+            /// Returns the detections stored on the camera's SD card within the
+            /// given time range (`searchDetectionList`), as
+            /// [`Vec<DetectionResult>`](crate::responses::DetectionResult).
+            /// Each comes with its start, its end, the event the camera filed it
+            /// under and every event detected in that span, such as a person
+            /// and motion. Like the Tapo app, all pages are fetched, up to
+            /// 12,300 detections.
+            ///
+            /// The camera keeps this index on its SD card, whether it records
+            /// continuously or on detection only.
+            ///
+            /// # Arguments
+            ///
+            /// * `start_time` - the start of the search range.
+            /// * `end_time` - the end of the search range, at most 24 hours after `start_time`.
+            ///
+            /// # Errors
+            ///
+            /// Returns an error if `end_time` is before `start_time` or more
+            /// than 24 hours after it, which the camera would reject, if
+            /// either is before 1970, or if the camera has no SD card
+            /// (`STORAGE_NOT_EXIST`).
+            ///
+            /// # Example
+            ///
+            /// ```rust,no_run
+            /// # use tapo::ApiClient;
+            /// # #[tokio::main]
+            /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+            #[doc = concat!(
+                "let device = ApiClient::new(\"tapo-username@example.com\", \"tapo-password\")
+",
+                "    .", stringify!($builder), "(\"192.168.1.100\")
+",
+                "    .await?;
+",
+            )]
+            ///
+            /// let end_time = chrono::Utc::now();
+            /// let start_time = end_time - chrono::Duration::hours(1);
+            /// let detections = device.get_detections(start_time, end_time).await?;
+            ///
+            /// for detection in detections {
+            ///     println!(
+            ///         "{} to {}: {:?} ({:?})",
+            ///         detection.start_time, detection.end_time, detection.trigger, detection.events
+            ///     );
+            /// }
+            /// # Ok(())
+            /// # }
+            /// ```
+            pub async fn get_detections(
+                &self,
+                start_time: chrono::DateTime<chrono::Utc>,
+                end_time: chrono::DateTime<chrono::Utc>,
+            ) -> Result<Vec<crate::responses::DetectionResult>, crate::error::Error> {
+                self.client
+                    .read()
+                    .await
+                    .get_detections(start_time, end_time)
+                    .await
+            }
+        }
+    };
+}
+
 /// Generates the stream methods shared by the camera handlers (`CameraHandler`, `CameraPtzHandler`):
 /// `get_rtsp_stream_url` and `get_snapshot`.
 macro_rules! camera_stream_handlers {

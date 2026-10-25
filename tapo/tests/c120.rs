@@ -6,11 +6,12 @@ mod simulator;
 
 use std::error::Error;
 
+use chrono::{Duration, Utc};
 use rstest::rstest;
 use tapo::{ApiClient, DeviceType, StreamExt};
 
 use simulator::SimulatedDevice;
-use simulator::assertions::assert_unauthorized;
+use simulator::assertions::{assert_device_error, assert_unauthorized};
 
 /// A C120 on firmware 1.9.4 asks for the MD5 of the password, as a C220 does.
 const MD5_FIXTURE: &str = "tests/fixtures/smartcam/C120_1.0_1.9.4_TPAP.json";
@@ -27,6 +28,14 @@ const MD5_FIXTURE: &str = "tests/fixtures/smartcam/C120_1.0_1.9.4_TPAP.json";
 /// password was never reached in that state, so both are taken from the MD5
 /// one.
 const SHA256_CRYPT_FIXTURE: &str = "tests/fixtures/smartcam/C120_1.0_1.9.4_TPAP_SHA-256-crypt.json";
+
+/// The MD5 fixture with no SD card in the camera, which turns a search of
+/// its detections down with `STORAGE_NOT_EXIST`.
+const NO_SD_FIXTURE: &str = "tests/fixtures/smartcam/C120_1.0_1.9.4_TPAP_NO_SD.json";
+
+/// The MD5 fixture with an SD card in the camera, which holds the detection
+/// index that `searchDetectionList` reads.
+const WITH_SD_FIXTURE: &str = "tests/fixtures/smartcam/C120_1.0_1.9.4_TPAP_WITH_SD.json";
 
 #[rstest]
 #[case::md5(MD5_FIXTURE)]
@@ -66,6 +75,41 @@ async fn a_c120_takes_a_login_by_ip_address(#[case] fixture: &str) -> Result<(),
         .await?;
 
     handler.get_device_info().await?;
+
+    Ok(())
+}
+
+/// The refusal comes with an empty result, which must be reported as the
+/// camera's error and not as a failure to read the result.
+#[tokio::test]
+async fn a_c120_without_an_sd_card_has_no_detections_to_list() -> Result<(), Box<dyn Error>> {
+    let device = SimulatedDevice::new(NO_SD_FIXTURE).start().await;
+
+    let handler = ApiClient::new(device.username(), device.password())
+        .c120(device.address())
+        .await?;
+
+    let end_time = Utc::now();
+    let detections = handler
+        .get_detections(end_time - Duration::hours(1), end_time)
+        .await;
+    assert_device_error(detections, -71114, "STORAGE_NOT_EXIST");
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn a_c120_with_an_sd_card_lists_its_detections() -> Result<(), Box<dyn Error>> {
+    let device = SimulatedDevice::new(WITH_SD_FIXTURE).start().await;
+
+    let handler = ApiClient::new(device.username(), device.password())
+        .c120(device.address())
+        .await?;
+
+    let end_time = Utc::now();
+    handler
+        .get_detections(end_time - Duration::hours(1), end_time)
+        .await?;
 
     Ok(())
 }

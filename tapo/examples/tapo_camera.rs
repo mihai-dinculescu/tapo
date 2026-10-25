@@ -1,4 +1,5 @@
 /// Tapo cameras without PTZ (C120) Example
+use chrono::{Duration, Utc};
 use log::info;
 use tapo::ApiClient;
 
@@ -33,6 +34,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("RTSP HD: {}", rtsp_url.hd);
     info!("RTSP SD: {}", rtsp_url.sd);
     info!("RTSP MJPEG: {}", rtsp_url.mjpeg);
+
+    // The camera accepts a search window of up to 24 hours.
+    let end_time = Utc::now();
+    let start_time = end_time - Duration::hours(24);
+    let detections = device.get_detections(start_time, end_time).await?;
+    info!(
+        "{} detections between {start_time} and {end_time}. Last: {:?}.",
+        detections.len(),
+        detections.last()
+    );
 
     info!("Capturing snapshot...");
     let snapshot = device

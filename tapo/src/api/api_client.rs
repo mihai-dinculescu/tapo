@@ -15,14 +15,15 @@ use crate::requests::{
     GetScheduleRulesParams, LightingEffect, MultipleRequestParams, PlayAlarmParams,
     PowerDataInterval, RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRule,
     ScheduleRuleRaw, SegmentEffect, SmartCamControlChildParams, SmartCamGetChildDeviceListParams,
-    SmartCamGetDeviceInfoParams, TapoParams, TapoRequest,
+    SmartCamGetDeviceInfoParams, SmartCamSearchDetectionListParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
     AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
-    DecodableResultExt, EnergyDataResult, EnergyDataResultRaw, EnergyUsageResult, PowerDataResult,
-    PowerDataResultRaw, PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw,
-    ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
-    TapoResult, Timer, TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
+    DecodableResultExt, DetectionListResultRaw, DetectionResult, EnergyDataResult,
+    EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw, PowerState,
+    RecordingDownloadResult, ScheduleRuleListResultRaw, ScheduleRuleResult,
+    SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt, TapoResult, Timer,
+    TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
 };
 use crate::utils::unix_timestamp_seconds;
 
@@ -1362,6 +1363,72 @@ impl ApiClient {
         media_stream::download::download(connection, request, time_limit, writer).await
     }
 
+    /// The detections on a camera's SD card within the given time range
+    /// (`searchDetectionList`), all pages of them.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `end_time` is before `start_time` or more than 24
+    /// hours after it, or if either is before 1970.
+    pub(crate) async fn get_detections(
+        &self,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+    ) -> Result<Vec<DetectionResult>, Error> {
+        // The Tapo app fetches pages of 100 (`start_index: 0`, `end_index: 99`)
+        // and stops paging past a start index of 12288.
+        const PAGE_SIZE: u64 = 100;
+        const MAX_START_INDEX: u64 = 12288;
+
+        debug!("Get detections...");
+
+        if end_time < start_time {
+            return Err(Error::Validation {
+                field: "end_time".to_string(),
+                message: "Must not be before start_time".to_string(),
+            });
+        }
+        // The camera answers a search window of 25 hours or more with
+        // `-71105`; the app only ever searches one day at a time.
+        if end_time - start_time > chrono::Duration::hours(24) {
+            return Err(Error::Validation {
+                field: "end_time".to_string(),
+                message: "Must be at most 24 hours after start_time".to_string(),
+            });
+        }
+
+        let start_time = unix_timestamp_seconds("start_time", start_time)?;
+        let end_time = unix_timestamp_seconds("end_time", end_time)?;
+
+        let mut results = Vec::new();
+        let mut start_index = 0;
+
+        while start_index <= MAX_START_INDEX {
+            let request = TapoRequest::SmartCamSearchDetectionList(TapoParams::new(
+                SmartCamSearchDetectionListParams::new(
+                    start_time,
+                    end_time,
+                    start_index,
+                    start_index + PAGE_SIZE - 1,
+                ),
+            ));
+
+            let page = self
+                .execute_smart_cam_multiple_request::<DetectionListResultRaw>(request)
+                .await?;
+
+            let to_be_continued = page.to_be_continued();
+            results.extend(page.detections());
+
+            if !to_be_continued {
+                break;
+            }
+            start_index += PAGE_SIZE;
+        }
+
+        Ok(results)
+    }
+
     #[cfg(feature = "debug")]
     pub(crate) async fn get_supported_alarm_type_list(
         &self,
@@ -1734,7 +1801,9 @@ impl ApiClient {
 
     /// A camera or camera hub takes a request only inside a
     /// `multipleRequest`, so every request is sent as the only request of
-    /// one.
+    /// one. The inner response is read as JSON first, because a refused
+    /// request comes with an empty `result`, which has to be reported
+    /// as the device's error code rather than as a failure to decode it.
     async fn execute_smart_cam_request_opt<R>(
         &self,
         request: TapoRequest,
@@ -1748,7 +1817,7 @@ impl ApiClient {
 
         let responses = self
             .protocol()?
-            .execute_request::<TapoMultipleResponse<R>>(request)
+            .execute_request::<TapoMultipleResponse<serde_json::Value>>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
             .result
@@ -1761,7 +1830,11 @@ impl ApiClient {
 
         validate_response(response.error_code)?;
 
-        Ok(response.result)
+        response
+            .result
+            .map(serde_json::from_value::<R>)
+            .transpose()
+            .map_err(Into::into)
     }
 
     pub(crate) async fn set_timer(

@@ -116,9 +116,11 @@ pub struct RecordingHubResult {
     pub video_type: RecordingType,
 }
 
-/// The type of event that produced a recording. The wire values are numeric
-/// strings; the names follow the Tapo app's playback event table.
-/// It serializes as the variant name and deserializes from either form.
+/// The type of event that produced a recording, or that a camera detected.
+/// The names follow the Tapo app's playback event table, whose codes the
+/// clip search sends as numeric strings and the detection list as numbers.
+/// It serializes as the variant name and deserializes from the name or the
+/// numeric string.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[non_exhaustive]
 pub enum RecordingType {
@@ -218,6 +220,58 @@ pub enum RecordingType {
     /// A recording type this library does not know yet, as its raw wire value.
     #[serde(untagged)]
     Other(String),
+}
+
+impl RecordingType {
+    /// The type for a code of the Tapo app's playback event table, which the
+    /// clip search sends as a numeric string and the detection list as a
+    /// number. A code this library does not know yet is `Other`, as its
+    /// decimal digits.
+    pub(crate) fn from_code(code: u64) -> Self {
+        match code {
+            1 => Self::Timing,
+            2 => Self::Motion,
+            3 => Self::Tamper,
+            4 => Self::LineCrossing,
+            5 => Self::AreaIntrusion,
+            6 => Self::Person,
+            7 => Self::BabyCry,
+            8 => Self::Vehicle,
+            9 => Self::Pet,
+            10 => Self::RingAlarm,
+            11 => Self::Bark,
+            12 => Self::Meow,
+            13 => Self::GlassBreaking,
+            14 => Self::Smoke,
+            15 => Self::PackageDelivered,
+            16 => Self::PackagePickedUp,
+            17 => Self::MissedDoorbellRing,
+            18 => Self::AnsweredDoorbellRing,
+            19 => Self::AntiTheft,
+            20 => Self::Face,
+            21 => Self::UnfamiliarFace,
+            22 => Self::UnfamiliarPerson,
+            23 => Self::BabyLeave,
+            24 => Self::BabyCaregiver,
+            25 => Self::BabyAsleep,
+            26 => Self::BabyAwake,
+            27 => Self::FaceCover,
+            28 => Self::SafeFenceOut,
+            30 => Self::BabyMotion,
+            31 => Self::PanoramicVideo,
+            33 => Self::Animal,
+            other => Self::Other(other.to_string()),
+        }
+    }
+
+    /// The types in a bit mask of event types, in which bit *n* stands for
+    /// the code *n + 1*, as the detection list sends them (`events_1`).
+    pub(crate) fn from_mask(mask: u64) -> Vec<Self> {
+        (0..u64::BITS)
+            .filter(|bit| mask & (1 << bit) != 0)
+            .map(|bit| Self::from_code(u64::from(bit) + 1))
+            .collect()
+    }
 }
 
 #[cfg(test)]
@@ -382,6 +436,35 @@ mod tests {
         assert_eq!(parsed.start_time, recording.start_time);
         assert_eq!(parsed.end_time, recording.end_time);
         assert_eq!(parsed.video_type, recording.video_type);
+    }
+
+    #[test]
+    fn test_recording_type_from_code_matches_the_string_aliases() {
+        for code in 1..=33u64 {
+            let from_code = RecordingType::from_code(code);
+            let from_string: RecordingType =
+                serde_json::from_value(serde_json::Value::String(code.to_string())).unwrap();
+
+            assert_eq!(from_code, from_string, "code {code}");
+        }
+    }
+
+    #[test]
+    fn test_recording_types_from_mask() {
+        assert_eq!(RecordingType::from_mask(0), vec![]);
+        assert_eq!(RecordingType::from_mask(2), vec![RecordingType::Motion]);
+        assert_eq!(
+            RecordingType::from_mask(34),
+            vec![RecordingType::Motion, RecordingType::Person]
+        );
+        assert_eq!(
+            RecordingType::from_mask(66),
+            vec![RecordingType::Motion, RecordingType::BabyCry]
+        );
+        assert_eq!(
+            RecordingType::from_mask(1 << 63),
+            vec![RecordingType::Other("64".to_string())]
+        );
     }
 
     #[test]

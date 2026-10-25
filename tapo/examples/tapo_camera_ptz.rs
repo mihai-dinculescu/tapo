@@ -1,6 +1,5 @@
 /// Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70) Example
-use std::time::Duration;
-
+use chrono::{Duration, Utc};
 use log::info;
 use tapo::ApiClient;
 
@@ -36,6 +35,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("RTSP SD: {}", rtsp_url.sd);
     info!("RTSP MJPEG: {}", rtsp_url.mjpeg);
 
+    // The camera accepts a search window of up to 24 hours.
+    let end_time = Utc::now();
+    let start_time = end_time - Duration::hours(24);
+    let detections = device.get_detections(start_time, end_time).await?;
+    info!(
+        "{} detections between {start_time} and {end_time}. Last: {:?}.",
+        detections.len(),
+        detections.last()
+    );
+
     info!("Capturing snapshot...");
     let snapshot = device
         .get_snapshot(&camera_username, &camera_password)
@@ -67,13 +76,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     device.pan_tilt(10, 10).await?;
 
     info!("Waiting 2 seconds...");
-    tokio::time::sleep(Duration::from_secs(2)).await;
+    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
 
     info!("Going back to saved preset (id '{preset_id}')...");
     device.goto_preset(&preset_id).await?;
 
     info!("Waiting 2 seconds...");
-    tokio::time::sleep(Duration::from_secs(2)).await;
+    tokio::time::sleep(std::time::Duration::from_secs(2)).await;
 
     info!("Deleting preset (id '{preset_id}')...");
     device.delete_preset(&preset_id).await?;

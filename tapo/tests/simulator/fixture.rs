@@ -8,8 +8,9 @@
 //! only the `error_code`; `pake_register` without the fields that are
 //! computed for each login; and `pake_share`, whose result is computed in
 //! full, so the fixture holds only the `error_code` that the device answers
-//! a wrong password with. The identifiers in a fixture are made up; the
-//! rest is what a real device sent.
+//! a wrong password with. A method that the device turns down holds only
+//! the `error_code` it answers with, too. The identifiers in a fixture are
+//! made up; the rest is what a real device sent.
 //!
 //! A fixture holds nothing that a device does not send. What the simulator
 //! needs to know beyond that comes from where the fixture lives and what it

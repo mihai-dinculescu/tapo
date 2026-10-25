@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+from datetime import datetime, timedelta, timezone
 
 from tapo import ApiClient
 
@@ -27,6 +28,19 @@ async def main():
     print(f"RTSP HD: {rtsp_url.hd}")
     print(f"RTSP SD: {rtsp_url.sd}")
     print(f"RTSP MJPEG: {rtsp_url.mjpeg}")
+
+    # The camera accepts a search window of up to 24 hours.
+    end_time = datetime.now(timezone.utc)
+    start_time = end_time - timedelta(hours=24)
+    detections = await device.get_detections(start_time, end_time)
+    print(
+        "{} detections between {} and {}. Last: {}.".format(
+            len(detections),
+            start_time,
+            end_time,
+            detections[-1].to_dict() if detections else None,
+        )
+    )
 
     print("Capturing snapshot...")
     snapshot = await device.get_snapshot(camera_username, camera_password)

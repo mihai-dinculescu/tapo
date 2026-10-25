@@ -154,9 +154,20 @@ impl Tpap {
         session.cipher.encrypt(seq, &response.to_string())
     }
 
-    /// The response to a request for `method`: its result.
+    /// The response to a request for `method`: its result, or, for a method
+    /// that the device turns down, of which the fixture holds only the error
+    /// code, that code with an empty result, as a camera without an SD card
+    /// answers a search of its detections.
     fn response(&self, method: &str) -> Value {
-        json!({ "error_code": 0, "result": self.fixture.result(method) })
+        let result = self.fixture.result(method);
+        if let Some(error_code) = result
+            .as_object()
+            .filter(|result| result.len() == 1)
+            .and_then(|result| result.get("error_code"))
+        {
+            return json!({ "error_code": error_code, "result": {} });
+        }
+        json!({ "error_code": 0, "result": result })
     }
 
     fn state(&self) -> MutexGuard<'_, State> {

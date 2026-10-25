@@ -1,0 +1,80 @@
+{
+  "discovery_response": {
+    "error_code": 0,
+    "result": {
+      "device_id": "0123456789ABCDEF0123456789ABCDEF",
+      "device_model": "C120",
+      "device_name": "Simulated Camera",
+      "device_type": "SMART.IPCAMERA",
+      "encrypt_info": {
+        "data": "U2ltdWxhdGVkIGRhdGE=",
+        "key": "U2ltdWxhdGVkIGtleQ==",
+        "sym_schm": "AES"
+      },
+      "encrypt_type": ["4"],
+      "factory_default": false,
+      "firmware_version": "1.9.4 Build 260813 Rel.79754n",
+      "hardware_version": "1.0",
+      "ip": "192.168.1.100",
+      "isResetWiFi": false,
+      "is_support_iot_cloud": true,
+      "mac": "AA-BB-CC-DD-EE-FF",
+      "mgt_encrypt_schm": {
+        "is_support_https": true
+      },
+      "protocol_version": 1,
+      "sv": 1,
+      "tpap": {
+        "noc": 1,
+        "pake": [2],
+        "port": 443,
+        "tls": 1
+      }
+    }
+  },
+  "login": {
+    "pake_register": {
+      "sub_method": "pake_register",
+      "cipher_suites": 1,
+      "iterations": 5000,
+      "encryption": "aes_128_ccm"
+    },
+    "pake_share": {
+      "error_code": -40401
+    }
+  },
+  "getDeviceInfo": {
+    "device_info": {
+      "basic_info": {
+        "device_type": "SMART.IPCAMERA",
+        "device_info": "C120 1.0 IPC",
+        "features": 3,
+        "barcode": "",
+        "device_model": "C120",
+        "sw_version": "1.9.4 Build 260813 Rel.79754n",
+        "device_name": "C120 1.0",
+        "hw_version": "1.0",
+        "device_alias": "Simulated Camera",
+        "mobile_access": "0",
+        "mac": "AA-BB-CC-DD-EE-FF",
+        "dev_id": "8000000000000000000000000000000000000120",
+        "hw_id": "00000000000000000000000000000000",
+        "oem_id": "00000000000000000000000000000000",
+        "hw_desc": "00000000000000000000000000000000",
+        "manufacturer_name": "TP-Link",
+        "region": "UN",
+        "ffs": false,
+        "tss": false,
+        "is_cal": true,
+        "avatar": "camera c120",
+        "has_set_location_info": 0,
+        "longitude": 0,
+        "latitude": 0,
+        "no_rtsp_constrain": 1
+      }
+    }
+  },
+  "searchDetectionList": {
+    "error_code": -71114
+  }
+}

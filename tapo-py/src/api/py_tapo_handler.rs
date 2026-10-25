@@ -438,6 +438,41 @@ macro_rules! py_camera_device_management_handlers {
     };
 }
 
+/// Generates the camera detection methods for a handler created with
+/// [`py_handler!`], mirroring `camera_detection_handlers!` in the `tapo` crate.
+///
+/// # Usage
+///
+/// ```ignore
+/// py_camera_detection_handlers!(PyCameraHandler, CameraHandler);
+/// ```
+///
+/// # Generated code
+///
+/// * `get_detections(start_time, end_time)` method
+macro_rules! py_camera_detection_handlers {
+    ($py_name:ident, $handler:ident) => {
+        #[pyo3::pymethods]
+        impl $py_name {
+            pub async fn get_detections(
+                &self,
+                start_time: $crate::utc_date_time::UtcDateTime,
+                end_time: $crate::utc_date_time::UtcDateTime,
+            ) -> pyo3::prelude::PyResult<Vec<$crate::responses::PyDetectionResult>> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                let detections = $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_detections,
+                    start_time.0,
+                    end_time.0
+                )?;
+                Ok(detections.into_iter().map(Into::into).collect())
+            }
+        }
+    };
+}
+
 /// Generates the camera stream methods for a handler created with
 /// [`py_handler!`], mirroring `camera_stream_handlers!` in the `tapo` crate.
 ///
