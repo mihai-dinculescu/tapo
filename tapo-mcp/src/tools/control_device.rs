@@ -10,7 +10,8 @@ use crate::config::AppConfig;
 use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
 use crate::models::{
-    BRIGHTNESS_LEVELS, CONTROL_CAPABILITIES, ControlDeviceParams, SetCapabilityRequest,
+    BRIGHTNESS_LEVELS, COLOR_TEMPERATURE_RANGE, CONTROL_CAPABILITIES, ControlDeviceParams,
+    HUE_RANGE, SetCapabilityRequest, SATURATION_LEVELS,
 };
 use crate::requests;
 use crate::requests::{CheckedDevice, HubParent};
@@ -34,6 +35,8 @@ pub async fn control_device(
     }
 
     check_brightness(&params.capabilities)?;
+    check_hue_saturation(&params.capabilities)?;
+    check_color_temperature(&params.capabilities)?;
 
     // Counted outside the device future, which a timeout drops partway through.
     let mut applied = 0;
@@ -52,6 +55,12 @@ pub async fn control_device(
                     }
                     SetCapabilityRequest::Color { value } => {
                         color_request(&params.id, &checked, value)?
+                    }
+                    SetCapabilityRequest::HueSaturation { hue, saturation } => {
+                        hue_saturation_request(&params.id, &checked, hue, saturation)?
+                    }
+                    SetCapabilityRequest::ColorTemperature { value } => {
+                        color_temperature_request(&params.id, &checked, value)?
                     }
                     SetCapabilityRequest::OnOff { value } => {
                         on_off_request(&params.id, &checked, value)?
@@ -113,6 +122,59 @@ fn check_brightness(capabilities: &[SetCapabilityRequest]) -> Result<(), TapoMcp
                     index + 1,
                     BRIGHTNESS_LEVELS.start(),
                     BRIGHTNESS_LEVELS.end()
+                ),
+            });
+        }
+    }
+
+    Ok(())
+}
+
+/// Checks every `HueSaturation` value before any capability is applied.
+fn check_hue_saturation(capabilities: &[SetCapabilityRequest]) -> Result<(), TapoMcpError> {
+    for (index, capability) in capabilities.iter().enumerate() {
+        if let SetCapabilityRequest::HueSaturation { hue, saturation } = capability {
+            if !HUE_RANGE.contains(hue) {
+                return Err(TapoMcpError::InvalidParameter {
+                    name: "capabilities".to_string(),
+                    message: format!(
+                        "capability {} (HueSaturation) hue must be between {} and {}, got {hue}",
+                        index + 1,
+                        HUE_RANGE.start(),
+                        HUE_RANGE.end()
+                    ),
+                });
+            }
+            if !SATURATION_LEVELS.contains(saturation) {
+                return Err(TapoMcpError::InvalidParameter {
+                    name: "capabilities".to_string(),
+                    message: format!(
+                        "capability {} (HueSaturation) saturation must be between {} and {}, got {saturation}",
+                        index + 1,
+                        SATURATION_LEVELS.start(),
+                        SATURATION_LEVELS.end()
+                    ),
+                });
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Checks every `ColorTemperature` value before any capability is applied.
+fn check_color_temperature(capabilities: &[SetCapabilityRequest]) -> Result<(), TapoMcpError> {
+    for (index, capability) in capabilities.iter().enumerate() {
+        if let SetCapabilityRequest::ColorTemperature { value } = capability
+            && !COLOR_TEMPERATURE_RANGE.contains(value)
+        {
+            return Err(TapoMcpError::InvalidParameter {
+                name: "capabilities".to_string(),
+                message: format!(
+                    "capability {} (ColorTemperature) must be between {} and {}, got {value}",
+                    index + 1,
+                    COLOR_TEMPERATURE_RANGE.start(),
+                    COLOR_TEMPERATURE_RANGE.end()
                 ),
             });
         }
@@ -187,6 +249,83 @@ fn color_request<'a>(
             return Err(TapoMcpError::WrongDeviceType {
                 id: id.to_string(),
                 capability: "Color".to_string(),
+                expected: "a color light device".to_string(),
+            });
+        }
+    };
+
+    Ok(request)
+}
+
+fn hue_saturation_request<'a>(
+    id: &str,
+    checked: &'a CheckedDevice,
+    hue: u16,
+    saturation: u8,
+) -> Result<DeviceRequest<'a>, TapoMcpError> {
+    let request: DeviceRequest<'a> = match checked {
+        CheckedDevice::Parent(device) => match device {
+            DiscoveryResult::ColorLight { handler, .. } => {
+                Box::pin(handler.set_hue_saturation(hue, saturation))
+            }
+            DiscoveryResult::RgbLightStrip { handler, .. } => {
+                Box::pin(handler.set_hue_saturation(hue, saturation))
+            }
+            DiscoveryResult::RgbicLightStrip { handler, .. } => {
+                Box::pin(handler.set_hue_saturation(hue, saturation))
+            }
+            _ => {
+                return Err(TapoMcpError::WrongDeviceType {
+                    id: id.to_string(),
+                    capability: "HueSaturation".to_string(),
+                    expected: "a color light device".to_string(),
+                });
+            }
+        },
+        CheckedDevice::PowerStripChild { .. }
+        | CheckedDevice::PowerStripEnergyMonitoringChild { .. }
+        | CheckedDevice::HubChild { .. } => {
+            return Err(TapoMcpError::WrongDeviceType {
+                id: id.to_string(),
+                capability: "HueSaturation".to_string(),
+                expected: "a color light device".to_string(),
+            });
+        }
+    };
+
+    Ok(request)
+}
+
+fn color_temperature_request<'a>(
+    id: &str,
+    checked: &'a CheckedDevice,
+    color_temperature: u16,
+) -> Result<DeviceRequest<'a>, TapoMcpError> {
+    let request: DeviceRequest<'a> = match checked {
+        CheckedDevice::Parent(device) => match device {
+            DiscoveryResult::ColorLight { handler, .. } => {
+                Box::pin(handler.set_color_temperature(color_temperature))
+            }
+            DiscoveryResult::RgbLightStrip { handler, .. } => {
+                Box::pin(handler.set_color_temperature(color_temperature))
+            }
+            DiscoveryResult::RgbicLightStrip { handler, .. } => {
+                Box::pin(handler.set_color_temperature(color_temperature))
+            }
+            _ => {
+                return Err(TapoMcpError::WrongDeviceType {
+                    id: id.to_string(),
+                    capability: "ColorTemperature".to_string(),
+                    expected: "a color light device".to_string(),
+                });
+            }
+        },
+        CheckedDevice::PowerStripChild { .. }
+        | CheckedDevice::PowerStripEnergyMonitoringChild { .. }
+        | CheckedDevice::HubChild { .. } => {
+            return Err(TapoMcpError::WrongDeviceType {
+                id: id.to_string(),
+                capability: "ColorTemperature".to_string(),
                 expected: "a color light device".to_string(),
             });
         }
@@ -297,6 +436,70 @@ mod tests {
                 Err(TapoMcpError::InvalidParameter { name, message })
                     if name == "capabilities"
                         && message == format!("capability 2 (Brightness) must be between 1 and 100, got {value}")
+            ));
+        }
+    }
+
+    #[test]
+    fn check_hue_saturation_accepts_values_in_range() {
+        let capabilities = [
+            SetCapabilityRequest::OnOff { value: true },
+            SetCapabilityRequest::HueSaturation { hue: 0, saturation: 1 },
+            SetCapabilityRequest::HueSaturation { hue: 360, saturation: 100 },
+        ];
+
+        assert!(check_hue_saturation(&capabilities).is_ok());
+    }
+
+    #[test]
+    fn check_hue_saturation_rejects_hue_out_of_range() {
+        for hue in [361, 362] {
+            let capabilities = [SetCapabilityRequest::HueSaturation { hue, saturation: 50 }];
+
+            assert!(matches!(
+                check_hue_saturation(&capabilities),
+                Err(TapoMcpError::InvalidParameter { name, message })
+                    if name == "capabilities"
+                        && message == format!("capability 1 (HueSaturation) hue must be between 0 and 360, got {hue}")
+            ));
+        }
+    }
+
+    #[test]
+    fn check_hue_saturation_rejects_saturation_out_of_range() {
+        for saturation in [0, 101] {
+            let capabilities = [SetCapabilityRequest::HueSaturation { hue: 120, saturation }];
+
+            assert!(matches!(
+                check_hue_saturation(&capabilities),
+                Err(TapoMcpError::InvalidParameter { name, message })
+                    if name == "capabilities"
+                        && message == format!("capability 1 (HueSaturation) saturation must be between 1 and 100, got {saturation}")
+            ));
+        }
+    }
+
+    #[test]
+    fn check_color_temperature_accepts_values_in_range() {
+        let capabilities = [
+            SetCapabilityRequest::OnOff { value: true },
+            SetCapabilityRequest::ColorTemperature { value: 2500 },
+            SetCapabilityRequest::ColorTemperature { value: 6500 },
+        ];
+
+        assert!(check_color_temperature(&capabilities).is_ok());
+    }
+
+    #[test]
+    fn check_color_temperature_rejects_values_out_of_range() {
+        for value in [2499, 6501] {
+            let capabilities = [SetCapabilityRequest::ColorTemperature { value }];
+
+            assert!(matches!(
+                check_color_temperature(&capabilities),
+                Err(TapoMcpError::InvalidParameter { name, message })
+                    if name == "capabilities"
+                        && message == format!("capability 1 (ColorTemperature) must be between 2500 and 6500, got {value}")
             ));
         }
     }

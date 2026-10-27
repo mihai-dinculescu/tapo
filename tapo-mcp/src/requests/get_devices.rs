@@ -109,6 +109,8 @@ async fn process_device(device: DiscoveryResult) -> DeviceOutcome {
             vec![
                 SetCapability::Brightness,
                 SetCapability::Color,
+                SetCapability::HueSaturation,
+                SetCapability::ColorTemperature,
                 SetCapability::OnOff,
             ]
         }
