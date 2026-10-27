@@ -33,6 +33,10 @@ pub enum SetCapability {
     Brightness,
     /// Set the device color using a preset name.
     Color,
+    /// Set the device color using a hue (0-360) and saturation (1-100).
+    HueSaturation,
+    /// Set the device color temperature (2500-6500).
+    ColorTemperature,
     /// Turn the device on or off.
     OnOff,
 }
@@ -179,6 +183,21 @@ pub enum SetCapabilityRequest {
         /// Preset color name.
         value: Color,
     },
+    /// Set the device color using a hue and saturation. Also turns the device on if it's off.
+    HueSaturation {
+        /// Hue, in degrees.
+        #[schemars(range(min = *HUE_RANGE.start(), max = *HUE_RANGE.end()))]
+        hue: u16,
+        /// Saturation level.
+        #[schemars(range(min = *SATURATION_LEVELS.start(), max = *SATURATION_LEVELS.end()))]
+        saturation: u8,
+    },
+    /// Set the device color temperature. Also turns the device on if it's off.
+    ColorTemperature {
+        /// Color temperature, in kelvin.
+        #[schemars(range(min = *COLOR_TEMPERATURE_RANGE.start(), max = *COLOR_TEMPERATURE_RANGE.end()))]
+        value: u16,
+    },
     /// Turn the device on or off.
     OnOff {
         /// `true` to turn on, `false` to turn off.
@@ -305,6 +324,12 @@ pub const POWER_5_MINUTE_HOURS: RangeInclusive<u8> = 1..=12;
 pub const POWER_HOURLY_DAYS: RangeInclusive<u8> = 1..=6;
 /// The brightness levels `SetCapabilityRequest::Brightness` can set.
 pub const BRIGHTNESS_LEVELS: RangeInclusive<u8> = 1..=100;
+/// The hues `SetCapabilityRequest::HueSaturation` can set.
+pub const HUE_RANGE: RangeInclusive<u16> = 0..=360;
+/// The saturation levels `SetCapabilityRequest::HueSaturation` can set.
+pub const SATURATION_LEVELS: RangeInclusive<u8> = 1..=100;
+/// The color temperatures `SetCapabilityRequest::ColorTemperature` can set.
+pub const COLOR_TEMPERATURE_RANGE: RangeInclusive<u16> = 2500..=6500;
 /// The number of set capabilities one `control_device` call can apply.
 pub const CONTROL_CAPABILITIES: RangeInclusive<usize> = 1..=12;
 
@@ -380,16 +405,29 @@ mod tests {
             SetCapabilityRequest::Color {
                 value: Color::Daylight,
             },
+            SetCapabilityRequest::HueSaturation { hue: 120, saturation: 75 },
+            SetCapabilityRequest::ColorTemperature { value: 3000 },
             SetCapabilityRequest::OnOff { value: true },
         ];
         for request in set_requests {
-            let value = match &request {
-                SetCapabilityRequest::Brightness { .. } => json!(50),
-                SetCapabilityRequest::Color { .. } => json!("Daylight"),
-                SetCapabilityRequest::OnOff { .. } => json!(true),
+            let json = match &request {
+                SetCapabilityRequest::Brightness { value } => {
+                    json!({ "type": request.name(), "value": value })
+                }
+                SetCapabilityRequest::Color { value } => {
+                    json!({ "type": request.name(), "value": value })
+                }
+                SetCapabilityRequest::HueSaturation { hue, saturation } => {
+                    json!({ "type": request.name(), "hue": hue, "saturation": saturation })
+                }
+                SetCapabilityRequest::ColorTemperature { value } => {
+                    json!({ "type": request.name(), "value": value })
+                }
+                SetCapabilityRequest::OnOff { value } => {
+                    json!({ "type": request.name(), "value": value })
+                }
             };
-            let parsed: SetCapabilityRequest =
-                serde_json::from_value(json!({ "type": request.name(), "value": value })).unwrap();
+            let parsed: SetCapabilityRequest = serde_json::from_value(json).unwrap();
             assert_eq!(discriminant(&parsed), discriminant(&request));
         }
 
