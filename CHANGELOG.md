@@ -13,6 +13,7 @@ file. This change log follows the conventions of
 ### Fixed
 
 - `CameraHandler`, `CameraPtzHandler`, `CameraHubHandler`: a request the device refuses now fails with the device's error code, such as `STORAGE_NOT_EXIST` for a camera without an SD card, instead of with a deserialization error about a missing field.
+- `ColorLightHandler`: `get_device_info` now parses L530/L535/L630 device info whose firmware omits `dynamic_light_effect_enable`, which some builds (such as the L535 `1.4.5`) do not send, instead of failing with a deserialization error about a missing field.
 
 ## [Python Unreleased][Unreleased]
 
