@@ -94,7 +94,7 @@ Energy dates are read in the plug's time zone, so the entries match the Tapo app
 
 ### control_device
 
-Control a device by applying 1 to 12 set capabilities, in order. The count and every value are checked before the device is contacted; then it automatically runs `check_device`, and a capability the device does not support fails the call before any capability is applied. `Brightness` and `Color` also turn the device on if it is off. When the device returns an error partway through, the error says how many capabilities were applied and which one failed.
+Control a device by applying 1 to 12 set capabilities, in order. The count and every value are checked before the device is contacted; then it automatically runs `check_device`, and a capability the device does not support fails the call before any capability is applied. `Brightness`, `Color`, `HueSaturation` and `ColorTemperature` also turn the device on if it is off. When the device returns an error partway through, the error says how many capabilities were applied and which one failed.
 
 ```bash
 # Turn on (plugs, lights, power strip outlets, and S210 switches paired to a hub)
@@ -108,6 +108,12 @@ npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[
 
 # Set color (color lights only)
 npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Color", "value": "Coral"}]'
+
+# Set a custom color by hue (0-360) and saturation (1-100) (color lights only)
+npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "HueSaturation", "hue": 120, "saturation": 75}]'
+
+# Set color temperature (2500-6500 kelvin) (color lights only)
+npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "ColorTemperature", "value": 3000}]'
 
 # Set multiple capabilities at once
 npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "Color", "value": "Coral"}, {"type": "Brightness", "value": 50}]'

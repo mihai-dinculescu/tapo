@@ -52,11 +52,13 @@ Devices and child devices expose separate lists of set and get capabilities they
 
 ### Set Capabilities
 
-| Capability   | Description                              |
-| ------------ | ---------------------------------------- |
-| `Brightness` | Set the device brightness (1-100)        |
-| `Color`      | Set the device color using a preset name |
-| `OnOff`      | Turn the device on or off                |
+| Capability         | Description                                                   |
+| ------------------ | ------------------------------------------------------------- |
+| `Brightness`       | Set the device brightness (1-100)                             |
+| `Color`            | Set the device color using a preset name                      |
+| `HueSaturation`    | Set the device color using a hue (0-360) and saturation (1-100) |
+| `ColorTemperature` | Set the device color temperature (2500-6500)                  |
+| `OnOff`            | Turn the device on or off                                     |
 
 ### Get Capabilities
 
