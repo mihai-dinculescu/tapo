@@ -10,6 +10,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.6.1][tapo-mcp-v0.6.1] - 2026-10-29
+
 ### Added
 
 - `control_device`: added the `HueSaturation` capability, which sets a color light's color by its hue (0-360) and saturation (1-100), for the L530, L535, L630 and the L920/L930 strips. `list_devices` lists it for these devices. It also turns the device on if it is off. (thanks to @raymondlo84)
@@ -1310,6 +1312,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.6.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.6.1
 [v0.12.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.12.1
 [tapo-mcp-v0.6.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.6.0
 [v0.12.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.12.0
