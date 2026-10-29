@@ -13,7 +13,7 @@ file. This change log follows the conventions of
 ### Fixed
 
 - `CameraHandler`, `CameraPtzHandler`, `CameraHubHandler`: a request the device refuses now fails with the device's error code, such as `STORAGE_NOT_EXIST` for a camera without an SD card, instead of with a deserialization error about a missing field.
-- `ColorLightHandler`: `get_device_info` now parses L530/L535/L630 device info whose firmware omits `dynamic_light_effect_enable`, which some builds (such as the L535 `1.4.5`) do not send, instead of failing with a deserialization error about a missing field.
+- `ColorLightHandler`: `get_device_info` now parses L530/L535/L630 device info whose firmware omits `dynamic_light_effect_enable`, which some builds (such as the L535 `1.4.5`) do not send, instead of failing with a deserialization error about a missing field. `DeviceInfoColorLightResult::dynamic_light_effect_enable` is now `Option<bool>`, `None` when the device doesn't send it. (thanks to @raymondlo84)
 
 ## [Python Unreleased][Unreleased]
 
@@ -24,13 +24,14 @@ file. This change log follows the conventions of
 ### Fixed
 
 - `CameraHandler`, `CameraPtzHandler`, `CameraHubHandler`: a request the device refuses now fails with the device's error code, such as `STORAGE_NOT_EXIST` for a camera without an SD card, instead of with a deserialization error about a missing field.
+- `ColorLightHandler`: `get_device_info` now parses L530/L535/L630 device info whose firmware omits `dynamic_light_effect_enable`, which some builds (such as the L535 `1.4.5`) do not send, instead of failing with a deserialization error about a missing field. `DeviceInfoColorLightResult.dynamic_light_effect_enable` is now `Optional[bool]`, `None` when the device doesn't send it. (thanks to @raymondlo84)
 
 ## [MCP Unreleased][Unreleased]
 
 ### Added
 
-- `control_device`: added the `HueSaturation` capability, which sets a color light's color by its hue (0-360) and saturation (1-100), for the L530, L535, L630 and the L920/L930 strips. `list_devices` lists it for these devices. It also turns the device on if it is off.
-- `control_device`: added the `ColorTemperature` capability, which sets a color light's color temperature (2500-6500), for the L530, L535, L630 and the L920/L930 strips. `list_devices` lists it for these devices. It also turns the device on if it is off.
+- `control_device`: added the `HueSaturation` capability, which sets a color light's color by its hue (0-360) and saturation (1-100), for the L530, L535, L630 and the L920/L930 strips. `list_devices` lists it for these devices. It also turns the device on if it is off. (thanks to @raymondlo84)
+- `control_device`: added the `ColorTemperature` capability, which sets a color light's color temperature (2500-6500), for the L530, L535, L630 and the L920/L930 strips. `list_devices` lists it for these devices. It also turns the device on if it is off. (thanks to @raymondlo84)
 - `get_device_state`: added the `Detections` capability, which returns, as `detections`, the detections stored on a camera's SD card for a window of up to 24 hours. Each comes with its start, its end, the event the camera filed it under and every event detected in that span (person, motion, baby cry, ...). `list_devices` lists it for cameras.
 
 ## [MCP v0.6.0][tapo-mcp-v0.6.0] - 2026-10-24

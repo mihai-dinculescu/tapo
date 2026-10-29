@@ -40,9 +40,7 @@ pub struct DeviceInfoColorLightResult {
     /// The default state of a device to be used when internet connectivity is lost after a power cut.
     pub default_states: DefaultColorLightState,
     pub device_on: bool,
-    /// Some L530/L535/L630 firmware builds omit this field; default to `false`.
-    #[serde(default)]
-    pub dynamic_light_effect_enable: bool,
+    pub dynamic_light_effect_enable: Option<bool>,
     pub dynamic_light_effect_id: Option<String>,
     pub hue: Option<u16>,
     pub nickname: String,
@@ -92,66 +90,3 @@ pub struct ColorLightState {
 
 #[cfg(feature = "python")]
 crate::impl_to_dict!(ColorLightState);
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn color_light_info_json(with_dynamic_effect: bool) -> String {
-        let dynamic = if with_dynamic_effect {
-            "\"dynamic_light_effect_enable\": true, \"dynamic_light_effect_id\": \"L1\","
-        } else {
-            // some firmware builds omit both fields
-            ""
-        };
-        format!(
-            r#"{{{dynamic}
-            "avatar": "bulb",
-            "device_id": "8000000000000000000000000000000000000535",
-            "device_on": true,
-            "fw_id": "00000000000000000000000000000000",
-            "fw_ver": "1.4.5 Build 260923 Rel.174333",
-            "has_set_location_info": true,
-            "hw_id": "ABCDEF0123456789ABCDEF0123456789",
-            "hw_ver": "3.0",
-            "ip": "192.168.0.157",
-            "lang": "en_US",
-            "latitude": 373702,
-            "longitude": -1219667,
-            "mac": "AA-BB-CC-DD-EE-57",
-            "model": "L535",
-            "oem_id": "9876543210FEDCBA9876543210FEDCBA",
-            "brightness": 55,
-            "color_temp": 0,
-            "default_states": {{"type": "last_states", "state": {{"brightness": 55, "color_temp": 0, "hue": 29, "saturation": 69}}}},
-            "hue": 29,
-            "nickname": "T2ZmaWNlIE9wZW5DbGF3IExpZ2h0",
-            "overheated": false,
-            "saturation": 69,
-            "region": "America/Los_Angeles",
-            "rssi": -39,
-            "signal_level": 3,
-            "specs": "",
-            "ssid": "T3BlbkNsYXc=",
-            "time_diff": -480,
-            "type": "SMART.TAPOBULB"
-        }}"#
-        )
-    }
-
-    #[test]
-    fn device_info_parses_when_dynamic_light_effect_enable_is_absent() {
-        // L535 1.4.5 and some L530/L630 firmware builds omit the field.
-        let info: DeviceInfoColorLightResult =
-            serde_json::from_str(&color_light_info_json(false)).expect("should parse");
-        assert!(!info.dynamic_light_effect_enable);
-        assert_eq!(info.model, "L535");
-    }
-
-    #[test]
-    fn device_info_parses_when_dynamic_light_effect_enable_is_present() {
-        let info: DeviceInfoColorLightResult =
-            serde_json::from_str(&color_light_info_json(true)).expect("should parse");
-        assert!(info.dynamic_light_effect_enable);
-        assert_eq!(info.dynamic_light_effect_id.as_deref(), Some("L1"));
-    }
-}

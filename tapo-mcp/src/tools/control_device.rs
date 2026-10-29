@@ -11,7 +11,7 @@ use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
 use crate::models::{
     BRIGHTNESS_LEVELS, COLOR_TEMPERATURE_RANGE, CONTROL_CAPABILITIES, ControlDeviceParams,
-    HUE_RANGE, SetCapabilityRequest, SATURATION_LEVELS,
+    HUE_RANGE, SATURATION_LEVELS, SetCapabilityRequest,
 };
 use crate::requests;
 use crate::requests::{CheckedDevice, HubParent};
@@ -444,8 +444,14 @@ mod tests {
     fn check_hue_saturation_accepts_values_in_range() {
         let capabilities = [
             SetCapabilityRequest::OnOff { value: true },
-            SetCapabilityRequest::HueSaturation { hue: 0, saturation: 1 },
-            SetCapabilityRequest::HueSaturation { hue: 360, saturation: 100 },
+            SetCapabilityRequest::HueSaturation {
+                hue: 0,
+                saturation: 1,
+            },
+            SetCapabilityRequest::HueSaturation {
+                hue: 360,
+                saturation: 100,
+            },
         ];
 
         assert!(check_hue_saturation(&capabilities).is_ok());
@@ -454,7 +460,10 @@ mod tests {
     #[test]
     fn check_hue_saturation_rejects_hue_out_of_range() {
         for hue in [361, 362] {
-            let capabilities = [SetCapabilityRequest::HueSaturation { hue, saturation: 50 }];
+            let capabilities = [SetCapabilityRequest::HueSaturation {
+                hue,
+                saturation: 50,
+            }];
 
             assert!(matches!(
                 check_hue_saturation(&capabilities),
@@ -468,7 +477,10 @@ mod tests {
     #[test]
     fn check_hue_saturation_rejects_saturation_out_of_range() {
         for saturation in [0, 101] {
-            let capabilities = [SetCapabilityRequest::HueSaturation { hue: 120, saturation }];
+            let capabilities = [SetCapabilityRequest::HueSaturation {
+                hue: 120,
+                saturation,
+            }];
 
             assert!(matches!(
                 check_hue_saturation(&capabilities),

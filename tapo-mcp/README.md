@@ -52,46 +52,46 @@ Devices and child devices expose separate lists of set and get capabilities they
 
 ### Set Capabilities
 
-| Capability         | Description                                                   |
-| ------------------ | ------------------------------------------------------------- |
-| `Brightness`       | Set the device brightness (1-100)                             |
-| `Color`            | Set the device color using a preset name                      |
+| Capability         | Description                                                     |
+| ------------------ | --------------------------------------------------------------- |
+| `Brightness`       | Set the device brightness (1-100)                               |
+| `Color`            | Set the device color using a preset name                        |
 | `HueSaturation`    | Set the device color using a hue (0-360) and saturation (1-100) |
-| `ColorTemperature` | Set the device color temperature (2500-6500)                  |
-| `OnOff`            | Turn the device on or off                                     |
+| `ColorTemperature` | Set the device color temperature (2500-6500)                    |
+| `OnOff`            | Turn the device on or off                                       |
 
 ### Get Capabilities
 
-| Capability                   | Description                                                                                                                                                      |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Capability                   | Description                                                                                                                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Detections`                 | Read the detections stored on a camera's SD card, with the events detected (person, motion, ...), for up to 24 hours (C120, C210, C220, C225, C325WB, C520WS, TC40, TC70) |
-| `DeviceInfo`                 | Read the device's current state                                                                                                                                  |
-| `EnergyDataHourly`           | Read the energy used per hour, in Wh, for up to 8 days (P110, P110M, P115, P304M, P316M)                                                                         |
-| `EnergyDataDaily`            | Read the energy used per day, in Wh, for a quarter of a year (P110, P110M, P115, P304M, P316M)                                                                   |
-| `EnergyDataMonthly`          | Read the energy used per month, in Wh, for a year (P110, P110M, P115, P304M, P316M)                                                                              |
-| `PowerDataEvery5Minutes`     | Read the power draw every 5 minutes, in W, for up to 12 hours (P110, P110M, P115, P304M, P316M)                                                                  |
-| `PowerDataHourly`            | Read the power draw every hour, in W, for up to 6 days (P110, P110M, P115, P304M, P316M)                                                                         |
-| `Snapshot`                   | Capture a still JPEG snapshot. Served by the dedicated `take_snapshot` tool (binary, not JSON state)                                                             |
-| `TemperatureHumidityRecords` | Read the last 24 hours of temperature and humidity records (T310, T315) at 15 minute intervals                                                                   |
-| `TriggerLogs`                | Read paginated trigger logs from a hub child sensor (S200, T100, T110, T300)                                                                                     |
+| `DeviceInfo`                 | Read the device's current state                                                                                                                                           |
+| `EnergyDataHourly`           | Read the energy used per hour, in Wh, for up to 8 days (P110, P110M, P115, P304M, P316M)                                                                                  |
+| `EnergyDataDaily`            | Read the energy used per day, in Wh, for a quarter of a year (P110, P110M, P115, P304M, P316M)                                                                            |
+| `EnergyDataMonthly`          | Read the energy used per month, in Wh, for a year (P110, P110M, P115, P304M, P316M)                                                                                       |
+| `PowerDataEvery5Minutes`     | Read the power draw every 5 minutes, in W, for up to 12 hours (P110, P110M, P115, P304M, P316M)                                                                           |
+| `PowerDataHourly`            | Read the power draw every hour, in W, for up to 6 days (P110, P110M, P115, P304M, P316M)                                                                                  |
+| `Snapshot`                   | Capture a still JPEG snapshot. Served by the dedicated `take_snapshot` tool (binary, not JSON state)                                                                      |
+| `TemperatureHumidityRecords` | Read the last 24 hours of temperature and humidity records (T310, T315) at 15 minute intervals                                                                            |
+| `TriggerLogs`                | Read paginated trigger logs from a hub child sensor (S200, T100, T110, T300)                                                                                              |
 
 ## Configuration
 
 All configuration is via environment variables prefixed with `TAPO_MCP_`:
 
-| Variable                      | Required | Default          | Description                                                                                                                     |
-| ----------------------------- | -------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `TAPO_MCP_USERNAME`           | Yes      | —                | Tapo account email                                                                                                              |
-| `TAPO_MCP_PASSWORD`           | Yes      | —                | Tapo account password                                                                                                           |
-| `TAPO_MCP_CAMERA_USERNAME`    | No       | —                | Camera account username[^camera]. Required by `take_snapshot`.                                                                  |
-| `TAPO_MCP_CAMERA_PASSWORD`    | No       | —                | Camera account password[^camera]. Required by `take_snapshot`.                                                                  |
-| `TAPO_MCP_DISCOVERY_TARGET`   | Yes      | —                | Network target for device discovery (e.g. `192.168.1.255`)                                                                      |
-| `TAPO_MCP_HTTP_ADDR`          | No       | `127.0.0.1:3000` | Address the server listens on                                                                                                   |
-| `TAPO_MCP_DISCOVERY_TIMEOUT`  | No       | `5`              | Discovery timeout in seconds. Must be between `1` and `60`[^discovery]                                                                       |
+| Variable                      | Required | Default          | Description                                                                                                                                                  |
+| ----------------------------- | -------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `TAPO_MCP_USERNAME`           | Yes      | —                | Tapo account email                                                                                                                                           |
+| `TAPO_MCP_PASSWORD`           | Yes      | —                | Tapo account password                                                                                                                                        |
+| `TAPO_MCP_CAMERA_USERNAME`    | No       | —                | Camera account username[^camera]. Required by `take_snapshot`.                                                                                               |
+| `TAPO_MCP_CAMERA_PASSWORD`    | No       | —                | Camera account password[^camera]. Required by `take_snapshot`.                                                                                               |
+| `TAPO_MCP_DISCOVERY_TARGET`   | Yes      | —                | Network target for device discovery (e.g. `192.168.1.255`)                                                                                                   |
+| `TAPO_MCP_HTTP_ADDR`          | No       | `127.0.0.1:3000` | Address the server listens on                                                                                                                                |
+| `TAPO_MCP_DISCOVERY_TIMEOUT`  | No       | `5`              | Discovery timeout in seconds. Must be between `1` and `60`[^discovery]                                                                                       |
 | `TAPO_MCP_DISCOVERY_INTERVAL` | No       | `600`            | Seconds between background discoveries that refresh the device list. Must be at least `TAPO_MCP_DISCOVERY_TIMEOUT` and at most `86400` (one day)[^discovery] |
-| `TAPO_MCP_API_KEY`            | No       | —                | Bearer token for HTTP authentication (see below)                                                                                |
-| `TAPO_MCP_ALLOWED_HOSTS`      | No       | loopback only    | Comma-separated `Host` header allowlist (see Network exposure)                                                                  |
-| `TAPO_MCP_PUBLIC_URL`         | No       | —                | Base URL clients reach the server at (e.g. `https://tapo.example.com`). Enables short-lived snapshot links (see Snapshot links) |
+| `TAPO_MCP_API_KEY`            | No       | —                | Bearer token for HTTP authentication (see below)                                                                                                             |
+| `TAPO_MCP_ALLOWED_HOSTS`      | No       | loopback only    | Comma-separated `Host` header allowlist (see Network exposure)                                                                                               |
+| `TAPO_MCP_PUBLIC_URL`         | No       | —                | Base URL clients reach the server at (e.g. `https://tapo.example.com`). Enables short-lived snapshot links (see Snapshot links)                              |
 
 [^camera]: Set on each camera in the Tapo app under Camera Settings > Advanced Settings > Camera Account. Distinct from your TP-Link cloud account.
 
@@ -224,7 +224,6 @@ spec:
                 configMapKeyRef:
                   name: tapo-mcp-config
                   key: TAPO_MCP_DISCOVERY_TARGET
-
 ```
 
 > **Note:** `hostNetwork: true` is required for UDP broadcast discovery, similar to `--network host` in Docker. Because clients reach the server by node IP or hostname rather than loopback, set `TAPO_MCP_ALLOWED_HOSTS` accordingly (see [Network exposure](#network-exposure)). To get [snapshot links](#snapshot-links), add `TAPO_MCP_PUBLIC_URL` to the ConfigMap and the Deployment's `env`.

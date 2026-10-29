@@ -12,7 +12,7 @@ class DeviceInfoColorLightResult(DeviceInfoSmartExt, ToDictExt):
     default_states: DefaultColorLightState
     """The default state of a device to be used when internet connectivity is lost after a power cut."""
     device_on: bool
-    dynamic_light_effect_enable: bool
+    dynamic_light_effect_enable: Optional[bool]
     dynamic_light_effect_id: Optional[str]
     hue: Optional[int]
     nickname: str

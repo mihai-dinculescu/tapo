@@ -405,7 +405,10 @@ mod tests {
             SetCapabilityRequest::Color {
                 value: Color::Daylight,
             },
-            SetCapabilityRequest::HueSaturation { hue: 120, saturation: 75 },
+            SetCapabilityRequest::HueSaturation {
+                hue: 120,
+                saturation: 75,
+            },
             SetCapabilityRequest::ColorTemperature { value: 3000 },
             SetCapabilityRequest::OnOff { value: true },
         ];
