@@ -1,6 +1,7 @@
 use serde::Serialize;
 
 use crate::error::Error;
+use crate::requests::{BRIGHTNESS_RANGE, check_range};
 
 #[derive(Debug, Serialize)]
 pub(crate) struct LightSetDeviceInfoParams {
@@ -9,12 +10,7 @@ pub(crate) struct LightSetDeviceInfoParams {
 
 impl LightSetDeviceInfoParams {
     pub(crate) fn brightness(value: u8) -> Result<Self, Error> {
-        if !(1..=100).contains(&value) {
-            return Err(Error::Validation {
-                field: "brightness".to_string(),
-                message: "Must be between 1 and 100".to_string(),
-            });
-        }
+        check_range("brightness", &BRIGHTNESS_RANGE, value)?;
 
         Ok(Self { brightness: value })
     }

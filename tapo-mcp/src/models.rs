@@ -6,7 +6,9 @@ use rmcp::schemars::JsonSchema;
 use serde::de;
 use serde::{Deserialize, Serialize};
 use strum::IntoStaticStr;
-use tapo::requests::Color;
+use tapo::requests::{
+    BRIGHTNESS_RANGE, COLOR_TEMPERATURE_RANGE, Color, HUE_RANGE, SATURATION_RANGE,
+};
 use tapo::responses::DetectionResult;
 
 /// The Tapo devices found on the local network by the most recent discovery.
@@ -175,7 +177,7 @@ pub enum SetCapabilityRequest {
     /// Set the device brightness. Also turns the device on if it's off.
     Brightness {
         /// Brightness level.
-        #[schemars(range(min = *BRIGHTNESS_LEVELS.start(), max = *BRIGHTNESS_LEVELS.end()))]
+        #[schemars(range(min = *BRIGHTNESS_RANGE.start(), max = *BRIGHTNESS_RANGE.end()))]
         value: u8,
     },
     /// Set the device color using a preset name. Also turns the device on if it's off.
@@ -189,7 +191,7 @@ pub enum SetCapabilityRequest {
         #[schemars(range(min = *HUE_RANGE.start(), max = *HUE_RANGE.end()))]
         hue: u16,
         /// Saturation level.
-        #[schemars(range(min = *SATURATION_LEVELS.start(), max = *SATURATION_LEVELS.end()))]
+        #[schemars(range(min = *SATURATION_RANGE.start(), max = *SATURATION_RANGE.end()))]
         saturation: u8,
     },
     /// Set the device color temperature. Also turns the device on if it's off.
@@ -322,14 +324,6 @@ pub const QUARTERS: RangeInclusive<u8> = 1..=4;
 pub const POWER_5_MINUTE_HOURS: RangeInclusive<u8> = 1..=12;
 /// The number of days `GetCapabilityRequest::PowerDataHourly` can read.
 pub const POWER_HOURLY_DAYS: RangeInclusive<u8> = 1..=6;
-/// The brightness levels `SetCapabilityRequest::Brightness` can set.
-pub const BRIGHTNESS_LEVELS: RangeInclusive<u8> = 1..=100;
-/// The hues `SetCapabilityRequest::HueSaturation` can set.
-pub const HUE_RANGE: RangeInclusive<u16> = 0..=360;
-/// The saturation levels `SetCapabilityRequest::HueSaturation` can set.
-pub const SATURATION_LEVELS: RangeInclusive<u8> = 1..=100;
-/// The color temperatures `SetCapabilityRequest::ColorTemperature` can set.
-pub const COLOR_TEMPERATURE_RANGE: RangeInclusive<u16> = 2500..=6500;
 /// The number of set capabilities one `control_device` call can apply.
 pub const CONTROL_CAPABILITIES: RangeInclusive<usize> = 1..=12;
 

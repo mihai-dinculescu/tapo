@@ -9,6 +9,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `CameraHandler`, `CameraPtzHandler`: added `get_detections`, which lists the detections stored on the camera's SD card for a time range of up to 24 hours, as `DetectionResult`. Each comes with its start, its end, the event the camera filed it under and every event detected in that span (person, motion, baby cry, ...), as `RecordingType`.
+- `requests`: added `BRIGHTNESS_RANGE`, `HUE_RANGE`, `SATURATION_RANGE` and `COLOR_TEMPERATURE_RANGE`, the brightness, hue, saturation and color temperature values that `set_brightness`, `set_hue_saturation`, `set_color_temperature` and `ColorLightSetDeviceInfoParams` accept.
 
 ### Fixed
 
