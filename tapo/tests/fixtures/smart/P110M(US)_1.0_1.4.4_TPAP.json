@@ -1,0 +1,245 @@
+{
+  "discovery_response": {
+    "error_code": 0,
+    "result": {
+      "device_id": "0123456789abcdef0123456789abcdef",
+      "device_model": "P110M(US)",
+      "device_type": "SMART.TAPOPLUG",
+      "factory_default": false,
+      "ip": "192.168.1.100",
+      "is_support_iot_cloud": true,
+      "mac": "AA-BB-CC-DD-EE-FF",
+      "mgt_encrypt_schm": {
+        "encrypt_type": "TPAP",
+        "http_port": 80,
+        "is_support_https": false,
+        "lv": 2
+      },
+      "obd_src": "tss",
+      "owner": "0123456789ABCDEF0123456789ABCDEF",
+      "protocol_version": 1,
+      "tpap": {
+        "dac": 1,
+        "noc": 1,
+        "pake": [
+          2
+        ],
+        "port": 80,
+        "tls": 0
+      },
+      "tpap_preferred": true
+    }
+  },
+  "component_nego": {
+    "component_list": [
+      {
+        "id": "device",
+        "ver_code": 2
+      },
+      {
+        "id": "firmware",
+        "ver_code": 2
+      },
+      {
+        "id": "quick_setup",
+        "ver_code": 3
+      },
+      {
+        "id": "time",
+        "ver_code": 1
+      },
+      {
+        "id": "wireless",
+        "ver_code": 1
+      },
+      {
+        "id": "schedule",
+        "ver_code": 2
+      },
+      {
+        "id": "countdown",
+        "ver_code": 2
+      },
+      {
+        "id": "antitheft",
+        "ver_code": 1
+      },
+      {
+        "id": "account",
+        "ver_code": 1
+      },
+      {
+        "id": "synchronize",
+        "ver_code": 1
+      },
+      {
+        "id": "sunrise_sunset",
+        "ver_code": 1
+      },
+      {
+        "id": "led",
+        "ver_code": 1
+      },
+      {
+        "id": "cloud_connect",
+        "ver_code": 1
+      },
+      {
+        "id": "iot_cloud",
+        "ver_code": 1
+      },
+      {
+        "id": "device_local_time",
+        "ver_code": 1
+      },
+      {
+        "id": "default_states",
+        "ver_code": 1
+      },
+      {
+        "id": "auto_off",
+        "ver_code": 2
+      },
+      {
+        "id": "localSmart",
+        "ver_code": 1
+      },
+      {
+        "id": "energy_unit",
+        "ver_code": 1
+      },
+      {
+        "id": "energy_monitoring",
+        "ver_code": 2
+      },
+      {
+        "id": "power_protection",
+        "ver_code": 1
+      },
+      {
+        "id": "charging_protection",
+        "ver_code": 2
+      },
+      {
+        "id": "matter",
+        "ver_code": 3
+      },
+      {
+        "id": "current_protection",
+        "ver_code": 1
+      },
+      {
+        "id": "tpap",
+        "ver_code": 1
+      },
+      {
+        "id": "noc",
+        "ver_code": 1
+      },
+      {
+        "id": "realtime_emeter",
+        "ver_code": 1
+      }
+    ]
+  },
+  "login": {
+    "discover": {
+      "sub_method": "discover",
+      "tpap_preferred": true,
+      "mac": "AABBCCDDEEFF",
+      "tpap": {
+        "tls": 0,
+        "dac": 1,
+        "noc": 1,
+        "pake": [
+          2
+        ],
+        "port": 80
+      }
+    },
+    "pake_register": {
+      "sub_method": "pake_register",
+      "extra_crypt": {
+        "params": {
+          "passwd_id": 2
+        },
+        "type": "password_shadow"
+      },
+      "encryption": "aes_128_ccm",
+      "cipher_suites": 1,
+      "iterations": 3000
+    },
+    "pake_share": {
+      "error_code": -2203
+    }
+  },
+  "get_device_info": {
+    "device_id": "8000000000000000000000000000000000000110",
+    "fw_ver": "1.4.4 Build 260723 Rel.025417",
+    "hw_ver": "1.0",
+    "type": "SMART.TAPOPLUG",
+    "model": "P110M",
+    "mac": "AA-BB-CC-DD-EE-FF",
+    "hw_id": "0123456789ABCDEF0123456789ABCDEF",
+    "fw_id": "00000000000000000000000000000000",
+    "oem_id": "FEDCBA9876543210FEDCBA9876543210",
+    "ip": "192.168.1.100",
+    "time_diff": -300,
+    "ssid": "U2ltdWxhdGVkIFdpLUZp",
+    "rssi": -43,
+    "signal_level": 3,
+    "auto_off_status": "off",
+    "auto_off_remain_time": 0,
+    "longitude": 0,
+    "latitude": 0,
+    "lang": "en_US",
+    "avatar": "plug",
+    "region": "America/New_York",
+    "specs": "",
+    "nickname": "U2ltdWxhdGVkIFBsdWc=",
+    "has_set_location_info": false,
+    "device_on": true,
+    "on_time": 92835,
+    "default_states": {
+      "type": "last_states"
+    },
+    "power_protection_status": "normal",
+    "overcurrent_status": "normal",
+    "charging_status": "normal"
+  },
+  "get_device_usage": {
+    "time_usage": {
+      "today": 1164,
+      "past7": 9797,
+      "past30": 26606
+    },
+    "power_usage": {
+      "today_mwh": 102068,
+      "past7_mwh": 8881978,
+      "past30_mwh": 31458678,
+      "today": 102,
+      "past7": 8882,
+      "past30": 31459
+    },
+    "saved_power": {
+      "today_mwh": 1061932,
+      "today": 1062,
+      "past7_mwh": 915022,
+      "past7": 915,
+      "past30_mwh": 0,
+      "past30": 0
+    }
+  },
+  "get_device_time": {
+    "time_diff": -300,
+    "timestamp": 1793316276,
+    "region": "America/New_York"
+  },
+  "get_emeter_data": {
+    "current_ma": 164,
+    "voltage_mv": 119716,
+    "power_mw": 7387,
+    "energy_wh": 851,
+    "energy_mwh": 851358
+  }
+}

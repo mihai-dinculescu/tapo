@@ -32,6 +32,9 @@ async def main():
     current_power = await device.get_current_power()
     print(f"Current power: {current_power.to_dict()}")
 
+    emeter_data = await device.get_emeter_data()
+    print(f"Emeter data: {emeter_data.to_dict()}")
+
     device_usage = await device.get_device_usage()
     print(f"Device usage: {device_usage.to_dict()}")
 

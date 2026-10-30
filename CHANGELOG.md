@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `PlugEnergyMonitoringHandler`: added `get_emeter_data`, which returns the voltage, current and power the plug measures right now, and the energy it has used since it last restarted, as `EmeterDataResult`: `voltage_mv` (mV), `current_ma` (mA), `power_mw` (mW), `energy_wh` (Wh) and `energy_mwh` (mWh). Tested with the P110M on firmware 1.4.4. On a plug whose firmware doesn't support it, the call fails with the plug's error code.
+
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- `PlugEnergyMonitoringHandler`: added `get_emeter_data`, which returns the voltage, current and power the plug measures right now, and the energy it has used since it last restarted, as `EmeterDataResult`: `voltage_mv` (mV), `current_ma` (mA), `power_mw` (mW), `energy_wh` (Wh) and `energy_mwh` (mWh). Tested with the P110M on firmware 1.4.4. On a plug whose firmware doesn't support it, the call fails with the plug's error code.
 
 ## [MCP Unreleased][Unreleased]
 

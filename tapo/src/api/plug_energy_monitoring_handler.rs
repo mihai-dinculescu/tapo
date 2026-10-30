@@ -6,8 +6,8 @@ use crate::error::Error;
 use crate::requests::{EnergyDataInterval, PowerDataInterval, ScheduleRule};
 use crate::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
-    EnergyDataResult, EnergyUsageResult, PowerDataResult, PowerState, ScheduleRuleResult, Timer,
-    TimezoneResult,
+    EmeterDataResult, EnergyDataResult, EnergyUsageResult, PowerDataResult, PowerState,
+    ScheduleRuleResult, Timer, TimezoneResult,
 };
 
 tapo_handler! {
@@ -24,6 +24,11 @@ impl PlugEnergyMonitoringHandler {
     /// Returns *current power* as [`CurrentPowerResult`].
     pub async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
         self.client.read().await.get_current_power().await
+    }
+
+    /// Returns *emeter data* as [`EmeterDataResult`].
+    pub async fn get_emeter_data(&self) -> Result<EmeterDataResult, Error> {
+        self.client.read().await.get_emeter_data().await
     }
 
     /// Returns *energy data* as [`EnergyDataResult`].
