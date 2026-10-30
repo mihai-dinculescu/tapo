@@ -19,9 +19,9 @@ use crate::requests::{
 };
 use crate::responses::{
     AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
-    DecodableResultExt, DetectionListResultRaw, DetectionResult, EnergyDataResult,
-    EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw, PowerState,
-    RecordingDownloadResult, ScheduleRuleListResultRaw, ScheduleRuleResult,
+    DecodableResultExt, DetectionListResultRaw, DetectionResult, EmeterDataResult,
+    EnergyDataResult, EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw,
+    PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw, ScheduleRuleResult,
     SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt, TapoResult, Timer,
     TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
 };
@@ -1518,6 +1518,16 @@ impl ApiClient {
     pub(crate) async fn get_current_power(&self) -> Result<CurrentPowerResult, Error> {
         debug!("Get Current power...");
         let request = TapoRequest::GetCurrentPower(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn get_emeter_data(&self) -> Result<EmeterDataResult, Error> {
+        debug!("Get Emeter data...");
+        let request = TapoRequest::GetEmeterData(TapoParams::new(EmptyParams));
 
         self.protocol()?
             .execute_request(request)

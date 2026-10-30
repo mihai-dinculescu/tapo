@@ -34,6 +34,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let current_power = device.get_current_power().await?;
     info!("Current power: {current_power:?}");
 
+    let emeter_data = device.get_emeter_data().await?;
+    info!("Emeter data: {emeter_data:?}");
+
     let device_usage = device.get_device_usage().await?;
     info!("Device usage: {device_usage:?}");
 

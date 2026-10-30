@@ -34,6 +34,7 @@ pub(crate) enum TapoRequest {
     DeviceReboot(TapoParams<DeviceRebootParams>),
     GetDeviceInfo(TapoParams<EmptyParams>),
     GetCurrentPower(TapoParams<EmptyParams>),
+    GetEmeterData(TapoParams<EmptyParams>),
     GetDeviceUsage(TapoParams<EmptyParams>),
     GetEnergyData(TapoParams<GetEnergyDataParams>),
     GetEnergyUsage(TapoParams<EmptyParams>),
