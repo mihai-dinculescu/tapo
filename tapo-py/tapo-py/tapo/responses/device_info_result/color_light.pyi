@@ -5,7 +5,7 @@ from tapo.responses.device_info_result.device_info_ext import DeviceInfoSmartExt
 from tapo.to_dict_ext import ToDictExt
 
 class DeviceInfoColorLightResult(DeviceInfoSmartExt, ToDictExt):
-    """Device info of Tapo L530, L535 and L630."""
+    """Device info of Tapo L430C, L430P, L530, L535 and L630."""
 
     brightness: int
     color_temp: int

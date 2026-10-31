@@ -8,6 +8,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- `ApiClient`: added the `l430` builder for the L430C and L430P bulbs. Both are served by `ColorLightHandler`, like the L530, L535 and L630, and are recognised by `ApiClient::discover_devices`.
 - `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
 - `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
 
@@ -15,6 +16,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- `ApiClient`: added the `l430` builder for the L430C and L430P bulbs. Both are served by `ColorLightHandler`, like the L530, L535 and L630, and are recognised by `ApiClient.discover_devices`.
 - `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
 - `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
 
@@ -22,6 +24,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- `list_devices`, `check_device`, `get_device_state`, `control_device`: added support for the L430C and L430P bulbs, with the same capabilities as the L530.
 - `get_device_state`: added the `EnergyMeterData` capability, which returns the live voltage, current and power, and the energy used since the device last restarted, for the P110, P110M and P115 plugs and the P304M and P316M child plugs. `list_devices` lists it for these devices.
 
 ## [MCP v0.6.1][tapo-mcp-v0.6.1] - 2026-10-29

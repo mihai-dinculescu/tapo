@@ -1,4 +1,4 @@
-"""L530, L535 and L630 Example"""
+"""L430C, L430P, L530, L535 and L630 Example"""
 
 import asyncio
 

@@ -10,7 +10,7 @@ class DeviceType:
     """Tapo L510, L520, L610 - dimmable lights."""
 
     ColorLight: Final[DeviceType]
-    """Tapo L530, L535, L630 - color lights."""
+    """Tapo L430C, L430P, L530, L535, L630 - color lights."""
 
     RgbLightStrip: Final[DeviceType]
     """Tapo L900 - RGB light strip."""

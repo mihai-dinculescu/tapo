@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{DecodableResultExt, DefaultStateType, TapoResponseExt, decode_value};
 
-/// Device info of Tapo L530, L535 and L630.
+/// Device info of Tapo L430C, L430P, L530, L535 and L630.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]

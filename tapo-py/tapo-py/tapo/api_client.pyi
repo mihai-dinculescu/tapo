@@ -1,6 +1,6 @@
 """Tapo API Client.
 
-Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P125, P125M, TP10),
+Tested with light bulbs (L430C, L430P, L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P125, P125M, TP10),
 power strips (P300, P304M, P306, P316M), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
 and cameras (C120, C210, C220, C225, C325WB, C520WS, TC40, TC70).
 
@@ -44,7 +44,7 @@ from .rgbic_light_strip_handler import RgbicLightStripHandler
 class ApiClient:
     """Tapo API Client.
 
-    Tested with light bulbs (L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P125, P125M, TP10),
+    Tested with light bulbs (L430C, L430P, L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P125, P125M, TP10),
     power strips (P300, P304M, P306, P316M), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
     and cameras (C120, C210, C220, C225, C325WB, C520WS, TC40, TC70).
 
@@ -187,6 +187,26 @@ class ApiClient:
             ```
         """
 
+    async def l430(self, ip_address: str) -> ColorLightHandler:
+        """Specializes the given `ApiClient` into an authenticated `ColorLightHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            ColorLightHandler: Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
+            [L430P](https://www.tapo.com/en/search/?q=L430P), [L530](https://www.tapo.com/en/search/?q=L530),
+            [L535](https://www.tapo.com/en/search/?q=L535) and [L630](https://www.tapo.com/en/search/?q=L630) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.l430("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
     async def l530(self, ip_address: str) -> ColorLightHandler:
         """Specializes the given `ApiClient` into an authenticated `ColorLightHandler`.
 
@@ -194,7 +214,8 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            ColorLightHandler: Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
+            ColorLightHandler: Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
+            [L430P](https://www.tapo.com/en/search/?q=L430P), [L530](https://www.tapo.com/en/search/?q=L530),
             [L535](https://www.tapo.com/en/search/?q=L535) and [L630](https://www.tapo.com/en/search/?q=L630) devices.
 
         Example:
@@ -213,7 +234,8 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            ColorLightHandler: Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
+            ColorLightHandler: Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
+            [L430P](https://www.tapo.com/en/search/?q=L430P), [L530](https://www.tapo.com/en/search/?q=L530),
             [L535](https://www.tapo.com/en/search/?q=L535) and [L630](https://www.tapo.com/en/search/?q=L630) devices.
 
         Example:
@@ -251,7 +273,8 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            ColorLightHandler: Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
+            ColorLightHandler: Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
+            [L430P](https://www.tapo.com/en/search/?q=L430P), [L530](https://www.tapo.com/en/search/?q=L530),
             [L535](https://www.tapo.com/en/search/?q=L535) and [L630](https://www.tapo.com/en/search/?q=L630) devices.
 
         Example:

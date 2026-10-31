@@ -3,7 +3,9 @@ use crate::requests::{Color, ColorLightSetDeviceInfoParams};
 use crate::responses::{DeviceInfoColorLightResult, DeviceUsageEnergyMonitoringResult};
 
 tapo_handler! {
-    /// Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
+    /// Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
+    /// [L430P](https://www.tapo.com/en/search/?q=L430P),
+    /// [L530](https://www.tapo.com/en/search/?q=L530),
     /// [L535](https://www.tapo.com/en/search/?q=L535) and
     /// [L630](https://www.tapo.com/en/search/?q=L630) devices.
     ColorLightHandler(DeviceInfoColorLightResult),

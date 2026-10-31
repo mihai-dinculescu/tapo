@@ -101,13 +101,15 @@ class Light(DiscoveryResultExt):
 
 @dataclass
 class ColorLight(DiscoveryResultExt):
-    """Tapo L530, L535 and L630 devices."""
+    """Tapo L430C, L430P, L530, L535 and L630 devices."""
 
     device_info: DeviceInfoColorLightResult
-    """Device info of Tapo L530, L535 and L630."""
+    """Device info of Tapo L430C, L430P, L530, L535 and L630."""
 
     handler: ColorLightHandler
-    """Handler for the [L530](https://www.tapo.com/en/search/?q=L530),
+    """Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
+    [L430P](https://www.tapo.com/en/search/?q=L430P),
+    [L530](https://www.tapo.com/en/search/?q=L530),
     [L535](https://www.tapo.com/en/search/?q=L535) and
     [L630](https://www.tapo.com/en/search/?q=L630) devices.
     """

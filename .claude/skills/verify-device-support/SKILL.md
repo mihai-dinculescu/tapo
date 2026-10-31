@@ -46,7 +46,7 @@ The script checks that the sentences are identical after joining lines, and that
 - Python binding: the same names in `tapo-py/src/api/api_client.rs`, returning the `Py*` handler
 - Python stub: the same names in `api_client.pyi`, returning the stub handler, with a `Returns:` line that names the models the handler serves
 
-The script checks that the three lists match, that each builder returns the same handler on every surface, that every top-level model in "Tested with" has a builder (a builder serves its own model and the `M` variant: `p110` serves P110 and P110M, `p304` serves P304M), and that each stub `Returns:` line names either every model of that handler or only the builder's own model.
+The script checks that the three lists match, that each builder returns the same handler on every surface, that every top-level model in "Tested with" has a builder (a builder serves its own model and the `M` variant: `p110` serves P110 and P110M, `p304` serves P304M; a builder whose name is not a model serves every one-letter variant: `l430` serves L430C and L430P), and that each stub `Returns:` line names either every model of that handler or only the builder's own model.
 
 ### Handler docs
 

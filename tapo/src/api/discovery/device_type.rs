@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 pub enum DeviceType {
     /// Tapo L510, L520, L610 - dimmable lights.
     Light,
-    /// Tapo L530, L535, L630 - color lights.
+    /// Tapo L430C, L430P, L530, L535, L630 - color lights.
     ColorLight,
     /// Tapo L900 - RGB light strip.
     RgbLightStrip,
@@ -50,7 +50,9 @@ impl DeviceType {
     pub fn from_model(model: &str) -> Self {
         match model {
             "L510" | "L520" | "L610" => DeviceType::Light,
-            "L530" | "L530 Series" | "L535" | "L535B" | "L630" => DeviceType::ColorLight,
+            "L430C" | "L430P" | "L530" | "L530 Series" | "L535" | "L535B" | "L630" => {
+                DeviceType::ColorLight
+            }
             "L900" => DeviceType::RgbLightStrip,
             "L920" | "L930" => DeviceType::RgbicLightStrip,
             "P100" | "P105" | "P125" | "P125M" | "TP10" => DeviceType::Plug,
@@ -110,6 +112,8 @@ mod tests {
 
     #[test]
     fn from_model_color_lights() {
+        assert_eq!(DeviceType::from_model("L430C"), DeviceType::ColorLight);
+        assert_eq!(DeviceType::from_model("L430P"), DeviceType::ColorLight);
         assert_eq!(DeviceType::from_model("L530"), DeviceType::ColorLight);
         assert_eq!(
             DeviceType::from_model("L530 Series"),

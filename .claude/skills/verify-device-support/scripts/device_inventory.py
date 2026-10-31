@@ -289,9 +289,16 @@ def pyi_builders() -> dict[str, tuple[str, set[str]]]:
 
 def builder_models(builder: str, all_models: set[str]) -> set[str]:
     """Models a builder serves: its own name, plus the `M` variant (p110 ->
-    P110M, p304 -> P304M)."""
+    P110M, p304 -> P304M). A builder whose name is not itself a model serves
+    every one-letter variant instead (l430 -> L430C and L430P)."""
     upper = builder.upper()
-    return {m for m in all_models if m == upper or m == upper + "M"}
+    if upper in all_models or upper + "M" in all_models:
+        return {m for m in all_models if m == upper or m == upper + "M"}
+    return {
+        m
+        for m in all_models
+        if len(m) == len(upper) + 1 and m.startswith(upper) and m[-1].isalpha()
+    }
 
 
 # --------------------------------------------------------------------------
