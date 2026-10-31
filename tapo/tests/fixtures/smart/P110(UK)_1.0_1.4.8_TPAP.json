@@ -229,5 +229,18 @@
     "power_mw": 234838,
     "energy_wh": 8725,
     "energy_mwh": 8725929
+  },
+  "get_energy_data": {
+    "local_time": "2026-10-31 14:54:14",
+    "data": [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "start_timestamp": 1793404800,
+    "end_timestamp": 1793491199,
+    "interval": 60
+  },
+  "get_power_data": {
+    "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "start_timestamp": 1793454900,
+    "end_timestamp": 1793458500,
+    "interval": 5
   }
 }

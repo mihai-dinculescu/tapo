@@ -2,15 +2,18 @@
 //! response under `discovery_response` and, under the name of each method,
 //! the `result` that the device answers that method with. A camera takes its
 //! methods inside a `multipleRequest`, and the fixture stores the `result` of
-//! each inner method under its own name. The results of `login` are keyed by
-//! `sub_method`: `discover` in full, which a camera, never asked to
-//! discover, leaves out, and of which a device that turns it down holds
-//! only the `error_code`; `pake_register` without the fields that are
-//! computed for each login; and `pake_share`, whose result is computed in
-//! full, so the fixture holds only the `error_code` that the device answers
-//! a wrong password with. A method that the device turns down holds only
-//! the `error_code` it answers with, too. The identifiers in a fixture are
-//! made up; the rest is what a real device sent.
+//! each inner method under its own name. A device with children, such as a
+//! power strip, takes the methods of a child inside a `control_child`, and
+//! the fixture stores the `result` of each under `control_child`, keyed by
+//! method; every child that `get_child_device_list` lists answers with these.
+//! The results of `login` are keyed by `sub_method`: `discover` in full,
+//! which a camera, never asked to discover, leaves out, and of which a device
+//! that turns it down holds only the `error_code`; `pake_register` without
+//! the fields that are computed for each login; and `pake_share`, whose
+//! result is computed in full, so the fixture holds only the `error_code`
+//! that the device answers a wrong password with. A method that the device
+//! turns down holds only the `error_code` it answers with, too. The
+//! identifiers in a fixture are made up; the rest is what a real device sent.
 //!
 //! A fixture holds nothing that a device does not send. What the simulator
 //! needs to know beyond that comes from where the fixture lives and what it
@@ -169,10 +172,31 @@ impl Fixture {
             .unwrap_or_else(|| unimplemented!("the fixture has no result for {method}"))
     }
 
-    /// The error code that the device turns `method` down with, when the
-    /// fixture holds only that code for it.
-    pub fn refusal(&self, method: &str) -> Option<i64> {
-        let result = self.result(method).as_object()?;
+    /// The `result` that the child `device_id` answers `method` with, sent
+    /// through `control_child`. Only a child that `get_child_device_list`
+    /// lists answers.
+    pub fn child_result(&self, device_id: &str, method: &str) -> &Value {
+        let listed = self.result("get_child_device_list")["child_device_list"]
+            .as_array()
+            .expect("the fixture lists the children")
+            .iter()
+            .any(|child| child["device_id"] == device_id);
+        assert!(
+            listed,
+            "a `control_child` to the unlisted child {device_id}"
+        );
+
+        let result = &self.result("control_child")[method];
+        if result.is_null() {
+            unimplemented!("the fixture has no result for {method} of a child");
+        }
+        result
+    }
+
+    /// The error code that a stored `result` turns its method down with,
+    /// when the fixture holds only that code for it.
+    pub fn refusal(result: &Value) -> Option<i64> {
+        let result = result.as_object()?;
         if result.len() != 1 {
             return None;
         }

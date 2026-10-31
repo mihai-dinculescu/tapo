@@ -1,0 +1,453 @@
+{
+  "discovery_response": {
+    "error_code": 0,
+    "result": {
+      "device_id": "0123456789abcdef0123456789abcdef",
+      "device_model": "P304M(UK)",
+      "device_type": "SMART.TAPOPLUG",
+      "factory_default": false,
+      "ip": "192.168.1.100",
+      "is_support_iot_cloud": true,
+      "mac": "AA-BB-CC-DD-EE-FF",
+      "mgt_encrypt_schm": {
+        "encrypt_type": "TPAP",
+        "http_port": 80,
+        "is_support_https": false,
+        "lv": 2
+      },
+      "obd_src": "tplink",
+      "owner": "0123456789ABCDEF0123456789ABCDEF",
+      "protocol_version": 1,
+      "tpap": {
+        "dac": 1,
+        "noc": 1,
+        "pake": [2],
+        "port": 80,
+        "tls": 0
+      },
+      "tpap_preferred": true
+    }
+  },
+  "component_nego": {
+    "component_list": [
+      {
+        "id": "device",
+        "ver_code": 2
+      },
+      {
+        "id": "firmware",
+        "ver_code": 2
+      },
+      {
+        "id": "quick_setup",
+        "ver_code": 3
+      },
+      {
+        "id": "time",
+        "ver_code": 1
+      },
+      {
+        "id": "wireless",
+        "ver_code": 1
+      },
+      {
+        "id": "schedule",
+        "ver_code": 2
+      },
+      {
+        "id": "countdown",
+        "ver_code": 2
+      },
+      {
+        "id": "antitheft",
+        "ver_code": 1
+      },
+      {
+        "id": "account",
+        "ver_code": 1
+      },
+      {
+        "id": "synchronize",
+        "ver_code": 1
+      },
+      {
+        "id": "sunrise_sunset",
+        "ver_code": 1
+      },
+      {
+        "id": "led",
+        "ver_code": 1
+      },
+      {
+        "id": "cloud_connect",
+        "ver_code": 1
+      },
+      {
+        "id": "iot_cloud",
+        "ver_code": 1
+      },
+      {
+        "id": "device_local_time",
+        "ver_code": 1
+      },
+      {
+        "id": "default_states",
+        "ver_code": 1
+      },
+      {
+        "id": "control_child",
+        "ver_code": 2
+      },
+      {
+        "id": "child_device",
+        "ver_code": 2
+      },
+      {
+        "id": "localSmart",
+        "ver_code": 1
+      },
+      {
+        "id": "matter",
+        "ver_code": 3
+      },
+      {
+        "id": "overheat_protection",
+        "ver_code": 1
+      },
+      {
+        "id": "auto_off",
+        "ver_code": 2
+      },
+      {
+        "id": "energy_unit",
+        "ver_code": 1
+      },
+      {
+        "id": "energy_monitoring",
+        "ver_code": 2
+      },
+      {
+        "id": "current_protection",
+        "ver_code": 1
+      },
+      {
+        "id": "power_protection",
+        "ver_code": 1
+      },
+      {
+        "id": "charging_protection",
+        "ver_code": 2
+      },
+      {
+        "id": "tpap",
+        "ver_code": 1
+      },
+      {
+        "id": "noc",
+        "ver_code": 1
+      }
+    ]
+  },
+  "login": {
+    "discover": {
+      "mac": "AABBCCDDEEFF",
+      "sub_method": "discover",
+      "tpap": {
+        "dac": 1,
+        "noc": 1,
+        "pake": [2],
+        "port": 80,
+        "tls": 0
+      },
+      "tpap_preferred": true
+    },
+    "pake_register": {
+      "sub_method": "pake_register",
+      "extra_crypt": {
+        "params": {
+          "passwd_id": 2
+        },
+        "type": "password_shadow"
+      },
+      "encryption": "aes_128_ccm",
+      "cipher_suites": 1,
+      "iterations": 3000
+    },
+    "pake_share": {
+      "error_code": -2203
+    }
+  },
+  "get_device_info": {
+    "avatar": "",
+    "device_id": "8000000000000000000000000000000000000304",
+    "fw_id": "00000000000000000000000000000000",
+    "fw_ver": "1.4.2 Build 260513 Rel.024250",
+    "has_set_location_info": true,
+    "hw_id": "0123456789ABCDEF0123456789ABCDEF",
+    "hw_ver": "1.0",
+    "ip": "192.168.1.100",
+    "lang": "en_US",
+    "latitude": 515074,
+    "longitude": -1278,
+    "mac": "AA-BB-CC-DD-EE-FF",
+    "model": "P304M",
+    "nickname": "",
+    "oem_id": "FEDCBA9876543210FEDCBA9876543210",
+    "region": "Europe/London",
+    "rssi": -42,
+    "signal_level": 3,
+    "specs": "",
+    "ssid": "U2ltdWxhdGVkIFdpLUZp",
+    "time_diff": 0,
+    "type": "SMART.TAPOPLUG"
+  },
+  "get_child_device_list": {
+    "child_device_list": [
+      {
+        "auto_off_remain_time": 0,
+        "auto_off_status": "off",
+        "avatar": "plug",
+        "bind_count": 1,
+        "category": "plug.powerstrip.sub-plug",
+        "charging_status": "normal",
+        "default_states": {
+          "type": "last_states"
+        },
+        "device_id": "800000000000000000000000000000000000030400",
+        "device_on": true,
+        "fw_id": "00000000000000000000000000000000",
+        "fw_ver": "1.4.2 Build 260513 Rel.024250",
+        "has_set_location_info": true,
+        "hw_id": "0123456789ABCDEF0123456789ABCDEF",
+        "hw_ver": "1.0",
+        "is_usb": false,
+        "latitude": 515074,
+        "longitude": -1278,
+        "mac": "AABBCCDDEEFF",
+        "model": "P304M",
+        "nickname": "U2ltdWxhdGVkIFBsdWcgMQ==",
+        "oem_id": "FEDCBA9876543210FEDCBA9876543210",
+        "on_off": 1,
+        "on_time": 2495230,
+        "original_device_id": "8000000000000000000000000000000000000304",
+        "overcurrent_status": "normal",
+        "overheat_status": "normal",
+        "position": 1,
+        "power_protection_status": "normal",
+        "region": "Europe/London",
+        "slot_number": 4,
+        "status_follow_edge": true,
+        "type": "SMART.TAPOPLUG"
+      },
+      {
+        "auto_off_remain_time": 0,
+        "auto_off_status": "off",
+        "avatar": "plug",
+        "bind_count": 1,
+        "category": "plug.powerstrip.sub-plug",
+        "charging_status": "normal",
+        "default_states": {
+          "type": "last_states"
+        },
+        "device_id": "800000000000000000000000000000000000030401",
+        "device_on": true,
+        "fw_id": "00000000000000000000000000000000",
+        "fw_ver": "1.4.2 Build 260513 Rel.024250",
+        "has_set_location_info": true,
+        "hw_id": "0123456789ABCDEF0123456789ABCDEF",
+        "hw_ver": "1.0",
+        "is_usb": false,
+        "latitude": 515074,
+        "longitude": -1278,
+        "mac": "AABBCCDDEEFF",
+        "model": "P304M",
+        "nickname": "U2ltdWxhdGVkIFBsdWcgMg==",
+        "oem_id": "FEDCBA9876543210FEDCBA9876543210",
+        "on_off": 1,
+        "on_time": 2495230,
+        "original_device_id": "8000000000000000000000000000000000000304",
+        "overcurrent_status": "normal",
+        "overheat_status": "normal",
+        "position": 2,
+        "power_protection_status": "normal",
+        "region": "Europe/London",
+        "slot_number": 4,
+        "status_follow_edge": true,
+        "type": "SMART.TAPOPLUG"
+      },
+      {
+        "auto_off_remain_time": 0,
+        "auto_off_status": "off",
+        "avatar": "plug",
+        "bind_count": 1,
+        "category": "plug.powerstrip.sub-plug",
+        "charging_status": "normal",
+        "default_states": {
+          "type": "last_states"
+        },
+        "device_id": "800000000000000000000000000000000000030402",
+        "device_on": true,
+        "fw_id": "00000000000000000000000000000000",
+        "fw_ver": "1.4.2 Build 260513 Rel.024250",
+        "has_set_location_info": true,
+        "hw_id": "0123456789ABCDEF0123456789ABCDEF",
+        "hw_ver": "1.0",
+        "is_usb": false,
+        "latitude": 515074,
+        "longitude": -1278,
+        "mac": "AABBCCDDEEFF",
+        "model": "P304M",
+        "nickname": "U2ltdWxhdGVkIFBsdWcgMw==",
+        "oem_id": "FEDCBA9876543210FEDCBA9876543210",
+        "on_off": 1,
+        "on_time": 2495229,
+        "original_device_id": "8000000000000000000000000000000000000304",
+        "overcurrent_status": "normal",
+        "overheat_status": "normal",
+        "position": 3,
+        "power_protection_status": "normal",
+        "region": "Europe/London",
+        "slot_number": 4,
+        "status_follow_edge": true,
+        "type": "SMART.TAPOPLUG"
+      },
+      {
+        "auto_off_remain_time": 0,
+        "auto_off_status": "off",
+        "avatar": "plug",
+        "bind_count": 1,
+        "category": "plug.powerstrip.sub-plug",
+        "charging_status": "normal",
+        "default_states": {
+          "type": "last_states"
+        },
+        "device_id": "800000000000000000000000000000000000030403",
+        "device_on": true,
+        "fw_id": "00000000000000000000000000000000",
+        "fw_ver": "1.4.2 Build 260513 Rel.024250",
+        "has_set_location_info": true,
+        "hw_id": "0123456789ABCDEF0123456789ABCDEF",
+        "hw_ver": "1.0",
+        "is_usb": false,
+        "latitude": 515074,
+        "longitude": -1278,
+        "mac": "AABBCCDDEEFF",
+        "model": "P304M",
+        "nickname": "U2ltdWxhdGVkIFBsdWcgNA==",
+        "oem_id": "FEDCBA9876543210FEDCBA9876543210",
+        "on_off": 1,
+        "on_time": 2495229,
+        "original_device_id": "8000000000000000000000000000000000000304",
+        "overcurrent_status": "normal",
+        "overheat_status": "normal",
+        "position": 4,
+        "power_protection_status": "normal",
+        "region": "Europe/London",
+        "slot_number": 4,
+        "status_follow_edge": true,
+        "type": "SMART.TAPOPLUG"
+      }
+    ],
+    "start_index": 0,
+    "sum": 4
+  },
+  "get_device_time": {
+    "time_diff": 0,
+    "timestamp": 1793457861,
+    "region": "Europe/London"
+  },
+  "control_child": {
+    "get_current_power": {
+      "current_power": 0
+    },
+    "get_device_info": {
+      "auto_off_remain_time": 0,
+      "auto_off_status": "off",
+      "avatar": "plug",
+      "bind_count": 1,
+      "category": "plug.powerstrip.sub-plug",
+      "charging_status": "normal",
+      "default_states": {
+        "type": "last_states"
+      },
+      "device_id": "800000000000000000000000000000000000030400",
+      "device_on": true,
+      "fw_id": "00000000000000000000000000000000",
+      "fw_ver": "1.4.2 Build 260513 Rel.024250",
+      "has_set_location_info": true,
+      "hw_id": "0123456789ABCDEF0123456789ABCDEF",
+      "hw_ver": "1.0",
+      "is_usb": false,
+      "latitude": 515074,
+      "longitude": -1278,
+      "mac": "AABBCCDDEEFF",
+      "model": "P304M",
+      "nickname": "U2ltdWxhdGVkIFBsdWcgMQ==",
+      "oem_id": "FEDCBA9876543210FEDCBA9876543210",
+      "on_off": 1,
+      "on_time": 2495230,
+      "original_device_id": "8000000000000000000000000000000000000304",
+      "overcurrent_status": "normal",
+      "overheat_status": "normal",
+      "position": 1,
+      "power_protection_status": "normal",
+      "region": "Europe/London",
+      "slot_number": 4,
+      "status_follow_edge": true,
+      "type": "SMART.TAPOPLUG"
+    },
+    "get_device_usage": {
+      "power_usage": {
+        "past30": 0,
+        "past30_mwh": 0,
+        "past7": 0,
+        "past7_mwh": 0,
+        "today": 0,
+        "today_mwh": 0
+      },
+      "saved_power": {
+        "past30": 0,
+        "past30_mwh": 0,
+        "past7": 9584,
+        "past7_mwh": 9584000,
+        "today": 884,
+        "today_mwh": 884000
+      },
+      "time_usage": {
+        "past30": 42700,
+        "past7": 9584,
+        "today": 884
+      }
+    },
+    "get_emeter_data": {
+      "current_ma": 0,
+      "energy_mwh": 0,
+      "energy_wh": 0,
+      "power_mw": 0,
+      "voltage_mv": 241282
+    },
+    "get_energy_data": {
+      "local_time": "2026-10-31 14:54:16",
+      "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "start_timestamp": 1793404800,
+      "end_timestamp": 1793491199,
+      "interval": 60
+    },
+    "get_energy_usage": {
+      "electricity_charge": [0, 0, 0],
+      "local_time": "2026-10-31 14:44:21",
+      "month_energy": 0,
+      "month_energy_mwh": 0,
+      "month_runtime": 44140,
+      "today_energy": 0,
+      "today_energy_mwh": 0,
+      "today_runtime": 884
+    },
+    "get_power_data": {
+      "data": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "start_timestamp": 1793454900,
+      "end_timestamp": 1793458500,
+      "interval": 5
+    }
+  }
+}

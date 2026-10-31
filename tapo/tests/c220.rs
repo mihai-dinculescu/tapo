@@ -44,6 +44,18 @@ async fn a_c220_takes_a_login_by_ip_address() -> Result<(), Box<dyn Error>> {
         .await?;
 
     handler.get_device_info().await?;
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn a_c220_reads_its_presets() -> Result<(), Box<dyn Error>> {
+    let device = SimulatedDevice::new(FIXTURE).start().await;
+
+    let handler = ApiClient::new(device.username(), device.password())
+        .c220(device.address())
+        .await?;
+
     handler.get_presets().await?;
 
     Ok(())

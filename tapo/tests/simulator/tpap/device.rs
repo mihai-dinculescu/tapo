@@ -2,7 +2,8 @@
 //! what the device asks for in `pake_register`, and with it which transform
 //! of the password the client has to prove it knows, and what the device
 //! answers a wrong password with. A camera takes its methods inside a
-//! `multipleRequest`.
+//! `multipleRequest`, and a device with children takes the methods of a
+//! child inside a `multipleRequest` inside a `control_child`.
 
 use std::collections::HashMap;
 use std::sync::{Mutex, MutexGuard};
@@ -133,35 +134,59 @@ impl Tpap {
         let request: Value = serde_json::from_str(&request).expect("a session request is JSON");
 
         let method = method_of(&request);
-        let response = if method == "multipleRequest" {
-            let responses: Vec<Value> = request["params"]["requests"]
-                .as_array()
-                .expect("a `multipleRequest` carries its requests")
-                .iter()
-                .map(|request| {
-                    let method = method_of(request);
-                    let mut response = self.response(method);
-                    response["method"] = json!(method);
-                    response
-                })
-                .collect();
+        let response = match method {
+            "multipleRequest" => {
+                let responses: Vec<Value> = requests_of(&request)
+                    .map(|request| {
+                        let method = method_of(request);
+                        let mut response = self.response(method);
+                        response["method"] = json!(method);
+                        response
+                    })
+                    .collect();
 
-            json!({ "error_code": 0, "result": { "responses": responses } })
-        } else {
-            self.response(method)
+                json!({ "error_code": 0, "result": { "responses": responses } })
+            }
+            "control_child" => self.control_child(&request["params"]),
+            _ => self.response(method),
         };
 
         session.cipher.encrypt(seq, &response.to_string())
     }
 
-    /// The response to a request for `method`: its result, or, for a method
-    /// that the device turns down, the error code with an empty result, as a
-    /// camera without an SD card answers a search of its detections.
+    /// The response to a request for `method`.
     fn response(&self, method: &str) -> Value {
-        if let Some(error_code) = self.fixture.refusal(method) {
-            return json!({ "error_code": error_code, "result": {} });
-        }
-        json!({ "error_code": 0, "result": self.fixture.result(method) })
+        response_with(self.fixture.result(method))
+    }
+
+    /// The response to a `control_child` request: each request of the
+    /// `multipleRequest` that it carries, answered by the child as a request
+    /// to the device is, inside a `responseData` that has no error code of
+    /// its own, as a P304M answers.
+    fn control_child(&self, params: &Value) -> Value {
+        let device_id = params["device_id"]
+            .as_str()
+            .unwrap_or_else(|| panic!("a `control_child` names the child: {params}"));
+        let request = &params["requestData"];
+        assert_eq!(
+            method_of(request),
+            "multipleRequest",
+            "a `control_child` carries a `multipleRequest`"
+        );
+
+        let responses: Vec<Value> = requests_of(request)
+            .map(|request| {
+                let method = method_of(request);
+                let mut response = response_with(self.fixture.child_result(device_id, method));
+                response["method"] = json!(method);
+                response
+            })
+            .collect();
+
+        json!({
+            "error_code": 0,
+            "result": { "responseData": { "result": { "responses": responses } } },
+        })
     }
 
     fn state(&self) -> MutexGuard<'_, State> {
@@ -309,6 +334,23 @@ fn decode(base64: &str) -> Vec<u8> {
     STANDARD
         .decode(base64)
         .unwrap_or_else(|_| panic!("the client sends base64: {base64}"))
+}
+
+/// The response that carries a stored `result`: the result, or, for a method
+/// that the device turns down, the error code with an empty result, as a
+/// camera without an SD card answers a search of its detections.
+fn response_with(result: &Value) -> Value {
+    match Fixture::refusal(result) {
+        Some(error_code) => json!({ "error_code": error_code, "result": {} }),
+        None => json!({ "error_code": 0, "result": result }),
+    }
+}
+
+fn requests_of(request: &Value) -> impl Iterator<Item = &Value> {
+    request["params"]["requests"]
+        .as_array()
+        .expect("a `multipleRequest` carries its requests")
+        .iter()
 }
 
 fn method_of(request: &Value) -> &str {
