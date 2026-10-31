@@ -72,12 +72,13 @@ pub async fn get_devices(config: &AppConfig) -> Result<DevicesList, TapoMcpError
     })
 }
 
-/// The get capabilities of the energy-monitoring plugs and power strip outlets,
+/// The get capabilities of the energy-monitoring plugs and power strip child plugs,
 /// besides `DeviceInfo`.
-const ENERGY_MONITORING_CAPABILITIES: [GetCapability; 5] = [
+const ENERGY_MONITORING_CAPABILITIES: [GetCapability; 6] = [
     GetCapability::EnergyDataHourly,
     GetCapability::EnergyDataDaily,
     GetCapability::EnergyDataMonthly,
+    GetCapability::EnergyMeterData,
     GetCapability::PowerDataEvery5Minutes,
     GetCapability::PowerDataHourly,
 ];

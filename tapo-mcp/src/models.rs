@@ -60,6 +60,9 @@ pub enum GetCapability {
     EnergyDataDaily,
     /// Read the energy used per month, in watt-hours (P110, P110M, P115, P304M, P316M).
     EnergyDataMonthly,
+    /// Read the live voltage, current and power, and the energy used since the
+    /// device last restarted (P110, P110M, P115, P304M, P316M).
+    EnergyMeterData,
     /// Read the power draw every 5 minutes, in watts (P110, P110M, P115, P304M, P316M).
     PowerDataEvery5Minutes,
     /// Read the power draw every hour, in watts (P110, P110M, P115, P304M, P316M).
@@ -98,7 +101,7 @@ pub struct Device {
     pub children: Vec<ChildDevice>,
 }
 
-/// A device attached to a parent device, such as an outlet on a power strip or a device paired with a hub.
+/// A device attached to a parent device, such as a child plug on a power strip or a device paired with a hub.
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema)]
 pub struct ChildDevice {
     /// Unique child device identifier.
@@ -234,7 +237,7 @@ pub enum GetCapabilityRequest {
     /// Read the device's current state (on/off, brightness, etc.).
     DeviceInfo,
     /// Read the energy used per hour, in watt-hours, for whole days, from an
-    /// energy-monitoring plug (P110, P110M, P115) or power strip outlet
+    /// energy-monitoring plug (P110, P110M, P115) or power strip child plug
     /// (P304M, P316M). Dates are in the plug's time zone. Hours that have not
     /// started yet are left out.
     EnergyDataHourly {
@@ -246,7 +249,7 @@ pub enum GetCapabilityRequest {
     },
     /// Read the energy used per day, in watt-hours, for a quarter of a year,
     /// from an energy-monitoring plug (P110, P110M, P115) or power strip
-    /// outlet (P304M, P316M). Dates are in the plug's time zone. Days that
+    /// child plug (P304M, P316M). Dates are in the plug's time zone. Days that
     /// have not started yet are left out.
     EnergyDataDaily {
         /// The year the quarter is in.
@@ -258,7 +261,7 @@ pub enum GetCapabilityRequest {
         quarter: u8,
     },
     /// Read the energy used per month, in watt-hours, for a year, from an
-    /// energy-monitoring plug (P110, P110M, P115) or power strip outlet
+    /// energy-monitoring plug (P110, P110M, P115) or power strip child plug
     /// (P304M, P316M). Dates are in the plug's time zone. Months that have not
     /// started yet are left out.
     EnergyDataMonthly {
@@ -266,8 +269,14 @@ pub enum GetCapabilityRequest {
         #[schemars(range(min = *DATA_YEARS.start(), max = *DATA_YEARS.end()))]
         year: i32,
     },
+    /// Read the live voltage in millivolts, current in milliamperes and active
+    /// power in milliwatts, and the energy used since the device last
+    /// restarted, as one total given in both watt-hours and milliwatt-hours
+    /// (not to be added together), from an energy-monitoring plug
+    /// (P110, P110M, P115) or power strip child plug (P304M, P316M).
+    EnergyMeterData,
     /// Read the power draw every 5 minutes, in watts, from an
-    /// energy-monitoring plug (P110, P110M, P115) or power strip outlet
+    /// energy-monitoring plug (P110, P110M, P115) or power strip child plug
     /// (P304M, P316M).
     PowerDataEvery5Minutes {
         /// When to start reading, in UTC, in the years 2000 to 9999. Rounded up
@@ -278,7 +287,7 @@ pub enum GetCapabilityRequest {
         hours: u8,
     },
     /// Read the power draw every hour, in watts, from an energy-monitoring
-    /// plug (P110, P110M, P115) or power strip outlet (P304M, P316M).
+    /// plug (P110, P110M, P115) or power strip child plug (P304M, P316M).
     PowerDataHourly {
         /// When to start reading, in UTC, in the years 2000 to 9999. Rounded up
         /// to the next hour.
@@ -443,6 +452,7 @@ mod tests {
                 quarter: 4,
             },
             GetCapabilityRequest::EnergyDataMonthly { year: 2026 },
+            GetCapabilityRequest::EnergyMeterData,
             GetCapabilityRequest::PowerDataEvery5Minutes {
                 start_date_time: DateTime::UNIX_EPOCH,
                 hours: 1,
@@ -479,6 +489,7 @@ mod tests {
                     json!({ "page_size": 10, "start_id": 0 })
                 }
                 GetCapabilityRequest::DeviceInfo
+                | GetCapabilityRequest::EnergyMeterData
                 | GetCapabilityRequest::TemperatureHumidityRecords => json!({}),
             };
             value["type"] = json!(request.name());

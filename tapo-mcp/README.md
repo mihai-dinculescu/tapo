@@ -69,6 +69,7 @@ Devices and child devices expose separate lists of set and get capabilities they
 | `EnergyDataHourly`           | Read the energy used per hour, in Wh, for up to 8 days (P110, P110M, P115, P304M, P316M)                                                                                  |
 | `EnergyDataDaily`            | Read the energy used per day, in Wh, for a quarter of a year (P110, P110M, P115, P304M, P316M)                                                                            |
 | `EnergyDataMonthly`          | Read the energy used per month, in Wh, for a year (P110, P110M, P115, P304M, P316M)                                                                                       |
+| `EnergyMeterData`            | Read the live voltage, current and power, and the energy used since the device last restarted (P110, P110M, P115, P304M, P316M)                                           |
 | `PowerDataEvery5Minutes`     | Read the power draw every 5 minutes, in W, for up to 12 hours (P110, P110M, P115, P304M, P316M)                                                                           |
 | `PowerDataHourly`            | Read the power draw every hour, in W, for up to 6 days (P110, P110M, P115, P304M, P316M)                                                                                  |
 | `Snapshot`                   | Capture a still JPEG snapshot. Served by the dedicated `take_snapshot` tool (binary, not JSON state)                                                                      |

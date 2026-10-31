@@ -60,6 +60,9 @@ pub async fn get_device_state(
                 )
                 .await
             }
+            ReadRequest::EnergyMeterData => {
+                run_in_span(span, get_energy_meter_data(&params.id, capability, checked)).await
+            }
             ReadRequest::PowerData(interval) => {
                 run_in_span(
                     span,
@@ -100,6 +103,7 @@ enum ReadRequest {
     },
     DeviceInfo,
     EnergyData(EnergyDataInterval),
+    EnergyMeterData,
     PowerData(PowerDataInterval),
     TemperatureHumidityRecords,
     TriggerLogs {
@@ -131,6 +135,7 @@ fn read_request(capability: GetCapabilityRequest) -> Result<ReadRequest, TapoMcp
         GetCapabilityRequest::EnergyDataMonthly { year } => {
             ReadRequest::EnergyData(energy_data_monthly(year)?)
         }
+        GetCapabilityRequest::EnergyMeterData => ReadRequest::EnergyMeterData,
         GetCapabilityRequest::PowerDataEvery5Minutes {
             start_date_time,
             hours,
@@ -280,6 +285,27 @@ async fn get_energy_data(
     }
 }
 
+async fn get_energy_meter_data(
+    id: &str,
+    capability: &str,
+    checked: CheckedDevice,
+) -> Result<serde_json::Value, TapoMcpError> {
+    match checked {
+        CheckedDevice::Parent(DiscoveryResult::PlugEnergyMonitoring { handler, .. }) => Ok(
+            serde_json::to_value(&handler.get_energy_meter_data().await?)?,
+        ),
+        CheckedDevice::PowerStripEnergyMonitoringChild { handler, child_id } => {
+            let plug = handler.plug_unchecked(child_id);
+            Ok(serde_json::to_value(&plug.get_energy_meter_data().await?)?)
+        }
+        _ => Err(TapoMcpError::WrongDeviceType {
+            id: id.to_string(),
+            capability: capability.to_string(),
+            expected: ENERGY_MONITORING_DEVICES.to_string(),
+        }),
+    }
+}
+
 async fn get_power_data(
     id: &str,
     capability: &str,
@@ -303,7 +329,7 @@ async fn get_power_data(
 }
 
 const ENERGY_MONITORING_DEVICES: &str =
-    "an energy-monitoring plug (P110, P110M, P115) or power strip outlet (P304M, P316M)";
+    "an energy-monitoring plug (P110, P110M, P115) or power strip child plug (P304M, P316M)";
 
 /// Reads hourly energy data for `days` whole days, from `start_date`.
 fn energy_data_hourly(start_date: NaiveDate, days: u8) -> Result<EnergyDataInterval, TapoMcpError> {

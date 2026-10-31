@@ -20,6 +20,10 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+### Added
+
+- `get_device_state`: added the `EnergyMeterData` capability, which returns the live voltage, current and power, and the energy used since the device last restarted, for the P110, P110M and P115 plugs and the P304M and P316M child plugs. `list_devices` lists it for these devices.
+
 ## [MCP v0.6.1][tapo-mcp-v0.6.1] - 2026-10-29
 
 ### Added
@@ -55,8 +59,8 @@ file. This change log follows the conventions of
 
 ### Added
 
-- `get_device_state`: added the `EnergyDataHourly`, `EnergyDataDaily` and `EnergyDataMonthly` capabilities, which return the energy used per hour, day or month, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists them for these devices. The days, quarters and years are read in the plug's time zone, so the entries match the Tapo app, and the hours, days and months that have not started yet are left out.
-- `get_device_state`: added the `PowerDataEvery5Minutes` and `PowerDataHourly` capabilities, which return the power draw every 5 minutes or every hour, for the P110, P110M and P115 plugs and the P304M and P316M outlets. `list_devices` lists them for these devices.
+- `get_device_state`: added the `EnergyDataHourly`, `EnergyDataDaily` and `EnergyDataMonthly` capabilities, which return the energy used per hour, day or month, for the P110, P110M and P115 plugs and the P304M and P316M child plugs. `list_devices` lists them for these devices. The days, quarters and years are read in the plug's time zone, so the entries match the Tapo app, and the hours, days and months that have not started yet are left out.
+- `get_device_state`: added the `PowerDataEvery5Minutes` and `PowerDataHourly` capabilities, which return the power draw every 5 minutes or every hour, for the P110, P110M and P115 plugs and the P304M and P316M child plugs. `list_devices` lists them for these devices.
 - `list_devices`, `check_device`, `get_device_state`, `take_snapshot`: added support for the C120 camera. `list_devices` lists the `Snapshot` capability for it.
 - `list_devices`, `check_device`, `get_device_state`: added support for the H110 hub, with its sensors and IR remotes listed under `children`. `get_device_state` returns the keys stored on each IR remote. (thanks to @skoky)
 - `list_devices`, `control_device`: S210 light switches paired to a hub now have the `OnOff` capability, so they can be turned on and off.
@@ -72,7 +76,7 @@ file. This change log follows the conventions of
 ### Changed
 
 - `list_devices`, `tapo://devices`: now return the device list from the most recent background discovery immediately, instead of waiting for a new discovery on every call. Until a discovery has succeeded, they return a "device discovery unavailable" error, which gives the reason when discovery failed.
-- `check_device`, `get_device_state`, `control_device`, `take_snapshot`: calls to the same device, such as several outlets of one power strip, now run one at a time instead of failing when made together. Calls to different devices still run in parallel. While a background discovery runs, these calls wait for it to finish.
+- `check_device`, `get_device_state`, `control_device`, `take_snapshot`: calls to the same device, such as several child plugs of one power strip, now run one at a time instead of failing when made together. Calls to different devices still run in parallel. While a background discovery runs, these calls wait for it to finish.
 - `check_device`, `get_device_state`, `control_device`, `list_devices`, `take_snapshot`: a failed call now gives the agent the error message as the call's result, so the agent sees why it failed. Calls to an unknown tool are still rejected as before.
 - `control_device`: a capability the device does not support, or one with an invalid value, now fails the call before any capability is applied. It used to fail only when its turn came, after the ones before it had already changed the device. When the device returns an error partway through, the error now says how many of the capabilities were applied, which one failed, and whether that one may still have been applied.
 - `control_device`: `capabilities` now takes at most 12 entries. A call with more, or with none, fails before the device is contacted.

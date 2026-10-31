@@ -65,7 +65,7 @@ Get a device's current state. Checks the capability's parameters, then automatic
 # Device info
 npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "DeviceInfo"}'
 
-# Energy used per hour, in Wh, for 1-8 days from start_date (P110, P110M, P115 plugs; for a P304M or P316M outlet, pass the outlet's id as <DEVICE_ID> and the strip's ip as <IP>)
+# Energy used per hour, in Wh, for 1-8 days from start_date (P110, P110M, P115 plugs; for a P304M or P316M child plug, pass the child plug's id as <DEVICE_ID> and the strip's ip as <IP>)
 npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "EnergyDataHourly", "start_date": "2026-01-01", "days": 1}'
 
 # Energy used per day, in Wh, for a quarter (1-4) of a year
@@ -73,6 +73,9 @@ npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{
 
 # Energy used per month, in Wh, for a year
 npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "EnergyDataMonthly", "year": 2026}'
+
+# Live voltage (mV), current (mA) and power (mW), and the energy used since the device last restarted (Wh and mWh)
+npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "EnergyMeterData"}'
 
 # Power draw every 5 minutes, in W, for 1-12 hours from start_date_time (UTC, rounded up to the next 5 minute mark)
 npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "PowerDataEvery5Minutes", "start_date_time": "2026-01-01T06:00:00Z", "hours": 6}'
@@ -97,7 +100,7 @@ Energy dates are read in the plug's time zone, so the entries match the Tapo app
 Control a device by applying 1 to 12 set capabilities, in order. The count and every value are checked before the device is contacted; then it automatically runs `check_device`, and a capability the device does not support fails the call before any capability is applied. `Brightness`, `Color`, `HueSaturation` and `ColorTemperature` also turn the device on if it is off. When the device returns an error partway through, the error says how many capabilities were applied and which one failed.
 
 ```bash
-# Turn on (plugs, lights, power strip outlets, and S210 switches paired to a hub)
+# Turn on (plugs, lights, power strip child plugs, and S210 switches paired to a hub)
 npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "OnOff", "value": true}]'
 
 # Turn off
