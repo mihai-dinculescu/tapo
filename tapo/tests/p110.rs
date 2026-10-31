@@ -61,20 +61,8 @@ async fn a_p110_takes_a_login_by_ip_address(#[case] fixture: &str) -> Result<(),
 
     handler.get_device_info().await?;
     handler.get_device_usage().await?;
+    handler.get_energy_meter_data().await?;
     handler.get_timezone().await?;
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn a_p110m_reports_its_voltage_current_power_and_energy() -> Result<(), Box<dyn Error>> {
-    let device = SimulatedDevice::new(P110M_TPAP_FIXTURE).start().await;
-
-    let handler = ApiClient::new(device.username(), device.password())
-        .p110(device.address())
-        .await?;
-
-    handler.get_emeter_data().await?;
 
     Ok(())
 }

@@ -1,6 +1,6 @@
 from tapo.to_dict_ext import ToDictExt
 
-class EmeterDataResult(ToDictExt):
+class EnergyMeterDataResult(ToDictExt):
     """Contains the voltage, current and power measured by the device, and the energy it has used since it last restarted."""
 
     current_ma: int

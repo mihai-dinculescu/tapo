@@ -8,13 +8,15 @@ file. This change log follows the conventions of
 
 ### Added
 
-- `PlugEnergyMonitoringHandler`: added `get_emeter_data`, which returns the voltage, current and power the plug measures right now, and the energy it has used since it last restarted, as `EmeterDataResult`: `voltage_mv` (mV), `current_ma` (mA), `power_mw` (mW), `energy_wh` (Wh) and `energy_mwh` (mWh). Tested with the P110M on firmware 1.4.4. On a plug whose firmware doesn't support it, the call fails with the plug's error code.
+- `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
+- `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
-- `PlugEnergyMonitoringHandler`: added `get_emeter_data`, which returns the voltage, current and power the plug measures right now, and the energy it has used since it last restarted, as `EmeterDataResult`: `voltage_mv` (mV), `current_ma` (mA), `power_mw` (mW), `energy_wh` (Wh) and `energy_mwh` (mWh). Tested with the P110M on firmware 1.4.4. On a plug whose firmware doesn't support it, the call fails with the plug's error code.
+- `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
+- `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
 
 ## [MCP Unreleased][Unreleased]
 

@@ -192,5 +192,12 @@
     "time_diff": 0,
     "timestamp": 1792244123,
     "region": "Europe/London"
+  },
+  "get_emeter_data": {
+    "current_ma": 1099,
+    "voltage_mv": 240695,
+    "power_mw": 234838,
+    "energy_wh": 8725,
+    "energy_mwh": 8725929
   }
 }

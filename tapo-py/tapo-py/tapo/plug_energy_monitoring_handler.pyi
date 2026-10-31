@@ -11,8 +11,8 @@ from tapo.responses import (
     CurrentPowerResult,
     DeviceInfoPlugEnergyMonitoringResult,
     DeviceUsageEnergyMonitoringResult,
-    EmeterDataResult,
     EnergyDataResult,
+    EnergyMeterDataResult,
     EnergyUsageResult,
     PowerDataResult,
     TimezoneResult,
@@ -50,14 +50,6 @@ class PlugEnergyMonitoringHandler(
             CurrentPowerResult: Contains the current power reading of the device.
         """
 
-    async def get_emeter_data(self) -> EmeterDataResult:
-        """Returns *emeter data* as `EmeterDataResult`.
-
-        Returns:
-            EmeterDataResult: Contains the voltage, current and power measured by the device,
-            and the energy it has used since it last restarted.
-        """
-
     async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:
         """Returns *device usage* as `DeviceUsageResult`.
 
@@ -88,6 +80,14 @@ class PlugEnergyMonitoringHandler(
 
         Raises:
             Exception: If the device reports a timezone name that is not in the IANA database.
+        """
+
+    async def get_energy_meter_data(self) -> EnergyMeterDataResult:
+        """Returns *energy meter data* as `EnergyMeterDataResult`.
+
+        Returns:
+            EnergyMeterDataResult: Contains the voltage, current and power measured by the device,
+            and the energy it has used since it last restarted.
         """
 
     async def get_energy_usage(self) -> EnergyUsageResult:

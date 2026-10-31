@@ -34,14 +34,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let current_power = device.get_current_power().await?;
     info!("Current power: {current_power:?}");
 
-    let emeter_data = device.get_emeter_data().await?;
-    info!("Emeter data: {emeter_data:?}");
-
     let device_usage = device.get_device_usage().await?;
     info!("Device usage: {device_usage:?}");
-
-    let energy_usage = device.get_energy_usage().await?;
-    info!("Energy usage: {energy_usage:?}");
 
     // The dates are read in the device's timezone. Read it once instead of on every call.
     let device_timezone = device.get_timezone().await?.timezone;
@@ -103,6 +97,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         energy_data_monthly.entries.len(),
         energy_data_monthly.entries.first()
     );
+
+    let energy_meter_data = device.get_energy_meter_data().await?;
+    info!("Energy meter data: {energy_meter_data:?}");
+
+    let energy_usage = device.get_energy_usage().await?;
+    info!("Energy usage: {energy_usage:?}");
 
     // Power data - Every 5 minutes interval
     // `start_date_time` and `end_date_time` describe an exclusive interval.

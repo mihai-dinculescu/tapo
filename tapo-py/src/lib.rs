@@ -22,9 +22,9 @@ use tapo::responses::{
     DeviceInfoHubResult, DeviceInfoLightResult, DeviceInfoPlugEnergyMonitoringResult,
     DeviceInfoPlugResult, DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult,
     DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult, DeviceUsageResult,
-    EmeterDataResult, EnergyDataIntervalResult, EnergyDataResult, EnergyUsageResult, IrRemoteKey,
-    IrRemoteResult, KE100Result, OtherResult, OvercurrentStatus, OverheatStatus, PlugState,
-    PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus, PowerState,
+    EnergyDataIntervalResult, EnergyDataResult, EnergyMeterDataResult, EnergyUsageResult,
+    IrRemoteKey, IrRemoteResult, KE100Result, OtherResult, OvercurrentStatus, OverheatStatus,
+    PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus, PowerState,
     PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset, RecordingDateHubResult,
     RecordingDownloadResult, RgbLightStripState, RgbicLightStripState, RtspStreamUrl, S200Result,
     S200RotationParams, S210Result, ScheduleRuleResult, Snapshot, Status, T31XResult, T100Event,
@@ -165,9 +165,9 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DefaultStateType>()?;
     module.add_class::<DeviceUsageEnergyMonitoringResult>()?;
     module.add_class::<DeviceUsageResult>()?;
-    module.add_class::<EmeterDataResult>()?;
     module.add_class::<EnergyDataIntervalResult>()?;
     module.add_class::<EnergyDataResult>()?;
+    module.add_class::<EnergyMeterDataResult>()?;
     module.add_class::<EnergyUsageResult>()?;
     module.add_class::<OvercurrentStatus>()?;
     module.add_class::<OverheatStatus>()?;

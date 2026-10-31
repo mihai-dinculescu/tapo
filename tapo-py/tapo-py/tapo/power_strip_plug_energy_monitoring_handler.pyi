@@ -9,6 +9,7 @@ from tapo.responses import (
     CurrentPowerResult,
     DeviceUsageEnergyMonitoringResult,
     EnergyDataResult,
+    EnergyMeterDataResult,
     EnergyUsageResult,
     PowerDataResult,
     PowerStripPlugEnergyMonitoringResult,
@@ -72,6 +73,14 @@ class PowerStripPlugEnergyMonitoringHandler(OnOffExt, DebugExt):
 
         Raises:
             Exception: If the power strip reports a timezone name that is not in the IANA database.
+        """
+
+    async def get_energy_meter_data(self) -> EnergyMeterDataResult:
+        """Returns *energy meter data* as `EnergyMeterDataResult`.
+
+        Returns:
+            EnergyMeterDataResult: Contains the voltage, current and power measured by the device,
+            and the energy it has used since it last restarted.
         """
 
     async def get_energy_usage(self) -> EnergyUsageResult:

@@ -19,11 +19,11 @@ use crate::requests::{
 };
 use crate::responses::{
     AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
-    DecodableResultExt, DetectionListResultRaw, DetectionResult, EmeterDataResult,
-    EnergyDataResult, EnergyDataResultRaw, EnergyUsageResult, PowerDataResult, PowerDataResultRaw,
-    PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw, ScheduleRuleResult,
-    SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt, TapoResult, Timer,
-    TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
+    DecodableResultExt, DetectionListResultRaw, DetectionResult, EnergyDataResult,
+    EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult, PowerDataResult,
+    PowerDataResultRaw, PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw,
+    ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
+    TapoResult, Timer, TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
 };
 use crate::utils::unix_timestamp_seconds;
 
@@ -1525,8 +1525,8 @@ impl ApiClient {
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
-    pub(crate) async fn get_emeter_data(&self) -> Result<EmeterDataResult, Error> {
-        debug!("Get Emeter data...");
+    pub(crate) async fn get_energy_meter_data(&self) -> Result<EnergyMeterDataResult, Error> {
+        debug!("Get Energy meter data...");
         let request = TapoRequest::GetEmeterData(TapoParams::new(EmptyParams));
 
         self.protocol()?

@@ -6,8 +6,8 @@ use pyo3::prelude::*;
 use tapo::PowerStripPlugEnergyMonitoringHandler;
 use tapo::requests::{EnergyDataInterval, PowerDataInterval};
 use tapo::responses::{
-    CurrentPowerResult, DeviceUsageEnergyMonitoringResult, EnergyDataResult, EnergyUsageResult,
-    PowerDataResult, PowerStripPlugEnergyMonitoringResult, TimezoneResult,
+    CurrentPowerResult, DeviceUsageEnergyMonitoringResult, EnergyDataResult, EnergyMeterDataResult,
+    EnergyUsageResult, PowerDataResult, PowerStripPlugEnergyMonitoringResult, TimezoneResult,
 };
 
 use crate::call_handler_method;
@@ -63,6 +63,14 @@ impl PyPowerStripPlugEnergyMonitoringHandler {
             timezone
         )?;
         Ok(result)
+    }
+
+    pub async fn get_energy_meter_data(&self) -> PyResult<EnergyMeterDataResult> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.deref(),
+            PowerStripPlugEnergyMonitoringHandler::get_energy_meter_data,
+        )
     }
 
     pub async fn get_energy_usage(&self) -> PyResult<EnergyUsageResult> {

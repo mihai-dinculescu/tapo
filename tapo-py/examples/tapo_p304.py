@@ -49,9 +49,6 @@ async def main():
         device_usage = await plug.get_device_usage()
         print(f"Device usage: {device_usage.to_dict()}")
 
-        energy_usage = await plug.get_energy_usage()
-        print(f"Energy usage: {energy_usage.to_dict()}")
-
         today = datetime.now(timezone.utc)
         # The dates are read in the device's timezone. Read it once instead of on every call.
         device_timezone = (await plug.get_timezone()).timezone
@@ -96,6 +93,12 @@ async def main():
             f"Entries {len(energy_data_monthly.entries)}, "
             f"First entry: {energy_data_monthly.entries[0].to_dict() if energy_data_monthly.entries else None}"
         )
+
+        energy_meter_data = await plug.get_energy_meter_data()
+        print(f"Energy meter data: {energy_meter_data.to_dict()}")
+
+        energy_usage = await plug.get_energy_usage()
+        print(f"Energy usage: {energy_usage.to_dict()}")
 
         # Power data - Every 5 minutes interval
         # `start_date_time` and `end_date_time` describe an exclusive interval.

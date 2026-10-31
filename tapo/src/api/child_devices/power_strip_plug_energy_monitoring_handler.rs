@@ -7,8 +7,8 @@ use crate::requests::{
 };
 use crate::responses::{
     CurrentPowerResult, DeviceUsageEnergyMonitoringResult, EnergyDataResult, EnergyDataResultRaw,
-    EnergyUsageResult, PowerDataResult, PowerDataResultRaw, PowerStripPlugEnergyMonitoringResult,
-    TimezoneResult,
+    EnergyMeterDataResult, EnergyUsageResult, PowerDataResult, PowerDataResultRaw,
+    PowerStripPlugEnergyMonitoringResult, TimezoneResult,
 };
 
 tapo_child_handler! {
@@ -77,6 +77,18 @@ impl PowerStripPlugEnergyMonitoringHandler {
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?
             .in_timezone(&timezone)
+    }
+
+    /// Returns *energy meter data* as [`EnergyMeterDataResult`].
+    pub async fn get_energy_meter_data(&self) -> Result<EnergyMeterDataResult, Error> {
+        let request = TapoRequest::GetEmeterData(TapoParams::new(EmptyParams));
+
+        self.client
+            .read()
+            .await
+            .control_child(self.device_id.clone(), request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     /// Returns *energy usage* as [`EnergyUsageResult`].

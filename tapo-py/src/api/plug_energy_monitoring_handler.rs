@@ -8,7 +8,7 @@ use tapo::PlugEnergyMonitoringHandler;
 use tapo::requests::{EnergyDataInterval, PowerDataInterval, ScheduleRule};
 use tapo::responses::{
     CurrentPowerResult, DeviceInfoPlugEnergyMonitoringResult, DeviceUsageEnergyMonitoringResult,
-    EmeterDataResult, EnergyDataResult, EnergyUsageResult, PowerDataResult, PowerState,
+    EnergyDataResult, EnergyMeterDataResult, EnergyUsageResult, PowerDataResult, PowerState,
     ScheduleRuleResult, Timer, TimezoneResult,
 };
 
@@ -31,14 +31,6 @@ impl PyPlugEnergyMonitoringHandler {
         call_handler_method!(
             handler.read().await.deref(),
             PlugEnergyMonitoringHandler::get_current_power,
-        )
-    }
-
-    pub async fn get_emeter_data(&self) -> PyResult<EmeterDataResult> {
-        let handler = self.inner.clone();
-        call_handler_method!(
-            handler.read().await.deref(),
-            PlugEnergyMonitoringHandler::get_emeter_data,
         )
     }
 
@@ -67,6 +59,14 @@ impl PyPlugEnergyMonitoringHandler {
             timezone
         )?;
         Ok(result)
+    }
+
+    pub async fn get_energy_meter_data(&self) -> PyResult<EnergyMeterDataResult> {
+        let handler = self.inner.clone();
+        call_handler_method!(
+            handler.read().await.deref(),
+            PlugEnergyMonitoringHandler::get_energy_meter_data,
+        )
     }
 
     pub async fn get_energy_usage(&self) -> PyResult<EnergyUsageResult> {
