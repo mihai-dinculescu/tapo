@@ -9,6 +9,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `ApiClient`: added the `l430` builder for the L430C and L430P bulbs. Both are served by `ColorLightHandler`, like the L530, L535 and L630, and are recognised by `ApiClient::discover_devices`.
+- `HubHandler`, `HubIrHandler`: added `get_connect_cloud_state`, which returns whether the hub is connected to the Tapo Cloud, as `CloudConnectionState`.
 - `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
 - `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
 
@@ -17,6 +18,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `ApiClient`: added the `l430` builder for the L430C and L430P bulbs. Both are served by `ColorLightHandler`, like the L530, L535 and L630, and are recognised by `ApiClient.discover_devices`.
+- `HubHandler`, `HubIrHandler`: added `get_connect_cloud_state`, which returns whether the hub is connected to the Tapo Cloud, as `CloudConnectionState`.
 - `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
 - `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
 

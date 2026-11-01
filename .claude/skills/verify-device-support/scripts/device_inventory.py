@@ -457,6 +457,7 @@ TOP_MACRO = parse_macro("tapo_handler")
 CHILD_MACRO = parse_macro("tapo_child_handler")
 HUB_MACRO = parse_macro("hub_child_handlers")
 ALARM_MACRO = parse_macro("hub_alarm_handlers")
+CLOUD_MACRO = parse_macro("hub_connect_cloud_handlers")
 CAMERA_DEVICE_MANAGEMENT_MACRO = parse_macro("camera_device_management_handlers")
 CAMERA_STREAM_MACRO = parse_macro("camera_stream_handlers")
 CAMERA_DETECTION_MACRO = parse_macro("camera_detection_handlers")
@@ -526,6 +527,8 @@ def parse_rust_handler(path: Path) -> Handler | None:
         h.rust_methods[b] = False
     if re.search(r"hub_alarm_handlers!\(", text):
         h.rust_methods.update(ALARM_MACRO.methods_for(set(), name))
+    if re.search(r"hub_connect_cloud_handlers!\(", text):
+        h.rust_methods.update(CLOUD_MACRO.methods_for(set(), name))
     if re.search(r"camera_device_management_handlers!\(", text):
         h.rust_methods.update(CAMERA_DEVICE_MANAGEMENT_MACRO.methods_for(set(), name))
     if re.search(r"camera_stream_handlers!\(", text):
