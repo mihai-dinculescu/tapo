@@ -1,10 +1,10 @@
 use anyhow::Context as _;
-use chrono::{DateTime, Days, Duration, Months, NaiveDateTime, TimeZone, Utc};
+use chrono::{DateTime, Days, Duration, Months, NaiveDateTime, NaiveTime, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::responses::TapoResponseExt;
-use crate::utils::{der_tapo_datetime_format, local_midnight, skipped_local_time};
+use crate::utils::{der_tapo_datetime_format, local_midnight, local_to_utc, skipped_local_time};
 
 /// Energy data result for the requested [`crate::requests::PowerDataInterval`].
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -19,6 +19,11 @@ pub struct EnergyDataResult {
     /// List of energy data entries, up to the device's local time. It is shorter
     /// than the requested interval when the interval has not ended yet, and
     /// empty when it has not started.
+    ///
+    /// Hourly entries come 24 to a local day. The hour that the clocks go back
+    /// over is a single entry, covering both times it happens. The hour that
+    /// the clocks jump forward over has an entry too, with the same start as
+    /// the hour after it.
     pub entries: Vec<EnergyDataIntervalResult>,
     /// Interval length in minutes.
     pub interval_length: u64,
@@ -83,8 +88,11 @@ impl EnergyDataResultRaw {
             }
         };
 
-        // Days and months are stepped by calendar date, because their length
-        // in hours changes with DST.
+        // The device files every entry under a local date, and hourly entries
+        // under an hour of that date too: 24 per day, whatever the day's length.
+        // So entries are stepped by calendar date and hour, not by elapsed
+        // time. The hour that the clocks go back over is one entry, and the
+        // hour they jump forward over still has one.
         let start_date = start.date_naive();
         // During a repeated hour, the later reading keeps the current entry.
         // A device whose offsets disagree with `timezone` can report a time
@@ -101,7 +109,13 @@ impl EnergyDataResultRaw {
 
         for (index, energy) in self.data.into_iter().enumerate() {
             let entry_start = match step {
-                Step::Hour => start_date_time + Duration::hours(index as i64),
+                Step::Hour => {
+                    let date = start_date
+                        .checked_add_days(Days::new(index as u64 / 24))
+                        .context("Energy data date is out of range")?;
+                    let hour = Duration::hours(index as i64 % 24);
+                    local_to_utc(date.and_time(NaiveTime::MIN) + hour, timezone)
+                }
                 Step::Day => {
                     let date = start_date
                         .checked_add_days(Days::new(index as u64))
@@ -139,6 +153,7 @@ impl EnergyDataResultRaw {
 mod tests {
     use chrono::{NaiveDate, NaiveTime, Timelike as _};
     use chrono_tz::America::Santiago;
+    use chrono_tz::Europe::London;
 
     use super::*;
 
@@ -222,8 +237,8 @@ mod tests {
         };
 
         // Santiago skips 00:00 to 01:00 on 2026-09-06.
-        let start = Santiago.from_local_datetime(&at(5, 22)).unwrap().to_utc();
-        let mut hours = raw(start, 6, 60);
+        let start = local_midnight(at(5, 0).date(), &Santiago);
+        let mut hours = raw(start, 48, 60);
         hours.local_time = NaiveDate::from_ymd_opt(2026, 9, 6)
             .unwrap()
             .and_hms_opt(0, 30, 0)
@@ -231,10 +246,84 @@ mod tests {
 
         let result = hours.in_timezone(&Santiago).unwrap();
 
+        let mut expected: Vec<_> = (0..24).map(|hour| at(5, hour)).collect();
+        expected.extend([at(6, 1), at(6, 1)]);
+        assert_eq!(local_dates_and_times(&result), expected);
+    }
+
+    #[test]
+    fn test_hourly_entries_are_24_to_a_local_day_across_a_repeated_hour() {
+        let at = |day, hour| {
+            NaiveDate::from_ymd_opt(2026, 4, day)
+                .unwrap()
+                .and_hms_opt(hour, 0, 0)
+                .unwrap()
+        };
+
+        // Santiago repeats 23:00 on 2026-04-04, so that day has 25 hours.
+        let start = local_midnight(at(4, 0).date(), &Santiago);
+        let result = raw(start, 48, 60).in_timezone(&Santiago).unwrap();
+
+        let expected: Vec<_> = [4, 5]
+            .into_iter()
+            .flat_map(|day| (0..24).map(move |hour| at(day, hour)))
+            .collect();
+        assert_eq!(local_dates_and_times(&result), expected);
+        // The repeated hour starts at its earlier occurrence, and the next
+        // day starts two hours after it.
         assert_eq!(
-            local_dates_and_times(&result),
-            vec![at(5, 22), at(5, 23), at(6, 1)]
+            result.entries[24].start_date_time - result.entries[23].start_date_time,
+            Duration::hours(2)
         );
+    }
+
+    #[test]
+    fn test_hourly_entries_are_24_to_a_local_day_across_a_repeated_hour_mid_day() {
+        let at = |day, hour| {
+            NaiveDate::from_ymd_opt(2026, 10, day)
+                .unwrap()
+                .and_hms_opt(hour, 0, 0)
+                .unwrap()
+        };
+
+        // London repeats 01:00 on 2026-10-25, so that day has 25 hours.
+        let start = local_midnight(at(25, 0).date(), &London);
+        let result = raw(start, 48, 60).in_timezone(&London).unwrap();
+
+        let local: Vec<_> = result
+            .entries
+            .iter()
+            .map(|entry| entry.start_date_time.with_timezone(&London).naive_local())
+            .collect();
+        let expected: Vec<_> = [25, 26]
+            .into_iter()
+            .flat_map(|day| (0..24).map(move |hour| at(day, hour)))
+            .collect();
+        assert_eq!(local, expected);
+        // The repeated hour starts at its earlier occurrence, and the hour
+        // after it starts two hours later.
+        assert_eq!(
+            result.entries[2].start_date_time - result.entries[1].start_date_time,
+            Duration::hours(2)
+        );
+    }
+
+    #[test]
+    fn test_hourly_entry_for_a_skipped_hour_starts_with_the_next_hour() {
+        let at = |hour| {
+            NaiveDate::from_ymd_opt(2026, 9, 6)
+                .unwrap()
+                .and_hms_opt(hour, 0, 0)
+                .unwrap()
+        };
+
+        // Santiago skips 00:00 to 01:00 on 2026-09-06, so that day has 23 hours.
+        let start = local_midnight(at(0).date(), &Santiago);
+        let result = raw(start, 24, 60).in_timezone(&Santiago).unwrap();
+
+        let mut expected = vec![at(1)];
+        expected.extend((1..24).map(at));
+        assert_eq!(local_dates_and_times(&result), expected);
     }
 
     #[test]

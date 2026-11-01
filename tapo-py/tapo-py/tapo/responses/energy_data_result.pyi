@@ -16,7 +16,12 @@ class EnergyDataResult(ToDictExt):
     entries: List[EnergyDataIntervalResult]
     """List of energy data entries, up to the device's local time. It is shorter
     than the requested interval when the interval has not ended yet, and empty
-    when it has not started."""
+    when it has not started.
+
+    Hourly entries come 24 to a local day. The hour that the clocks go back
+    over is a single entry, covering both times it happens. The hour that the
+    clocks jump forward over has an entry too, with the same start as the hour
+    after it."""
 
     interval_length: int
     """Interval length in minutes."""
