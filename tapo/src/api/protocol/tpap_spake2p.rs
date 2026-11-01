@@ -69,6 +69,8 @@ pub(super) fn credential(
         // short. Which of the two hashes such a device holds is not known, so
         // the whole password is hashed.
         (Some("password_shadow"), Some(2)) => Ok(crypto::sha1_hex_lower(password.as_bytes())),
+        // The app has no transform for this id and uses the password as it is.
+        (Some("password_shadow"), Some(4)) => Ok(password.to_string()),
         (Some("password_shadow"), Some(5)) => {
             let params = extra_crypt.get("params");
             let salt = params
@@ -367,6 +369,17 @@ mod tests {
         assert_eq!(
             credential("hunter2", Some(&extra_crypt), DeviceFamily::Smart).unwrap(),
             "f3bbbd66a63d4bf1747940578ec3d0103530e21d"
+        );
+    }
+
+    // What an H110 on firmware 1.5.4 asked for.
+    #[test]
+    fn credential_for_password_shadow_4_is_the_password() {
+        let extra_crypt = json!({ "type": "password_shadow", "params": { "passwd_id": 4 } });
+
+        assert_eq!(
+            credential("hunter2", Some(&extra_crypt), DeviceFamily::Smart).unwrap(),
+            "hunter2"
         );
     }
 
