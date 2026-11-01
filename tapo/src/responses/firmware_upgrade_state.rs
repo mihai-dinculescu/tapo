@@ -6,7 +6,7 @@ use super::TapoResponseExt;
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct FirmwareUpgradeState {
-    /// Upgrade status reported by the device; `-1` means idle or failed.
+    /// Upgrade status reported by the device.
     pub status: Option<i32>,
     /// Download progress in percent, from 0 to 100.
     pub download_progress: Option<u8>,
