@@ -14,8 +14,8 @@ use tapo::requests::{
     SegmentEffectType,
 };
 use tapo::responses::{
-    AiCameraSupport, AutoOffStatus, ChargingStatus, ChildDeviceComponentList, ColorLightState,
-    Component, CurrentPowerResult, DefaultBrightnessState, DefaultColorLightState,
+    AiCameraSupport, AutoOffStatus, ChargingStatus, ChildDeviceComponentList, CloudConnectionState,
+    ColorLightState, Component, CurrentPowerResult, DefaultBrightnessState, DefaultColorLightState,
     DefaultLightState, DefaultPlugState, DefaultPowerType, DefaultRgbLightStripState,
     DefaultRgbicLightStripState, DefaultStateType, DeviceInfoBasicResult,
     DeviceInfoCameraHubResult, DeviceInfoCameraResult, DeviceInfoColorLightResult,
@@ -232,6 +232,9 @@ fn register_responses_hub(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<T110Result>()?;
     module.add_class::<T300Result>()?;
     module.add_class::<T31XResult>()?;
+
+    // cloud connection state
+    module.add_class::<CloudConnectionState>()?;
 
     // child devices
     module.add_class::<IrRemoteKey>()?;

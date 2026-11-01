@@ -5,6 +5,7 @@ from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.device_management_ext import DeviceManagementExt
 from tapo.hub_alarm_ext import HubAlarmExt
 from tapo.hub_children_ext import HubChildrenExt
+from tapo.hub_cloud_ext import HubCloudExt
 from tapo.responses import (
     DeviceInfoHubResult,
     KE100Result,
@@ -17,7 +18,9 @@ from tapo.responses import (
     T31XResult,
 )
 
-class HubHandler(DeviceHandlerExt, HubAlarmExt, HubChildrenExt, DeviceManagementExt, DebugExt):
+class HubHandler(
+    DeviceHandlerExt, HubAlarmExt, HubChildrenExt, HubCloudExt, DeviceManagementExt, DebugExt
+):
     """Handler for the [H100](https://www.tapo.com/en/search/?q=H100) devices.
 
     Example:

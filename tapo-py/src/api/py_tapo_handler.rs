@@ -406,6 +406,36 @@ macro_rules! py_hub_alarm_handlers {
     };
 }
 
+/// Generates the hub cloud connection methods for a handler created with
+/// [`py_handler!`], mirroring `hub_connect_cloud_handlers!` in the `tapo` crate.
+///
+/// # Usage
+///
+/// ```ignore
+/// py_hub_connect_cloud_handlers!(PyHubHandler, HubHandler);
+/// ```
+///
+/// # Generated code
+///
+/// * `get_connect_cloud_state()` method
+macro_rules! py_hub_connect_cloud_handlers {
+    ($py_name:ident, $handler:ident) => {
+        #[pyo3::pymethods]
+        impl $py_name {
+            pub async fn get_connect_cloud_state(
+                &self,
+            ) -> pyo3::prelude::PyResult<tapo::responses::CloudConnectionState> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_connect_cloud_state
+                )
+            }
+        }
+    };
+}
+
 /// Generates the device management methods for a handler created with
 /// [`py_handler!`], mirroring `camera_device_management_handlers!` in the `tapo` crate.
 ///

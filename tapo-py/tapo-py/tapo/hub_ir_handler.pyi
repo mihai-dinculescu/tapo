@@ -6,6 +6,7 @@ from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.device_management_ext import DeviceManagementExt
 from tapo.hub_alarm_ext import HubAlarmExt
 from tapo.hub_children_ext import HubChildrenExt
+from tapo.hub_cloud_ext import HubCloudExt
 from tapo.responses import (
     DeviceInfoHubResult,
     IrRemoteResult,
@@ -19,7 +20,9 @@ from tapo.responses import (
     T31XResult,
 )
 
-class HubIrHandler(DeviceHandlerExt, HubAlarmExt, HubChildrenExt, DeviceManagementExt, DebugExt):
+class HubIrHandler(
+    DeviceHandlerExt, HubAlarmExt, HubChildrenExt, HubCloudExt, DeviceManagementExt, DebugExt
+):
     """Handler for the [H110](https://www.tapo.com/en/search/?q=H110) devices.
 
     Example:

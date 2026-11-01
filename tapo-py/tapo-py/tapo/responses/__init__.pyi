@@ -1,6 +1,7 @@
 from .child_device_component_list_result import *
 from .child_device_list_hub_result import *
 from .child_device_list_power_strip_result import *
+from .cloud_connection_state import *
 from .component_list_result import *
 from .current_power_result import *
 from .device_info_result import *

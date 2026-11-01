@@ -15,6 +15,8 @@ py_handler! {
 
 py_hub_alarm_handlers!(PyHubIrHandler, HubIrHandler);
 
+py_hub_connect_cloud_handlers!(PyHubIrHandler, HubIrHandler);
+
 py_hub_child_handlers!(
     PyHubIrHandler,
     HubIrHandler,

@@ -18,7 +18,7 @@ from tapo.responses import (
 from common import require_env_vars
 
 
-async def main():
+async def main() -> None:
     tapo_username, tapo_password, ip_address = require_env_vars(
         "TAPO_USERNAME", "TAPO_PASSWORD", "IP_ADDRESS"
     )
@@ -28,6 +28,9 @@ async def main():
 
     device_info = await hub.get_device_info()
     print(f"Device info: {device_info.to_dict()}")
+
+    connect_cloud_state = await hub.get_connect_cloud_state()
+    print(f"Cloud connection state: {connect_cloud_state}")
 
     print("Getting child devices...")
     child_device_list = await hub.get_child_device_list()
@@ -52,13 +55,13 @@ async def main():
             )
         elif isinstance(child, S200Result):
             s200 = await hub.s200(device_id=child.device_id)
-            trigger_logs = await s200.get_trigger_logs(5)
+            s200_trigger_logs = await s200.get_trigger_logs(5)
 
             print(
                 "Found S200B/S200D child device with nickname: {}, id: {}, last 5 trigger logs: {}.".format(
                     child.nickname,
                     child.device_id,
-                    [log.to_dict() for log in trigger_logs.logs],
+                    [log.to_dict() for log in s200_trigger_logs.logs],
                 )
             )
         elif isinstance(child, S210Result):
@@ -75,31 +78,31 @@ async def main():
             )
         elif isinstance(child, T100Result):
             t100 = await hub.t100(device_id=child.device_id)
-            trigger_logs = await t100.get_trigger_logs(5)
+            t100_trigger_logs = await t100.get_trigger_logs(5)
 
             print(
                 "Found T100 child device with nickname: {}, id: {}, detected: {}, last 5 trigger logs: {}.".format(
                     child.nickname,
                     child.device_id,
                     child.detected,
-                    [log.to_dict() for log in trigger_logs.logs],
+                    [log.to_dict() for log in t100_trigger_logs.logs],
                 )
             )
         elif isinstance(child, T110Result):
             t110 = await hub.t110(device_id=child.device_id)
-            trigger_logs = await t110.get_trigger_logs(5)
+            t110_trigger_logs = await t110.get_trigger_logs(5)
 
             print(
                 "Found T110 child device with nickname: {}, id: {}, open: {}, last 5 trigger logs: {}.".format(
                     child.nickname,
                     child.device_id,
                     child.open,
-                    [log.to_dict() for log in trigger_logs.logs],
+                    [log.to_dict() for log in t110_trigger_logs.logs],
                 )
             )
         elif isinstance(child, T300Result):
             t300 = await hub.t300(device_id=child.device_id)
-            trigger_logs = await t300.get_trigger_logs(5)
+            t300_trigger_logs = await t300.get_trigger_logs(5)
 
             print(
                 "Found T300 child device with nickname: {}, id: {}, in_alarm: {}, water_leak_status: {}, last 5 trigger logs: {}.".format(
@@ -107,7 +110,7 @@ async def main():
                     child.device_id,
                     child.in_alarm,
                     child.water_leak_status,
-                    [log.to_dict() for log in trigger_logs.logs],
+                    [log.to_dict() for log in t300_trigger_logs.logs],
                 )
             )
         elif isinstance(child, T31XResult):
