@@ -18,7 +18,8 @@ pub struct EnergyDataResult {
     pub start_date_time: DateTime<Utc>,
     /// List of energy data entries, up to the device's local time. It is shorter
     /// than the requested interval when the interval has not ended yet, and
-    /// empty when it has not started.
+    /// empty when it has not started. On the day the clocks go forward, the
+    /// entry for the skipped hour shares its start time with the next one.
     pub entries: Vec<EnergyDataIntervalResult>,
     /// Interval length in minutes.
     pub interval_length: u64,
@@ -237,6 +238,34 @@ mod tests {
                 .naive_local(),
             date(29).and_hms_opt(3, 0, 0).unwrap()
         );
+    }
+
+    #[test]
+    fn test_skipped_hour_shares_its_start_with_the_next_hour() {
+        // Berlin skips 02:00 on 2026-03-29: it and 03:00 both start at 01:00Z.
+        let start = utc(3, 28, 23);
+        let result = raw(start, 24, 60).in_timezone(&Berlin).unwrap();
+
+        assert_eq!(result.entries[2].start_date_time, utc(3, 29, 1));
+        assert_eq!(
+            result.entries[3].start_date_time,
+            result.entries[2].start_date_time
+        );
+    }
+
+    #[test]
+    fn test_hourly_entries_after_the_local_time_are_left_out() {
+        // 2026-10-26 12:00 in Berlin is 11:00Z.
+        let mut hours = raw(utc(10, 24, 22), 48, 60);
+        hours.local_time = NaiveDate::from_ymd_opt(2026, 10, 26)
+            .unwrap()
+            .and_hms_opt(12, 0, 0)
+            .unwrap();
+
+        let result = hours.in_timezone(&Berlin).unwrap();
+
+        assert_eq!(result.entries.len(), 37);
+        assert_eq!(result.entries[36].start_date_time, utc(10, 26, 11));
     }
 
     #[test]
