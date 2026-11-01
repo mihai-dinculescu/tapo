@@ -26,7 +26,8 @@
 /// * `get_device_info_json()` method
 /// * `on()` and `off()` methods (if `on_off` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
-/// * `device_reboot()` and `device_reset()` methods (if `device_management` specified)
+/// * `device_reboot()`, `device_reset()`, `get_latest_firmware()`, `firmware_upgrade()`
+///   and `get_firmware_upgrade_state()` methods (if `device_management` specified)
 /// * `impl HandlerExt` with `get_client()`
 macro_rules! tapo_handler {
     // With on_off + device_usage + device_management
@@ -270,6 +271,34 @@ macro_rules! tapo_handler {
             /// and requires reconfiguration.
             pub async fn device_reset(&self) -> Result<(), crate::error::Error> {
                 crate::api::ApiClientExt::device_reset(&*self.client.read().await).await
+            }
+
+            /// Returns the *latest firmware* that the device reports as available.
+            ///
+            /// `need_to_upgrade` says whether that version differs from the
+            /// `fw_ver` in [`Self::get_device_info`].
+            pub async fn get_latest_firmware(
+                &self,
+            ) -> Result<crate::responses::LatestFirmwareResult, crate::error::Error> {
+                crate::api::ApiClientExt::get_latest_firmware(&*self.client.read().await).await
+            }
+
+            /// Tells the device to *download and install* the latest firmware.
+            ///
+            /// The device may reboot while flashing. Read the progress of the
+            /// download and the upgrade with [`Self::get_firmware_upgrade_state`].
+            pub async fn firmware_upgrade(&self) -> Result<(), crate::error::Error> {
+                crate::api::ApiClientExt::firmware_upgrade(&*self.client.read().await).await
+            }
+
+            /// Returns the *firmware upgrade state*: the download and upgrade
+            /// progress of an upgrade running on the device.
+            ///
+            /// `status` comes from the device and is reported as it arrives.
+            pub async fn get_firmware_upgrade_state(
+                &self,
+            ) -> Result<crate::responses::FirmwareUpgradeState, crate::error::Error> {
+                crate::api::ApiClientExt::get_firmware_upgrade_state(&*self.client.read().await).await
             }
         }
     };

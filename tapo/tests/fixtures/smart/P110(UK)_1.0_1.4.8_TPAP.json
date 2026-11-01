@@ -218,6 +218,23 @@
       "past30": 0
     }
   },
+  "get_latest_firmware": {
+    "fw_ver": "1.4.9 Build 260101 Rel. 12345",
+    "need_to_upgrade": true,
+    "release_note": "Bug fixes",
+    "fw_release_date": "2026-01-01",
+    "fw_size": 1234567,
+    "oem_id": "abc123",
+    "type": 2
+  },
+  "firmware_upgrade": {},
+  "get_firmware_upgrade_state": {
+    "status": 2,
+    "download_progress": 100,
+    "reboot_time": 5,
+    "upgrade_time": 30,
+    "auto_upgrade": false
+  },
   "get_device_time": {
     "time_diff": 0,
     "timestamp": 1792244123,
