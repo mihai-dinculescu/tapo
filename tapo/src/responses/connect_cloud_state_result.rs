@@ -7,7 +7,7 @@ use super::TapoResponseExt;
 /// The cloud link is what the device uses for remote control, so this is the
 /// connection state the API exposes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(from = "i64")]
+#[serde(from = "i64", into = "i64")]
 #[cfg_attr(
     feature = "python",
     pyo3::prelude::pyclass(from_py_object, get_all, eq, hash, frozen)
@@ -33,6 +33,20 @@ impl From<i64> for CloudConnectionState {
             2 => Self::Connecting,
             3 => Self::Disconnecting,
             _ => Self::Unknown,
+        }
+    }
+}
+
+impl From<CloudConnectionState> for i64 {
+    fn from(state: CloudConnectionState) -> Self {
+        match state {
+            CloudConnectionState::Connected => 0,
+            CloudConnectionState::Disconnected => 1,
+            CloudConnectionState::Connecting => 2,
+            CloudConnectionState::Disconnecting => 3,
+            // No wire code exists for an unrecognised state; -1 is outside 0-3,
+            // so it reads back as `Unknown`.
+            CloudConnectionState::Unknown => -1,
         }
     }
 }
@@ -90,5 +104,26 @@ mod tests {
     #[test]
     fn cloud_state_missing_status_is_an_error() {
         assert!(serde_json::from_str::<ConnectCloudStateResult>("{}").is_err());
+    }
+
+    #[test]
+    fn cloud_state_survives_a_json_round_trip() {
+        for (code, status) in [
+            (0, CloudConnectionState::Connected),
+            (1, CloudConnectionState::Disconnected),
+            (2, CloudConnectionState::Connecting),
+            (3, CloudConnectionState::Disconnecting),
+            (-1, CloudConnectionState::Unknown),
+        ] {
+            let json = serde_json::to_value(ConnectCloudStateResult { status }).unwrap();
+
+            assert_eq!(json["status"], code);
+            assert_eq!(
+                serde_json::from_value::<ConnectCloudStateResult>(json)
+                    .unwrap()
+                    .status,
+                status
+            );
+        }
     }
 }
