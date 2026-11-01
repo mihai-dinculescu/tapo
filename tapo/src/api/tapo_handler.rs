@@ -546,6 +546,27 @@ macro_rules! hub_alarm_handlers {
     };
 }
 
+/// Generates the cloud connection method shared by the hub handlers (H100, H110):
+/// `get_connect_cloud_state`.
+macro_rules! hub_connect_cloud_handlers {
+    ($name:ident) => {
+        /// Hub cloud connection method.
+        impl $name {
+            /// Returns whether the hub is connected to the Tapo Cloud.
+            pub async fn get_connect_cloud_state(
+                &self,
+            ) -> Result<crate::responses::CloudConnectionState, crate::error::Error> {
+                self.client
+                    .read()
+                    .await
+                    .get_connect_cloud_state()
+                    .await
+                    .map(|response| response.status)
+            }
+        }
+    };
+}
+
 /// Generates `device_reboot` and `device_reset` for SmartCam handlers, which
 /// take neither the delay nor the requests of the Smart protocol ones.
 macro_rules! camera_device_management_handlers {

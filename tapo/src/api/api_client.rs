@@ -18,12 +18,13 @@ use crate::requests::{
     SmartCamGetDeviceInfoParams, SmartCamSearchDetectionListParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
-    AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
-    DecodableResultExt, DetectionListResultRaw, DetectionResult, EnergyDataResult,
-    EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult, PowerDataResult,
-    PowerDataResultRaw, PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw,
-    ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
-    TapoResult, Timer, TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
+    AddScheduleRuleResult, AddTimerResult, ConnectCloudStateResult, ControlChildResult,
+    CurrentPowerResult, DecodableResultExt, DetectionListResultRaw, DetectionResult,
+    EnergyDataResult, EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult,
+    PowerDataResult, PowerDataResultRaw, PowerState, RecordingDownloadResult,
+    ScheduleRuleListResultRaw, ScheduleRuleResult, SmartCamControlChildResult,
+    TapoMultipleResponse, TapoResponseExt, TapoResult, Timer, TimerListResultRaw, TimezoneResult,
+    TimezoneResultRaw, validate_response,
 };
 use crate::utils::unix_timestamp_seconds;
 
@@ -1490,6 +1491,15 @@ impl ApiClient {
             .await?;
 
         Ok(())
+    }
+
+    pub(crate) async fn get_connect_cloud_state(&self) -> Result<ConnectCloudStateResult, Error> {
+        let request = TapoRequest::GetConnectCloudState(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 
     #[cfg(feature = "debug")]

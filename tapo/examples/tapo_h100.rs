@@ -22,6 +22,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let device_info = hub.get_device_info().await?;
     info!("Device info: {device_info:?}");
 
+    let connect_cloud_state = hub.get_connect_cloud_state().await?;
+    info!("Cloud connection state: {connect_cloud_state:?}");
+
     info!("Getting child devices...");
     let child_device_list = hub.get_child_device_list().await?;
 

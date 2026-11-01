@@ -27,6 +27,8 @@ tapo_handler! {
 
 hub_alarm_handlers!(HubHandler);
 
+hub_connect_cloud_handlers!(HubHandler);
+
 hub_child_handlers!(HubHandler, ChildDeviceHubResult);
 
 /// Hub Device.

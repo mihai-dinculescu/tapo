@@ -27,6 +27,8 @@ tapo_handler! {
 
 hub_alarm_handlers!(HubIrHandler);
 
+hub_connect_cloud_handlers!(HubIrHandler);
+
 hub_child_handlers!(HubIrHandler, ChildDeviceHubIrResult);
 
 /// IR remote handler builders.

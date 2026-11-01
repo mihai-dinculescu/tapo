@@ -52,6 +52,7 @@ pub(crate) enum TapoRequest {
     GetTemperatureHumidityRecords(Box<TapoParams<EmptyParams>>),
     PlayAlarm(TapoParams<PlayAlarmParams>),
     StopAlarm(TapoParams<EmptyParams>),
+    GetConnectCloudState(TapoParams<EmptyParams>),
     #[cfg(feature = "debug")]
     #[serde(rename = "get_support_alarm_type_list")]
     GetSupportedAlarmTypeList(TapoParams<EmptyParams>),
