@@ -3,7 +3,7 @@ from typing import Protocol
 from tapo.responses import FirmwareUpgradeState, LatestFirmwareResult
 
 class DeviceManagementExt(Protocol):
-    """Extension class for device management capabilities like `device_reboot` and `device_reset`."""
+    """Extension class for device management capabilities like `device_reboot`, `device_reset` and the firmware methods."""
 
     async def device_reboot(self, delay_s: int) -> None:
         """*Reboots* the device.
