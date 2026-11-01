@@ -32,6 +32,9 @@ pub(crate) enum TapoRequest {
     ApplySegmentEffectRule(Box<TapoParams<SegmentEffect>>),
     DeviceReset(TapoParams<EmptyParams>),
     DeviceReboot(TapoParams<DeviceRebootParams>),
+    GetLatestFirmware(TapoParams<EmptyParams>),
+    FirmwareUpgrade(TapoParams<EmptyParams>),
+    GetFirmwareUpgradeState(TapoParams<EmptyParams>),
     GetDeviceInfo(TapoParams<EmptyParams>),
     GetCurrentPower(TapoParams<EmptyParams>),
     GetEmeterData(TapoParams<EmptyParams>),
@@ -147,5 +150,37 @@ impl<T> TapoParams<T> {
     pub fn set_terminal_uuid(mut self, terminal_uuid: &str) -> Self {
         self.terminal_uuid.replace(terminal_uuid.to_string());
         self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::*;
+
+    #[test]
+    fn firmware_requests_serialize_with_null_params() {
+        let cases = [
+            (
+                TapoRequest::GetLatestFirmware(TapoParams::new(EmptyParams)),
+                "get_latest_firmware",
+            ),
+            (
+                TapoRequest::FirmwareUpgrade(TapoParams::new(EmptyParams)),
+                "firmware_upgrade",
+            ),
+            (
+                TapoRequest::GetFirmwareUpgradeState(TapoParams::new(EmptyParams)),
+                "get_firmware_upgrade_state",
+            ),
+        ];
+
+        for (request, method) in cases {
+            assert_eq!(
+                serde_json::to_value(request).unwrap(),
+                json!({ "method": method, "params": null })
+            );
+        }
     }
 }

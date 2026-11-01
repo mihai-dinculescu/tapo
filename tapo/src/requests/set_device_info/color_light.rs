@@ -164,6 +164,7 @@ mod tests {
     use tokio::sync::{RwLock, RwLockReadGuard};
 
     use crate::ApiClientExt;
+    use crate::responses::{FirmwareUpgradeState, LatestFirmwareResult};
 
     use super::*;
 
@@ -179,6 +180,15 @@ mod tests {
             unimplemented!()
         }
         async fn device_reset(&self) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn get_latest_firmware(&self) -> Result<LatestFirmwareResult, Error> {
+            unimplemented!()
+        }
+        async fn firmware_upgrade(&self) -> Result<(), Error> {
+            unimplemented!()
+        }
+        async fn get_firmware_upgrade_state(&self) -> Result<FirmwareUpgradeState, Error> {
             unimplemented!()
         }
     }

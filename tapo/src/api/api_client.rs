@@ -20,10 +20,11 @@ use crate::requests::{
 use crate::responses::{
     AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
     DecodableResultExt, DetectionListResultRaw, DetectionResult, EnergyDataResult,
-    EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult, PowerDataResult,
-    PowerDataResultRaw, PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw,
-    ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
-    TapoResult, Timer, TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
+    EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult, FirmwareUpgradeState,
+    LatestFirmwareResult, PowerDataResult, PowerDataResultRaw, PowerState, RecordingDownloadResult,
+    ScheduleRuleListResultRaw, ScheduleRuleResult, SmartCamControlChildResult,
+    TapoMultipleResponse, TapoResponseExt, TapoResult, Timer, TimerListResultRaw, TimezoneResult,
+    TimezoneResultRaw, validate_response,
 };
 use crate::utils::unix_timestamp_seconds;
 
@@ -70,6 +71,12 @@ pub trait ApiClientExt: std::fmt::Debug + Send + Sync {
     async fn device_reboot(&self, delay_s: u16) -> Result<(), Error>;
     /// Hardware resets the device.
     async fn device_reset(&self) -> Result<(), Error>;
+    /// Gets the latest firmware available for the device.
+    async fn get_latest_firmware(&self) -> Result<LatestFirmwareResult, Error>;
+    /// Tells the device to download and install the latest firmware.
+    async fn firmware_upgrade(&self) -> Result<(), Error>;
+    /// Gets the progress of a firmware upgrade running on the device.
+    async fn get_firmware_upgrade_state(&self) -> Result<FirmwareUpgradeState, Error>;
 }
 
 /// Tapo API Client. See [examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo/examples).
@@ -2115,6 +2122,37 @@ impl ApiClientExt for ApiClient {
             .await?;
 
         Ok(())
+    }
+
+    async fn get_latest_firmware(&self) -> Result<LatestFirmwareResult, Error> {
+        debug!("Device latest firmware...");
+        let request = TapoRequest::GetLatestFirmware(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request::<LatestFirmwareResult>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    async fn firmware_upgrade(&self) -> Result<(), Error> {
+        debug!("Device firmware upgrade...");
+        let request = TapoRequest::FirmwareUpgrade(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
+            .await?;
+
+        Ok(())
+    }
+
+    async fn get_firmware_upgrade_state(&self) -> Result<FirmwareUpgradeState, Error> {
+        debug!("Device firmware upgrade state...");
+        let request = TapoRequest::GetFirmwareUpgradeState(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request::<FirmwareUpgradeState>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
     }
 }
 
