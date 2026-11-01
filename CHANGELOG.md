@@ -10,6 +10,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.6.2][tapo-mcp-v0.6.2] - 2026-11-01
+
 ### Added
 
 - `list_devices`, `check_device`, `get_device_state`, `control_device`: added support for the L430C and L430P bulbs, with the same capabilities as the L530.
@@ -1345,6 +1347,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.6.2]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.6.2
 [v0.12.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.12.2
 [tapo-mcp-v0.6.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.6.1
 [v0.12.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.12.1
