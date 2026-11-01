@@ -1,5 +1,7 @@
 from typing import Protocol
 
+from tapo.responses import FirmwareUpgradeState, LatestFirmwareResult
+
 class DeviceManagementExt(Protocol):
     """Extension class for device management capabilities like `device_reboot` and `device_reset`."""
 
@@ -26,4 +28,28 @@ class DeviceManagementExt(Protocol):
 
         This feature is especially useful when the device is difficult to access
         and requires reconfiguration.
+        """
+
+    async def get_latest_firmware(self) -> LatestFirmwareResult:
+        """*Returns* the latest firmware that the device reports as available.
+
+        `need_to_upgrade` says whether that version differs from the `fw_ver`
+        in `get_device_info()`.
+        """
+
+    async def firmware_upgrade(self) -> None:
+        """*Tells* the device to *download and install* the latest firmware.
+
+        Warning:
+            The device may reboot while flashing.
+
+        Read the progress of the download and the upgrade with
+        `get_firmware_upgrade_state()`.
+        """
+
+    async def get_firmware_upgrade_state(self) -> FirmwareUpgradeState:
+        """*Returns* the firmware upgrade state: the download and upgrade progress
+        of an upgrade running on the device.
+
+        `status` comes from the device and is reported as it arrives.
         """
