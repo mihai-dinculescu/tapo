@@ -6,27 +6,7 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
-### Added
-
-- `ApiClient`: added the `l430` builder for the L430C and L430P bulbs. Both are served by `ColorLightHandler`, like the L530, L535 and L630, and are recognised by `ApiClient::discover_devices`.
-- `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
-- `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
-
-### Fixed
-
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval::Hourly` now gives each entry the right start time on and after a daylight saving change, instead of an hour off from the hour the clocks change onwards. Each local day now has 24 entries, matching the device's daily totals. (thanks to @sveneberth)
-
 ## [Python Unreleased][Unreleased]
-
-### Added
-
-- `ApiClient`: added the `l430` builder for the L430C and L430P bulbs. Both are served by `ColorLightHandler`, like the L530, L535 and L630, and are recognised by `ApiClient.discover_devices`.
-- `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
-- `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
-
-### Fixed
-
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval.Hourly` now gives each entry the right start time on and after a daylight saving change, instead of an hour off from the hour the clocks change onwards. Each local day now has 24 entries, matching the device's daily totals. (thanks to @sveneberth)
 
 ## [MCP Unreleased][Unreleased]
 
@@ -38,6 +18,30 @@ file. This change log follows the conventions of
 ### Fixed
 
 - `get_device_state`: the `EnergyDataHourly` capability now gives each hour the right start time on and after a daylight saving change, instead of an hour off from the hour the clocks change onwards. (thanks to @sveneberth)
+
+## [Rust v0.12.2][v0.12.2] - 2026-11-01
+
+### Added
+
+- `ApiClient`: added the `l430` builder for the L430C and L430P bulbs. Both are served by `ColorLightHandler`, like the L530, L535 and L630, and are recognised by `ApiClient::discover_devices`.
+- `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
+- `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
+
+### Fixed
+
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval::Hourly` now gives each entry the right start time on and after a daylight saving change, instead of an hour off from the hour the clocks change onwards. Each local day now has 24 entries, matching the device's daily totals. (thanks to @sveneberth)
+
+## [Python v0.12.2][v0.12.2] - 2026-11-01
+
+### Added
+
+- `ApiClient`: added the `l430` builder for the L430C and L430P bulbs. Both are served by `ColorLightHandler`, like the L530, L535 and L630, and are recognised by `ApiClient.discover_devices`.
+- `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
+- `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
+
+### Fixed
+
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval.Hourly` now gives each entry the right start time on and after a daylight saving change, instead of an hour off from the hour the clocks change onwards. Each local day now has 24 entries, matching the device's daily totals. (thanks to @sveneberth)
 
 ## [MCP v0.6.1][tapo-mcp-v0.6.1] - 2026-10-29
 
@@ -1341,6 +1345,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.12.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.12.2
 [tapo-mcp-v0.6.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.6.1
 [v0.12.1]: https://github.com/mihai-dinculescu/tapo/tree/v0.12.1
 [tapo-mcp-v0.6.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.6.0
