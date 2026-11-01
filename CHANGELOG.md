@@ -12,6 +12,10 @@ file. This change log follows the conventions of
 - `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
 - `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
 
+### Fixed
+
+- `EnergyDataResult`: `get_energy_data` with `EnergyDataInterval::Hourly` now dates each entry by the device's local calendar, one for each hour of the local day, instead of as consecutive real hours, so the entries keep the right day and hour across a daylight saving change. (thanks to @sveneberth)
+
 ## [Python Unreleased][Unreleased]
 
 ### Added
@@ -19,6 +23,10 @@ file. This change log follows the conventions of
 - `ApiClient`: added the `l430` builder for the L430C and L430P bulbs. Both are served by `ColorLightHandler`, like the L530, L535 and L630, and are recognised by `ApiClient.discover_devices`.
 - `PlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P110 on firmware 1.4.8 and the P110M on firmware 1.4.4. (thanks to @bradthurber)
 - `PowerStripPlugEnergyMonitoringHandler`: added `get_energy_meter_data`, which returns the child plug's live voltage, current and power, and the energy it has used since it last restarted, as `EnergyMeterDataResult`. Tested with the P304M on firmware 1.4.2.
+
+### Fixed
+
+- `EnergyDataResult`: `get_energy_data` with `EnergyDataInterval.Hourly` now dates each entry by the device's local calendar, one for each hour of the local day, instead of as consecutive real hours, so the entries keep the right day and hour across a daylight saving change. (thanks to @sveneberth)
 
 ## [MCP Unreleased][Unreleased]
 

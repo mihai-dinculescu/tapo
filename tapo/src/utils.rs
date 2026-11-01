@@ -93,14 +93,17 @@ pub(crate) fn unix_timestamp_seconds(field: &str, time: DateTime<Utc>) -> Result
 /// midnight that the clocks jump forward over never happens, so the day starts
 /// where they jump.
 pub(crate) fn local_midnight<Tz: TimeZone>(date: NaiveDate, timezone: &Tz) -> DateTime<Utc> {
-    let midnight = date.and_time(NaiveTime::MIN);
+    local_time(date.and_time(NaiveTime::MIN), timezone)
+}
 
-    match timezone.from_local_datetime(&midnight) {
+/// `time`, a local time in `timezone`, in UTC. A time that the clocks go back
+/// over happens twice; the earlier of the two is used. A time that the clocks
+/// jump forward over never happens, so it lands where they jump.
+pub(crate) fn local_time<Tz: TimeZone>(time: NaiveDateTime, timezone: &Tz) -> DateTime<Utc> {
+    match timezone.from_local_datetime(&time) {
         MappedLocalTime::Single(time) => time.to_utc(),
         MappedLocalTime::Ambiguous(earliest, _) => earliest.to_utc(),
-        // When the jump starts at midnight, this lands on the moment the
-        // clocks jumped.
-        MappedLocalTime::None => skipped_local_time(midnight, timezone),
+        MappedLocalTime::None => skipped_local_time(time, timezone),
     }
 }
 
