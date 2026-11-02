@@ -20,11 +20,11 @@ use crate::requests::{
 use crate::responses::{
     AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
     DecodableResultExt, DetectionListResultRaw, DetectionResult, EnergyDataResult,
-    EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult, LatestFirmwareResult,
-    LatestFirmwareResultRaw, PowerDataResult, PowerDataResultRaw, PowerState,
-    RecordingDownloadResult, ScheduleRuleListResultRaw, ScheduleRuleResult,
-    SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt, TapoResult, Timer,
-    TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
+    EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult, FirmwareUpdateStateResult,
+    FirmwareUpdateStateResultRaw, LatestFirmwareResult, LatestFirmwareResultRaw, PowerDataResult,
+    PowerDataResultRaw, PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw,
+    ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
+    TapoResult, Timer, TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
 };
 use crate::utils::unix_timestamp_seconds;
 
@@ -1574,6 +1574,32 @@ impl ApiClient {
         let raw = self
             .protocol()?
             .execute_request::<LatestFirmwareResultRaw>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        Ok(raw.try_into()?)
+    }
+
+    pub(crate) async fn start_firmware_update(&self) -> Result<(), Error> {
+        debug!("Start Firmware update...");
+        let request = TapoRequest::FwDownload(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
+            .await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn get_firmware_update_state(
+        &self,
+    ) -> Result<FirmwareUpdateStateResult, Error> {
+        debug!("Get Firmware update state...");
+        let request = TapoRequest::GetFwDownloadState(TapoParams::new(EmptyParams));
+
+        let raw = self
+            .protocol()?
+            .execute_request::<FirmwareUpdateStateResultRaw>(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 

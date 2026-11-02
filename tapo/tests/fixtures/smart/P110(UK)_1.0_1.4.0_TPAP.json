@@ -196,5 +196,12 @@
     "hw_id": "0123456789ABCDEF0123456789ABCDEF",
     "oem_id": "FEDCBA9876543210FEDCBA9876543210",
     "need_to_upgrade": true
+  },
+  "get_fw_download_state": {
+    "auto_upgrade": true,
+    "download_progress": 100,
+    "reboot_time": 5,
+    "status": 3,
+    "upgrade_time": 5
   }
 }

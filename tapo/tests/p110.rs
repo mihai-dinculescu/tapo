@@ -104,6 +104,26 @@ async fn a_p110_reads_its_latest_firmware(#[case] fixture: &str) -> Result<(), B
     Ok(())
 }
 
+#[rstest]
+#[case::p110_tpap(P110_TPAP_FIXTURE)]
+#[case::p110_klap(P110_KLAP_FIXTURE)]
+#[case::p110m_tpap(P110M_TPAP_FIXTURE)]
+#[case::p110_update_downloaded(P110_UPDATE_AVAILABLE_FIXTURE)]
+#[tokio::test]
+async fn a_p110_reads_its_firmware_update_state(
+    #[case] fixture: &str,
+) -> Result<(), Box<dyn Error>> {
+    let device = SimulatedDevice::new(fixture).start().await;
+
+    let handler = ApiClient::new(device.username(), device.password())
+        .p110(device.address())
+        .await?;
+
+    handler.get_firmware_update_state().await?;
+
+    Ok(())
+}
+
 // The KLAP fixture holds no energy or power data.
 #[rstest]
 #[case::p110_tpap(P110_TPAP_FIXTURE)]

@@ -252,5 +252,12 @@
     "release_date": "",
     "release_note": "",
     "type": 0
+  },
+  "get_fw_download_state": {
+    "auto_upgrade": false,
+    "download_progress": 0,
+    "reboot_time": 5,
+    "status": 0,
+    "upgrade_time": 5
   }
 }

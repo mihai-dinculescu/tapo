@@ -31,6 +31,7 @@
 | get_energy_data                     |                             |                                           |                     |                         |                                          | &#x2705;                     |                         |                           |
 | get_energy_meter_data               |                             |                                           |                     |                         |                                          | &#x2705;                     |                         |                           |
 | get_energy_usage                    |                             |                                           |                     |                         |                                          | &#x2705;                     |                         |                           |
+| get_firmware_update_state           | &#x2705;                    | &#x2705;                                  | &#x2705;            | &#x2705;                | &#x2705;                                 | &#x2705;                     | &#x2705;                | &#x2705;                  |
 | get_latest_firmware                 | &#x2705;                    | &#x2705;                                  | &#x2705;            | &#x2705;                | &#x2705;                                 | &#x2705;                     | &#x2705;                | &#x2705;                  |
 | get_max_schedule_rules              |                             |                                           |                     |                         | &#x2705;                                 | &#x2705;                     |                         |                           |
 | get_power_data                      |                             |                                           |                     |                         |                                          | &#x2705;                     |                         |                           |
@@ -50,6 +51,7 @@
 | set_segment_effect                  |                             |                                           |                     | &#x2705;                |                                          |                              |                         |                           |
 | set_timer                           |                             |                                           |                     |                         | &#x2705;                                 | &#x2705;                     |                         |                           |
 | set() API \*                        |                             | &#x2705;                                  | &#x2705;            | &#x2705;                |                                          |                              |                         |                           |
+| start_firmware_update               | &#x2705;                    | &#x2705;                                  | &#x2705;            | &#x2705;                | &#x2705;                                 | &#x2705;                     | &#x2705;                | &#x2705;                  |
 
 \* The `set()` API allows multiple properties to be set in a single request.
 
@@ -120,6 +122,7 @@
 | get_device_info_json (d)            | &#x2705;      | &#x2705;      |
 | get_general_device_list             |               | &#x2705;      |
 | get_general_device_list_json (d)    |               | &#x2705;      |
+| get_firmware_update_state           | &#x2705;      |               |
 | get_latest_firmware                 | &#x2705;      |               |
 | get_recording_dates                 |               | &#x2705;      |
 | get_recordings                      |               | &#x2705;      |
@@ -127,6 +130,7 @@
 | get_timezone                        |               | &#x2705;      |
 | play_alarm                          | &#x2705;      |               |
 | refresh_session                     | &#x2705;      | &#x2705;      |
+| start_firmware_update               | &#x2705;      |               |
 | stop_alarm                          | &#x2705;      |               |
 
 ## Hub Child Devices
@@ -141,6 +145,7 @@
 | get_device_info \*               | &#x2705;            | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
 | get_device_info_json (d)         | &#x2705;            | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
 | get_device_usage                 |                     |                 |                 | &#x2705;       |                |                |                |               |
+| get_firmware_update_state        |                     | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
 | get_latest_firmware              |                     | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
 | get_temperature_humidity_records |                     |                 |                 |                |                |                |                | &#x2705;      |
 | get_trigger_logs                 |                     |                 | &#x2705;        |                | &#x2705;       | &#x2705;       | &#x2705;       |               |
@@ -153,5 +158,6 @@
 | set_min_control_temperature      |                     | &#x2705;        |                 |                |                |                |                |               |
 | set_target_temperature           |                     | &#x2705;        |                 |                |                |                |                |               |
 | set_temperature_offset           |                     | &#x2705;        |                 |                |                |                |                |               |
+| start_firmware_update            |                     | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
 
 \* Obtained by calling `get_child_device_list` on the hub (H100, H110, H200, H500) or `get_device_info` on a child device handler.

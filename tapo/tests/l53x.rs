@@ -92,3 +92,17 @@ async fn an_l530_reads_its_latest_firmware() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
+
+// Only the L530 fixture holds the firmware update state.
+#[tokio::test]
+async fn an_l530_reads_its_firmware_update_state() -> Result<(), Box<dyn Error>> {
+    let device = SimulatedDevice::new(L530_FIXTURE).start().await;
+
+    let handler = ApiClient::new(device.username(), device.password())
+        .l530(device.address())
+        .await?;
+
+    handler.get_firmware_update_state().await?;
+
+    Ok(())
+}

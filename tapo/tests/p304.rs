@@ -67,6 +67,19 @@ async fn a_p304_reads_its_latest_firmware() -> Result<(), Box<dyn Error>> {
 }
 
 #[tokio::test]
+async fn a_p304_reads_its_firmware_update_state() -> Result<(), Box<dyn Error>> {
+    let device = SimulatedDevice::new(FIXTURE).start().await;
+
+    let power_strip = ApiClient::new(device.username(), device.password())
+        .p304(device.address())
+        .await?;
+
+    power_strip.get_firmware_update_state().await?;
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn a_p304_lists_its_plugs() -> Result<(), Box<dyn Error>> {
     let device = SimulatedDevice::new(FIXTURE).start().await;
 
