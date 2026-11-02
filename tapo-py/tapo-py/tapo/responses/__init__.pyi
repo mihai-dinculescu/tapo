@@ -9,6 +9,9 @@ from .device_usage_result import *
 from .energy_data_result import *
 from .energy_meter_data_result import *
 from .energy_usage_result import *
+from .firmware_auto_update_info_result import *
+from .firmware_update_state_result import *
+from .latest_firmware_result import *
 from .power_data_result import *
 from .preset import *
 from .schedule_rule_result import *

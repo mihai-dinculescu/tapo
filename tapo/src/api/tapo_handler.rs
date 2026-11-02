@@ -26,7 +26,9 @@
 /// * `get_device_info_json()` method
 /// * `on()` and `off()` methods (if `on_off` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
-/// * `device_reboot()` and `device_reset()` methods (if `device_management` specified)
+/// * `device_reboot()`, `device_reset()`, `get_latest_firmware()`, `start_firmware_update()`,
+///   `get_firmware_update_state()`, `get_firmware_auto_update_info()` and
+///   `set_firmware_auto_update_info()` methods (if `device_management` specified)
 /// * `impl HandlerExt` with `get_client()`
 macro_rules! tapo_handler {
     // With on_off + device_usage + device_management
@@ -270,6 +272,73 @@ macro_rules! tapo_handler {
             /// and requires reconfiguration.
             pub async fn device_reset(&self) -> Result<(), crate::error::Error> {
                 crate::api::ApiClientExt::device_reset(&*self.client.read().await).await
+            }
+
+            /// Returns the *latest firmware* that the device can update to as
+            /// [`LatestFirmwareResult`](crate::responses::LatestFirmwareResult).
+            ///
+            /// The device looks the update up by itself. `need_to_upgrade` is `true` when an
+            /// update is available.
+            pub async fn get_latest_firmware(
+                &self,
+            ) -> Result<crate::responses::LatestFirmwareResult, crate::error::Error> {
+                self.client.read().await.get_latest_firmware().await
+            }
+
+            /// *Starts a firmware update*.
+            ///
+            /// Call [`get_latest_firmware`](Self::get_latest_firmware) first, and only start an
+            /// update when one is available. With no update available, the device refuses the
+            /// request with a `FIRMWARE` device error (code `-1401`).
+            ///
+            /// Notes:
+            /// * The method returns as soon as the device accepts the request. The device then
+            ///   downloads the firmware by itself, flashes it and reboots.
+            /// * Follow the progress with [`get_firmware_update_state`](Self::get_firmware_update_state).
+            /// * Subsequent commands may fail with a `ConnectionReset` or `TimedOut` error while the
+            ///   device flashes the firmware and reboots, and until it reconnects to the network.
+            pub async fn start_firmware_update(&self) -> Result<(), crate::error::Error> {
+                self.client.read().await.start_firmware_update().await
+            }
+
+            /// Returns the *state of a firmware update* as
+            /// [`FirmwareUpdateStateResult`](crate::responses::FirmwareUpdateStateResult).
+            pub async fn get_firmware_update_state(
+                &self,
+            ) -> Result<crate::responses::FirmwareUpdateStateResult, crate::error::Error> {
+                self.client.read().await.get_firmware_update_state().await
+            }
+
+            /// Returns the *automatic firmware update settings* as
+            /// [`FirmwareAutoUpdateInfoResult`](crate::responses::FirmwareAutoUpdateInfoResult).
+            pub async fn get_firmware_auto_update_info(
+                &self,
+            ) -> Result<crate::responses::FirmwareAutoUpdateInfoResult, crate::error::Error> {
+                self.client.read().await.get_firmware_auto_update_info().await
+            }
+
+            /// *Sets the automatic firmware update settings*.
+            ///
+            /// Like the Tapo app, it always sets a two-hour update window that starts on the
+            /// hour. The device expects all its settings at once, so to change only one of
+            /// them, read the others with
+            /// [`get_firmware_auto_update_info`](Self::get_firmware_auto_update_info) first.
+            ///
+            /// # Arguments
+            ///
+            /// * `enabled` - whether the device installs firmware updates automatically.
+            /// * `start_min` - start of the update window, in minutes after midnight in the
+            ///   device's timezone (`120` is 2:00 AM). Must be a whole hour: `0`, `60`, ... `1380`.
+            pub async fn set_firmware_auto_update_info(
+                &self,
+                enabled: bool,
+                start_min: u16,
+            ) -> Result<(), crate::error::Error> {
+                self.client
+                    .read()
+                    .await
+                    .set_firmware_auto_update_info(enabled, start_min)
+                    .await
             }
         }
     };

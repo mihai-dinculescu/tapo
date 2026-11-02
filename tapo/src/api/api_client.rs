@@ -14,16 +14,18 @@ use crate::requests::{
     EnergyDataInterval, GetChildDeviceListParams, GetEnergyDataParams, GetPowerDataParams,
     GetScheduleRulesParams, LightingEffect, MultipleRequestParams, PlayAlarmParams,
     PowerDataInterval, RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRule,
-    ScheduleRuleRaw, SegmentEffect, SmartCamControlChildParams, SmartCamGetChildDeviceListParams,
-    SmartCamGetDeviceInfoParams, SmartCamSearchDetectionListParams, TapoParams, TapoRequest,
+    ScheduleRuleRaw, SegmentEffect, SetAutoUpdateInfoParams, SmartCamControlChildParams,
+    SmartCamGetChildDeviceListParams, SmartCamGetDeviceInfoParams,
+    SmartCamSearchDetectionListParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
     AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
     DecodableResultExt, DetectionListResultRaw, DetectionResult, EnergyDataResult,
-    EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult, PowerDataResult,
-    PowerDataResultRaw, PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw,
-    ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
-    TapoResult, Timer, TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
+    EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult, FirmwareAutoUpdateInfoResult,
+    FirmwareUpdateStateResult, LatestFirmwareResult, PowerDataResult, PowerDataResultRaw,
+    PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw, ScheduleRuleResult,
+    SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt, TapoResult, Timer,
+    TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
 };
 use crate::utils::unix_timestamp_seconds;
 
@@ -1564,6 +1566,81 @@ impl ApiClient {
             .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn get_latest_firmware(&self) -> Result<LatestFirmwareResult, Error> {
+        debug!("Get Latest firmware...");
+        let request = TapoRequest::GetLatestFw(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn start_firmware_update(&self) -> Result<(), Error> {
+        debug!("Start Firmware update...");
+        let request = TapoRequest::FwDownload(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
+            .await?;
+
+        Ok(())
+    }
+
+    pub(crate) async fn get_firmware_update_state(
+        &self,
+    ) -> Result<FirmwareUpdateStateResult, Error> {
+        debug!("Get Firmware update state...");
+        let request = TapoRequest::GetFwDownloadState(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn get_firmware_auto_update_info(
+        &self,
+    ) -> Result<FirmwareAutoUpdateInfoResult, Error> {
+        debug!("Get Firmware auto update info...");
+        let request = TapoRequest::GetAutoUpdateInfo(TapoParams::new(EmptyParams));
+
+        self.protocol()?
+            .execute_request(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn set_firmware_auto_update_info(
+        &self,
+        enabled: bool,
+        start_min: u16,
+    ) -> Result<(), Error> {
+        // The Tapo app only offers two-hour update windows that start on the hour.
+        const WINDOW_MIN: u16 = 120;
+        const LAST_START_MIN: u16 = 23 * 60;
+
+        if start_min > LAST_START_MIN || !start_min.is_multiple_of(60) {
+            return Err(Error::Validation {
+                field: "start_min".into(),
+                message: format!(
+                    "Must be a whole hour in minutes after midnight (0, 60, ... {LAST_START_MIN})"
+                ),
+            });
+        }
+
+        debug!("Set Firmware auto update info...");
+        let request = TapoRequest::SetAutoUpdateInfo(TapoParams::new(
+            SetAutoUpdateInfoParams::new(enabled, start_min, WINDOW_MIN),
+        ));
+
+        self.protocol()?
+            .execute_request::<serde_json::Value>(request)
+            .await?;
+
+        Ok(())
     }
 
     pub(crate) async fn get_device_usage<R>(&self) -> Result<R, Error>

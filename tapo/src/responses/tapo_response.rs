@@ -61,6 +61,7 @@ fn error_kind(code: i64) -> &'static str {
         -1004 => "JSON_ENCODE_FAIL",
         -1008 => "PARAMS",
         -1010 => "PUBLIC_KEY",
+        -1401 => "FIRMWARE",
         -1501 => "LOGIN",
         9999 => "SESSION_TIMEOUT",
         // Smart Devices: plug schedule rules

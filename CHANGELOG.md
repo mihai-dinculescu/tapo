@@ -6,7 +6,23 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `LightHandler`, `ColorLightHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`, `PlugHandler`, `PlugEnergyMonitoringHandler`, `PowerStripHandler`, `PowerStripEnergyMonitoringHandler`, `HubHandler`, `HubIrHandler` (the lights, light strips, plugs, power strips and H100/H110 hubs): added `get_latest_firmware`, `start_firmware_update`, `get_firmware_update_state`, `get_firmware_auto_update_info` and `set_firmware_auto_update_info`. `get_latest_firmware` returns the newest firmware the device can update to as `LatestFirmwareResult`. `start_firmware_update` starts the update, which the device then downloads, flashes and reboots into by itself. `get_firmware_update_state` returns its progress as `FirmwareUpdateStateResult`. `get_firmware_auto_update_info` returns the automatic update settings (on or off, and the daily update window) as `FirmwareAutoUpdateInfoResult`, and `set_firmware_auto_update_info` changes them, with a two-hour window starting on the hour, as the Tapo app offers. Tested with the P110M on firmware 1.4.4, with `start_firmware_update` only run when no update was available.
+
+### Changed
+
+- Device errors: the error code `-1401` now reports as `FIRMWARE` instead of `UNKNOWN`. A P110M answers `start_firmware_update` with it when no update is available.
+
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- `LightHandler`, `ColorLightHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`, `PlugHandler`, `PlugEnergyMonitoringHandler`, `PowerStripHandler`, `PowerStripEnergyMonitoringHandler`, `HubHandler`, `HubIrHandler` (the lights, light strips, plugs, power strips and H100/H110 hubs): added `get_latest_firmware`, `start_firmware_update`, `get_firmware_update_state`, `get_firmware_auto_update_info` and `set_firmware_auto_update_info`. `get_latest_firmware` returns the newest firmware the device can update to as `LatestFirmwareResult`. `start_firmware_update` starts the update, which the device then downloads, flashes and reboots into by itself. `get_firmware_update_state` returns its progress as `FirmwareUpdateStateResult`. `get_firmware_auto_update_info` returns the automatic update settings (on or off, and the daily update window) as `FirmwareAutoUpdateInfoResult`, and `set_firmware_auto_update_info` changes them, with a two-hour window starting on the hour, as the Tapo app offers. Tested with the P110M on firmware 1.4.4, with `start_firmware_update` only run when no update was available.
+
+### Changed
+
+- Device errors: the error code `-1401` now reports as `FIRMWARE` instead of `UNKNOWN`. A P110M answers `start_firmware_update` with it when no update is available.
 
 ## [MCP Unreleased][Unreleased]
 

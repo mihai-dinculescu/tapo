@@ -23,8 +23,9 @@ use tapo::responses::{
     DeviceInfoPlugResult, DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult,
     DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult, DeviceUsageResult,
     EnergyDataIntervalResult, EnergyDataResult, EnergyMeterDataResult, EnergyUsageResult,
-    IrRemoteKey, IrRemoteResult, KE100Result, OtherResult, OvercurrentStatus, OverheatStatus,
-    PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus, PowerState,
+    FirmwareAutoUpdateInfoResult, FirmwareUpdateStateResult, IrRemoteKey, IrRemoteResult,
+    KE100Result, LatestFirmwareResult, OtherResult, OvercurrentStatus, OverheatStatus, PlugState,
+    PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus, PowerState,
     PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset, RecordingDateHubResult,
     RecordingDownloadResult, RgbLightStripState, RgbicLightStripState, RtspStreamUrl, S200Result,
     S200RotationParams, S210Result, ScheduleRuleResult, Snapshot, Status, T31XResult, T100Event,
@@ -169,6 +170,9 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<EnergyDataResult>()?;
     module.add_class::<EnergyMeterDataResult>()?;
     module.add_class::<EnergyUsageResult>()?;
+    module.add_class::<FirmwareAutoUpdateInfoResult>()?;
+    module.add_class::<FirmwareUpdateStateResult>()?;
+    module.add_class::<LatestFirmwareResult>()?;
     module.add_class::<OvercurrentStatus>()?;
     module.add_class::<OverheatStatus>()?;
     module.add_class::<PowerDataIntervalResult>()?;

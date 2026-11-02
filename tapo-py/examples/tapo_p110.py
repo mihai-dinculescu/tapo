@@ -86,6 +86,15 @@ async def main():
     energy_usage = await device.get_energy_usage()
     print(f"Energy usage: {energy_usage.to_dict()}")
 
+    firmware_auto_update_info = await device.get_firmware_auto_update_info()
+    print(f"Firmware auto update info: {firmware_auto_update_info.to_dict()}")
+
+    firmware_update_state = await device.get_firmware_update_state()
+    print(f"Firmware update state: {firmware_update_state.to_dict()}")
+
+    latest_firmware = await device.get_latest_firmware()
+    print(f"Latest firmware: {latest_firmware.to_dict()}")
+
     # Power data - Every 5 minutes interval
     # `start_date_time` and `end_date_time` describe an exclusive interval.
     # If the result would yield more than 144 entries (i.e. 12 hours),

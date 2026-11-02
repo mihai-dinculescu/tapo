@@ -23,7 +23,9 @@
 /// * `get_device_info_json()` method (returns `Py<PyDict>`)
 /// * `impl PyHandlerExt`
 /// * `on()` and `off()` methods (if `on_off` specified)
-/// * `device_reboot()` and `device_reset()` methods (if `device_management` specified)
+/// * `device_reboot()`, `device_reset()`, `get_latest_firmware()`, `start_firmware_update()`,
+///   `get_firmware_update_state()`, `get_firmware_auto_update_info()` and
+///   `set_firmware_auto_update_info()` methods (if `device_management` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
 macro_rules! py_handler {
     // on_off + device_management + device_usage
@@ -183,6 +185,63 @@ macro_rules! py_handler {
                 $crate::call_handler_method!(
                     handler.read().await.deref(),
                     $handler::device_reset
+                )
+            }
+
+            pub async fn get_latest_firmware(
+                &self,
+            ) -> pyo3::prelude::PyResult<tapo::responses::LatestFirmwareResult> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_latest_firmware
+                )
+            }
+
+            pub async fn start_firmware_update(&self) -> pyo3::prelude::PyResult<()> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::start_firmware_update
+                )
+            }
+
+            pub async fn get_firmware_update_state(
+                &self,
+            ) -> pyo3::prelude::PyResult<tapo::responses::FirmwareUpdateStateResult> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_firmware_update_state
+                )
+            }
+
+            pub async fn get_firmware_auto_update_info(
+                &self,
+            ) -> pyo3::prelude::PyResult<tapo::responses::FirmwareAutoUpdateInfoResult> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_firmware_auto_update_info
+                )
+            }
+
+            pub async fn set_firmware_auto_update_info(
+                &self,
+                enabled: bool,
+                start_min: u16,
+            ) -> pyo3::prelude::PyResult<()> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::set_firmware_auto_update_info,
+                    enabled,
+                    start_min
                 )
             }
         }

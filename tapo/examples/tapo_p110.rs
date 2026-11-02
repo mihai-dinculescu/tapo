@@ -104,6 +104,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let energy_usage = device.get_energy_usage().await?;
     info!("Energy usage: {energy_usage:?}");
 
+    let firmware_auto_update_info = device.get_firmware_auto_update_info().await?;
+    info!("Firmware auto update info: {firmware_auto_update_info:?}");
+
+    let firmware_update_state = device.get_firmware_update_state().await?;
+    info!("Firmware update state: {firmware_update_state:?}");
+
+    let latest_firmware = device.get_latest_firmware().await?;
+    info!("Latest firmware: {latest_firmware:?}");
+
     // Power data - Every 5 minutes interval
     // `start_date_time` and `end_date_time` describe an exclusive interval.
     // If the result would yield more than 144 entries (i.e. 12 hours),

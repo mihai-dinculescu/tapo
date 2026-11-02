@@ -122,3 +122,21 @@ async fn a_p110_reads_its_energy_and_power_data(
 
     Ok(())
 }
+
+// Only the P110M fixture holds firmware replies.
+#[rstest]
+#[case::p110m_tpap(P110M_TPAP_FIXTURE)]
+#[tokio::test]
+async fn a_p110_reads_its_firmware_state(#[case] fixture: &str) -> Result<(), Box<dyn Error>> {
+    let device = SimulatedDevice::new(fixture).start().await;
+
+    let handler = ApiClient::new(device.username(), device.password())
+        .p110(device.address())
+        .await?;
+
+    handler.get_latest_firmware().await?;
+    handler.get_firmware_update_state().await?;
+    handler.get_firmware_auto_update_info().await?;
+
+    Ok(())
+}
