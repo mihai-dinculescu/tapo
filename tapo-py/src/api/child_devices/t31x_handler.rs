@@ -9,6 +9,7 @@ use crate::call_handler_method;
 py_child_handler! {
     PyT31XHandler(T31XHandler, T31XResult),
     py_name = "T31XHandler",
+    firmware,
 }
 
 #[pymethods]

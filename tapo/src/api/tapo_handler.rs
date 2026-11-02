@@ -26,7 +26,7 @@
 /// * `get_device_info_json()` method
 /// * `on()` and `off()` methods (if `on_off` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
-/// * `device_reboot()` and `device_reset()` methods (if `device_management` specified)
+/// * `device_reboot()`, `device_reset()` and `get_latest_firmware()` methods (if `device_management` specified)
 /// * `impl HandlerExt` with `get_client()`
 macro_rules! tapo_handler {
     // With on_off + device_usage + device_management
@@ -271,6 +271,18 @@ macro_rules! tapo_handler {
             pub async fn device_reset(&self) -> Result<(), crate::error::Error> {
                 crate::api::ApiClientExt::device_reset(&*self.client.read().await).await
             }
+
+            /// Returns the *latest firmware* that the device can update to as
+            /// [`LatestFirmwareResult`](crate::responses::LatestFirmwareResult).
+            ///
+            /// When no update is available, the result is
+            /// [`UpToDate`](crate::responses::LatestFirmwareResult::UpToDate) with the version
+            /// that the device is running.
+            pub async fn get_latest_firmware(
+                &self,
+            ) -> Result<crate::responses::LatestFirmwareResult, crate::error::Error> {
+                self.client.read().await.get_latest_firmware().await
+            }
         }
     };
 }
@@ -292,6 +304,8 @@ macro_rules! tapo_handler {
 /// `get_trigger_logs()` returning `TriggerLogsResult<EventType>`, whose entries are `TriggerLog<EventType>`.
 /// Another alternative, `camel_case_device_info,`, makes `get_device_info` and
 /// `get_device_info_json` use the camelCase `getDeviceInfo` method, which is how IR remotes are addressed.
+/// `firmware,` can follow `on_off,`, `trigger_logs = EventType,` or stand alone, and generates
+/// `get_latest_firmware()`. Only hub children take it: power strip outlets refuse the request.
 ///
 /// # Generated code
 ///
@@ -301,7 +315,42 @@ macro_rules! tapo_handler {
 /// * `get_device_info_json()` method
 /// * `on()` and `off()` methods (if `on_off` specified)
 /// * `get_trigger_logs()` method (if `trigger_logs = EventType` specified)
+/// * `get_latest_firmware()` method (if `firmware` specified)
 macro_rules! tapo_child_handler {
+    // With on_off + firmware
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        on_off,
+        firmware,
+    ) => {
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info), GetDeviceInfo);
+        tapo_child_handler!(@on_off $name);
+        tapo_child_handler!(@firmware $name);
+    };
+
+    // With trigger_logs + firmware
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        trigger_logs = $log:ty,
+        firmware,
+    ) => {
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info), GetDeviceInfo);
+        tapo_child_handler!(@trigger_logs $name, $log);
+        tapo_child_handler!(@firmware $name);
+    };
+
+    // With firmware only
+    (
+        $(#[$meta:meta])*
+        $name:ident($device_info:ty),
+        firmware,
+    ) => {
+        tapo_child_handler!(@base $(#[$meta])* $name($device_info), GetDeviceInfo);
+        tapo_child_handler!(@firmware $name);
+    };
+
     // With on_off
     (
         $(#[$meta:meta])*
@@ -497,6 +546,40 @@ macro_rules! tapo_child_handler {
                     .ok_or_else(|| {
                         crate::error::Error::Tapo(crate::error::TapoResponseError::EmptyResult)
                     })
+            }
+        }
+    };
+
+    // Internal: firmware
+    (@firmware $name:ident) => {
+        impl $name {
+            /// Returns the *latest firmware* that the device can update to as
+            /// [`LatestFirmwareResult`](crate::responses::LatestFirmwareResult).
+            ///
+            /// When no update is available, the result is
+            /// [`UpToDate`](crate::responses::LatestFirmwareResult::UpToDate) with the version
+            /// that the device is running.
+            pub async fn get_latest_firmware(
+                &self,
+            ) -> Result<crate::responses::LatestFirmwareResult, crate::error::Error> {
+                let request = crate::requests::TapoRequest::GetLatestFw(
+                    crate::requests::TapoParams::new(crate::requests::EmptyParams),
+                );
+
+                let raw = self
+                    .client
+                    .read()
+                    .await
+                    .control_child::<crate::responses::LatestFirmwareResultRaw>(
+                        self.device_id.clone(),
+                        request,
+                    )
+                    .await?
+                    .ok_or_else(|| {
+                        crate::error::Error::Tapo(crate::error::TapoResponseError::EmptyResult)
+                    })?;
+
+                Ok(raw.try_into()?)
             }
         }
     };

@@ -6,11 +6,19 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- `LightHandler`, `ColorLightHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`, `PlugHandler`, `PlugEnergyMonitoringHandler`, `PowerStripHandler`, `PowerStripEnergyMonitoringHandler`, `HubHandler`, `HubIrHandler`, `KE100Handler`, `S200Handler`, `S210Handler`, `T100Handler`, `T110Handler`, `T300Handler`, `T31XHandler`: added `get_latest_firmware`, which returns the newest firmware that the device can update to as `LatestFirmwareResult`: `UpToDate` with the version that the device is running, or `UpdateAvailable` with the update's version, release date and release notes. Tested with the P110, P110M, P304M, L530, L535, L930 and H100, and the H100's T100, T110, T300, T310, T315, S200B and S210 child devices. (thanks to @bradthurber)
+
 ### Fixed
 
 - `ApiClient`: connecting to a device that asks for its password unchanged via `"passwd_id": 4`, as the H110 on firmware 1.5.4 does, now works. It used to fail with `The device asks for a password transform that is not supported yet`.
 
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- `LightHandler`, `ColorLightHandler`, `RgbLightStripHandler`, `RgbicLightStripHandler`, `PlugHandler`, `PlugEnergyMonitoringHandler`, `PowerStripHandler`, `PowerStripEnergyMonitoringHandler`, `HubHandler`, `HubIrHandler`, `KE100Handler`, `S200Handler`, `S210Handler`, `T100Handler`, `T110Handler`, `T300Handler`, `T31XHandler`: added `get_latest_firmware`, which returns the newest firmware that the device can update to as `LatestFirmwareResult`: `update_available`, the newest version as `fw_ver` (the running version when the device is up to date), and the update's `release_date` and `release_notes`, which are `None` when no update is available. Tested with the P110, P110M, P304M, L530, L535, L930 and H100, and the H100's T100, T110, T300, T310, T315, S200B and S210 child devices. (thanks to @bradthurber)
 
 ### Fixed
 

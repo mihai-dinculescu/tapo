@@ -8,4 +8,5 @@ py_child_handler! {
     PyT100Handler(T100Handler, T100Result),
     py_name = "T100Handler",
     trigger_logs = TriggerLogsT100Result,
+    firmware,
 }

@@ -1,7 +1,8 @@
 from tapo.debug_ext import DebugExt
+from tapo.firmware_ext import FirmwareExt
 from tapo.responses import S200Result, TriggerLogsS200Result
 
-class S200Handler(DebugExt):
+class S200Handler(FirmwareExt, DebugExt):
     """Handler for the [S200B](https://www.tapo.com/en/search/?q=S200B) and
     [S200D](https://www.tapo.com/en/search/?q=S200D) devices."""
 

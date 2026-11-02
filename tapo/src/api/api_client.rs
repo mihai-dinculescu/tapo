@@ -20,10 +20,11 @@ use crate::requests::{
 use crate::responses::{
     AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
     DecodableResultExt, DetectionListResultRaw, DetectionResult, EnergyDataResult,
-    EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult, PowerDataResult,
-    PowerDataResultRaw, PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw,
-    ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
-    TapoResult, Timer, TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
+    EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult, LatestFirmwareResult,
+    LatestFirmwareResultRaw, PowerDataResult, PowerDataResultRaw, PowerState,
+    RecordingDownloadResult, ScheduleRuleListResultRaw, ScheduleRuleResult,
+    SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt, TapoResult, Timer,
+    TimerListResultRaw, TimezoneResult, TimezoneResultRaw, validate_response,
 };
 use crate::utils::unix_timestamp_seconds;
 
@@ -1564,6 +1565,19 @@ impl ApiClient {
             .execute_request(request)
             .await?
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))
+    }
+
+    pub(crate) async fn get_latest_firmware(&self) -> Result<LatestFirmwareResult, Error> {
+        debug!("Get Latest firmware...");
+        let request = TapoRequest::GetLatestFw(TapoParams::new(EmptyParams));
+
+        let raw = self
+            .protocol()?
+            .execute_request::<LatestFirmwareResultRaw>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        Ok(raw.try_into()?)
     }
 
     pub(crate) async fn get_device_usage<R>(&self) -> Result<R, Error>

@@ -3,6 +3,7 @@ from typing import List, Union
 from tapo.debug_ext import DebugExt
 from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.device_management_ext import DeviceManagementExt
+from tapo.firmware_ext import FirmwareExt
 from tapo.hub_alarm_ext import HubAlarmExt
 from tapo.hub_children_ext import HubChildrenExt
 from tapo.responses import (
@@ -17,7 +18,9 @@ from tapo.responses import (
     T31XResult,
 )
 
-class HubHandler(DeviceHandlerExt, HubAlarmExt, HubChildrenExt, DeviceManagementExt, DebugExt):
+class HubHandler(
+    DeviceHandlerExt, HubAlarmExt, HubChildrenExt, DeviceManagementExt, FirmwareExt, DebugExt
+):
     """Handler for the [H100](https://www.tapo.com/en/search/?q=H100) devices.
 
     Example:

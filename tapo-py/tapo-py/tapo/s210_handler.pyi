@@ -1,8 +1,9 @@
 from tapo.debug_ext import DebugExt
+from tapo.firmware_ext import FirmwareExt
 from tapo.on_off_ext import OnOffExt
 from tapo.responses import DeviceUsageResult, S210Result
 
-class S210Handler(OnOffExt, DebugExt):
+class S210Handler(OnOffExt, FirmwareExt, DebugExt):
     """Handler for the [S210](https://www.tapo.com/en/search/?q=S210) devices."""
 
     async def get_device_info(self) -> S210Result:

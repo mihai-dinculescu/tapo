@@ -5,6 +5,7 @@ use crate::responses::{T31XResult, TemperatureHumidityRecords, TemperatureHumidi
 tapo_child_handler! {
     /// Handler for the [T310](https://www.tapo.com/en/search/?q=T310) and [T315](https://www.tapo.com/en/search/?q=T315) devices.
     T31XHandler(T31XResult),
+    firmware,
 }
 
 impl T31XHandler {

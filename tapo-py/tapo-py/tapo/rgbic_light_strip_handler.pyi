@@ -3,6 +3,7 @@ from typing import Union
 from tapo.debug_ext import DebugExt
 from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.device_management_ext import DeviceManagementExt
+from tapo.firmware_ext import FirmwareExt
 from tapo.on_off_ext import OnOffExt
 from tapo.requests import (
     Color,
@@ -14,7 +15,9 @@ from tapo.requests import (
 )
 from tapo.responses import DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult
 
-class RgbicLightStripHandler(DeviceHandlerExt, OnOffExt, DeviceManagementExt, DebugExt):
+class RgbicLightStripHandler(
+    DeviceHandlerExt, OnOffExt, DeviceManagementExt, FirmwareExt, DebugExt
+):
     """Handler for the [L920](https://www.tapo.com/en/search/?q=L920) and
     [L930](https://www.tapo.com/en/search/?q=L930) devices.
     """

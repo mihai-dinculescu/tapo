@@ -10,6 +10,7 @@ py_child_handler! {
     PyS210Handler(S210Handler, S210Result),
     py_name = "S210Handler",
     on_off,
+    firmware,
 }
 
 #[pymethods]

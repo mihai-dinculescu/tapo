@@ -1,12 +1,15 @@
 from tapo.debug_ext import DebugExt
 from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.device_management_ext import DeviceManagementExt
+from tapo.firmware_ext import FirmwareExt
 from tapo.on_off_ext import OnOffExt
 from tapo.responses import DeviceInfoPlugResult, DeviceUsageResult
 from tapo.schedule_ext import ScheduleExt
 from tapo.timer_ext import TimerExt
 
-class PlugHandler(DeviceHandlerExt, OnOffExt, DeviceManagementExt, TimerExt, ScheduleExt, DebugExt):
+class PlugHandler(
+    DeviceHandlerExt, OnOffExt, DeviceManagementExt, FirmwareExt, TimerExt, ScheduleExt, DebugExt
+):
     """Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
     [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125),
     [P125M](https://www.tapo.com/en/search/?q=P125M) and

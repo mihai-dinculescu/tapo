@@ -8,4 +8,5 @@ py_child_handler! {
     PyS200Handler(S200Handler, S200Result),
     py_name = "S200Handler",
     trigger_logs = TriggerLogsS200Result,
+    firmware,
 }

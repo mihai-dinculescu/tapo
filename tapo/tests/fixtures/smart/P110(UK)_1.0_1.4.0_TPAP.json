@@ -1,0 +1,200 @@
+{
+  "discovery_response": {
+    "error_code": 0,
+    "result": {
+      "device_id": "0123456789abcdef0123456789abcdef",
+      "device_model": "P110(UK)",
+      "device_type": "SMART.TAPOPLUG",
+      "factory_default": false,
+      "ip": "192.168.1.100",
+      "is_support_iot_cloud": true,
+      "mac": "AA-BB-CC-DD-EE-FF",
+      "mgt_encrypt_schm": {
+        "encrypt_type": "TPAP",
+        "http_port": 80,
+        "is_support_https": false,
+        "lv": 2
+      },
+      "obd_src": "tplink",
+      "owner": "0123456789ABCDEF0123456789ABCDEF",
+      "protocol_version": 1,
+      "tpap": {
+        "dac": 0,
+        "noc": 0,
+        "pake": [2],
+        "port": 80,
+        "tls": 0
+      },
+      "tpap_preferred": true
+    }
+  },
+  "component_nego": {
+    "component_list": [
+      {
+        "id": "device",
+        "ver_code": 2
+      },
+      {
+        "id": "firmware",
+        "ver_code": 2
+      },
+      {
+        "id": "quick_setup",
+        "ver_code": 3
+      },
+      {
+        "id": "time",
+        "ver_code": 1
+      },
+      {
+        "id": "wireless",
+        "ver_code": 1
+      },
+      {
+        "id": "schedule",
+        "ver_code": 2
+      },
+      {
+        "id": "countdown",
+        "ver_code": 2
+      },
+      {
+        "id": "antitheft",
+        "ver_code": 1
+      },
+      {
+        "id": "account",
+        "ver_code": 1
+      },
+      {
+        "id": "synchronize",
+        "ver_code": 1
+      },
+      {
+        "id": "sunrise_sunset",
+        "ver_code": 1
+      },
+      {
+        "id": "led",
+        "ver_code": 1
+      },
+      {
+        "id": "cloud_connect",
+        "ver_code": 1
+      },
+      {
+        "id": "iot_cloud",
+        "ver_code": 1
+      },
+      {
+        "id": "device_local_time",
+        "ver_code": 1
+      },
+      {
+        "id": "default_states",
+        "ver_code": 1
+      },
+      {
+        "id": "auto_off",
+        "ver_code": 2
+      },
+      {
+        "id": "localSmart",
+        "ver_code": 1
+      },
+      {
+        "id": "energy_monitoring",
+        "ver_code": 2
+      },
+      {
+        "id": "power_protection",
+        "ver_code": 1
+      },
+      {
+        "id": "charging_protection",
+        "ver_code": 2
+      },
+      {
+        "id": "current_protection",
+        "ver_code": 1
+      },
+      {
+        "id": "tpap",
+        "ver_code": 1
+      }
+    ]
+  },
+  "login": {
+    "discover": {
+      "sub_method": "discover",
+      "tpap_preferred": true,
+      "mac": "AABBCCDDEEFF",
+      "tpap": {
+        "dac": 0,
+        "noc": 0,
+        "pake": [2],
+        "port": 80,
+        "tls": 0
+      }
+    },
+    "pake_register": {
+      "sub_method": "pake_register",
+      "extra_crypt": {
+        "params": {
+          "passwd_id": 2
+        },
+        "type": "password_shadow"
+      },
+      "encryption": "aes_128_ccm",
+      "cipher_suites": 1,
+      "iterations": 3000
+    },
+    "pake_share": {
+      "error_code": -2203
+    }
+  },
+  "get_device_info": {
+    "device_id": "8000000000000000000000000000000000000110",
+    "fw_ver": "1.4.0 Build 251020 Rel.161559",
+    "hw_ver": "1.0",
+    "type": "SMART.TAPOPLUG",
+    "model": "P110",
+    "mac": "AA-BB-CC-DD-EE-FF",
+    "hw_id": "0123456789ABCDEF0123456789ABCDEF",
+    "fw_id": "00000000000000000000000000000000",
+    "oem_id": "FEDCBA9876543210FEDCBA9876543210",
+    "ip": "192.168.1.100",
+    "time_diff": 0,
+    "ssid": "U2ltdWxhdGVkIFdpLUZp",
+    "rssi": -64,
+    "signal_level": 2,
+    "auto_off_status": "off",
+    "auto_off_remain_time": 0,
+    "longitude": -1278,
+    "latitude": 515074,
+    "lang": "en_US",
+    "avatar": "plug",
+    "region": "Europe/London",
+    "specs": "",
+    "nickname": "U2ltdWxhdGVkIFBsdWc=",
+    "has_set_location_info": true,
+    "device_on": true,
+    "on_time": 234105,
+    "default_states": {
+      "type": "last_states"
+    },
+    "power_protection_status": "normal",
+    "overcurrent_status": "normal",
+    "charging_status": "normal"
+  },
+  "get_latest_fw": {
+    "type": 1,
+    "fw_ver": "1.4.8 Build 260804 Rel.045837",
+    "release_date": "2026-08-21",
+    "release_note": "Modifications and Bug Fixes:\n1. Fixed an issue where electricity cost could be abnormally high under high-load scenarios.\n2. Fixed the issue where power consumption data was abnormally high under specific usage scenarios.\n3. Added support for displaying real-time current and voltage on the device page.\n4. Added support for device offline notifications.\n5. Enhanced device stability and security.",
+    "fw_size": 786432,
+    "hw_id": "0123456789ABCDEF0123456789ABCDEF",
+    "oem_id": "FEDCBA9876543210FEDCBA9876543210",
+    "need_to_upgrade": true
+  }
+}

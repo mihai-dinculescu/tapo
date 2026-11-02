@@ -78,3 +78,17 @@ async fn an_l53x_reads_its_usage(#[case] fixture: &str) -> Result<(), Box<dyn Er
 
     Ok(())
 }
+
+// Only the L530 fixture holds the latest firmware.
+#[tokio::test]
+async fn an_l530_reads_its_latest_firmware() -> Result<(), Box<dyn Error>> {
+    let device = SimulatedDevice::new(L530_FIXTURE).start().await;
+
+    let handler = ApiClient::new(device.username(), device.password())
+        .l530(device.address())
+        .await?;
+
+    handler.get_latest_firmware().await?;
+
+    Ok(())
+}

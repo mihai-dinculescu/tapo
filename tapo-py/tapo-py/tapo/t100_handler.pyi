@@ -1,7 +1,8 @@
 from tapo.debug_ext import DebugExt
+from tapo.firmware_ext import FirmwareExt
 from tapo.responses import T100Result, TriggerLogsT100Result
 
-class T100Handler(DebugExt):
+class T100Handler(FirmwareExt, DebugExt):
     """Handler for the [T100](https://www.tapo.com/en/search/?q=T100) devices."""
 
     async def get_device_info(self) -> T100Result:

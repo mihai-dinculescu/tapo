@@ -1,8 +1,9 @@
 from tapo.debug_ext import DebugExt
+from tapo.firmware_ext import FirmwareExt
 from tapo.requests import TemperatureUnitKE100
 from tapo.responses import KE100Result
 
-class KE100Handler(DebugExt):
+class KE100Handler(FirmwareExt, DebugExt):
     """Handler for the [KE100](https://www.tp-link.com/en/search/?q=KE100) devices."""
 
     async def get_device_info(self) -> KE100Result:

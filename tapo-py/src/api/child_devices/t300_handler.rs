@@ -8,4 +8,5 @@ py_child_handler! {
     PyT300Handler(T300Handler, T300Result),
     py_name = "T300Handler",
     trigger_logs = TriggerLogsT300Result,
+    firmware,
 }

@@ -1,10 +1,11 @@
 from tapo.debug_ext import DebugExt
 from tapo.device_handler_ext import DeviceHandlerExt
 from tapo.device_management_ext import DeviceManagementExt
+from tapo.firmware_ext import FirmwareExt
 from tapo.on_off_ext import OnOffExt
 from tapo.responses import DeviceInfoLightResult, DeviceUsageEnergyMonitoringResult
 
-class LightHandler(DeviceHandlerExt, OnOffExt, DeviceManagementExt, DebugExt):
+class LightHandler(DeviceHandlerExt, OnOffExt, DeviceManagementExt, FirmwareExt, DebugExt):
     """Handler for the [L510](https://www.tapo.com/en/search/?q=L510),
     [L520](https://www.tapo.com/en/search/?q=L520) and
     [L610](https://www.tapo.com/en/search/?q=L610) devices."""

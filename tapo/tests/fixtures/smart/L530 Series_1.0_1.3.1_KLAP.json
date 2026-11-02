@@ -167,5 +167,15 @@
       "past7": 292,
       "past30": 1907
     }
+  },
+  "get_latest_fw": {
+    "fw_size": 0,
+    "fw_ver": "1.3.1 Build 20240630 Rel. 64117",
+    "hw_id": "",
+    "need_to_upgrade": false,
+    "oem_id": "",
+    "release_date": "",
+    "release_note": "",
+    "type": 0
   }
 }

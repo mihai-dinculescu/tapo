@@ -31,6 +31,7 @@
 | get_energy_data                     |                             |                                           |                     |                         |                                          | &#x2705;                     |                         |                           |
 | get_energy_meter_data               |                             |                                           |                     |                         |                                          | &#x2705;                     |                         |                           |
 | get_energy_usage                    |                             |                                           |                     |                         |                                          | &#x2705;                     |                         |                           |
+| get_latest_firmware                 | &#x2705;                    | &#x2705;                                  | &#x2705;            | &#x2705;                | &#x2705;                                 | &#x2705;                     | &#x2705;                | &#x2705;                  |
 | get_max_schedule_rules              |                             |                                           |                     |                         | &#x2705;                                 | &#x2705;                     |                         |                           |
 | get_power_data                      |                             |                                           |                     |                         |                                          | &#x2705;                     |                         |                           |
 | get_schedule_rules                  |                             |                                           |                     |                         | &#x2705;                                 | &#x2705;                     |                         |                           |
@@ -119,6 +120,7 @@
 | get_device_info_json (d)            | &#x2705;      | &#x2705;      |
 | get_general_device_list             |               | &#x2705;      |
 | get_general_device_list_json (d)    |               | &#x2705;      |
+| get_latest_firmware                 | &#x2705;      |               |
 | get_recording_dates                 |               | &#x2705;      |
 | get_recordings                      |               | &#x2705;      |
 | get_supported_ringtone_list (d)     | &#x2705;      |               |
@@ -139,6 +141,7 @@
 | get_device_info \*               | &#x2705;            | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
 | get_device_info_json (d)         | &#x2705;            | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
 | get_device_usage                 |                     |                 |                 | &#x2705;       |                |                |                |               |
+| get_latest_firmware              |                     | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
 | get_temperature_humidity_records |                     |                 |                 |                |                |                |                | &#x2705;      |
 | get_trigger_logs                 |                     |                 | &#x2705;        |                | &#x2705;       | &#x2705;       | &#x2705;       |               |
 | off                              |                     |                 |                 | &#x2705;       |                |                |                |               |

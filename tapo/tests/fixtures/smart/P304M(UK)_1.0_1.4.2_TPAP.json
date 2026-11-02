@@ -449,5 +449,15 @@
       "end_timestamp": 1793458500,
       "interval": 5
     }
+  },
+  "get_latest_fw": {
+    "fw_size": 0,
+    "fw_ver": "1.4.2 Build 260513 Rel.024250",
+    "hw_id": "",
+    "need_to_upgrade": false,
+    "oem_id": "",
+    "release_date": "",
+    "release_note": "",
+    "type": 0
   }
 }

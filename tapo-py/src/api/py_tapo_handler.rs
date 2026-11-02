@@ -23,7 +23,7 @@
 /// * `get_device_info_json()` method (returns `Py<PyDict>`)
 /// * `impl PyHandlerExt`
 /// * `on()` and `off()` methods (if `on_off` specified)
-/// * `device_reboot()` and `device_reset()` methods (if `device_management` specified)
+/// * `device_reboot()`, `device_reset()` and `get_latest_firmware()` methods (if `device_management` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
 macro_rules! py_handler {
     // on_off + device_management + device_usage
@@ -185,6 +185,18 @@ macro_rules! py_handler {
                     $handler::device_reset
                 )
             }
+
+            pub async fn get_latest_firmware(
+                &self,
+            ) -> pyo3::prelude::PyResult<$crate::responses::PyLatestFirmwareResult> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_latest_firmware
+                )
+                .map(Into::into)
+            }
         }
     };
 
@@ -224,7 +236,42 @@ macro_rules! py_handler {
 /// * `get_device_info_json()` method (returns `Py<PyDict>`)
 /// * `on()` and `off()` methods (if `on_off` specified)
 /// * `get_trigger_logs()` method (if `trigger_logs = PyResultType` specified)
+/// * `get_latest_firmware()` method (if `firmware` specified)
 macro_rules! py_child_handler {
+    // With on_off + firmware
+    (
+        $py_name:ident($handler:ident, $device_info:ty),
+        py_name = $pyname:literal,
+        on_off,
+        firmware,
+    ) => {
+        py_child_handler!(@base $py_name($handler, $device_info), $pyname);
+        py_child_handler!(@on_off $py_name, $handler);
+        py_child_handler!(@firmware $py_name, $handler);
+    };
+
+    // With trigger_logs + firmware
+    (
+        $py_name:ident($handler:ident, $device_info:ty),
+        py_name = $pyname:literal,
+        trigger_logs = $trigger_logs:ty,
+        firmware,
+    ) => {
+        py_child_handler!(@base $py_name($handler, $device_info), $pyname);
+        py_child_handler!(@trigger_logs $py_name, $handler, $trigger_logs);
+        py_child_handler!(@firmware $py_name, $handler);
+    };
+
+    // With firmware only
+    (
+        $py_name:ident($handler:ident, $device_info:ty),
+        py_name = $pyname:literal,
+        firmware,
+    ) => {
+        py_child_handler!(@base $py_name($handler, $device_info), $pyname);
+        py_child_handler!(@firmware $py_name, $handler);
+    };
+
     // With on_off
     (
         $py_name:ident($handler:ident, $device_info:ty),
@@ -341,6 +388,21 @@ macro_rules! py_child_handler {
                     start_id
                 )
                 .map(|result| result.into())
+            }
+        }
+    };
+
+    // Internal: latest firmware for hub children
+    (@firmware $py_name:ident, $handler:ident) => {
+        #[pyo3::pymethods]
+        impl $py_name {
+            pub async fn get_latest_firmware(
+                &self,
+            ) -> pyo3::prelude::PyResult<$crate::responses::PyLatestFirmwareResult> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(handler.deref(), $handler::get_latest_firmware)
+                    .map(Into::into)
             }
         }
     };

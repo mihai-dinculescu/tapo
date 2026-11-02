@@ -1,7 +1,8 @@
 from tapo.debug_ext import DebugExt
+from tapo.firmware_ext import FirmwareExt
 from tapo.responses import T31XResult, TemperatureHumidityRecords
 
-class T31XHandler(DebugExt):
+class T31XHandler(FirmwareExt, DebugExt):
     """Handler for the [T310](https://www.tapo.com/en/search/?q=T310)
     and [T315](https://www.tapo.com/en/search/?q=T315) devices."""
 

@@ -48,8 +48,8 @@ use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyPowerDataInterval,
 };
 use responses::{
-    PyBackupWifi, PyDetectionResult, PyGeneralDeviceHubResult, PyRecordingHubResult,
-    PyRecordingType, PyS200Event, PyS200Log, PyT100Log, PyT110Log, PyT300Log,
+    PyBackupWifi, PyDetectionResult, PyGeneralDeviceHubResult, PyLatestFirmwareResult,
+    PyRecordingHubResult, PyRecordingType, PyS200Event, PyS200Log, PyT100Log, PyT110Log, PyT300Log,
     TriggerLogsS200Result, TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
 };
 
@@ -169,6 +169,7 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<EnergyDataResult>()?;
     module.add_class::<EnergyMeterDataResult>()?;
     module.add_class::<EnergyUsageResult>()?;
+    module.add_class::<PyLatestFirmwareResult>()?;
     module.add_class::<OvercurrentStatus>()?;
     module.add_class::<OverheatStatus>()?;
     module.add_class::<PowerDataIntervalResult>()?;

@@ -9,6 +9,7 @@ use crate::call_handler_method;
 py_child_handler! {
     PyKE100Handler(KE100Handler, KE100Result),
     py_name = "KE100Handler",
+    firmware,
 }
 
 #[pymethods]

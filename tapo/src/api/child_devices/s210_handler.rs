@@ -6,6 +6,7 @@ tapo_child_handler! {
     /// Handler for the [S210](https://www.tapo.com/en/search/?q=S210) devices.
     S210Handler(S210Result),
     on_off,
+    firmware,
 }
 
 impl S210Handler {

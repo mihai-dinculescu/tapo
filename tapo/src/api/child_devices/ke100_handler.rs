@@ -6,6 +6,7 @@ use crate::responses::KE100Result;
 tapo_child_handler! {
     /// Handler for the [KE100](https://www.tp-link.com/en/search/?q=KE100) devices.
     KE100Handler(KE100Result),
+    firmware,
 }
 
 impl KE100Handler {

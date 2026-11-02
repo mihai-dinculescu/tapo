@@ -199,5 +199,15 @@
     "power_mw": 234838,
     "energy_wh": 8725,
     "energy_mwh": 8725929
+  },
+  "get_latest_fw": {
+    "fw_size": 0,
+    "fw_ver": "1.4.8 Build 260804 Rel.045837",
+    "hw_id": "",
+    "need_to_upgrade": false,
+    "oem_id": "",
+    "release_date": "",
+    "release_note": "",
+    "type": 0
   }
 }

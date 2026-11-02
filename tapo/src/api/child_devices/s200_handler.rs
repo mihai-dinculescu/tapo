@@ -5,4 +5,5 @@ tapo_child_handler! {
     /// [S200D](https://www.tapo.com/en/search/?q=S200D) devices.
     S200Handler(S200Result),
     trigger_logs = S200Event,
+    firmware,
 }
