@@ -69,7 +69,7 @@ pub(super) fn credential(
         // short. Which of the two hashes such a device holds is not known, so
         // the whole password is hashed.
         (Some("password_shadow"), Some(2)) => Ok(crypto::sha1_hex_lower(password.as_bytes())),
-        // The app has no transform for this id and uses the password as it is.
+        // The H110 on firmware 1.5.4 asks for this and takes the password as it is.
         (Some("password_shadow"), Some(4)) => Ok(password.to_string()),
         (Some("password_shadow"), Some(5)) => {
             let params = extra_crypt.get("params");

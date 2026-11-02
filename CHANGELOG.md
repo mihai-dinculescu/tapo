@@ -8,19 +8,19 @@ file. This change log follows the conventions of
 
 ### Fixed
 
-- `ApiClient`: the `h110` builder and `discover_devices` can now log in to H110 hubs on firmware 1.5.4, instead of failing with "The device asks for a password transform that is not supported yet".
+- `ApiClient`: connecting to a device that asks for its password unchanged via `"passwd_id": 4`, as the H110 on firmware 1.5.4 does, now works. It used to fail with `The device asks for a password transform that is not supported yet`.
 
 ## [Python Unreleased][Unreleased]
 
 ### Fixed
 
-- `ApiClient`: the `h110` builder and `discover_devices` can now log in to H110 hubs on firmware 1.5.4, instead of failing with "The device asks for a password transform that is not supported yet".
+- `ApiClient`: connecting to a device that asks for its password unchanged via `"passwd_id": 4`, as the H110 on firmware 1.5.4 does, now works. It used to raise `The device asks for a password transform that is not supported yet`.
 
 ## [MCP Unreleased][Unreleased]
 
 ### Fixed
 
-- `list_devices`, `check_device`, `get_device_state`, `control_device`: H110 hubs on firmware 1.5.4 and their child devices can now be reached, instead of failing with "The device asks for a password transform that is not supported yet".
+- `list_devices`, `check_device`, `get_device_state`, `control_device`: devices that ask for their password unchanged via `"passwd_id": 4`, such as the H110 on firmware 1.5.4, and their child devices can now be reached. They used to fail with `The device asks for a password transform that is not supported yet`.
 
 ## [MCP v0.6.2][tapo-mcp-v0.6.2] - 2026-11-01
 
