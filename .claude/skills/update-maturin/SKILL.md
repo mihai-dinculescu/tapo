@@ -38,6 +38,7 @@ Bump the `maturin` build tool to the latest version and regenerate `.github/work
      - `macos`: `name: Python / macOS wheel (${{ matrix.platform.target }})`
      - `sdist`: `name: Python / Sdist`
      - `release`: `name: Python / Publish to PyPI` (baseline: `Release`)
+   - **`--check-url` on publish**: in the `release` job's `Publish to PyPI` step, keep `run: uv publish --check-url https://pypi.org/simple/ 'wheels-*/*'` (baseline: no `--check-url`). It makes a re-run publish skip files already on PyPI.
    - **`Test sdist` step**: keep this step between `Build sdist` and `Upload sdist` in the `sdist` job:
 
      ```yaml
