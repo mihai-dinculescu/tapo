@@ -25,7 +25,7 @@ requires-python = ">=3.11"
 dependencies = ["tzdata"]
 
 [dependency-groups]
-dev = ["maturin>=1.13.1,<2.0", "black>=26.10.1,<27.0", "mypy>=2.3.1"]
+dev = ["maturin>=1.16.0,<2.0", "black>=26.10.1,<27.0", "mypy>=2.4.1"]
 
 [project.urls]
 Author = "https://mihai.dinculescu.dev"
@@ -35,7 +35,7 @@ Homepage = "https://github.com/mihai-dinculescu/tapo"
 Source = "https://github.com/mihai-dinculescu/tapo"
 
 [build-system]
-requires = ["maturin>=1.13.1,<2.0"]
+requires = ["maturin>=1.16.0,<2.0"]
 build-backend = "maturin"
 
 [tool.maturin]
