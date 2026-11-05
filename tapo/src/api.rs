@@ -21,6 +21,7 @@ mod protocol;
 mod rgb_light_strip_handler;
 mod rgbic_light_strip_handler;
 mod rtsp_snapshot;
+mod setup_handler;
 
 pub use api_client::*;
 pub use camera_handler::*;
@@ -40,3 +41,4 @@ pub use power_strip_energy_monitoring_handler::*;
 pub use power_strip_handler::*;
 pub use rgb_light_strip_handler::*;
 pub use rgbic_light_strip_handler::*;
+pub use setup_handler::*;

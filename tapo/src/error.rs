@@ -48,6 +48,13 @@ impl TapoResponseError {
         )
     }
 
+    pub(crate) fn setup_hash_mismatch() -> Self {
+        Self::Unauthorized {
+            kind: "HASH_MISMATCH",
+            description: "The device did not take the login of a device in setup mode, so it is not in setup mode. Factory reset the device and connect to its setup network again.".to_string(),
+        }
+    }
+
     fn hash_mismatch_with(advice: &str) -> Self {
         Self::Unauthorized {
             kind: "HASH_MISMATCH",

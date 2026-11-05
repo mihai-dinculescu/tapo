@@ -23,6 +23,10 @@ const DISCOVERY_PORT: u16 = 20002;
 /// The account that the device belongs to.
 const USERNAME: &str = "tapo-username@example.com";
 const PASSWORD: &str = "hunter2";
+/// The account that a device in setup mode takes over KLAP, until it has
+/// joined a Wi-Fi network. Over TPAP, it takes its default passcode.
+const SETUP_USERNAME: &str = "test@tp-link.net";
+const SETUP_PASSWORD: &str = "test";
 
 /// The last octet of the address of the most recently started device.
 static LAST_DEVICE: AtomicU8 = AtomicU8::new(0);
@@ -76,6 +80,9 @@ impl SimulatedDevice {
         let tls = fixture.tpap_tls().then(tls::acceptor);
         let device = match fixture.auth_protocol() {
             "TPAP" => Device::Tpap(Box::new(Tpap::new(PASSWORD, fixture))),
+            "KLAP" if fixture.factory_default() => {
+                Device::Klap(Klap::new(SETUP_USERNAME, SETUP_PASSWORD, fixture))
+            }
             "KLAP" => Device::Klap(Klap::new(USERNAME, PASSWORD, fixture)),
             other => unimplemented!("the simulator does not speak {other}"),
         };

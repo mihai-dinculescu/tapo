@@ -1,7 +1,9 @@
 //! The login and the sessions of a device in TPAP mode. The fixture says
 //! what the device asks for in `pake_register`, and with it which transform
 //! of the password the client has to prove it knows, and what the device
-//! answers a wrong password with. A camera takes its methods inside a
+//! answers a wrong password with. A device in setup mode takes the default
+//! passcode, derived from the MAC address that it answers `discover` with,
+//! in place of the password. A camera takes its methods inside a
 //! `multipleRequest`, and a device with children takes the methods of a
 //! child inside a `multipleRequest` inside a `control_child`.
 
@@ -25,6 +27,8 @@ const SESSION_LIFETIME: u64 = 604_800;
 
 pub struct Tpap {
     fixture: Fixture,
+    /// The `passcode_type` that the device takes in `pake_register`.
+    passcode_type: &'static str,
     /// The transform of the password that the device asks the client to
     /// prove it knows.
     credential: Credential,
@@ -53,15 +57,25 @@ struct Session {
 
 impl Tpap {
     pub fn new(password: &str, fixture: Fixture) -> Self {
-        let credential = Credential::new(
-            password,
-            &fixture.pake_register_result()["extra_crypt"],
-            fixture.is_camera(),
-        );
+        let (passcode_type, credential) = if fixture.factory_default() {
+            let mac = fixture
+                .discover_result()
+                .and_then(|discover| discover["mac"].as_str())
+                .expect("a device in setup mode answers `discover` with its MAC address");
+            ("default_userpw", Credential::Fixed(default_passcode(mac)))
+        } else {
+            let credential = Credential::new(
+                password,
+                &fixture.pake_register_result()["extra_crypt"],
+                fixture.is_camera(),
+            );
+            ("userpw", credential)
+        };
         let wrong_password_error_code = fixture.wrong_password_error_code();
 
         Self {
             fixture,
+            passcode_type,
             credential,
             wrong_password_error_code,
             salt: rand::rng().random(),
@@ -113,9 +127,10 @@ impl Tpap {
     /// in turn. A device serves only a request sent under the sequence number
     /// that follows the previous one, starting at the `start_seq` of the
     /// login. A request, and each request of a `multipleRequest`, is
-    /// answered with its result; for a method that the fixture lacks, the
-    /// simulator panics.
-    pub fn request(&self, token: &str, body: &[u8]) -> Vec<u8> {
+    /// answered with its result, and a request that the device answers by
+    /// dropping the connection with `None`; for a method that the fixture
+    /// lacks, the simulator panics.
+    pub fn request(&self, token: &str, body: &[u8]) -> Option<Vec<u8>> {
         let mut state = self.state();
         let session = state
             .sessions
@@ -148,10 +163,10 @@ impl Tpap {
                 json!({ "error_code": 0, "result": { "responses": responses } })
             }
             "control_child" => self.control_child(&request["params"]),
-            _ => self.response(method),
+            _ => response_with(self.fixture.result_of(method)?),
         };
 
-        session.cipher.encrypt(seq, &response.to_string())
+        Some(session.cipher.encrypt(seq, &response.to_string()))
     }
 
     /// The response to a request for `method`.
@@ -200,8 +215,9 @@ impl Tpap {
             "TPAP logs in as the `admin` user"
         );
         assert_eq!(
-            passcode_type, "userpw",
-            "the device takes the account password"
+            passcode_type, self.passcode_type,
+            "the device takes the passcode type {}",
+            self.passcode_type
         );
 
         let mut result = self.fixture.pake_register_result().clone();
@@ -328,6 +344,27 @@ impl Credential {
             }
         }
     }
+}
+
+/// The default passcode of the device whose MAC address is `mac`, as in
+/// `AABBCCDDEEFF`.
+fn default_passcode(mac: &str) -> String {
+    let mac = base16ct::mixed::decode_vec(mac)
+        .unwrap_or_else(|_| panic!("the MAC address is hexadecimal: {mac}"));
+    let ikm = [
+        &b"GqY5o136oa4i6VprTlMW2DpVXxmfW8"[..],
+        &mac[3..6],
+        &mac[0..3],
+    ]
+    .concat();
+    let passcode = crypto::hkdf_sha256(
+        &ikm,
+        b"tp-kdf-salt-default-passcode",
+        b"tp-kdf-info-default-passcode",
+        32,
+    );
+
+    base16ct::upper::encode_string(&passcode)
 }
 
 fn decode(base64: &str) -> Vec<u8> {

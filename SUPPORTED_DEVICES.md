@@ -5,6 +5,7 @@
 - [Cameras](#cameras)
 - [Hubs](#hubs)
 - [Hub Child Devices](#hub-child-devices)
+- [Wi-Fi Setup](#wi-fi-setup)
 
 ## Lights, Lighting Strips, Plugs, Power Strips
 
@@ -161,3 +162,19 @@
 | start_firmware_update            |                     | &#x2705;        | &#x2705;        | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;       | &#x2705;      |
 
 \* Obtained by calling `get_child_device_list` on the hub (H100, H110, H200, H500) or `get_device_info` on a child device handler.
+
+## Wi-Fi Setup
+
+&check; - Rust only\
+&#x2705; - Rust and Python\
+(d) - Requires the `debug` feature flag (enabled by default in `tapo-py`)
+
+A new or factory-reset device that broadcasts a setup network, such as `Tapo_Plug_999F`, is set up with `ApiClient::setup_over_wifi` while the host is on that network.
+
+| Feature<br/>             | P110<br/> |
+| ------------------------ | :-------- |
+| address                  | &check;   |
+| get_device_info          | &check;   |
+| get_device_info_json (d) | &check;   |
+| join_wifi                | &check;   |
+| scan_wifi                | &check;   |

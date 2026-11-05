@@ -172,6 +172,71 @@ impl TapoProtocol {
         Ok(address)
     }
 
+    /// Logs in to a new or factory-reset device in setup mode, at
+    /// `ip_address` on its setup network, and returns the IP address and the
+    /// port that it was reached at. A device that answers `discover` in TPAP
+    /// mode takes the default passcode; any other takes the factory login
+    /// `username` and `password` over KLAP.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the device cannot be reached, or if it does not
+    /// take the login of a device in setup mode, as a device that is set up
+    /// does not.
+    pub async fn login_for_setup(
+        &mut self,
+        ip_address: &str,
+        username: &str,
+        password: &str,
+    ) -> Result<(String, u16), Error> {
+        self.device_family = DeviceFamily::Smart;
+
+        let address = host_with_port(ip_address, None, 80);
+        let Some((info, mac)) = TpapProtocol::discover_with_mac(&self.client, &address).await?
+        else {
+            debug!("Using KLAP protocol (negotiated)...");
+            let url = format!("http://{address}/app");
+            debug!("Device url: {url}");
+            let address = url_address(&url)?;
+
+            let mut klap = KlapProtocol::new(self.client.clone());
+            klap.login(url, username, password)
+                .await
+                .map_err(|error| match error {
+                    Error::Tapo(TapoResponseError::Unauthorized {
+                        kind: "HASH_MISMATCH",
+                        ..
+                    }) => Error::Tapo(TapoResponseError::setup_hash_mismatch()),
+                    error => error,
+                })?;
+            self.active = Some(ActiveProtocol::Klap(klap));
+
+            return Ok(address);
+        };
+
+        // A device in TPAP mode that is set up takes the account password
+        // only.
+        if !info.takes_default_passcode() {
+            return Err(Error::Tapo(TapoResponseError::setup_hash_mismatch()));
+        }
+
+        debug!("Using TPAP protocol with the default passcode (negotiated)...");
+        let url = info.url(ip_address)?;
+        debug!("Device url: {url}");
+        let address = url_address(&url)?;
+
+        let Some(mac) = mac else {
+            return Err(Error::unsupported_tpap(
+                "the discover answer has no `mac`".to_string(),
+            ));
+        };
+        let mut tpap = TpapProtocol::with_default_passcode(self.client.clone(), info, &mac)?;
+        tpap.login(url, username, password).await?;
+        self.active = Some(ActiveProtocol::Tpap(Box::new(tpap)));
+
+        Ok(address)
+    }
+
     /// Logs in to a camera: over TPAP, and over AES SSL if the device does
     /// not take that login. A camera that takes TPAP does so whether or not
     /// it takes AES SSL, at the same URL, so both are tried at the one that

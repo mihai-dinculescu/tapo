@@ -5,7 +5,6 @@
 //! `/app/handshake1` and `/app/handshake2` and the encrypted requests on
 //! `/app/request?seq=<seq>`, with the session cookie.
 
-use std::convert::Infallible;
 use std::io::ErrorKind;
 use std::sync::Arc;
 
@@ -64,7 +63,7 @@ where
 {
     let service = service_fn(|request| {
         let device = device.clone();
-        async move { Ok::<_, Infallible>(handle(&device, request).await) }
+        async move { handle(&device, request).await.ok_or(NoAnswer) }
     });
 
     if let Err(error) = http1::Builder::new()
@@ -75,7 +74,22 @@ where
     }
 }
 
-async fn handle(device: &Device, request: Request<Incoming>) -> Response<Full<Bytes>> {
+/// A request that the device answers by dropping the connection, which the
+/// service ends the connection with.
+#[derive(Debug)]
+struct NoAnswer;
+
+impl std::fmt::Display for NoAnswer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("the device drops the connection without answering")
+    }
+}
+
+impl std::error::Error for NoAnswer {}
+
+/// The response to `request`, or `None` for a request that the device
+/// answers by dropping the connection.
+async fn handle(device: &Device, request: Request<Incoming>) -> Option<Response<Full<Bytes>>> {
     let path = request.uri().path().to_string();
     let seq = request.uri().query().and_then(|query| {
         query
@@ -99,14 +113,14 @@ async fn handle(device: &Device, request: Request<Incoming>) -> Response<Full<By
         .strip_prefix("/stok=")
         .and_then(|rest| rest.strip_suffix("/ds"));
 
-    match (device, path.as_str(), tpap_session) {
+    let response = match (device, path.as_str(), tpap_session) {
         // A camera also takes an AES SSL login, which the simulator does
         // not speak.
         (Device::Tpap(tpap), "/", _) => match tpap.login(&body) {
             Ok(response) => json(response),
             Err(reason) => not_implemented(&reason),
         },
-        (Device::Tpap(tpap), _, Some(token)) => octets(tpap.request(token, &body)),
+        (Device::Tpap(tpap), _, Some(token)) => return tpap.request(token, &body).map(octets),
         (Device::Klap(klap), "/", _) => json(klap.discover()),
         (Device::Klap(klap), "/app/handshake1", _) => {
             let (cookie, body) = klap.handshake1(&body);
@@ -130,10 +144,12 @@ async fn handle(device: &Device, request: Request<Incoming>) -> Response<Full<By
         (Device::Klap(klap), "/app/request", _) => {
             let cookie = cookie.expect("a session request carries the session cookie");
             let seq = seq.expect("a session request names its sequence number");
-            octets(klap.request(&cookie, seq, &body))
+            return klap.request(&cookie, seq, &body).map(octets);
         }
         _ => not_implemented(&format!("the simulator does not answer {path}")),
-    }
+    };
+
+    Some(response)
 }
 
 /// A request that the simulator cannot answer. A panic here would only end

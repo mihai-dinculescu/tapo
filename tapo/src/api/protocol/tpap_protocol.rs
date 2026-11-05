@@ -85,10 +85,19 @@ impl TpapInfo {
         Ok(format!("{scheme}://{ip_address}:{}", self.port))
     }
 
+    /// Whether the device takes the default passcode, as a device in setup
+    /// mode does.
+    pub fn takes_default_passcode(&self) -> bool {
+        self.pake.contains(&0)
+    }
+
     fn passcode_type(&self) -> Result<&'static str, Error> {
         // The Tapo app logs in with the default passcode whenever the device
-        // takes it, even if it takes the account password as well, and the
-        // default passcode is not supported yet.
+        // takes it, even if it takes the account password as well. Only a
+        // device in setup mode was seen to take it, announcing `[0]`, and
+        // that one is logged in to with `with_default_passcode`. A device
+        // that announces both, as in `[0, 2]`, was never seen, so it is
+        // turned down rather than logged in to with the account password.
         if self.pake.contains(&2) && !self.pake.contains(&0) {
             Ok("userpw")
         } else {
@@ -107,6 +116,9 @@ pub(super) struct TpapProtocol {
     client: Client,
     info: TpapInfo,
     device_family: DeviceFamily,
+    /// The default passcode, which a device in setup mode takes in place of
+    /// the account password.
+    default_passcode: Option<String>,
     session: Option<TpapSession>,
 }
 
@@ -116,8 +128,23 @@ impl TpapProtocol {
             client,
             info,
             device_family,
+            default_passcode: None,
             session: None,
         }
+    }
+
+    /// A protocol that logs in to a device in setup mode, which takes the
+    /// default passcode derived from `mac`, the MAC address that the device
+    /// answers `discover` with, whatever password the login is given.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `mac` cannot be read.
+    pub fn with_default_passcode(client: Client, info: TpapInfo, mac: &str) -> Result<Self, Error> {
+        Ok(Self {
+            default_passcode: Some(tpap_spake2p::default_passcode(mac)?),
+            ..Self::new(client, info, DeviceFamily::Smart)
+        })
     }
 
     /// Asks the device whether it is in TPAP mode. A device that does not
@@ -129,6 +156,22 @@ impl TpapProtocol {
     /// after too many failed logins, or if it announces TPAP in a way that
     /// cannot be read.
     pub async fn discover(client: &Client, ip_address: &str) -> Result<Option<TpapInfo>, Error> {
+        Ok(Self::discover_with_mac(client, ip_address)
+            .await?
+            .map(|(info, _)| info))
+    }
+
+    /// Asks the device whether it is in TPAP mode, as
+    /// [`discover`](Self::discover) does, and returns the MAC address that
+    /// the device answers with as well, if it answers with one.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error as [`discover`](Self::discover) does.
+    pub async fn discover_with_mac(
+        client: &Client,
+        ip_address: &str,
+    ) -> Result<Option<(TpapInfo, Option<String>)>, Error> {
         debug!("Performing discover...");
 
         let body = json!({
@@ -195,7 +238,10 @@ impl TpapProtocol {
     where
         R: fmt::Debug + DeserializeOwned + TapoResponseExt,
     {
-        let response_decrypted = self.send(&serde_json::to_string(&request)?).await?;
+        let request_string = serde_json::to_string(&request)?;
+        debug!("Request: {}", request.for_log(&request_string));
+
+        let response_decrypted = self.send(&request_string).await?;
 
         match self.device_family {
             DeviceFamily::Smart => {
@@ -225,8 +271,6 @@ impl TpapProtocol {
     /// Sends the encrypted `request` and returns the decrypted response.
     async fn send(&self, request_string: &str) -> Result<String, Error> {
         let session = self.session()?;
-
-        debug!("Request: {request_string}");
 
         let (payload, seq) = session.cipher.encrypt(request_string)?;
 
@@ -265,18 +309,25 @@ impl TpapProtocol {
     // Of the request and response bodies of the handshake only the error
     // code is logged, and nothing that is derived from them.
     async fn handshake(&mut self, url: String, password: &str) -> Result<(), Error> {
-        let passcode_type = self.info.passcode_type()?;
+        // A device in setup mode takes the default passcode as it is.
+        let (passcode_type, default_passcode) = match &self.default_passcode {
+            Some(passcode) => ("default_userpw", Some(passcode.clone())),
+            None => (self.info.passcode_type()?, None),
+        };
         let user_random: [u8; 32] = rand::rng().random();
 
         let registration = self
             .pake_register(&url, passcode_type, &user_random)
             .await?;
 
-        let credential = tpap_spake2p::credential(
-            password,
-            registration.extra_crypt.as_ref(),
-            self.device_family,
-        )?;
+        let credential = match default_passcode {
+            Some(passcode) => passcode,
+            None => tpap_spake2p::credential(
+                password,
+                registration.extra_crypt.as_ref(),
+                self.device_family,
+            )?,
+        };
         // The key derivation takes long enough to stall the other tasks of
         // the runtime, so it runs on the blocking pool.
         let proof = tokio::task::spawn_blocking(move || {
@@ -393,7 +444,9 @@ impl TpapProtocol {
     }
 }
 
-fn parse_discover_response(response_body: &serde_json::Value) -> Result<Option<TpapInfo>, Error> {
+fn parse_discover_response(
+    response_body: &serde_json::Value,
+) -> Result<Option<(TpapInfo, Option<String>)>, Error> {
     let Some(error_code) = response_body.get("error_code").and_then(|v| v.as_i64()) else {
         return Ok(None);
     };
@@ -421,8 +474,12 @@ fn parse_discover_response(response_body: &serde_json::Value) -> Result<Option<T
     // A device that announces a `tpap` object is in TPAP mode, and KLAP
     // would only hide that behind a 403.
     let info = TpapInfo::from_announcement(tpap)?;
+    let mac = response_body
+        .pointer("/result/mac")
+        .and_then(|mac| mac.as_str())
+        .map(str::to_string);
 
-    Ok(Some(info))
+    Ok(Some((info, mac)))
 }
 
 /// Whether `address` names a port after its host, as in `192.168.1.100:8080`.
@@ -606,13 +663,32 @@ mod tests {
             "error_code": 0,
         });
 
-        let info = parse_discover_response(&response_body).unwrap().unwrap();
+        let (info, mac) = parse_discover_response(&response_body).unwrap().unwrap();
 
         assert_eq!(
             info.url("192.168.1.100").unwrap(),
             "http://192.168.1.100:80"
         );
         assert_eq!(info.passcode_type().unwrap(), "userpw");
+        assert_eq!(mac.as_deref(), Some("AABBCCDDEEFF"));
+        assert!(!info.takes_default_passcode());
+    }
+
+    #[test]
+    fn discover_response_in_setup_mode_takes_the_default_passcode() {
+        let response_body = json!({
+            "result": {
+                "sub_method": "discover",
+                "tpap_preferred": true,
+                "mac": "AABBCCDDEEFF",
+                "tpap": { "tls": 0, "dac": 0, "noc": 0, "pake": [0], "port": 80 },
+            },
+            "error_code": 0,
+        });
+
+        let (info, _) = parse_discover_response(&response_body).unwrap().unwrap();
+
+        assert!(info.takes_default_passcode());
     }
 
     #[test]

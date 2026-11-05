@@ -33,6 +33,33 @@ impl Proof {
     }
 }
 
+/// The passcode that a device in setup mode takes, which is derived from
+/// `mac`, the MAC address that the device answers `discover` with, as in
+/// `AABBCCDDEEFF`.
+///
+/// # Errors
+///
+/// Returns an error if `mac` is not 12 hexadecimal digits.
+pub(super) fn default_passcode(mac: &str) -> Result<String, Error> {
+    let mac = base16ct::mixed::decode_vec(mac)
+        .ok()
+        .filter(|mac| mac.len() == 6)
+        .ok_or_else(|| Error::unsupported_tpap(format!("mac: {mac}")))?;
+
+    let mut ikm = b"GqY5o136oa4i6VprTlMW2DpVXxmfW8".to_vec();
+    ikm.extend_from_slice(&mac[3..6]);
+    ikm.extend_from_slice(&mac[0..3]);
+
+    let passcode = crypto::hkdf_sha256(
+        &ikm,
+        b"tp-kdf-salt-default-passcode",
+        b"tp-kdf-info-default-passcode",
+        32,
+    )?;
+
+    Ok(base16ct::upper::encode_string(&passcode))
+}
+
 /// The string that stands in for the password, which depends on the
 /// `extra_crypt` of the device's `pake_register` response and on the
 /// `device_family`.
@@ -345,6 +372,21 @@ mod tests {
             w1.to_bytes().to_vec(),
             hex("de9bd4a17ba3b23e2a26fbf5ae94010c68f5e0e34388fe6ec227fcb45bd0b42e")
         );
+    }
+
+    #[test]
+    fn default_passcode_is_derived_from_the_mac() {
+        assert_eq!(
+            default_passcode("AABBCCDDEEFF").unwrap(),
+            "F9F270978BAA582014CFC81E2B5966D92923B7F784DD84FD75429E38CC4EEFC9"
+        );
+    }
+
+    #[test]
+    fn default_passcode_of_a_mac_that_is_not_12_hex_digits_is_unsupported() {
+        for mac in ["", "AABBCCDDEE", "AA-BB-CC-DD-EE-FF", "AABBCCDDEEFG"] {
+            assert!(default_passcode(mac).is_err(), "{mac}");
+        }
     }
 
     #[test]

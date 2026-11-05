@@ -55,7 +55,7 @@ impl KlapProtocol {
         let session = self.session()?;
 
         let request_string = serde_json::to_string(&request)?;
-        debug!("Request: {request_string}");
+        debug!("Request: {}", request.for_log(&request_string));
 
         let (payload, seq) = session.cipher.encrypt(&request_string)?;
 
@@ -72,7 +72,7 @@ impl KlapProtocol {
             return Err(request_error(response.status()));
         }
 
-        let response_body = response.bytes().await.map_err(anyhow::Error::from)?;
+        let response_body = response.bytes().await?;
 
         let response_decrypted = session.cipher.decrypt(seq, &response_body)?;
         trace!("Device responded with (raw): {response_decrypted}");

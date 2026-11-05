@@ -12,8 +12,9 @@
 //! the fields that are computed for each login; and `pake_share`, whose
 //! result is computed in full, so the fixture holds only the `error_code`
 //! that the device answers a wrong password with. A method that the device
-//! turns down holds only the `error_code` it answers with, too. The
-//! identifiers in a fixture are made up; the rest is what a real device sent.
+//! turns down holds only the `error_code` it answers with, too. A method
+//! that the device answers by dropping the connection holds `null`. The identifiers in a
+//! fixture are made up; the rest is what a real device sent.
 //!
 //! A fixture holds nothing that a device does not send. What the simulator
 //! needs to know beyond that comes from where the fixture lives and what it
@@ -170,6 +171,21 @@ impl Fixture {
         self.results
             .get(method)
             .unwrap_or_else(|| unimplemented!("the fixture has no result for {method}"))
+    }
+
+    /// The `result` that the device answers `method` with, or `None` for a
+    /// method that the device answers by dropping the connection.
+    pub fn result_of(&self, method: &str) -> Option<&Value> {
+        match self.result(method) {
+            Value::Null => None,
+            result => Some(result),
+        }
+    }
+
+    /// Whether the device is new or factory reset, as its discovery response
+    /// says, and so takes the login of a device in setup mode.
+    pub fn factory_default(&self) -> bool {
+        self.announced()["factory_default"] == true
     }
 
     /// The `result` that the child `device_id` answers `method` with, sent

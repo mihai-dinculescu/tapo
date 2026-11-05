@@ -118,8 +118,9 @@ impl Klap {
     /// Answers the encrypted request `body` of the session with `cookie`, sent
     /// under `seq`, encrypted in turn. A device serves a session only once
     /// `handshake2` has confirmed it, and only a request sent under the
-    /// sequence number that follows the previous one.
-    pub fn request(&self, cookie: &str, seq: i32, body: &[u8]) -> Vec<u8> {
+    /// sequence number that follows the previous one. A request that the
+    /// device answers by dropping the connection gets `None`.
+    pub fn request(&self, cookie: &str, seq: i32, body: &[u8]) -> Option<Vec<u8>> {
         let mut sessions = self.sessions();
         let session = sessions
             .get_mut(cookie)
@@ -143,9 +144,10 @@ impl Klap {
             .as_str()
             .expect("a session request names its method");
 
-        let response = json!({ "error_code": 0, "result": self.fixture.result(method) });
+        let result = self.fixture.result_of(method)?;
+        let response = json!({ "error_code": 0, "result": result });
 
-        cipher.encrypt(seq, &response.to_string())
+        Some(cipher.encrypt(seq, &response.to_string()))
     }
 
     fn sessions(&self) -> MutexGuard<'_, HashMap<String, Session>> {

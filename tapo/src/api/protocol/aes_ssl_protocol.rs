@@ -74,7 +74,7 @@ impl AesSslProtocol {
         let session = self.session()?;
 
         let request_string = serde_json::to_string(&request)?;
-        debug!("Request: {request_string}");
+        debug!("Request: {}", request.for_log(&request_string));
 
         let request_encrypted = session.cipher.encrypt(&request_string)?;
 

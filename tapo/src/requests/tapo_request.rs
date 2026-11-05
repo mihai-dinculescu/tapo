@@ -5,14 +5,14 @@ use serde::Serialize;
 use super::{
     AddTimerParams, ControlChildParams, DeviceRebootParams, GetChildDeviceListParams,
     GetEnergyDataParams, GetPowerDataParams, GetScheduleRulesParams, GetTriggerLogsParams,
-    LightingEffect, MultipleRequestParams, PlayAlarmParams, RemoveScheduleRulesParams,
-    RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams, SegmentEffect,
-    SendIrCmdByIdParams, SmartCamAddMotorPositionParams, SmartCamControlChildParams,
-    SmartCamDeletePresetParams, SmartCamGetChildDeviceListParams, SmartCamGetDeviceInfoParams,
-    SmartCamGetGeneralDeviceListParams, SmartCamGetPresetConfigParams, SmartCamGetTimezoneParams,
-    SmartCamMotorMoveParams, SmartCamMotorMoveToPresetParams, SmartCamRebootDeviceParams,
-    SmartCamSearchDateWithVideoParams, SmartCamSearchDetectionListParams,
-    SmartCamSearchVideoWithUtcParams, SmartCamSoftResetParams,
+    GetWirelessScanInfoParams, LightingEffect, MultipleRequestParams, PlayAlarmParams,
+    RemoveScheduleRulesParams, RemoveTimersParams, ScheduleRuleRaw, SecurePassthroughParams,
+    SegmentEffect, SendIrCmdByIdParams, SetQsInfoParams, SmartCamAddMotorPositionParams,
+    SmartCamControlChildParams, SmartCamDeletePresetParams, SmartCamGetChildDeviceListParams,
+    SmartCamGetDeviceInfoParams, SmartCamGetGeneralDeviceListParams, SmartCamGetPresetConfigParams,
+    SmartCamGetTimezoneParams, SmartCamMotorMoveParams, SmartCamMotorMoveToPresetParams,
+    SmartCamRebootDeviceParams, SmartCamSearchDateWithVideoParams,
+    SmartCamSearchDetectionListParams, SmartCamSearchVideoWithUtcParams, SmartCamSoftResetParams,
 };
 
 #[cfg(feature = "debug")]
@@ -112,6 +112,21 @@ pub(crate) enum TapoRequest {
     EditScheduleRule(TapoParams<ScheduleRuleRaw>),
     GetScheduleRules(TapoParams<GetScheduleRulesParams>),
     RemoveScheduleRules(TapoParams<RemoveScheduleRulesParams>),
+    // Setup requests, to a device in setup mode
+    GetWirelessScanInfo(TapoParams<GetWirelessScanInfoParams>),
+    SetQsInfo(Box<TapoParams<SetQsInfoParams>>),
+}
+
+impl TapoRequest {
+    /// Returns the request as the debug logs show it. A request that
+    /// carries passwords shows only its method, so that a log shared in an
+    /// issue report does not give them away.
+    pub(crate) fn for_log<'a>(&self, request_string: &'a str) -> &'a str {
+        match self {
+            Self::SetQsInfo(_) => "set_qs_info (params left out: they carry passwords)",
+            _ => request_string,
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]

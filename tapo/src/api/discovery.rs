@@ -6,6 +6,8 @@ mod discovery_raw_result;
 mod discovery_result;
 
 pub use device_discovery::*;
+#[cfg(not(feature = "debug"))]
+pub(crate) use device_discovery_raw::DeviceDiscoveryRaw;
 #[cfg(feature = "debug")]
 pub use device_discovery_raw::*;
 pub use device_type::*;

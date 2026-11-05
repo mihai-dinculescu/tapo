@@ -28,6 +28,8 @@ mod tapo_result;
 mod timer_result;
 mod timezone_result;
 mod trigger_logs_result;
+mod wifi_join_result;
+mod wifi_scan_result;
 
 pub use crate::requests::{LightingEffect, LightingEffectType};
 
@@ -54,6 +56,8 @@ pub use smart_cam::*;
 pub use timer_result::*;
 pub use timezone_result::*;
 pub use trigger_logs_result::*;
+pub use wifi_join_result::*;
+pub use wifi_scan_result::*;
 
 pub(crate) use control_child_result::*;
 pub(crate) use decodable_result_ext::*;

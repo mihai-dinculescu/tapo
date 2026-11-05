@@ -218,6 +218,16 @@ def hub_extra_child_handlers() -> dict[str, str]:
 # than a model, mapped to the handler that serves it.
 COLUMN_HANDLERS = {"IR Remote": "IrRemoteHandler"}
 
+# Handlers that discovery never returns, because they serve a device that is not
+# on the network yet. Each has a SUPPORTED_DEVICES.md table of its own, by
+# title, and serves the models that its "Handler for" doc names.
+SETUP_HANDLER_TABLES = {"Wi-Fi Setup": "SetupHandler"}
+
+# Handlers, and their examples, that are not exposed to Python yet. Their
+# SUPPORTED_DEVICES.md cells are expected to say Rust only.
+RUST_ONLY_HANDLERS = {"SetupHandler"}
+RUST_ONLY_EXAMPLES = {"tapo_setup_wifi"}
+
 
 def hub_child_mapping() -> dict[str, set[str]]:
     """Returns {child handler: models} from ChildDeviceHubResult's model match."""
@@ -587,7 +597,13 @@ def all_handlers() -> dict[str, Handler]:
             finding("handlers", f"{path.relative_to(ROOT)}: could not find a handler struct")
             continue
         py = parse_pyi_handler(h.name)
-        if py is None:
+        if h.name in RUST_ONLY_HANDLERS:
+            if py is not None:
+                finding(
+                    "handlers",
+                    f"{h.name} has a Python stub class; remove it from RUST_ONLY_HANDLERS in this script",
+                )
+        elif py is None:
             finding("handlers", f"{h.name}: no matching Python stub class found")
         else:
             h.py_methods, h.py_doc_models = py
@@ -879,7 +895,7 @@ def check_child_builder_docs(models_for_handler: dict[str, set[str]]) -> None:
 def check_examples() -> None:
     rust = {p.stem for p in (ROOT / "tapo" / "examples").glob("tapo_*.rs")}
     py = {p.stem for p in (ROOT / "tapo-py" / "examples").glob("tapo_*.py")}
-    for name in sorted(rust - py):
+    for name in sorted(rust - py - RUST_ONLY_EXAMPLES):
         finding("examples", f"tapo/examples/{name}.rs has no tapo-py/examples/{name}.py")
     for name in sorted(py - rust):
         finding("examples", f"tapo-py/examples/{name}.py has no tapo/examples/{name}.rs")
@@ -1046,6 +1062,11 @@ def main() -> int:
 
     # 4. Handlers
     handlers = all_handlers()
+    for name in SETUP_HANDLER_TABLES.values():
+        if name not in handlers:
+            finding("handlers", f"{name}: listed in SETUP_HANDLER_TABLES but not found")
+            continue
+        models_for_handler[name] = set(handlers[name].models_doc)
     for h in handlers.values():
         handler_models = models_for_handler.get(h.name)
         if handler_models is None:
@@ -1059,6 +1080,8 @@ def main() -> int:
                 "handler-docs",
                 f"{h.name} Rust doc names {fmt(h.models_doc)}, discovery maps {fmt(handler_models)} to it",
             )
+        if h.name in RUST_ONLY_HANDLERS:
+            continue
         if h.py_doc_models != handler_models:
             finding(
                 "handler-docs",
@@ -1125,9 +1148,16 @@ def main() -> int:
         columns_per_handler: dict[str, set[str]] = {}
         # Child tables map columns to child handlers only, the others to top-level ones.
         child_table = "Child" in table.title
-        pool = {
-            n: ms for n, ms in models_for_handler.items() if (n in child_handlers) == child_table
-        }
+        setup_handlers = set(SETUP_HANDLER_TABLES.values())
+        if table.title in SETUP_HANDLER_TABLES:
+            setup_handler = SETUP_HANDLER_TABLES[table.title]
+            pool = {setup_handler: models_for_handler.get(setup_handler, set())}
+        else:
+            pool = {
+                n: ms
+                for n, ms in models_for_handler.items()
+                if (n in child_handlers) == child_table and n not in setup_handlers
+            }
         for idx, (label, col_models) in enumerate(zip(table.labels, table.columns)):
             if label in COLUMN_HANDLERS:
                 column_handlers = [COLUMN_HANDLERS[label]]
