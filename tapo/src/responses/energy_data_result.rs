@@ -14,7 +14,8 @@ pub struct EnergyDataResult {
     pub local_time: NaiveDateTime,
     /// Start date and time of this result in UTC: the start of its first local
     /// day, in the device's timezone. The first entry, if any, starts at this
-    /// time.
+    /// time. When the method is used beyond its specified capabilities, the
+    /// entries may be dated wrong.
     pub start_date_time: DateTime<Utc>,
     /// List of energy data entries, up to the device's local time. It is shorter
     /// than the requested interval when the interval has not ended yet, and

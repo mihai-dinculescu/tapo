@@ -13,7 +13,7 @@ file. This change log follows the conventions of
 ### Fixed
 
 - `ApiClient`: connecting to a device that asks for its password unchanged via `"passwd_id": 4`, as the H110 on firmware 1.5.4 does, now works. It used to fail with `The device asks for a password transform that is not supported yet`.
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval::Hourly` now returns only the requested days when they include the day the clocks go back. It used to return an extra day of entries after `end_date`, and 8 days that included it failed with the device error `-1008`. Tested with the P110M on firmware 1.4.4.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval::Hourly` now returns only the requested days when they include the day the clocks go back. It used to return an extra day of entries after `end_date`, and 8 days that included it failed with the device error `-1008`. (thanks to @bradthurber)
 
 ## [Python Unreleased][Unreleased]
 
@@ -24,14 +24,14 @@ file. This change log follows the conventions of
 ### Fixed
 
 - `ApiClient`: connecting to a device that asks for its password unchanged via `"passwd_id": 4`, as the H110 on firmware 1.5.4 does, now works. It used to raise `The device asks for a password transform that is not supported yet`.
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval.Hourly` now returns only the requested days when they include the day the clocks go back. It used to return an extra day of entries after `end_date`, and 8 days that included it raised the device error `-1008`. Tested with the P110M on firmware 1.4.4.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval.Hourly` now returns only the requested days when they include the day the clocks go back. It used to return an extra day of entries after `end_date`, and 8 days that included it raised the device error `-1008`. (thanks to @bradthurber)
 
 ## [MCP Unreleased][Unreleased]
 
 ### Fixed
 
 - `list_devices`, `check_device`, `get_device_state`, `control_device`: devices that ask for their password unchanged via `"passwd_id": 4`, such as the H110 on firmware 1.5.4, and their child devices can now be reached. They used to fail with `The device asks for a password transform that is not supported yet`.
-- `get_device_state`: the `EnergyDataHourly` capability now returns only the requested days when they include the day the clocks go back. It used to return an extra day, and 8 days that included it failed with the device error `-1008`.
+- `get_device_state`: the `EnergyDataHourly` capability now returns only the requested days when they include the day the clocks go back. It used to return an extra day, and 8 days that included it failed with the device error `-1008`. (thanks to @bradthurber)
 
 ## [MCP v0.6.2][tapo-mcp-v0.6.2] - 2026-11-01
 

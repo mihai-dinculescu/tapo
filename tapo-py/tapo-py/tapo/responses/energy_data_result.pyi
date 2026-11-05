@@ -11,7 +11,8 @@ class EnergyDataResult(ToDictExt):
     start_date_time: datetime
     """Start date and time of this result in UTC: the start of its first local
     day, in the device's timezone. The first entry, if any, starts at this
-    time."""
+    time. When the method is used beyond its specified capabilities, the
+    entries may be dated wrong."""
 
     entries: List[EnergyDataIntervalResult]
     """List of energy data entries, up to the device's local time. It is shorter
