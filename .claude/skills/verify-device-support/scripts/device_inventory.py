@@ -226,7 +226,7 @@ SETUP_HANDLER_TABLES = {"Wi-Fi Setup": "SetupHandler"}
 # Handlers, and their examples, that are not exposed to Python yet. Their
 # SUPPORTED_DEVICES.md cells are expected to say Rust only.
 RUST_ONLY_HANDLERS = {"SetupHandler"}
-RUST_ONLY_EXAMPLES = {"tapo_setup_wifi"}
+RUST_ONLY_EXAMPLES = {"tapo_setup_wifi", "tapo_setup_bluetooth"}
 
 
 def hub_child_mapping() -> dict[str, set[str]]:

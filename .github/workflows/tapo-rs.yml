@@ -29,6 +29,10 @@ jobs:
           components: clippy, rustfmt
       - uses: davidB/rust-cargo-make@v1.17.0
       - uses: actions/checkout@v7
+      # The `bluetooth` feature, which --all-features and the tests enable,
+      # builds against D-Bus on Linux.
+      - name: Install D-Bus headers
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev
       - name: Run format
         run: cargo make format
       - name: Run check
@@ -49,8 +53,13 @@ jobs:
           toolchain: 1.88.0
       - uses: davidB/rust-cargo-make@v1.17.0
       - uses: actions/checkout@v7
+      # The `bluetooth` feature builds against D-Bus on Linux.
+      - name: Install D-Bus headers
+        run: sudo apt-get update && sudo apt-get install -y libdbus-1-dev
       - name: Run check on the minimum supported version
         run: cargo +1.88.0 make check
+      - name: Run check with all features on the minimum supported version
+        run: cargo +1.88.0 make check-all-features
 
   publish:
     name: Rust / Publish to crates.io

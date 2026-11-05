@@ -22,6 +22,8 @@ use super::tpap_spake2p::{self, Proof};
 /// The only cipher suite the Tapo app offers: P-256, SHA-256 and HMAC-SHA256.
 const CIPHER_SUITE: i64 = 1;
 const ENCRYPTION: &str = "aes_128_ccm";
+/// The passcode type of the default passcode of a device in setup mode.
+pub(super) const DEFAULT_PASSCODE_TYPE: &str = "default_userpw";
 /// The upper bound keeps a rogue device from making the client spin.
 const MAX_ITERATIONS: u32 = 100_000;
 
@@ -37,6 +39,9 @@ pub(crate) struct TpapInfo {
     /// 2 for the account password, among others.
     #[serde(default)]
     pake: Vec<i64>,
+    /// 1 for a device that holds a device attestation certificate.
+    #[serde(default)]
+    dac: i64,
 }
 
 impl TpapInfo {
@@ -49,6 +54,7 @@ impl TpapInfo {
             tls: 1,
             port: 443,
             pake: vec![2],
+            dac: 0,
         }
     }
 
@@ -89,6 +95,13 @@ impl TpapInfo {
     /// mode does.
     pub fn takes_default_passcode(&self) -> bool {
         self.pake.contains(&0)
+    }
+
+    /// Whether the device holds a device attestation certificate, which
+    /// the Tapo app asks it to sign a nonce with.
+    #[cfg_attr(not(feature = "bluetooth"), allow(dead_code))]
+    pub fn has_dac(&self) -> bool {
+        self.dac == 1
     }
 
     fn passcode_type(&self) -> Result<&'static str, Error> {
@@ -311,7 +324,7 @@ impl TpapProtocol {
     async fn handshake(&mut self, url: String, password: &str) -> Result<(), Error> {
         // A device in setup mode takes the default passcode as it is.
         let (passcode_type, default_passcode) = match &self.default_passcode {
-            Some(passcode) => ("default_userpw", Some(passcode.clone())),
+            Some(passcode) => (DEFAULT_PASSCODE_TYPE, Some(passcode.clone())),
             None => (self.info.passcode_type()?, None),
         };
         let user_random: [u8; 32] = rand::rng().random();
@@ -328,20 +341,7 @@ impl TpapProtocol {
                 self.device_family,
             )?,
         };
-        // The key derivation takes long enough to stall the other tasks of
-        // the runtime, so it runs on the blocking pool.
-        let proof = tokio::task::spawn_blocking(move || {
-            tpap_spake2p::prove(
-                &credential,
-                &registration.salt,
-                registration.iterations,
-                &user_random,
-                &registration.device_random,
-                &registration.device_share,
-            )
-        })
-        .await
-        .map_err(anyhow::Error::from)??;
+        let proof = prove(credential, registration, user_random).await?;
 
         let share_result = self.pake_share(&url, &proof).await?;
 
@@ -361,18 +361,7 @@ impl TpapProtocol {
         passcode_type: &str,
         user_random: &[u8],
     ) -> Result<Registration, Error> {
-        let body = json!({
-            "method": "login",
-            "params": {
-                "sub_method": "pake_register",
-                // Always the `admin` user, never the account email.
-                "username": crypto::md5_hex_lower(b"admin"),
-                "user_random": general_purpose::STANDARD.encode(user_random),
-                "cipher_suites": [CIPHER_SUITE],
-                "encryption": [ENCRYPTION],
-                "passcode_type": passcode_type,
-            }
-        });
+        let body = register_request(passcode_type, user_random);
 
         let result: RegisterResult = self.login_request(url, "pake_register", &body).await?;
         let registration = result.validate()?;
@@ -383,27 +372,14 @@ impl TpapProtocol {
     }
 
     async fn pake_share(&self, url: &str, proof: &Proof) -> Result<ShareResult, Error> {
-        let body = json!({
-            "method": "login",
-            "params": {
-                "sub_method": "pake_share",
-                "user_share": general_purpose::STANDARD.encode(&proof.share),
-                "user_confirm": general_purpose::STANDARD.encode(proof.confirm),
-            }
-        });
+        let body = share_request(proof, None);
 
         let result: ShareResult = self
             .login_request(url, "pake_share", &body)
             .await
             .map_err(pake_share_error)?;
 
-        let device_confirm = decode_base64("dev_confirm", &result.device_confirm)?;
-        if !proof.verify(&device_confirm) {
-            debug!("Device confirm does not match in pake_share");
-            return Err(Error::Tapo(TapoResponseError::tpap_hash_mismatch()));
-        }
-
-        debug!("pake_share OK");
+        result.verify(proof)?;
 
         Ok(result)
     }
@@ -432,19 +408,69 @@ impl TpapProtocol {
         }
 
         let response_body = response.json::<LoginResponse>().await?;
-        debug!("{sub_method} error code: {}", response_body.error_code);
 
-        validate_response(response_body.error_code)?;
-
-        let result = response_body
-            .result
-            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
-
-        Ok(serde_json::from_value(result)?)
+        response_body.into_result(sub_method)
     }
 }
 
-fn parse_discover_response(
+/// The body of `pake_register`, which asks to log in with `passcode_type`.
+pub(super) fn register_request(passcode_type: &str, user_random: &[u8]) -> serde_json::Value {
+    json!({
+        "method": "login",
+        "params": {
+            "sub_method": "pake_register",
+            // Always the `admin` user, never the account email.
+            "username": crypto::md5_hex_lower(b"admin"),
+            "user_random": general_purpose::STANDARD.encode(user_random),
+            "cipher_suites": [CIPHER_SUITE],
+            "encryption": [ENCRYPTION],
+            "passcode_type": passcode_type,
+        }
+    })
+}
+
+/// The body of `pake_share`. A `dac_nonce` is for a device that announces
+/// `dac` to sign, as the Tapo app sends it.
+pub(super) fn share_request(proof: &Proof, dac_nonce: Option<&[u8]>) -> serde_json::Value {
+    let mut body = json!({
+        "method": "login",
+        "params": {
+            "sub_method": "pake_share",
+            "user_share": general_purpose::STANDARD.encode(&proof.share),
+            "user_confirm": general_purpose::STANDARD.encode(proof.confirm),
+        }
+    });
+
+    if let Some(dac_nonce) = dac_nonce {
+        body["params"]["dac_nonce"] = general_purpose::STANDARD.encode(dac_nonce).into();
+    }
+
+    body
+}
+
+/// Runs the prover of the login with the `credential` and what the device
+/// answered `pake_register` with. The key derivation takes long enough to
+/// stall the other tasks of the runtime, so it runs on the blocking pool.
+pub(super) async fn prove(
+    credential: String,
+    registration: Registration,
+    user_random: [u8; 32],
+) -> Result<Proof, Error> {
+    tokio::task::spawn_blocking(move || {
+        tpap_spake2p::prove(
+            &credential,
+            &registration.salt,
+            registration.iterations,
+            &user_random,
+            &registration.device_random,
+            &registration.device_share,
+        )
+    })
+    .await
+    .map_err(anyhow::Error::from)?
+}
+
+pub(super) fn parse_discover_response(
     response_body: &serde_json::Value,
 ) -> Result<Option<(TpapInfo, Option<String>)>, Error> {
     let Some(error_code) = response_body.get("error_code").and_then(|v| v.as_i64()) else {
@@ -492,7 +518,7 @@ fn has_port(address: &str) -> bool {
 /// The error of a failed `pake_share`. A camera answers a wrong password
 /// with the code that stands for an expired session everywhere else, and a
 /// caller answers an expired session by logging in again.
-fn pake_share_error(error: Error) -> Error {
+pub(super) fn pake_share_error(error: Error) -> Error {
     match error {
         Error::Tapo(TapoResponseError::Unauthorized {
             kind: "SESSION_EXPIRED",
@@ -531,13 +557,33 @@ fn decode_base64(field: &str, value: &str) -> Result<Vec<u8>, Error> {
 }
 
 #[derive(Deserialize)]
-struct LoginResponse {
+pub(super) struct LoginResponse {
     error_code: i64,
     result: Option<serde_json::Value>,
 }
 
+impl LoginResponse {
+    /// The result of the login step `sub_method`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the device answered with an error code or without
+    /// a result that can be read.
+    pub fn into_result<T: DeserializeOwned>(self, sub_method: &str) -> Result<T, Error> {
+        debug!("{sub_method} error code: {}", self.error_code);
+
+        validate_response(self.error_code)?;
+
+        let result = self
+            .result
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        Ok(serde_json::from_value(result)?)
+    }
+}
+
 #[derive(Deserialize)]
-struct RegisterResult {
+pub(super) struct RegisterResult {
     dev_random: String,
     dev_salt: String,
     dev_share: String,
@@ -548,7 +594,7 @@ struct RegisterResult {
 }
 
 impl RegisterResult {
-    fn validate(self) -> Result<Registration, Error> {
+    pub fn validate(self) -> Result<Registration, Error> {
         if self.cipher_suites != CIPHER_SUITE {
             return Err(Error::Tapo(TapoResponseError::ResponseError {
                 description: format!(
@@ -599,7 +645,7 @@ impl RegisterResult {
     }
 }
 
-struct Registration {
+pub(super) struct Registration {
     device_random: Vec<u8>,
     salt: Vec<u8>,
     device_share: Vec<u8>,
@@ -608,13 +654,32 @@ struct Registration {
 }
 
 #[derive(Deserialize)]
-struct ShareResult {
+pub(super) struct ShareResult {
     #[serde(rename = "dev_confirm")]
     device_confirm: String,
     #[serde(rename = "stok")]
     token: String,
     #[serde(rename = "start_seq")]
-    start_sequence: i32,
+    pub start_sequence: i32,
+}
+
+impl ShareResult {
+    /// Checks that the device proved that it knows the passcode too.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if it did not.
+    pub fn verify(&self, proof: &Proof) -> Result<(), Error> {
+        let device_confirm = decode_base64("dev_confirm", &self.device_confirm)?;
+        if !proof.verify(&device_confirm) {
+            debug!("Device confirm does not match in pake_share");
+            return Err(Error::Tapo(TapoResponseError::tpap_hash_mismatch()));
+        }
+
+        debug!("pake_share OK");
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]

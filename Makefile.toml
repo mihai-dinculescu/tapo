@@ -15,6 +15,10 @@ args = ["fmt", "--all", "--verbose", "--", "--check"]
 command = "cargo"
 args = ["check", "--workspace", "--verbose"]
 
+[tasks.check-all-features]
+command = "cargo"
+args = ["check", "--workspace", "--all-features", "--verbose"]
+
 [tasks.check-doc]
 env = { "RUSTDOCFLAGS" = "-D warnings" }
 command = "cargo"
@@ -35,7 +39,7 @@ args = ["check", "-p", "tapo", "--tests", "--verbose"]
 
 [tasks.test-debug]
 command = "cargo"
-args = ["test", "--features", "tapo/debug", "--verbose"]
+args = ["test", "--features", "tapo/debug,tapo/bluetooth", "--verbose"]
 
 [tasks.ci-flow]
 dependencies = ["format", "check", "check-doc", "clippy", "test"]

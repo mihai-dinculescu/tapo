@@ -44,7 +44,7 @@ pub(super) fn default_passcode(mac: &str) -> Result<String, Error> {
     let mac = base16ct::mixed::decode_vec(mac)
         .ok()
         .filter(|mac| mac.len() == 6)
-        .ok_or_else(|| Error::unsupported_tpap(format!("mac: {mac}")))?;
+        .ok_or_else(|| Error::unsupported_setup_tpap(format!("mac: {mac}")))?;
 
     let mut ikm = b"GqY5o136oa4i6VprTlMW2DpVXxmfW8".to_vec();
     ikm.extend_from_slice(&mac[3..6]);

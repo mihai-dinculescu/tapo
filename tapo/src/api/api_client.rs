@@ -27,8 +27,9 @@ use crate::responses::{
     FirmwareUpdateStateResultRaw, LatestFirmwareResult, LatestFirmwareResultRaw, PowerDataResult,
     PowerDataResultRaw, PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw,
     ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
-    TapoResult, Timer, TimerListResultRaw, TimezoneResult, TimezoneResultRaw, WifiJoinResult,
-    WifiNetwork, WifiScanResultRaw, WifiSecurity, validate_response,
+    TapoResult, Timer, TimerListResultRaw, TimezoneResult, TimezoneResultRaw,
+    WifiConnStatusResultRaw, WifiJoinResult, WifiNetwork, WifiScanResultRaw, WifiSecurity,
+    validate_response,
 };
 use crate::utils::unix_timestamp_seconds;
 
@@ -44,6 +45,9 @@ use super::discovery::{DeviceDiscovery, DeviceDiscoveryRaw};
 use super::protocol::media_stream;
 use super::protocol::media_stream::download::DownloadRequest;
 use super::protocol::{AuthProtocol, DeviceFamily, TapoProtocol};
+
+#[cfg(feature = "bluetooth")]
+use super::protocol::{BluetoothSetupDevice, discover_bluetooth_setup_devices};
 use super::{
     CameraHandler, CameraHubHandler, CameraPtzHandler, ColorLightHandler, HubHandler, HubIrHandler,
     LightHandler, PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler,
@@ -74,6 +78,11 @@ const MAX_SCHEDULE_RULE_PAGES: u32 = 16;
 /// Backstop against a firmware whose reported network count never lets the
 /// Wi-Fi scan loop finish.
 const MAX_WIFI_SCAN_PAGES: u32 = 16;
+
+/// How often, and for how long, a device that was set up over Bluetooth is
+/// asked whether it joined the Wi-Fi network, as the Tapo app does.
+const WIFI_JOIN_POLL_INTERVAL: Duration = Duration::from_secs(2);
+const WIFI_JOIN_POLL_TIMEOUT: Duration = Duration::from_secs(65);
 
 /// Implemented by all ApiClient implementations.
 #[async_trait]
@@ -1327,7 +1336,92 @@ impl ApiClient {
     ) -> Result<SetupHandler, Error> {
         let address = self.login_for_setup(&ip_address.into()).await?;
 
-        Ok(SetupHandler::new(self, address))
+        Ok(SetupHandler::new(self, Some(address)))
+    }
+
+    /// Discovers the new or factory-reset devices nearby that can be set up
+    /// over Bluetooth, such as the
+    /// [P110M](https://www.tapo.com/en/search/?q=P110M). A device that is
+    /// already set up is left out. Pass one to
+    /// [`ApiClient::setup_over_bluetooth`].
+    ///
+    /// # Arguments
+    ///
+    /// * `timeout_s` - How long to scan for, in seconds. Must be between `1`
+    ///   and `60`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `timeout_s` is out of range, if the host has no
+    /// Bluetooth adapter, or if the scan fails.
+    #[cfg(feature = "bluetooth")]
+    pub async fn discover_bluetooth_setup_devices(
+        timeout_s: u64,
+    ) -> Result<Vec<BluetoothSetupDevice>, Error> {
+        if !(1..=60).contains(&timeout_s) {
+            return Err(Error::Validation {
+                field: "timeout_s".to_string(),
+                message: "Must be between 1 and 60 seconds".to_string(),
+            });
+        }
+
+        discover_bluetooth_setup_devices(Duration::from_secs(timeout_s)).await
+    }
+
+    /// Specializes the given [`ApiClient`] into a [`SetupHandler`] for a new
+    /// or factory-reset device that is set up over Bluetooth, as found by
+    /// [`ApiClient::discover_bluetooth_setup_devices`].
+    ///
+    /// The device takes the client's credentials as its login once it joins
+    /// a Wi-Fi network. They need not be those of a TP-Link account.
+    ///
+    /// # Arguments
+    ///
+    /// * `device` - the device, as returned by [`ApiClient::discover_bluetooth_setup_devices`]
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # use tapo::responses::WifiSecurity;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let devices = ApiClient::discover_bluetooth_setup_devices(10).await?;
+    /// let device = devices.first().ok_or("No device to set up")?;
+    ///
+    /// let setup = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .setup_over_bluetooth(device)
+    ///     .await?;
+    ///
+    /// let networks = setup.scan_wifi().await?;
+    /// println!("Networks: {networks:?}");
+    ///
+    /// setup
+    ///     .join_wifi(
+    ///         "wifi-name",
+    ///         "wifi-password",
+    ///         WifiSecurity::Wpa2Psk,
+    ///         chrono_tz::Europe::London,
+    ///     )
+    ///     .await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[cfg(feature = "bluetooth")]
+    pub async fn setup_over_bluetooth(
+        mut self,
+        device: &BluetoothSetupDevice,
+    ) -> Result<SetupHandler, Error> {
+        self.init_protocol(DeviceFamily::Smart, true)?;
+        let timeout = self.timeout();
+
+        let protocol = self
+            .protocol
+            .as_mut()
+            .ok_or_else(|| anyhow::anyhow!("The protocol should have been initialized"))?;
+        protocol.login_over_bluetooth(device, timeout).await?;
+
+        Ok(SetupHandler::new(self, None))
     }
 }
 
@@ -2324,15 +2418,23 @@ impl ApiClient {
             timezone.name(),
         ))));
 
+        let protocol = self.protocol()?;
+
+        // A device that is set up over Bluetooth answers, and says whether
+        // it joined when asked.
+        if protocol.is_bluetooth() {
+            protocol
+                .execute_request::<serde_json::Value>(request)
+                .await?;
+
+            return self.wait_for_wifi_join(ssid).await;
+        }
+
         // A device that joins over its setup network leaves it without
         // answering, so the request ends in a dropped connection or a
         // timeout. Only a device that could not be reached at all did not
         // get it.
-        match self
-            .protocol()?
-            .execute_request::<serde_json::Value>(request)
-            .await
-        {
+        match protocol.execute_request::<serde_json::Value>(request).await {
             Ok(_) => Ok(WifiJoinResult::Sent),
             Err(Error::Http(error)) if !error.is_connect() => {
                 debug!("The device left its setup network without answering: {error}");
@@ -2340,6 +2442,54 @@ impl ApiClient {
             }
             Err(error) => Err(error),
         }
+    }
+
+    /// Asks a device that was set up over Bluetooth whether it joined the
+    /// Wi-Fi network `ssid`, until it says so or the wait runs out.
+    async fn wait_for_wifi_join(&self, ssid: &str) -> Result<WifiJoinResult, Error> {
+        let deadline = tokio::time::Instant::now() + WIFI_JOIN_POLL_TIMEOUT;
+
+        let mut last_status: Option<WifiConnStatusResultRaw> = None;
+
+        loop {
+            let request = TapoRequest::GetWifiConnStatus(TapoParams::new(EmptyParams));
+            // A poll takes no longer than the time left, so that the wait
+            // ends at the deadline.
+            let Ok(response) =
+                tokio::time::timeout_at(deadline, self.protocol()?.execute_request(request)).await
+            else {
+                break;
+            };
+            let status: WifiConnStatusResultRaw =
+                response?.ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+            if status.status == "connected" {
+                return Ok(WifiJoinResult::Connected);
+            }
+            last_status = Some(status);
+
+            if tokio::time::Instant::now() + WIFI_JOIN_POLL_INTERVAL > deadline {
+                break;
+            }
+            tokio::time::sleep(WIFI_JOIN_POLL_INTERVAL).await;
+        }
+
+        let (status, reason) = last_status.map_or_else(
+            || ("unknown".to_string(), "none".to_string()),
+            |status| {
+                let reason = status
+                    .last_fail_reason
+                    .map_or_else(|| "none".to_string(), |reason| reason.to_string());
+                (status.status, reason)
+            },
+        );
+
+        Err(Error::Tapo(TapoResponseError::ResponseError {
+            description: format!(
+                "The device did not join {ssid} within {} seconds (status: {status}, last fail reason: {reason}). Check the password and factory reset the device to try again.",
+                WIFI_JOIN_POLL_TIMEOUT.as_secs(),
+            ),
+        }))
     }
 
     pub(crate) fn timeout(&self) -> Duration {

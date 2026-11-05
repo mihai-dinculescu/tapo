@@ -46,10 +46,7 @@ impl TpapCipher {
     pub fn encrypt(&self, data: &str) -> anyhow::Result<(Vec<u8>, i32)> {
         let seq = self.seq.fetch_add(1, Ordering::Relaxed);
 
-        let cipher_bytes = self
-            .cipher
-            .encrypt(&self.nonce(seq).into(), data.as_bytes())
-            .map_err(|e| anyhow::anyhow!("Encryption error: {e:?}"))?;
+        let cipher_bytes = self.encrypt_at(seq, data.as_bytes())?;
 
         let result = [seq.to_be_bytes().as_slice(), &cipher_bytes].concat();
 
@@ -74,11 +71,33 @@ impl TpapCipher {
             anyhow::bail!("Response has the sequence number {body_seq}, but the request has {seq}");
         }
 
+        self.decrypt_at(seq, cipher_bytes)
+    }
+
+    /// Encrypts `data` under `seq` and returns the ciphertext followed by its
+    /// tag, without the sequence number. Over Bluetooth the sequence number
+    /// travels in the packet header instead.
+    pub fn encrypt_at(&self, seq: i32, data: &[u8]) -> anyhow::Result<Vec<u8>> {
+        self.cipher
+            .encrypt(&self.nonce(seq).into(), data)
+            .map_err(|e| anyhow::anyhow!("Encryption error: {e:?}"))
+    }
+
+    /// Decrypts `cipher_bytes`, the ciphertext followed by its tag, that was
+    /// encrypted under `seq`.
+    pub fn decrypt_at(&self, seq: i32, cipher_bytes: &[u8]) -> anyhow::Result<String> {
+        if cipher_bytes.len() < TAG_LENGTH {
+            anyhow::bail!(
+                "Response of {} bytes is shorter than its {TAG_LENGTH}-byte tag",
+                cipher_bytes.len()
+            );
+        }
+
         let decrypted_bytes = self
             .cipher
             .decrypt(&self.nonce(seq).into(), cipher_bytes)
             .map_err(|e| anyhow::anyhow!("Decryption error: {e:?}"))?;
-        let decrypted = std::str::from_utf8(&decrypted_bytes)?.to_string();
+        let decrypted = String::from_utf8(decrypted_bytes)?;
 
         Ok(decrypted)
     }
@@ -136,6 +155,18 @@ mod tests {
 
         assert_eq!(cipher.decrypt(first_seq, &first_body).unwrap(), MESSAGE);
         assert!(cipher.decrypt(second_seq, &first_body).is_err());
+    }
+
+    #[test]
+    fn test_encrypt_at_is_the_body_without_its_sequence_number() {
+        let cipher = cipher(9);
+        let (body, seq) = cipher.encrypt(MESSAGE).unwrap();
+
+        let cipher_bytes = cipher.encrypt_at(seq, MESSAGE.as_bytes()).unwrap();
+
+        assert_eq!(cipher_bytes, body[SEQ_LENGTH..]);
+        assert_eq!(cipher.decrypt_at(seq, &cipher_bytes).unwrap(), MESSAGE);
+        assert!(cipher.decrypt_at(seq + 1, &cipher_bytes).is_err());
     }
 
     #[test]

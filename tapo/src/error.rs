@@ -49,9 +49,20 @@ impl TapoResponseError {
     }
 
     pub(crate) fn setup_hash_mismatch() -> Self {
+        Self::setup_hash_mismatch_with("connect to its setup network again")
+    }
+
+    #[cfg(feature = "bluetooth")]
+    pub(crate) fn bluetooth_setup_hash_mismatch() -> Self {
+        Self::setup_hash_mismatch_with("scan for it over Bluetooth again")
+    }
+
+    fn setup_hash_mismatch_with(again: &str) -> Self {
         Self::Unauthorized {
             kind: "HASH_MISMATCH",
-            description: "The device did not take the login of a device in setup mode, so it is not in setup mode. Factory reset the device and connect to its setup network again.".to_string(),
+            description: format!(
+                "The device did not take the login of a device in setup mode, so it is not in setup mode. Factory reset the device and {again}."
+            ),
         }
     }
 
@@ -138,6 +149,17 @@ impl Error {
             protocol: "TPAP",
             description: format!(
                 "The device uses a variant of the TPAP protocol that is not supported yet ({detail}). On some devices, turning on Third-Party Compatibility in the Tapo app (Me > Third-Party Services) switches the device to a protocol that is supported. If that does not help, please open an issue with this message and the device model."
+            ),
+        }
+    }
+
+    /// The same as [`Error::unsupported_tpap`], for a device in setup mode,
+    /// which is in no Tapo app yet.
+    pub(crate) fn unsupported_setup_tpap(detail: String) -> Self {
+        Self::UnsupportedProtocol {
+            protocol: "TPAP",
+            description: format!(
+                "The device in setup mode uses a variant of the TPAP protocol that is not supported yet ({detail}). Please open an issue with this message and the device model."
             ),
         }
     }

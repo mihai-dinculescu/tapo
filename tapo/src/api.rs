@@ -42,3 +42,6 @@ pub use power_strip_handler::*;
 pub use rgb_light_strip_handler::*;
 pub use rgbic_light_strip_handler::*;
 pub use setup_handler::*;
+
+#[cfg(feature = "bluetooth")]
+pub use protocol::BluetoothSetupDevice;

@@ -7,7 +7,6 @@ use std::env;
 
 use log::info;
 use tapo::ApiClient;
-use tapo::responses::WifiJoinResult;
 
 mod common;
 
@@ -50,14 +49,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .ok_or_else(|| format!("The device does not see the Wi-Fi network {wifi_ssid}"))?;
 
     info!("Joining {wifi_ssid}...");
-    match setup
+    let result = setup
         .join_wifi(&wifi_ssid, wifi_password, network.security, timezone)
-        .await?
-    {
-        WifiJoinResult::Sent => info!(
-            "The device left its setup network. Reconnect to {wifi_ssid} and discover the device there."
-        ),
-    }
+        .await?;
+    info!("Join result: {result:?}. Reconnect to {wifi_ssid} and discover the device there.");
 
     Ok(())
 }

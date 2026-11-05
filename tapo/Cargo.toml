@@ -11,10 +11,11 @@ categories = ["hardware-support", "embedded", "development-tools"]
 repository = "https://github.com/mihai-dinculescu/tapo"
 
 [package.metadata.docs.rs]
-features = ["debug", "json-schema"]
+features = ["bluetooth", "debug", "json-schema"]
 
 [features]
 default = []
+bluetooth = ["dep:btleplug"]
 debug = []
 json-schema = ["dep:schemars"]
 python = ["dep:pyo3"]
@@ -38,7 +39,7 @@ tokio = { workspace = true, features = ["io-util", "net", "rt", "sync", "time"] 
 tokio-stream = "0.1"
 uuid = { version = "1.23", features = ["serde", "v4"] }
 
-# security
+# Security
 aes = "0.9"
 base16ct = { version = "1.0", features = ["alloc"] }
 base64 = { workspace = true }
@@ -55,11 +56,19 @@ md-5 = "0.11"
 sha2 = "0.11"
 sha-crypt = { version = "0.6", default-features = false }
 
+# Bluetooth
+btleplug = { version = "0.13", optional = true }
+
 # JSON Schema
 schemars = { workspace = true, optional = true }
 
 # FFI
-pyo3 = { workspace = true, features = ["serde", "chrono", "chrono-tz", "multiple-pymethods"], optional = true }
+pyo3 = { workspace = true, features = [
+    "serde",
+    "chrono",
+    "chrono-tz",
+    "multiple-pymethods",
+], optional = true }
 
 [dev-dependencies]
 env_logger = "0.11"
@@ -71,3 +80,7 @@ rstest = "0.28"
 sha-crypt = "0.6"
 tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["aws-lc-rs"] }
+
+[[example]]
+name = "tapo_setup_bluetooth"
+required-features = ["bluetooth"]

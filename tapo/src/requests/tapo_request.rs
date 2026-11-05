@@ -114,6 +114,7 @@ pub(crate) enum TapoRequest {
     RemoveScheduleRules(TapoParams<RemoveScheduleRulesParams>),
     // Setup requests, to a device in setup mode
     GetWirelessScanInfo(TapoParams<GetWirelessScanInfoParams>),
+    GetWifiConnStatus(TapoParams<EmptyParams>),
     SetQsInfo(Box<TapoParams<SetQsInfoParams>>),
 }
 
