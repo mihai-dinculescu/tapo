@@ -7,7 +7,7 @@ pub enum EnergyDataInterval {
         /// Interval start date.
         start_date: NaiveDate,
         /// Interval end date. Inclusive.
-        /// Must not be greater by more than 8 days than `start_date`.
+        /// Must be at most 7 days after `start_date`.
         end_date: NaiveDate,
     },
     /// Daily interval. `start_date` must be the first day of a quarter.

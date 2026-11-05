@@ -12,9 +12,10 @@ use crate::utils::{der_tapo_datetime_format, local_midnight, local_to_utc, skipp
 pub struct EnergyDataResult {
     /// Local time of the device.
     pub local_time: NaiveDateTime,
-    /// Start date and time of this result in UTC.
-    /// This value is provided in the `get_energy_data` request and is passed through.
-    /// Note that it may not align with the returned data if the method is used beyond its specified capabilities.
+    /// Start date and time of this result in UTC: the start of its first local
+    /// day, in the device's timezone. The first entry, if any, starts at this
+    /// time. When the method is used beyond its specified capabilities, the
+    /// entries may be dated wrong.
     pub start_date_time: DateTime<Utc>,
     /// List of energy data entries, up to the device's local time. It is shorter
     /// than the requested interval when the interval has not ended yet, and
@@ -73,7 +74,6 @@ impl EnergyDataResultRaw {
             .timestamp_opt(self.start_timestamp, 0)
             .single()
             .context("Failed to map start_timestamp to local time")?;
-        let start_date_time = start.to_utc();
 
         let step = match self.interval {
             60 => Step::Hour,
@@ -94,6 +94,9 @@ impl EnergyDataResultRaw {
         // time. The hour that the clocks go back over is one entry, and the
         // hour they jump forward over still has one.
         let start_date = start.date_naive();
+        // The device returns whole local days, from local midnight, whatever
+        // the time of day of `start_timestamp`.
+        let start_date_time = local_midnight(start_date, timezone);
         // During a repeated hour, the later reading keeps the current entry.
         // A device whose offsets disagree with `timezone` can report a time
         // that `timezone` skips. Reading it with the offset from before the
@@ -324,6 +327,27 @@ mod tests {
         let mut expected = vec![at(1)];
         expected.extend((1..24).map(at));
         assert_eq!(local_dates_and_times(&result), expected);
+    }
+
+    #[test]
+    fn test_hourly_result_starts_at_local_midnight_whatever_the_requested_time() {
+        // Hourly requests that include a day the clocks go back start after
+        // the first day's midnight; an hour after it here. London repeats
+        // 01:00 on 2026-10-25. Santiago skips 00:00 to 01:00 on 2026-09-06, so
+        // that day starts at 01:00.
+        for (date, timezone) in [
+            (NaiveDate::from_ymd_opt(2026, 10, 25).unwrap(), London),
+            (NaiveDate::from_ymd_opt(2026, 9, 6).unwrap(), Santiago),
+        ] {
+            let day_start = local_midnight(date, &timezone);
+
+            let result = raw(day_start + Duration::hours(1), 24, 60)
+                .in_timezone(&timezone)
+                .unwrap();
+
+            assert_eq!(result.start_date_time, day_start, "{date} in {timezone}");
+            assert_eq!(result.entries[0].start_date_time, day_start);
+        }
     }
 
     #[test]
