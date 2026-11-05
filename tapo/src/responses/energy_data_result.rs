@@ -330,9 +330,10 @@ mod tests {
 
     #[test]
     fn test_hourly_result_starts_at_local_midnight_whatever_the_requested_time() {
-        // Hourly requests start an hour into the first day. London repeats
+        // Hourly requests that include a day the clocks go back start after
+        // the first day's midnight; an hour after it here. London repeats
         // 01:00 on 2026-10-25. Santiago skips 00:00 to 01:00 on 2026-09-06, so
-        // that day starts at 01:00 and its request at 02:00.
+        // that day starts at 01:00.
         for (date, timezone) in [
             (NaiveDate::from_ymd_opt(2026, 10, 25).unwrap(), London),
             (NaiveDate::from_ymd_opt(2026, 9, 6).unwrap(), Santiago),
