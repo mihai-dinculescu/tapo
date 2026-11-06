@@ -23,8 +23,9 @@ Example:
 See [more examples](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-py/examples).
 """
 
-from typing import Optional
+from typing import List, Optional
 
+from .bluetooth_setup_device import BluetoothSetupDevice
 from .camera_handler import CameraHandler
 from .camera_hub_handler import CameraHubHandler
 from .camera_ptz_handler import CameraPtzHandler
@@ -40,6 +41,7 @@ from .power_strip_energy_monitoring_handler import PowerStripEnergyMonitoringHan
 from .power_strip_handler import PowerStripHandler
 from .rgb_light_strip_handler import RgbLightStripHandler
 from .rgbic_light_strip_handler import RgbicLightStripHandler
+from .setup_handler import SetupHandler
 
 class ApiClient:
     """Tapo API Client.
@@ -753,4 +755,82 @@ class ApiClient:
             [C520WS](https://www.tapo.com/en/search/?q=C520WS),
             [TC40](https://www.tapo.com/en/search/?q=TC40),
             and [TC70](https://www.tapo.com/en/search/?q=TC70).
+        """
+
+    async def setup_over_wifi(self, ip_address: str) -> SetupHandler:
+        """Specializes the given `ApiClient` into a `SetupHandler` for a new
+        or factory-reset device that broadcasts a setup network. See
+        `SetupHandler` for how to reach the device.
+
+        The device takes the client's credentials as its login once it joins
+        a Wi-Fi network. They need not be those of a TP-Link account.
+
+        Args:
+            ip_address (str): The IP address of the device on its setup network,
+                usually `192.168.0.1`.
+
+        Returns:
+            SetupHandler: Handler for setting up a new or factory-reset device.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            setup = await client.setup_over_wifi("192.168.0.1")
+
+            networks = await setup.scan_wifi()
+            print(f"Networks: {[network.to_dict() for network in networks]}")
+
+            await setup.join_wifi(
+                "wifi-name", "wifi-password", WifiSecurity.Wpa2Psk, ZoneInfo("Europe/London")
+            )
+            ```
+        """
+
+    @staticmethod
+    async def discover_bluetooth_setup_devices(timeout_s: int = 10) -> List[BluetoothSetupDevice]:
+        """Discovers the new or factory-reset devices nearby that can be set up
+        over Bluetooth, such as the [P110M](https://www.tapo.com/en/search/?q=P110M).
+        A device that is already set up is left out. Pass one to
+        `ApiClient.setup_over_bluetooth`.
+
+        Args:
+            timeout_s (int): How long to scan for, in seconds. Must be between `1` and `60`.
+
+        Returns:
+            List[BluetoothSetupDevice]: The devices that are ready for setup.
+
+        Raises:
+            Exception: If `timeout_s` is out of range, if the host has no Bluetooth
+                adapter, or if the scan fails.
+        """
+
+    async def setup_over_bluetooth(self, device: BluetoothSetupDevice) -> SetupHandler:
+        """Specializes the given `ApiClient` into a `SetupHandler` for a new
+        or factory-reset device that is set up over Bluetooth, as found by
+        `ApiClient.discover_bluetooth_setup_devices`.
+
+        The device takes the client's credentials as its login once it joins
+        a Wi-Fi network. They need not be those of a TP-Link account.
+
+        Args:
+            device (BluetoothSetupDevice): The device, as returned by
+                `ApiClient.discover_bluetooth_setup_devices`.
+
+        Returns:
+            SetupHandler: Handler for setting up a new or factory-reset device.
+
+        Example:
+            ```python
+            devices = await ApiClient.discover_bluetooth_setup_devices(10)
+
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            setup = await client.setup_over_bluetooth(devices[0])
+
+            networks = await setup.scan_wifi()
+            print(f"Networks: {[network.to_dict() for network in networks]}")
+
+            await setup.join_wifi(
+                "wifi-name", "wifi-password", WifiSecurity.Wpa2Psk, ZoneInfo("Europe/London")
+            )
+            ```
         """

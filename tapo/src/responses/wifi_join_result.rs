@@ -15,7 +15,11 @@ pub(crate) struct WifiConnStatusResultRaw {
 impl TapoResponseExt for WifiConnStatusResultRaw {}
 
 /// How far the device has confirmed joining a Wi-Fi network.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, eq, hash, frozen)
+)]
 pub enum WifiJoinResult {
     /// The device took the network's details and left its setup network
     /// without saying whether it could join. Find it on the network that it

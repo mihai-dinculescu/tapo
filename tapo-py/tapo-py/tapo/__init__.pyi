@@ -1,4 +1,5 @@
 from .api_client import *
+from .bluetooth_setup_device import *
 from .camera_handler import *
 from .camera_hub_handler import *
 from .camera_ptz_handler import *
@@ -25,6 +26,7 @@ from .rgb_light_strip_handler import *
 from .rgbic_light_strip_handler import *
 from .s200_handler import *
 from .s210_handler import *
+from .setup_handler import *
 from .t100_handler import *
 from .t110_handler import *
 from .t300_handler import *

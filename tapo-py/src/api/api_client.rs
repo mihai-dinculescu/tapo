@@ -2,10 +2,10 @@ use std::time::Duration;
 
 use pyo3::prelude::*;
 use tapo::{
-    ApiClient, CameraHandler, CameraHubHandler, CameraPtzHandler, ColorLightHandler,
-    DeviceDiscovery, DeviceDiscoveryRaw, Error, HubHandler, HubIrHandler, LightHandler,
-    PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler, PowerStripHandler,
-    RgbLightStripHandler, RgbicLightStripHandler,
+    ApiClient, BluetoothSetupDevice, CameraHandler, CameraHubHandler, CameraPtzHandler,
+    ColorLightHandler, DeviceDiscovery, DeviceDiscoveryRaw, Error, HubHandler, HubIrHandler,
+    LightHandler, PlugEnergyMonitoringHandler, PlugHandler, PowerStripEnergyMonitoringHandler,
+    PowerStripHandler, RgbLightStripHandler, RgbicLightStripHandler, SetupHandler,
 };
 
 use crate::call_handler_constructor;
@@ -14,7 +14,7 @@ use super::{
     PyCameraHandler, PyCameraHubHandler, PyCameraPtzHandler, PyColorLightHandler,
     PyDeviceDiscovery, PyDeviceDiscoveryRaw, PyHubHandler, PyHubIrHandler, PyLightHandler,
     PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
-    PyPowerStripHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler,
+    PyPowerStripHandler, PyRgbLightStripHandler, PyRgbicLightStripHandler, PySetupHandler,
 };
 
 #[pyclass(name = "ApiClient")]
@@ -267,5 +267,36 @@ impl PyApiClient {
         let handler: CameraPtzHandler =
             call_handler_constructor!(self, tapo::ApiClient::tc70, ip_address);
         Ok(PyCameraPtzHandler::new(handler))
+    }
+}
+
+/// Device setup.
+#[pymethods]
+impl PyApiClient {
+    pub async fn setup_over_wifi(&self, ip_address: String) -> PyResult<PySetupHandler> {
+        let handler: SetupHandler =
+            call_handler_constructor!(self, tapo::ApiClient::setup_over_wifi, ip_address);
+        Ok(PySetupHandler::new(handler))
+    }
+
+    #[staticmethod]
+    #[pyo3(signature = (timeout_s=10))]
+    pub async fn discover_bluetooth_setup_devices(
+        timeout_s: u64,
+    ) -> Result<Vec<BluetoothSetupDevice>, Error> {
+        let devices = crate::runtime::tokio()
+            .spawn(ApiClient::discover_bluetooth_setup_devices(timeout_s))
+            .await
+            .map_err(anyhow::Error::from)??;
+        Ok(devices)
+    }
+
+    pub async fn setup_over_bluetooth(
+        &self,
+        device: BluetoothSetupDevice,
+    ) -> PyResult<PySetupHandler> {
+        let handler: SetupHandler =
+            call_handler_constructor!(self, tapo::ApiClient::setup_over_bluetooth, &device);
+        Ok(PySetupHandler::new(handler))
     }
 }

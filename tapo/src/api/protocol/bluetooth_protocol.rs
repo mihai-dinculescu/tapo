@@ -14,6 +14,7 @@ use log::{debug, trace};
 use rand::RngExt as _;
 use serde::de::DeserializeOwned;
 use serde_json::json;
+use tokio::runtime::Handle;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
@@ -52,6 +53,8 @@ const FLAG_AVAILABLE: u8 = 0x01;
 /// A new or factory-reset device that advertises setup over Bluetooth, as
 /// found by [`ApiClient::discover_bluetooth_setup_devices`](crate::ApiClient::discover_bluetooth_setup_devices).
 #[derive(Clone)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object))]
+#[cfg_attr(feature = "python", derive(serde::Serialize))]
 pub struct BluetoothSetupDevice {
     /// The name that the device advertises, as in `P110M_lgR0GOlb`.
     pub name: String,
@@ -60,11 +63,35 @@ pub struct BluetoothSetupDevice {
     /// The Bluetooth address, as in `98:BA:5F:A3:5F:07`. Empty where the
     /// operating system hides it, as macOS does.
     pub address: String,
+    #[cfg_attr(feature = "python", serde(skip))]
     peripheral: Peripheral,
     /// Held while a dropped link disconnects, so that a new link to the
     /// device waits for that instead of being cut off by it.
+    #[cfg_attr(feature = "python", serde(skip))]
     disconnecting: Arc<Mutex<()>>,
 }
+
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl BluetoothSetupDevice {
+    #[getter(name)]
+    fn py_name(&self) -> &str {
+        &self.name
+    }
+
+    #[getter(model)]
+    fn py_model(&self) -> &str {
+        &self.model
+    }
+
+    #[getter(address)]
+    fn py_address(&self) -> &str {
+        &self.address
+    }
+}
+
+#[cfg(feature = "python")]
+crate::impl_to_dict!(BluetoothSetupDevice);
 
 impl fmt::Debug for BluetoothSetupDevice {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -167,10 +194,16 @@ struct BluetoothLink {
     timeout: Duration,
     exchange: Mutex<()>,
     disconnecting: Arc<Mutex<()>>,
+    /// The runtime that the link connected on. The drop disconnects on it
+    /// when it runs outside any runtime, as when Python frees the handler.
+    runtime: Handle,
 }
 
 impl BluetoothLink {
     async fn connect(device: &BluetoothSetupDevice, timeout: Duration) -> Result<Self, Error> {
+        let runtime = Handle::try_current()
+            .map_err(|_| anyhow::anyhow!("Bluetooth needs a Tokio runtime"))?;
+
         // Waits for the disconnect of an earlier link to the device.
         drop(device.disconnecting.lock().await);
 
@@ -194,6 +227,7 @@ impl BluetoothLink {
             timeout,
             exchange: Mutex::new(()),
             disconnecting: Arc::clone(&device.disconnecting),
+            runtime,
         })
     }
 
@@ -326,9 +360,9 @@ impl Drop for BluetoothLink {
     /// Disconnects in the background, so that the device is not held after
     /// the session ends, such as after a failed login or join.
     fn drop(&mut self) {
-        let Ok(runtime) = tokio::runtime::Handle::try_current() else {
-            return;
-        };
+        // The runtime of the drop, if there is one, since the one that the
+        // link connected on may have shut down since.
+        let runtime = Handle::try_current().unwrap_or_else(|_| self.runtime.clone());
         let peripheral = self.peripheral.clone();
         let timeout = self.timeout;
         // Taken here rather than in the task, so that a new link cannot

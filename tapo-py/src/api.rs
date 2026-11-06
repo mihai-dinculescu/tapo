@@ -17,6 +17,7 @@ mod power_strip_handler;
 mod py_handler_ext;
 mod rgb_light_strip_handler;
 mod rgbic_light_strip_handler;
+mod setup_handler;
 
 pub use api_client::*;
 pub use camera_handler::*;
@@ -35,3 +36,4 @@ pub use power_strip_handler::*;
 pub use py_handler_ext::*;
 pub use rgb_light_strip_handler::*;
 pub use rgbic_light_strip_handler::*;
+pub use setup_handler::*;

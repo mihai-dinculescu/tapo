@@ -43,6 +43,7 @@ impl TryFrom<WifiNetworkRaw> for WifiNetwork {
 
 /// A Wi-Fi network that the device sees.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 pub struct WifiNetwork {
     /// The network's name.
     pub ssid: String,
@@ -56,9 +57,16 @@ pub struct WifiNetwork {
     pub channel: u8,
 }
 
+#[cfg(feature = "python")]
+crate::impl_to_dict!(WifiNetwork);
+
 /// The security of a Wi-Fi network.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(
+    feature = "python",
+    pyo3::prelude::pyclass(from_py_object, eq, hash, frozen)
+)]
 #[non_exhaustive]
 pub enum WifiSecurity {
     /// An open network, without a password.
@@ -75,6 +83,26 @@ pub enum WifiSecurity {
     /// cannot be joined.
     #[serde(other)]
     Unknown,
+}
+
+#[cfg(feature = "python")]
+#[pyo3::pymethods]
+impl WifiSecurity {
+    // `None` is a keyword in Python, so `WifiSecurity.None` is a syntax error.
+    // A `#[pyo3(name)]` on the variant cannot be written behind `cfg_attr`, so the
+    // variant is re-exported as `NONE` instead, and `tapo-py` removes the generated
+    // `None` attribute. `__repr__` uses the same name, since the generated one would
+    // print the Rust variant name.
+    #[classattr]
+    #[pyo3(name = "NONE")]
+    const PY_NONE: WifiSecurity = WifiSecurity::None;
+
+    fn __repr__(&self) -> String {
+        match self {
+            Self::None => "WifiSecurity.NONE".to_string(),
+            other => format!("WifiSecurity.{other:?}"),
+        }
+    }
 }
 
 #[cfg(test)]

@@ -225,8 +225,8 @@ SETUP_HANDLER_TABLES = {"Wi-Fi Setup": "SetupHandler"}
 
 # Handlers, and their examples, that are not exposed to Python yet. Their
 # SUPPORTED_DEVICES.md cells are expected to say Rust only.
-RUST_ONLY_HANDLERS = {"SetupHandler"}
-RUST_ONLY_EXAMPLES = {"tapo_setup_wifi", "tapo_setup_bluetooth"}
+RUST_ONLY_HANDLERS: set[str] = set()
+RUST_ONLY_EXAMPLES: set[str] = set()
 
 
 def hub_child_mapping() -> dict[str, set[str]]:
@@ -289,7 +289,9 @@ def pyi_builders() -> dict[str, tuple[str, set[str]]]:
     blocks = re.split(r"\n    async def ", text)
     for block in blocks[1:]:
         m = re.match(r"(\w+)\(self, ip_address: str\) -> (\w+Handler):", block)
-        if not m:
+        # Setup builders such as `setup_over_wifi` take an address too, but
+        # serve no model by name, as in Rust.
+        if not m or not BUILDER_RE.match(m.group(1)):
             continue
         returns = re.search(r"Returns:\n(.*?)(?:\n\s*\n|Example:|\"\"\")", block, flags=re.DOTALL)
         models = models_in(returns.group(1)) if returns else set[str]()
@@ -560,11 +562,14 @@ def parse_pyi_handler(name: str) -> tuple[set[str], set[str]] | None:
     if not path.exists():
         return None
     text = read(path)
-    cls = re.search(r"class " + name + r"\((.*?)\):\n\s*\"\"\"(.*?)\"\"\"", text, flags=re.DOTALL)
+    # A stub class without bases, such as `SetupHandler`, has no parentheses.
+    cls = re.search(
+        r"class " + name + r"(?:\((.*?)\))?:\n\s*\"\"\"(.*?)\"\"\"", text, flags=re.DOTALL
+    )
     if not cls:
         return None
     methods = set(re.findall(r"\n    (?:async )?def (\w+)\(", text))
-    methods |= stub_base_methods(cls.group(1))
+    methods |= stub_base_methods(cls.group(1) or "")
     return methods - {"__init__"}, models_in(cls.group(2))
 
 

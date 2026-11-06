@@ -17,3 +17,5 @@ from .schedule_rule_result import *
 from .smart_cam import *
 from .timer import *
 from .timezone_result import *
+from .wifi_join_result import *
+from .wifi_network import *

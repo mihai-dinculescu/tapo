@@ -169,12 +169,12 @@
 &#x2705; - Rust and Python\
 (d) - Requires the `debug` feature flag (enabled by default in `tapo-py`)
 
-A new or factory-reset device that broadcasts a setup network, such as `Tapo_Plug_999F`, is set up with `ApiClient::setup_over_wifi` while the host is on that network. One that is set up over Bluetooth instead is found with `ApiClient::discover_bluetooth_setup_devices` and set up with `ApiClient::setup_over_bluetooth`, which require the `bluetooth` feature flag.
+A new or factory-reset device that broadcasts a setup network, such as `Tapo_Plug_999F`, is set up with `ApiClient::setup_over_wifi` while the host is on that network. One that is set up over Bluetooth instead is found with `ApiClient::discover_bluetooth_setup_devices` and set up with `ApiClient::setup_over_bluetooth`, which require the `bluetooth` feature flag (enabled by default in `tapo-py`).
 
 | Feature<br/><br/>        | P110<br/>P110M<br/> |
 | ------------------------ | :------------------ |
-| address                  | &check;             |
-| get_device_info          | &check;             |
-| get_device_info_json (d) | &check;             |
-| join_wifi                | &check;             |
-| scan_wifi                | &check;             |
+| address                  | &#x2705;            |
+| get_device_info          | &#x2705;            |
+| get_device_info_json (d) | &#x2705;            |
+| join_wifi                | &#x2705;            |
+| scan_wifi                | &#x2705;            |

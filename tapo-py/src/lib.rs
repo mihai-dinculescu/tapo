@@ -30,9 +30,9 @@ use tapo::responses::{
     S200RotationParams, S210Result, ScheduleRuleResult, Snapshot, Status, T31XResult, T100Event,
     T100Result, T110Event, T110Result, T300Event, T300Result, TemperatureHumidityRecord,
     TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, Timer, TimezoneResult,
-    UsageByPeriodResult, WaterLeakStatus,
+    UsageByPeriodResult, WaterLeakStatus, WifiJoinResult, WifiNetwork, WifiSecurity,
 };
-use tapo::{DeviceType, DiscoveryRawResult};
+use tapo::{BluetoothSetupDevice, DeviceType, DiscoveryRawResult};
 
 use api::{
     PyApiClient, PyCameraHandler, PyCameraHubHandler, PyCameraPtzHandler, PyColorLightHandler,
@@ -41,8 +41,8 @@ use api::{
     PyLightHandler, PyMaybeDiscoveryRawResult, PyMaybeDiscoveryResult,
     PyPlugEnergyMonitoringHandler, PyPlugHandler, PyPowerStripEnergyMonitoringHandler,
     PyPowerStripHandler, PyPowerStripPlugEnergyMonitoringHandler, PyPowerStripPlugHandler,
-    PyRgbLightStripHandler, PyRgbicLightStripHandler, PyS200Handler, PyS210Handler, PyT31XHandler,
-    PyT100Handler, PyT110Handler, PyT300Handler,
+    PyRgbLightStripHandler, PyRgbicLightStripHandler, PyS200Handler, PyS210Handler, PySetupHandler,
+    PyT31XHandler, PyT100Handler, PyT110Handler, PyT300Handler,
 };
 use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyPowerDataInterval,
@@ -144,6 +144,9 @@ fn register_handlers(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<PyPowerStripPlugHandler>()?;
     module.add_class::<PyPowerStripPlugEnergyMonitoringHandler>()?;
 
+    module.add_class::<BluetoothSetupDevice>()?;
+    module.add_class::<PySetupHandler>()?;
+
     module.add_class::<DeviceType>()?;
     module.add_class::<PyDeviceDiscovery>()?;
     module.add_class::<PyDeviceDiscoveryIter>()?;
@@ -181,6 +184,13 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<ScheduleRuleResult>()?;
     module.add_class::<TimezoneResult>()?;
     module.add_class::<UsageByPeriodResult>()?;
+
+    // device setup
+    module.add_class::<WifiJoinResult>()?;
+    module.add_class::<WifiNetwork>()?;
+    module.add_class::<WifiSecurity>()?;
+    // The variant is exposed as `NONE`; drop the generated `None` alias.
+    module.py().get_type::<WifiSecurity>().delattr("None")?;
 
     // device info: other
     module.add_class::<DeviceInfoBasicResult>()?;
