@@ -11,14 +11,15 @@ Run all checks, fix any issues found, then present a summary table.
 
 ### Rust checks
 
-Run the following checks if there are changes in the `tapo/`, `tapo-py/`, or `tapo-mcp/` directories. Fix all issues found. Run independent checks (`cargo check`, `cargo clippy`, `cargo fmt`, `cargo test`) in parallel.
+Run the following checks if there are changes in the `tapo/`, `tapo-py/`, or `tapo-mcp/` directories. Fix all issues found. Run independent checks (`cargo check`, `cargo clippy`, `cargo fmt`, `cargo make test`) in parallel.
 Unless otherwise specified, run checks at the workspace level (no `-p` flags) with `--all-features` to ensure cross-crate issues are caught.
-Link-free checks (`check`, `clippy`) take `--workspace` so they cover `tapo-py` too; `cargo test` must NOT — it links test binaries and examples, which fails with `tapo-py`'s `pyo3/extension-module`, so it relies on `default-members` excluding `tapo-py`.
+Link-free checks (`check`, `clippy`) take `--workspace` so they cover `tapo-py` too.
+Tests are the exception: run them with `cargo make test`, as CI does, never with `cargo test --all-features`. `--all-features` turns on `tapo/python`, which makes every test binary load the Python DLL and fail on Windows with `STATUS_DLL_NOT_FOUND`.
 
 - `cargo check --workspace --all-features`
 - `cargo clippy --workspace --all-targets --all-features -- -D warnings`
 - `cargo fmt --all`
-- `cargo test --all-features`
+- `cargo make test`
 - `cargo clean --doc && RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps --all-features`
 - No `unwrap()` in non-test code without a `// safe:` comment
 - No `unsafe` in non-test code without a `// SAFETY:` comment
