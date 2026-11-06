@@ -26,8 +26,9 @@
 /// * `get_device_info_json()` method
 /// * `on()` and `off()` methods (if `on_off` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
-/// * `device_reboot()`, `device_reset()`, `get_latest_firmware()`, `get_firmware_update_state()`
-///   and `start_firmware_update()` methods (if `device_management` specified)
+/// * `device_reboot()`, `device_reset()`, `set_nickname()`, `get_latest_firmware()`,
+///   `get_firmware_update_state()` and `start_firmware_update()` methods (if
+///   `device_management` specified)
 /// * `impl HandlerExt` with `get_client()`
 macro_rules! tapo_handler {
     // With on_off + device_usage + device_management
@@ -271,6 +272,27 @@ macro_rules! tapo_handler {
             /// and requires reconfiguration.
             pub async fn device_reset(&self) -> Result<(), crate::error::Error> {
                 crate::api::ApiClientExt::device_reset(&*self.client.read().await).await
+            }
+
+            /// Sets the *name* of the device.
+            ///
+            /// # Arguments
+            ///
+            /// * `nickname` - The new name of the device, at most 128 bytes in UTF-8. An empty
+            ///   name is allowed.
+            ///
+            /// # Errors
+            ///
+            /// Returns an error if `nickname` is longer than 128 bytes in UTF-8, or if the
+            /// device turns the request down.
+            pub async fn set_nickname(
+                &self,
+                nickname: impl AsRef<str>,
+            ) -> Result<(), crate::error::Error> {
+                let json = serde_json::to_value(
+                    crate::requests::GenericSetDeviceInfoParams::nickname(nickname.as_ref())?,
+                )?;
+                crate::api::ApiClientExt::set_device_info(&*self.client.read().await, json).await
             }
 
             /// Returns the *latest firmware* that the device can update to as

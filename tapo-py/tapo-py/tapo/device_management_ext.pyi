@@ -27,3 +27,15 @@ class DeviceManagementExt(Protocol):
         This feature is especially useful when the device is difficult to access
         and requires reconfiguration.
         """
+
+    async def set_nickname(self, nickname: str) -> None:
+        """Sets the *name* of the device.
+
+        Args:
+            nickname (str): The new name of the device, at most 128 bytes in UTF-8.
+                An empty name is allowed.
+
+        Raises:
+            Exception: If `nickname` is longer than 128 bytes in UTF-8, or if the
+                device turns the request down.
+        """

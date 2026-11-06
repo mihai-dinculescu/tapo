@@ -1,7 +1,6 @@
-use base64::{Engine as _, engine::general_purpose};
 use serde::Serialize;
 
-use crate::responses::WifiSecurity;
+use crate::responses::{WifiSecurity, encode_value};
 
 /// The details that a device in setup mode joins a Wi-Fi network with. The
 /// device takes `account` as its local login from then on, and does not
@@ -49,12 +48,12 @@ impl SetQsInfoParams {
     ) -> Self {
         Self {
             account: QsAccount {
-                username: encode(username),
-                password: encode(password),
+                username: encode_value(username),
+                password: encode_value(password),
             },
             wireless: QsWireless {
-                ssid: encode(ssid),
-                password: encode(wifi_password),
+                ssid: encode_value(ssid),
+                password: encode_value(wifi_password),
                 key_type: security,
             },
             time: QsTime {
@@ -71,10 +70,6 @@ impl std::fmt::Debug for SetQsInfoParams {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SetQsInfoParams").finish_non_exhaustive()
     }
-}
-
-fn encode(value: &str) -> String {
-    general_purpose::STANDARD.encode(value)
 }
 
 #[cfg(test)]

@@ -49,6 +49,7 @@
 | set_color_temperature               |                             | &#x2705;                                  | &#x2705;            | &#x2705;                |                                          |                              |                         |                           |
 | set_hue_saturation                  |                             | &#x2705;                                  | &#x2705;            | &#x2705;                |                                          |                              |                         |                           |
 | set_lighting_effect                 |                             |                                           |                     | &#x2705;                |                                          |                              |                         |                           |
+| set_nickname                        | &#x2705;                    | &#x2705;                                  | &#x2705;            | &#x2705;                | &#x2705;                                 | &#x2705;                     | &#x2705;                | &#x2705;                  |
 | set_segment_effect                  |                             |                                           |                     | &#x2705;                |                                          |                              |                         |                           |
 | set_timer                           |                             |                                           |                     |                         | &#x2705;                                 | &#x2705;                     |                         |                           |
 | set() API \*                        |                             | &#x2705;                                  | &#x2705;            | &#x2705;                |                                          |                              |                         |                           |
@@ -131,6 +132,7 @@
 | get_timezone                        |               | &#x2705;      |
 | play_alarm                          | &#x2705;      |               |
 | refresh_session                     | &#x2705;      | &#x2705;      |
+| set_nickname                        | &#x2705;      |               |
 | start_firmware_update               | &#x2705;      |               |
 | stop_alarm                          | &#x2705;      |               |
 

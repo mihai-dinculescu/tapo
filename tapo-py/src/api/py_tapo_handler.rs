@@ -23,8 +23,9 @@
 /// * `get_device_info_json()` method (returns `Py<PyDict>`)
 /// * `impl PyHandlerExt`
 /// * `on()` and `off()` methods (if `on_off` specified)
-/// * `device_reboot()`, `device_reset()`, `get_latest_firmware()`, `get_firmware_update_state()`
-///   and `start_firmware_update()` methods (if `device_management` specified)
+/// * `device_reboot()`, `device_reset()`, `set_nickname()`, `get_latest_firmware()`,
+///   `get_firmware_update_state()` and `start_firmware_update()` methods (if
+///   `device_management` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
 macro_rules! py_handler {
     // on_off + device_management + device_usage
@@ -184,6 +185,16 @@ macro_rules! py_handler {
                 $crate::call_handler_method!(
                     handler.read().await.deref(),
                     $handler::device_reset
+                )
+            }
+
+            pub async fn set_nickname(&self, nickname: String) -> pyo3::prelude::PyResult<()> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::set_nickname,
+                    nickname
                 )
             }
 

@@ -17,6 +17,11 @@ impl DecodableResultExt for serde_json::Value {
     }
 }
 
+/// Encodes a string as base64, the way the device takes text such as names.
+pub(crate) fn encode_value(value: &str) -> String {
+    general_purpose::STANDARD.encode(value)
+}
+
 pub(crate) fn decode_value(value: &str) -> anyhow::Result<String> {
     let decoded_bytes = general_purpose::STANDARD.decode(value)?;
     Ok(std::str::from_utf8(&decoded_bytes)?.to_string())
