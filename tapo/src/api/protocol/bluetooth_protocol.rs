@@ -1,21 +1,25 @@
 //! A device in setup mode that is reached over Bluetooth LE: the scan for
 //! one, the GATT link that carries TSLP packets, and TPAP over that link.
 
+use std::collections::HashMap;
 use std::fmt;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock, Mutex as StdMutex, PoisonError, Weak};
 use std::time::Duration;
 
 use btleplug::api::bleuuid::uuid_from_u16;
 use btleplug::api::{
-    Central as _, Characteristic, Manager as _, Peripheral as _, ScanFilter, WriteType,
+    Central as _, CentralEvent, Characteristic, Manager as _, Peripheral as _, ScanFilter,
+    WriteType,
 };
-use btleplug::platform::{Manager, Peripheral};
+use btleplug::platform::{Adapter, Manager, Peripheral, PeripheralId};
 use log::{debug, trace};
 use rand::RngExt as _;
 use serde::de::DeserializeOwned;
 use serde_json::json;
 use tokio::runtime::Handle;
 use tokio::sync::Mutex;
+use tokio::time::Instant;
+use tokio_stream::StreamExt as _;
 use uuid::Uuid;
 
 use crate::requests::TapoRequest;
@@ -44,6 +48,13 @@ const READ_INTERVAL: Duration = Duration::from_millis(150);
 const MAX_CHUNK_LENGTH: usize = 200;
 /// The most reads that clear the rest of an earlier reply before a request.
 const MAX_STALE_READS: usize = 32;
+/// How many times a connection is tried, all within the client's timeout.
+const CONNECT_ATTEMPTS: u32 = 3;
+/// The longest wait for a device to advertise again after a disconnect,
+/// after which it is connected to anyway. A scan can miss the
+/// advertisement, and by then the operating system has closed the earlier
+/// connection, which on Windows takes about 3 seconds.
+const ADVERTISEMENT_WAIT: Duration = Duration::from_secs(10);
 
 /// The protocol byte of the advertisement for TPAP over Bluetooth.
 const PROTOCOL_TPAP: u8 = 4;
@@ -64,11 +75,35 @@ pub struct BluetoothSetupDevice {
     /// operating system hides it, as macOS does.
     pub address: String,
     #[cfg_attr(feature = "python", serde(skip))]
-    peripheral: Peripheral,
-    /// Held while a dropped link disconnects, so that a new link to the
-    /// device waits for that instead of being cut off by it.
+    adapter: Adapter,
     #[cfg_attr(feature = "python", serde(skip))]
-    disconnecting: Arc<Mutex<()>>,
+    id: PeripheralId,
+    /// Shared by every [`BluetoothSetupDevice`] for the device, including
+    /// those of later discoveries. Held while a link connects, exchanges or
+    /// disconnects, so that a new link to the device waits for that instead
+    /// of being cut off by it.
+    #[cfg_attr(feature = "python", serde(skip))]
+    state: Arc<Mutex<DeviceState>>,
+}
+
+/// The state of every device that a discovery returned and that is still
+/// in use, so that a later discovery shares it.
+static DEVICE_STATES: LazyLock<StdMutex<HashMap<PeripheralId, Weak<Mutex<DeviceState>>>>> =
+    LazyLock::new(StdMutex::default);
+
+struct DeviceState {
+    peripheral: Peripheral,
+    /// The generation of the newest link. Only that link may exchange and
+    /// disconnect, so a new setup of the device takes over from an earlier
+    /// one, as when a failed setup is retried while its handler is still
+    /// alive.
+    generation: u64,
+    /// Whether the device was disconnected since it last advertised. A
+    /// disconnect returns before the operating system closes the
+    /// connection, which on Windows happens about 3 seconds later, and a
+    /// connection made around then fails. The device advertises again only
+    /// once the connection is closed, so the next connection waits for that.
+    disconnected: bool,
 }
 
 #[cfg(feature = "python")]
@@ -163,12 +198,110 @@ pub(crate) async fn discover_bluetooth_setup_devices(
             model: model_from_name(&name),
             name,
             address,
-            peripheral,
-            disconnecting: Arc::default(),
+            adapter: adapter.clone(),
+            id: peripheral.id(),
+            state: device_state(peripheral),
         });
     }
 
     Ok(devices)
+}
+
+/// The state of the device of `peripheral`, which an earlier discovery
+/// may have created.
+fn device_state(peripheral: Peripheral) -> Arc<Mutex<DeviceState>> {
+    let mut states = DEVICE_STATES.lock().unwrap_or_else(PoisonError::into_inner);
+    states.retain(|_, state| state.strong_count() > 0);
+
+    let id = peripheral.id();
+    if let Some(state) = states.get(&id).and_then(Weak::upgrade) {
+        // The peripheral of this discovery belongs to its adapter, which the
+        // device now carries. An open connection keeps the one it was made
+        // with.
+        if let Ok(mut current) = state.try_lock()
+            && (current.disconnected || current.generation == 0)
+        {
+            current.peripheral = peripheral;
+        }
+        return state;
+    }
+    let state = Arc::new(Mutex::new(DeviceState {
+        peripheral,
+        generation: 0,
+        disconnected: false,
+    }));
+    states.insert(id, Arc::downgrade(&state));
+    state
+}
+
+impl BluetoothSetupDevice {
+    /// Scans until the device advertises, for up to [`ADVERTISEMENT_WAIT`]
+    /// and before `deadline`, and returns its peripheral, or `current` if
+    /// there is no newer one.
+    async fn wait_for_advertisement(
+        &self,
+        current: &Peripheral,
+        deadline: Instant,
+    ) -> Result<Peripheral, Error> {
+        debug!("Waiting for the device to advertise over Bluetooth again...");
+        let until = deadline.min(Instant::now() + ADVERTISEMENT_WAIT);
+        let scan = async {
+            let mut events = self.adapter.events().await.map_err(bluetooth_error)?;
+            self.adapter
+                .start_scan(ScanFilter::default())
+                .await
+                .map_err(bluetooth_error)?;
+
+            let advertised = tokio::time::timeout_at(until, async {
+                while let Some(event) = events.next().await {
+                    // The setup service data is in every advertisement of the
+                    // device. Unlike other events, this one is never replayed
+                    // for a device that the adapter already knows. BlueZ sends
+                    // it only when the data changes, as it does after a
+                    // disconnect.
+                    if let CentralEvent::ServiceDataAdvertisement { id, .. } = &event
+                        && *id == self.id
+                    {
+                        return Ok(true);
+                    }
+                }
+                Err(Error::from(anyhow::anyhow!("The Bluetooth events ended")))
+            })
+            .await;
+
+            if let Err(error) = self.adapter.stop_scan().await {
+                debug!("Stopping the Bluetooth scan failed: {error}");
+            }
+            advertised.unwrap_or(Ok(false))
+        };
+
+        match scan.await {
+            Ok(true) => {}
+            Ok(false) if until < deadline => {
+                debug!("The device did not advertise over Bluetooth in time, connecting anyway");
+            }
+            Ok(false) => {
+                return Err(timeout_error(
+                    "waiting for the device to advertise over Bluetooth",
+                ));
+            }
+            // Like a missed advertisement, a failed scan does not rule out
+            // that the device takes the connection.
+            Err(error) => {
+                debug!("Scanning for the device over Bluetooth failed, connecting anyway: {error}");
+            }
+        }
+
+        // macOS forgets a peripheral when it disconnects, and knows it again,
+        // as a new one, once it advertises.
+        match self.adapter.peripheral(&self.id).await {
+            Ok(peripheral) => Ok(peripheral),
+            Err(error) => {
+                debug!("Finding the device's Bluetooth peripheral again failed: {error}");
+                Ok(current.clone())
+            }
+        }
+    }
 }
 
 /// Whether the advertised `service_data` is that of a device that takes
@@ -188,12 +321,12 @@ fn model_from_name(name: &str) -> String {
 /// The GATT link to a device, which writes a packet and reads the reply
 /// back, one exchange at a time.
 struct BluetoothLink {
-    peripheral: Peripheral,
     write: Characteristic,
     read: Characteristic,
     timeout: Duration,
-    exchange: Mutex<()>,
-    disconnecting: Arc<Mutex<()>>,
+    /// The generation of the link, from [`DeviceState::generation`].
+    generation: u64,
+    device_state: Arc<Mutex<DeviceState>>,
     /// The runtime that the link connected on. The drop disconnects on it
     /// when it runs outside any runtime, as when Python frees the handler.
     runtime: Handle,
@@ -203,50 +336,97 @@ impl BluetoothLink {
     async fn connect(device: &BluetoothSetupDevice, timeout: Duration) -> Result<Self, Error> {
         let runtime = Handle::try_current()
             .map_err(|_| anyhow::anyhow!("Bluetooth needs a Tokio runtime"))?;
+        let deadline = Instant::now() + timeout;
 
-        // Waits for the disconnect of an earlier link to the device.
-        drop(device.disconnecting.lock().await);
+        // Waits for an earlier link to the device to finish what it is doing.
+        let mut state = tokio::time::timeout_at(deadline, Arc::clone(&device.state).lock_owned())
+            .await
+            .map_err(|_| timeout_error("waiting for an earlier Bluetooth link to close"))?;
 
-        let peripheral = device.peripheral.clone();
-        let (write, read) = match Self::open(&peripheral, timeout).await {
+        // Takes over from an earlier link, which leaves the connection open
+        // for this one to reuse but can no longer use or close it.
+        state.generation += 1;
+        let generation = state.generation;
+
+        let (write, read) = match Self::open_with_retries(device, &mut state, deadline).await {
             Ok(characteristics) => characteristics,
             Err(error) => {
-                // No link holds the connection yet, so no drop closes it.
-                if let Ok(Err(error)) = tokio::time::timeout(timeout, peripheral.disconnect()).await
-                {
-                    debug!("Disconnecting over Bluetooth failed: {error}");
-                }
+                // No link holds the connection, so no drop closes it. The
+                // disconnect runs in the background, so that the error
+                // returns at once, and holds the state, so that the next
+                // connection waits for it instead of being cut off by it.
+                runtime.spawn(async move {
+                    disconnect(&state.peripheral, Instant::now() + timeout).await;
+                    drop(state);
+                });
                 return Err(error);
             }
         };
 
         Ok(Self {
-            peripheral,
             write,
             read,
             timeout,
-            exchange: Mutex::new(()),
-            disconnecting: Arc::clone(&device.disconnecting),
+            generation,
+            device_state: Arc::clone(&device.state),
             runtime,
         })
     }
 
+    /// Connects to the device before `deadline` and returns its write and
+    /// read characteristics, trying again when a connection comes up
+    /// without them. After the last failed attempt, the connection is left
+    /// for the caller to close.
+    async fn open_with_retries(
+        device: &BluetoothSetupDevice,
+        state: &mut DeviceState,
+        deadline: Instant,
+    ) -> Result<(Characteristic, Characteristic), Error> {
+        let mut attempt = 1;
+        let mut last_error = None;
+        loop {
+            if state.disconnected {
+                match device
+                    .wait_for_advertisement(&state.peripheral, deadline)
+                    .await
+                {
+                    Ok(peripheral) => state.peripheral = peripheral,
+                    // The failed connection says more than the wait does.
+                    Err(error) => return Err(last_error.unwrap_or(error)),
+                }
+                state.disconnected = false;
+            }
+
+            let error = match tokio::time::timeout_at(deadline, Self::open(&state.peripheral)).await
+            {
+                Ok(Ok(characteristics)) => return Ok(characteristics),
+                Ok(Err(error)) => error,
+                Err(_) => timeout_error("connecting over Bluetooth"),
+            };
+            debug!("Connecting over Bluetooth failed, attempt {attempt}: {error}");
+            let last = attempt == CONNECT_ATTEMPTS || Instant::now() >= deadline;
+
+            state.disconnected = true;
+            if last {
+                return Err(error);
+            }
+            disconnect(&state.peripheral, deadline).await;
+            last_error = Some(error);
+            attempt += 1;
+        }
+    }
+
     /// Connects to `peripheral` and returns its write and read
     /// characteristics.
-    async fn open(
-        peripheral: &Peripheral,
-        timeout: Duration,
-    ) -> Result<(Characteristic, Characteristic), Error> {
-        tokio::time::timeout(timeout, async {
-            if !peripheral.is_connected().await? {
-                debug!("Connecting over Bluetooth...");
-                peripheral.connect().await?;
-            }
-            peripheral.discover_services().await
-        })
-        .await
-        .map_err(|_| timeout_error("connecting over Bluetooth"))?
-        .map_err(bluetooth_error)?;
+    async fn open(peripheral: &Peripheral) -> Result<(Characteristic, Characteristic), Error> {
+        if !peripheral.is_connected().await.map_err(bluetooth_error)? {
+            debug!("Connecting over Bluetooth...");
+            peripheral.connect().await.map_err(bluetooth_error)?;
+        }
+        peripheral
+            .discover_services()
+            .await
+            .map_err(bluetooth_error)?;
 
         let characteristic = |uuid: Uuid| {
             peripheral
@@ -268,21 +448,35 @@ impl BluetoothLink {
 
     /// Writes `packet` and returns the reply that has its sequence number.
     async fn exchange(&self, packet: &Packet) -> Result<Packet, Error> {
-        let _guard = self.exchange.lock().await;
+        // Held for the whole exchange, so that a newer link waits for it.
+        let state = self.device_state.lock().await;
+        if state.generation != self.generation {
+            return Err(anyhow::anyhow!(
+                "A newer Bluetooth setup of the device took over from this one"
+            )
+            .into());
+        }
 
-        tokio::time::timeout(self.timeout, self.exchange_unguarded(packet))
-            .await
-            .map_err(|_| timeout_error("waiting for the device's Bluetooth reply"))?
+        tokio::time::timeout(
+            self.timeout,
+            self.exchange_unguarded(&state.peripheral, packet),
+        )
+        .await
+        .map_err(|_| timeout_error("waiting for the device's Bluetooth reply"))?
     }
 
-    async fn exchange_unguarded(&self, packet: &Packet) -> Result<Packet, Error> {
-        self.discard_stale_reply().await?;
+    async fn exchange_unguarded(
+        &self,
+        peripheral: &Peripheral,
+        packet: &Packet,
+    ) -> Result<Packet, Error> {
+        self.discard_stale_reply(peripheral).await?;
 
         let encoded = packet.encode();
         let chunk_length =
-            MAX_CHUNK_LENGTH.min(usize::from(self.peripheral.mtu()).saturating_sub(3).max(20));
+            MAX_CHUNK_LENGTH.min(usize::from(peripheral.mtu()).saturating_sub(3).max(20));
         for chunk in encoded.chunks(chunk_length) {
-            self.peripheral
+            peripheral
                 .write(&self.write, chunk, WriteType::WithResponse)
                 .await
                 .map_err(bluetooth_error)?;
@@ -291,7 +485,7 @@ impl BluetoothLink {
         // A reply to an earlier request that gave up, for example after a
         // timeout, can still arrive after this one was written.
         loop {
-            let reply = self.read_reply().await?;
+            let reply = self.read_reply(peripheral).await?;
             if reply.sequence == packet.sequence {
                 return Ok(reply);
             }
@@ -303,14 +497,10 @@ impl BluetoothLink {
     }
 
     /// Reads the next whole packet from the reply characteristic.
-    async fn read_reply(&self) -> Result<Packet, Error> {
+    async fn read_reply(&self, peripheral: &Peripheral) -> Result<Packet, Error> {
         let mut reply = Vec::new();
         loop {
-            let data = self
-                .peripheral
-                .read(&self.read)
-                .await
-                .map_err(bluetooth_error)?;
+            let data = peripheral.read(&self.read).await.map_err(bluetooth_error)?;
 
             if data.is_empty() {
                 tokio::time::sleep(READ_INTERVAL).await;
@@ -335,14 +525,10 @@ impl BluetoothLink {
     /// Reads away what is left of a reply that an earlier exchange gave up
     /// on, for example after a timeout, so that it is not taken for the
     /// start of the next reply.
-    async fn discard_stale_reply(&self) -> Result<(), Error> {
+    async fn discard_stale_reply(&self, peripheral: &Peripheral) -> Result<(), Error> {
         let mut discarded = 0;
         for _ in 0..MAX_STALE_READS {
-            let data = self
-                .peripheral
-                .read(&self.read)
-                .await
-                .map_err(bluetooth_error)?;
+            let data = peripheral.read(&self.read).await.map_err(bluetooth_error)?;
             if data.is_empty() {
                 break;
             }
@@ -360,25 +546,32 @@ impl Drop for BluetoothLink {
     /// Disconnects in the background, so that the device is not held after
     /// the session ends, such as after a failed login or join.
     fn drop(&mut self) {
+        let timeout = self.timeout;
+        let device_state = Arc::clone(&self.device_state);
         // The runtime of the drop, if there is one, since the one that the
         // link connected on may have shut down since.
         let runtime = Handle::try_current().unwrap_or_else(|_| self.runtime.clone());
-        let peripheral = self.peripheral.clone();
-        let timeout = self.timeout;
-        // Taken here rather than in the task, so that a new link cannot
-        // connect before the disconnect has started.
-        let guard = Arc::clone(&self.disconnecting).try_lock_owned().ok();
+        let generation = self.generation;
+        // A link that connects before this task runs takes over the
+        // connection, so this does not cut it off.
         runtime.spawn(async move {
-            let _guard = guard;
-            // The link may already be gone, so a failure is only logged. The
-            // wait is bounded, so that a hung disconnect does not hold the
-            // guard, and with it the next connect, forever.
-            match tokio::time::timeout(timeout, peripheral.disconnect()).await {
-                Ok(Ok(())) => {}
-                Ok(Err(error)) => debug!("Disconnecting over Bluetooth failed: {error}"),
-                Err(_) => debug!("Disconnecting over Bluetooth timed out"),
+            let mut state = device_state.lock().await;
+            if state.generation == generation {
+                disconnect(&state.peripheral, Instant::now() + timeout).await;
+                state.disconnected = true;
             }
         });
+    }
+}
+
+/// Disconnects from `peripheral`. The link may already be gone, so a
+/// failure is only logged. The wait ends at `deadline`, so that a hung
+/// disconnect does not hold up the next connection forever.
+async fn disconnect(peripheral: &Peripheral, deadline: Instant) {
+    match tokio::time::timeout_at(deadline, peripheral.disconnect()).await {
+        Ok(Ok(())) => {}
+        Ok(Err(error)) => debug!("Disconnecting over Bluetooth failed: {error}"),
+        Err(_) => debug!("Disconnecting over Bluetooth timed out"),
     }
 }
 

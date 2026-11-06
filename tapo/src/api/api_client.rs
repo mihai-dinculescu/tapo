@@ -1375,6 +1375,9 @@ impl ApiClient {
     /// The device takes the client's credentials as its login once it joins
     /// a Wi-Fi network. They need not be those of a TP-Link account.
     ///
+    /// Starting another setup of the same device ends this one, even if that
+    /// setup fails. This handler then returns an error.
+    ///
     /// # Arguments
     ///
     /// * `device` - the device, as returned by [`ApiClient::discover_bluetooth_setup_devices`]
