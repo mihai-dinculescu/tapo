@@ -87,7 +87,7 @@ impl GetCapability {
 pub struct Device {
     /// Unique device identifier.
     pub id: String,
-    /// User-assigned device name.
+    /// Device name, or the device type, such as "Plug", when the device has no name.
     pub name: String,
     /// Device model (e.g. "L530", "P110").
     pub model: String,

@@ -54,10 +54,7 @@ class DiscoveryResultExt(Protocol):
 
     @property
     def nickname(self) -> str:
-        """Returns the device nickname.
-
-        PowerStrip variants return a descriptive name since they lack a nickname field.
-        """
+        """Returns the device nickname."""
 
 @dataclass
 class Other(DiscoveryResultExt):

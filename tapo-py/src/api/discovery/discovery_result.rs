@@ -169,9 +169,9 @@ impl PyDiscoveryResult {
             PyDiscoveryResult::RgbicLightStrip { device_info, .. } => &device_info.nickname,
             PyDiscoveryResult::Plug { device_info, .. } => &device_info.nickname,
             PyDiscoveryResult::PlugEnergyMonitoring { device_info, .. } => &device_info.nickname,
-            PyDiscoveryResult::PowerStrip { .. } => DeviceType::PowerStrip.as_str(),
-            PyDiscoveryResult::PowerStripEnergyMonitoring { .. } => {
-                DeviceType::PowerStripEnergyMonitoring.as_str()
+            PyDiscoveryResult::PowerStrip { device_info, .. } => &device_info.nickname,
+            PyDiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => {
+                &device_info.nickname
             }
             PyDiscoveryResult::Hub { device_info, .. } => &device_info.nickname,
             PyDiscoveryResult::HubIr { device_info, .. } => &device_info.nickname,

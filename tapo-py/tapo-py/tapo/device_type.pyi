@@ -44,3 +44,6 @@ class DeviceType:
 
     CameraPtz: Final[DeviceType]
     """Tapo C210, C220, C225, C325WB, C520WS, TC40, TC70 - smart cameras with PTZ."""
+
+    def __str__(self) -> str:
+        """Returns the name of the device type, such as "Power Strip"."""

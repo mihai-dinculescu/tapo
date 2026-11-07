@@ -3,7 +3,7 @@ use std::env;
 
 use log::{error, info, warn};
 use tapo::ApiClient;
-use tapo::{DiscoveryResult, StreamExt};
+use tapo::{DeviceType, DiscoveryResult, StreamExt};
 
 mod common;
 
@@ -42,69 +42,79 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(&device_info.nickname, DeviceType::Light.as_str());
                     let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::ColorLight {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(&device_info.nickname, DeviceType::ColorLight.as_str());
                     let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::RgbLightStrip {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(&device_info.nickname, DeviceType::RgbLightStrip.as_str());
                     let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::RgbicLightStrip {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(&device_info.nickname, DeviceType::RgbicLightStrip.as_str());
                     let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::Plug {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(&device_info.nickname, DeviceType::Plug.as_str());
                     let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::PlugEnergyMonitoring {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(
+                        &device_info.nickname,
+                        DeviceType::PlugEnergyMonitoring.as_str(),
+                    );
                     let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::PowerStrip {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(&device_info.nickname, DeviceType::PowerStrip.as_str());
                     let (ip, port) = handler.address();
                     info!(
-                        "Found Power Strip of model {:?} at {ip}:{port}.",
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
                         device_info.model
                     );
                 }
@@ -112,9 +122,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(
+                        &device_info.nickname,
+                        DeviceType::PowerStripEnergyMonitoring.as_str(),
+                    );
                     let (ip, port) = handler.address();
                     info!(
-                        "Found Power Strip with Energy Monitoring of model {:?} at {ip}:{port}.",
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
                         device_info.model
                     );
                 }
@@ -122,50 +136,55 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(&device_info.nickname, DeviceType::Hub.as_str());
                     let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::HubIr {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(&device_info.nickname, DeviceType::HubIr.as_str());
                     let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::CameraHub {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(&device_info.nickname, DeviceType::CameraHub.as_str());
                     let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::Camera {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(&device_info.nickname, DeviceType::Camera.as_str());
                     let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::CameraPtz {
                     device_info,
                     handler,
                 } => {
+                    let name = name_or(&device_info.nickname, DeviceType::CameraPtz.as_str());
                     let (ip, port) = handler.address();
                     info!(
-                        "Found {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 DiscoveryResult::Other {
@@ -175,9 +194,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     // If you believe that this device is already supported through one of the existing handlers, or would like to explore adding support for a currently
                     // unsupported model, please [open an issue on GitHub](https://github.com/mihai-dinculescu/tapo/issues)
                     // to start the discussion.
+                    let name = name_or(
+                        device_info.nickname.as_deref().unwrap_or_default(),
+                        DeviceType::Other.as_str(),
+                    );
                     warn!(
-                        "Found device without a dedicated handler {:?} of model {:?} at {ip}:{port}.",
-                        device_info.nickname, device_info.model
+                        "Found device without a dedicated handler {name:?} of model {:?} at {ip}:{port}.",
+                        device_info.model
                     );
                 }
                 // `DiscoveryResult` is non-exhaustive. Every type it has today is handled above.
@@ -190,4 +213,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+/// Returns the device's name, or the device type when the name is empty. A
+/// device can have an empty name: the Tapo app doesn't show a power strip's
+/// own name, for example, but `set_nickname` can set it.
+fn name_or<'a>(nickname: &'a str, device_type: &'a str) -> &'a str {
+    if nickname.trim().is_empty() {
+        device_type
+    } else {
+        nickname
+    }
 }

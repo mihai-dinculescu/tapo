@@ -422,8 +422,6 @@ impl DiscoveryResult {
     }
 
     /// Returns the device nickname.
-    ///
-    /// PowerStrip variants lack a nickname field, so a descriptive literal is returned instead.
     pub fn nickname(&self) -> &str {
         match self {
             DiscoveryResult::Light { device_info, .. } => &device_info.nickname,
@@ -432,9 +430,9 @@ impl DiscoveryResult {
             DiscoveryResult::RgbicLightStrip { device_info, .. } => &device_info.nickname,
             DiscoveryResult::Plug { device_info, .. } => &device_info.nickname,
             DiscoveryResult::PlugEnergyMonitoring { device_info, .. } => &device_info.nickname,
-            DiscoveryResult::PowerStrip { .. } => DeviceType::PowerStrip.as_str(),
-            DiscoveryResult::PowerStripEnergyMonitoring { .. } => {
-                DeviceType::PowerStripEnergyMonitoring.as_str()
+            DiscoveryResult::PowerStrip { device_info, .. } => &device_info.nickname,
+            DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => {
+                &device_info.nickname
             }
             DiscoveryResult::Hub { device_info, .. } => &device_info.nickname,
             DiscoveryResult::HubIr { device_info, .. } => &device_info.nickname,

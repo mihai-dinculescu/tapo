@@ -93,7 +93,12 @@ enum DeviceOutcome {
 
 async fn process_device(device: DiscoveryResult) -> DeviceOutcome {
     let id = device.device_id().to_string();
-    let name = device.nickname().to_string();
+    let name = if device.nickname().trim().is_empty() {
+        device.device_type().as_str()
+    } else {
+        device.nickname()
+    }
+    .to_string();
     let model = device.model().to_string();
     let (ip, _) = device.address();
 

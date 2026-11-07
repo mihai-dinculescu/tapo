@@ -354,7 +354,7 @@ macro_rules! tapo_handler {
 /// `get_device_info_json` use the camelCase `getDeviceInfo` method, which is how IR remotes are addressed.
 /// `firmware,` can follow `on_off,`, `trigger_logs = EventType,` or stand alone, and generates
 /// `get_latest_firmware()`, `get_firmware_update_state()` and `start_firmware_update()`. Only hub
-/// children take it: power strip outlets refuse the latest firmware request.
+/// children take it: power strip child plugs refuse the latest firmware request.
 ///
 /// # Generated code
 ///

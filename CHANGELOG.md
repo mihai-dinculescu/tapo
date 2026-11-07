@@ -12,6 +12,11 @@ file. This change log follows the conventions of
 - Device setup over Bluetooth: a new or factory-reset device that is set up over Bluetooth, such as the P110M, can now be put on a Wi-Fi network the same way, behind the new `bluetooth` feature flag. `ApiClient::discover_bluetooth_setup_devices` returns the devices nearby that are ready for setup as `BluetoothSetupDevice`s, with the name, model and Bluetooth address of each, and `ApiClient::setup_over_bluetooth` returns a `SetupHandler` for one of them. Over Bluetooth, `join_wifi` waits until the device says that it has joined and returns `WifiJoinResult::Connected`, or returns an error if it does not join within 65 seconds.
 - Firmware updates: every device except cameras and camera hubs can now check for, start and follow a firmware update. `get_latest_firmware` returns the newest firmware that the device can update to as `LatestFirmwareResult`: `UpToDate` with the version that the device is running, or `UpdateAvailable` with the update's version, release date and release notes. `start_firmware_update` starts updating to that firmware. The device downloads, installs and reboots by itself, and needs `refresh_session` once it is back. `get_firmware_update_state` returns the state of the update as `FirmwareUpdateStateResult`: `Idle`, `Downloading` with the download progress, `Downloaded` with the time the device takes to install the update and reboot, `AwaitingTransfer` when the hub has downloaded a child device's update but not sent it yet, or `Failed` and `Unknown` with the device's status code. (thanks to @bradthurber)
 - Renaming a device: lights, light strips, plugs, power strips and the H100 and H110 hubs can now be renamed with `set_nickname`, for example right after setting them up. The name can be up to 128 bytes in UTF-8.
+- `DeviceInfoPowerStripResult`: added `nickname`, the name of the power strip itself, which is empty when the strip has none.
+
+### Changed
+
+- `DiscoveryResult::nickname`: power strips now return their own name, which is empty when the strip has none, instead of "Power Strip" or "Power Strip with Energy Monitoring".
 
 ### Fixed
 
@@ -26,6 +31,12 @@ file. This change log follows the conventions of
 - Device setup over Bluetooth: a new or factory-reset device that is set up over Bluetooth, such as the P110M, can now be put on a Wi-Fi network the same way. `ApiClient.discover_bluetooth_setup_devices` returns the devices nearby that are ready for setup as `BluetoothSetupDevice`s, with the name, model and Bluetooth address of each, and `ApiClient.setup_over_bluetooth` returns a `SetupHandler` for one of them. Over Bluetooth, `join_wifi` waits until the device says that it has joined and returns `WifiJoinResult.Connected`, or raises if it does not join within 65 seconds. On Linux it uses BlueZ, and the wheels need no system libdbus.
 - Firmware updates: every device except cameras and camera hubs can now check for, start and follow a firmware update. `get_latest_firmware` returns the newest firmware that the device can update to as `LatestFirmwareResult`: `update_available`, the newest version as `fw_ver` (the running version when the device is up to date), and the update's `release_date` and `release_notes`, which are `None` when no update is available. `start_firmware_update` starts updating to that firmware. The device downloads, installs and reboots by itself, and needs `refresh_session` once it is back. `get_firmware_update_state` returns the state of the update as `FirmwareUpdateStateResult`: a `status` of `FirmwareUpdateStatus` (`Idle`, `Downloading`, `Downloaded`, `AwaitingTransfer`, `Failed` or `Unknown`), with `download_progress` while downloading, `install_time_s` and `reboot_time_s` once downloaded, and the device's status `code` when failed or unknown. (thanks to @bradthurber)
 - Renaming a device: lights, light strips, plugs, power strips and the H100 and H110 hubs can now be renamed with `set_nickname`, for example right after setting them up. The name can be up to 128 bytes in UTF-8.
+- `DeviceInfoPowerStripResult`: added `nickname`, the name of the power strip itself, which is empty when the strip has none.
+
+### Changed
+
+- `DeviceType`: `str()` now returns the name of the device type, such as "Power Strip", instead of `DeviceType.PowerStrip`.
+- `DiscoveryResult.nickname`: power strips now return their own name, which is empty when the strip has none, instead of "Power Strip" or "Power Strip with Energy Monitoring".
 
 ### Fixed
 
@@ -33,6 +44,10 @@ file. This change log follows the conventions of
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval.Hourly` now returns only the requested days when they include the day the clocks go back. It used to return an extra day of entries after `end_date`, and 8 days that included it raised the device error `-1008`. (thanks to @bradthurber)
 
 ## [MCP Unreleased][Unreleased]
+
+### Changed
+
+- `list_devices`: a device without a name is now listed by its type, such as "Plug" or "Power Strip", instead of with an empty name. A power strip that has a name of its own is now listed by that name.
 
 ### Fixed
 

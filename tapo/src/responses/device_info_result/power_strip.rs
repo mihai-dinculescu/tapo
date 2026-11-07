@@ -24,6 +24,9 @@ pub struct DeviceInfoPowerStripResult {
     pub longitude: Option<i64>,
     pub mac: String,
     pub model: String,
+    /// The name of the power strip itself, which the Tapo app doesn't show. The
+    /// app names the child plugs instead. Empty when the strip has no name.
+    pub nickname: String,
     pub oem_id: String,
     pub region: Option<String>,
     pub rssi: i16,
@@ -42,6 +45,7 @@ impl TapoResponseExt for DeviceInfoPowerStripResult {}
 impl DecodableResultExt for DeviceInfoPowerStripResult {
     fn decode(mut self) -> Result<Self, Error> {
         self.ssid = decode_value(&self.ssid)?;
+        self.nickname = decode_value(&self.nickname)?;
 
         Ok(self)
     }
