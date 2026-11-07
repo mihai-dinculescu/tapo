@@ -219,9 +219,10 @@ def hub_extra_child_handlers() -> dict[str, str]:
 COLUMN_HANDLERS = {"IR Remote": "IrRemoteHandler"}
 
 # Handlers that discovery never returns, because they serve a device that is not
-# on the network yet. Each has a SUPPORTED_DEVICES.md table of its own, by
-# title, and serves the models that its "Handler for" doc names.
-SETUP_HANDLER_TABLES = {"Wi-Fi Setup": "SetupHandler"}
+# on the network yet. Each has a SUPPORTED_DEVICES.md section of its own, by
+# title, whose table has device type columns and one row named after the
+# handler, and whose "`<Handler>` provides ..." sentence lists its methods.
+SETUP_HANDLER_TABLES = {"Device Setup": "SetupHandler"}
 
 # Handlers, and their examples, that are not exposed to Python yet. Their
 # SUPPORTED_DEVICES.md cells are expected to say Rust only.
@@ -674,6 +675,7 @@ class Table:
     labels: list[str]  # header text per column, <br/> removed
     columns: list[set[str]]  # models per column
     rows: dict[str, tuple[bool, list[str]]]  # feature -> (debug flagged, marker per column)
+    body: str  # section text, for the setup handler method sentence
 
 
 def parse_supported_devices() -> list[Table]:
@@ -693,8 +695,38 @@ def parse_supported_devices() -> list[Table]:
             debug = "(d)" in feature
             feature = re.sub(r"\s*\(d\)|\s*\\\*|\(\) API", "", feature).strip()
             rows[feature] = (debug, cells[1:])
-        tables.append(Table(title, labels, columns, rows))
+        tables.append(Table(title, labels, columns, rows, body))
     return tables
+
+
+def check_setup_table(table: Table, handler: "Handler") -> None:
+    """A setup section lists the handler's methods in a sentence, with (d) on
+    the debug-gated ones, and its table has one row named after the handler."""
+    where = f"'{table.title}'"
+    if list(table.rows) != [handler.name]:
+        finding("supported-devices", f"{where}: expected one row named {handler.name}, found {list(table.rows)}")
+    sentence = re.search(r"`" + handler.name + r"` provides (.*?)\.\n", table.body)
+    if sentence is None:
+        finding("supported-devices", f"{where}: no '`{handler.name}` provides ...' sentence")
+        return
+    listed = {
+        name: bool(debug)
+        for name, debug in re.findall(r"`(\w+)`( \(d\))?", sentence.group(1))
+    }
+    rust = {m: d for m, d in handler.rust_methods.items() if m not in NOT_FEATURES}
+    for m in sorted(set(rust) - set(listed)):
+        finding("supported-devices", f"{where}: {handler.name}.{m} is not in the provides sentence")
+    for m in sorted(set(listed) - set(rust)):
+        finding("supported-devices", f"{where}: {m} in the provides sentence is not a method of {handler.name}")
+    for m in sorted(set(listed) & set(rust)):
+        if listed[m] != rust[m]:
+            finding(
+                "supported-devices",
+                f"{where}: {m}: '(d)' is {'set' if listed[m] else 'missing'} but the Rust method is {'' if rust[m] else 'not '}debug-gated",
+            )
+    if handler.name not in RUST_ONLY_HANDLERS:
+        for m in sorted(set(rust) - handler.py_methods):
+            finding("supported-devices", f"{where}: {handler.name}.{m} is not in the Python stub")
 
 
 def expected_marker(rust: bool, python: bool) -> str:
@@ -1155,14 +1187,15 @@ def main() -> int:
         child_table = "Child" in table.title
         setup_handlers = set(SETUP_HANDLER_TABLES.values())
         if table.title in SETUP_HANDLER_TABLES:
-            setup_handler = SETUP_HANDLER_TABLES[table.title]
-            pool = {setup_handler: models_for_handler.get(setup_handler, set())}
-        else:
-            pool = {
-                n: ms
-                for n, ms in models_for_handler.items()
-                if (n in child_handlers) == child_table and n not in setup_handlers
-            }
+            setup_handler = handlers.get(SETUP_HANDLER_TABLES[table.title])
+            if setup_handler is not None:
+                check_setup_table(table, setup_handler)
+            continue
+        pool = {
+            n: ms
+            for n, ms in models_for_handler.items()
+            if (n in child_handlers) == child_table and n not in setup_handlers
+        }
         for idx, (label, col_models) in enumerate(zip(table.labels, table.columns)):
             if label in COLUMN_HANDLERS:
                 column_handlers = [COLUMN_HANDLERS[label]]

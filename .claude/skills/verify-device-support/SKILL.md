@@ -76,7 +76,7 @@ Each table column is a group of models. The script maps the group to its handler
 - blank when the handler does not have it
 - `(d)` on the row when, and only when, the Rust method is behind `#[cfg(feature = "debug")]`
 
-A handler that discovery never returns, such as `SetupHandler` for a device that is not on the network yet, has a table of its own, which `SETUP_HANDLER_TABLES` in the script maps by title; it serves the models its "Handler for" doc names. A handler or example that is not exposed to Python yet is listed in `RUST_ONLY_HANDLERS` / `RUST_ONLY_EXAMPLES`, and its cells are expected to be `&check;`.
+A handler that discovery never returns, such as `SetupHandler` for a device that is not on the network yet, has a section of its own, which `SETUP_HANDLER_TABLES` in the script maps by title. Its table has device type columns and one row named after the handler, and a "`SetupHandler` provides ..." sentence lists the handler's methods, with `(d)` on the debug-gated ones. The script checks that sentence against the handler's Rust methods and Python stub, and does not map the device type columns to models. A handler or example that is not exposed to Python yet is listed in `RUST_ONLY_HANDLERS` / `RUST_ONLY_EXAMPLES`, and its cells are expected to be `&check;`.
 
 It also checks that every method of the handler has a row, that the columns for one handler list every model discovery maps to it, and that the set of models across all tables equals the "Tested with" set. Child builders (`ke100`, `plug`, `*_unchecked`) are not rows.
 

@@ -5,7 +5,7 @@
 - [Cameras](#cameras)
 - [Hubs](#hubs)
 - [Hub Child Devices](#hub-child-devices)
-- [Wi-Fi Setup](#wi-fi-setup)
+- [Device Setup](#device-setup)
 
 ## Lights, Light Strips, Plugs, Power Strips
 
@@ -165,18 +165,18 @@
 
 \* Obtained by calling `get_child_device_list` on the hub (H100, H110, H200, H500) or `get_device_info` on a child device handler.
 
-## Wi-Fi Setup
+## Device Setup
 
 &check; - Rust only\
 &#x2705; - Rust and Python\
+&#x1F7E1; - Not tested yet\
+&#x274C; - Not supported\
 (d) - Requires the `debug` feature flag (enabled by default in `tapo-py`)
 
 A new or factory-reset device that broadcasts a setup network, such as `Tapo_Plug_999F`, is set up with `ApiClient::setup_over_wifi` while the host is on that network. One that is set up over Bluetooth instead is found with `ApiClient::discover_bluetooth_setup_devices` and set up with `ApiClient::setup_over_bluetooth`, which require the `bluetooth` feature flag (enabled by default in `tapo-py`).
 
-| Feature<br/><br/>        | P110<br/>P110M<br/> |
-| ------------------------ | :------------------ |
-| address                  | &#x2705;            |
-| get_device_info          | &#x2705;            |
-| get_device_info_json (d) | &#x2705;            |
-| join_wifi                | &#x2705;            |
-| scan_wifi                | &#x2705;            |
+`SetupHandler` provides `address`, `get_device_info`, `get_device_info_json` (d), `join_wifi` and `scan_wifi`.
+
+| Handler      | Lights   | Light Strips | Plugs    | Power Strips | Hubs      | Camera Hubs | Cameras  |
+| ------------ | :------- | :----------- | :------- | :----------- | :-------- | :---------- | :------- |
+| SetupHandler | &#x2705; | &#x2705;     | &#x2705; | &#x2705;     | &#x1F7E1; | &#x274C;    | &#x274C; |
