@@ -1,13 +1,13 @@
 # Supported devices
 
-- [Lights, Lighting Strips, Plugs, Power Strips](#lights-lighting-strips-plugs-power-strips)
+- [Lights, Light Strips, Plugs, Power Strips](#lights-light-strips-plugs-power-strips)
 - [Power Strip Child Devices](#power-strip-child-devices)
 - [Cameras](#cameras)
 - [Hubs](#hubs)
 - [Hub Child Devices](#hub-child-devices)
 - [Wi-Fi Setup](#wi-fi-setup)
 
-## Lights, Lighting Strips, Plugs, Power Strips
+## Lights, Light Strips, Plugs, Power Strips
 
 &check; - Rust only\
 &#x2705; - Rust and Python\
