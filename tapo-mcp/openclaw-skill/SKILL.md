@@ -89,7 +89,7 @@ Energy dates are read in the plug's time zone, so the entries match the Tapo app
 
 ### control_device
 
-Control a device by applying 1 to 12 set capabilities, in order. The count and every value are checked before the device is contacted; then the device ID is verified to match at the given IP, and a capability the device does not support fails the call before any capability is applied. `Brightness`, `Color`, `HueSaturation` and `ColorTemperature` also turn the device on if it is off. When the device returns an error partway through, the error says how many capabilities were applied and which one failed.
+Control a device by applying 1 to 12 set capabilities, in order. The count and every value are checked before the device is contacted; then the device ID is verified to match at the given IP, and a capability the device does not support fails the call before any capability is applied. `Brightness`, `Color`, `HueSaturation` and `ColorTemperature` also turn the device on if it is off. When the device returns an error partway through, the error says how many capabilities were applied and which one failed. On success, it returns `device_info`, the device's state afterwards read back from the device, the same as the `DeviceInfo` capability returns, so there is no need to read it again.
 
 ```bash
 # Turn on (plugs, lights, power strip child plugs, and S210 switches paired to a hub)

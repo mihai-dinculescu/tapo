@@ -68,7 +68,7 @@ impl TapoMcp {
 
     #[tool(
         description = format!(
-            "Control a Tapo device by applying {} to {} set capabilities, in order. Checks the count and every value before contacting the device, then verifies the device ID matches at the given IP. A capability the device does not support fails the call before any capability is applied. When the device returns an error partway through, the error says how many capabilities were applied and which one failed.",
+            "Control a Tapo device by applying {} to {} set capabilities, in order. Checks the count and every value before contacting the device, then verifies the device ID matches at the given IP. A capability the device does not support fails the call before any capability is applied. When the device returns an error partway through, the error says how many capabilities were applied and which one failed. Returns the device's state afterwards, read back from the device as the DeviceInfo capability returns it.",
             CONTROL_CAPABILITIES.start(),
             CONTROL_CAPABILITIES.end()
         ),

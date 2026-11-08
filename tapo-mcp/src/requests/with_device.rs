@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use tapo::{
     ApiClient, CameraHubHandler, DiscoveryResult, HubHandler, HubIrHandler,
-    PowerStripEnergyMonitoringHandler, PowerStripHandler, StreamExt as _,
+    PowerStripEnergyMonitoringHandler, PowerStripHandler, S210Handler, StreamExt as _,
     responses::ChildDeviceHubIrResult,
 };
 use tokio::time::timeout;
@@ -37,6 +37,18 @@ pub enum HubParent {
     Hub(HubHandler),
     HubIr(HubIrHandler),
     CameraHub(CameraHubHandler),
+}
+
+impl HubParent {
+    /// A handler for the S210 light switch with `child_id`, paired to this hub.
+    pub fn s210_unchecked(&self, child_id: impl Into<String>) -> S210Handler {
+        let child_id = child_id.into();
+        match self {
+            HubParent::Hub(hub) => hub.s210_unchecked(child_id),
+            HubParent::HubIr(hub) => hub.s210_unchecked(child_id),
+            HubParent::CameraHub(hub) => hub.s210_unchecked(child_id),
+        }
+    }
 }
 
 /// How long a tool call may contact a device for, on top of the discovery timeout,

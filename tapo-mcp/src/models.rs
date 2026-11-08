@@ -164,6 +164,18 @@ pub struct SnapshotResult {
     pub expires_at: Option<DateTime<Utc>>,
 }
 
+/// The device's state after `control_device` applied every capability.
+#[derive(Debug, Serialize, JsonSchema)]
+pub struct ControlDeviceResult {
+    /// The device ID that was controlled.
+    pub id: String,
+    /// The IP address the device was reached at. For a child device, its parent's.
+    pub ip: String,
+    /// The device's state after the capabilities were applied, read back from
+    /// the device. The same as the `DeviceInfo` capability returns.
+    pub device_info: serde_json::Value,
+}
+
 /// A capability to set on a device, with the value to set it to.
 #[derive(Debug, Clone, Deserialize, JsonSchema, IntoStaticStr)]
 #[serde(tag = "type")]

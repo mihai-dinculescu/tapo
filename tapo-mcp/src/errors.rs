@@ -63,6 +63,14 @@ pub enum TapoMcpError {
         source: tapo::Error,
     },
 
+    #[error("{}, but reading the device's state back failed", all_applied(*.total))]
+    ControlReadBackFailed {
+        /// The number of capabilities, all of which were applied.
+        total: usize,
+        #[source]
+        source: tapo::Error,
+    },
+
     #[error("Capability '{capability}' requires {expected}; device id '{id}' is not eligible")]
     WrongDeviceType {
         id: String,
@@ -90,6 +98,14 @@ fn applied_progress(applied: usize, total: usize) -> String {
         "capabilities"
     };
     format!("Applied {applied} of {total} {noun}")
+}
+
+fn all_applied(total: usize) -> String {
+    if total == 1 {
+        "Applied the capability".to_string()
+    } else {
+        format!("Applied all {total} capabilities")
+    }
 }
 
 fn control_progress(applied: usize, total: usize, in_flight: Option<&str>) -> String {
@@ -267,6 +283,32 @@ mod tests {
         assert_eq!(
             error_message(&err),
             "Applied 1 of 2 capabilities; capability 2 (Color) failed and may still have been applied: connection reset by peer"
+        );
+    }
+
+    #[test]
+    fn control_read_back_failed_says_every_capability_was_applied() {
+        let err = TapoMcpError::ControlReadBackFailed {
+            total: 2,
+            source: tapo::Error::Other(anyhow::anyhow!("connection reset by peer")),
+        };
+
+        assert_eq!(
+            error_message(&err),
+            "Applied all 2 capabilities, but reading the device's state back failed: connection reset by peer"
+        );
+    }
+
+    #[test]
+    fn control_read_back_failed_names_a_single_capability() {
+        let err = TapoMcpError::ControlReadBackFailed {
+            total: 1,
+            source: tapo::Error::Other(anyhow::anyhow!("connection reset by peer")),
+        };
+
+        assert_eq!(
+            error_message(&err),
+            "Applied the capability, but reading the device's state back failed: connection reset by peer"
         );
     }
 
