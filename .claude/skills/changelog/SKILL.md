@@ -9,8 +9,8 @@ Update `CHANGELOG.md` when the public API of the Rust or Python libraries or the
 
 ## Style
 
-- Use the appropriate section: `### Added`, `### Changed`, `### Fixed`, `### Removed`
+- Use the appropriate section, in this order: `### Added`, `### Changed`, `### Deprecated`, `### Removed`, `### Fixed`, `### Security`
 - Entries use the format: `` - `Type`: verb phrase. `` (e.g. `` - `HubHandler`: added `device_reboot` method. ``)
-- Start with the type/handler name in backticks, followed by a colon and a verb (added, changed, corrected, removed)
+- Start with the type/handler name in backticks, followed by a colon and a verb (added, changed, deprecated, removed, corrected)
 - When a change affects both Rust and Python, add an entry to both unreleased sections
 - When a change affects the MCP server (`tapo-mcp/`), add an entry to the `[MCP Unreleased]` section

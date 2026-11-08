@@ -47,8 +47,12 @@ file. This change log follows the conventions of
 
 ### Changed
 
-- The MCP endpoint is now `/mcp`, for example `http://127.0.0.1:3000/mcp`. `/` still works in this release but logs a deprecation warning, and will be removed in a later release. Update your client URLs.
+- `/mcp`: replaces `/` as the MCP endpoint, for example `http://127.0.0.1:3000/mcp`. Update your client URLs. `/` still works in this release but is deprecated.
 - `list_devices`: a device without a name is now listed by its type, such as "Plug" or "Power Strip", instead of with an empty name. A power strip that has a name of its own is now listed by that name.
+
+### Deprecated
+
+- `/`: deprecated as the MCP endpoint. It still works in this release but logs a deprecation warning, and will be removed in a later release.
 
 ### Fixed
 
@@ -296,13 +300,13 @@ file. This change log follows the conventions of
 - `get_device_state`: `TemperatureHumidityRecords` now reports the time the records were retrieved as `retrieved_at` and the time of each record as `recorded_at`, instead of `datetime` for both.
 - `list_devices`, `check_device`, `get_device_state`, `control_device`: a device that only accepts the TPAP protocol now fails with a message that points to the Third-Party Compatibility option in the Tapo app, instead of one from a failed handshake. In `list_devices` the device is reported under `errors`.
 
-### Fixed
-
-- `list_devices`, `check_device`, `get_device_state`: an H200 or H500 camera hub and the sensors paired to it no longer fail intermittently with `error sending request`. In `list_devices` this reported the hub under `errors` instead of listing it as a device.
-
 ### Removed
 
 - `list_devices`, `check_device`, `get_device_state`, `control_device`: removed support for devices whose firmware only speaks the legacy AES protocol. Such a device now fails with a message that says its firmware needs updating in the Tapo app. In `list_devices` it is reported under `errors` instead of being listed.
+
+### Fixed
+
+- `list_devices`, `check_device`, `get_device_state`: an H200 or H500 camera hub and the sensors paired to it no longer fail intermittently with `error sending request`. In `list_devices` this reported the hub under `errors` instead of listing it as a device.
 
 ## [Rust v0.11.0][v0.11.0] - 2026-10-02
 
@@ -319,13 +323,13 @@ file. This change log follows the conventions of
 - `TemperatureHumidityRecord`: renamed the `datetime` field to `recorded_at`.
 - `ApiClient::discover_devices`: a device that only accepts the TPAP protocol is now reported with an `Error::UnsupportedProtocol` error that points to the Third-Party Compatibility option in the Tapo app, instead of an error from a failed handshake.
 
-### Fixed
-
-- `ApiClient::h200`, `ApiClient::h500`, `ApiClient::discover_devices`: logging in to a camera hub and the first request after it no longer fail intermittently with `error sending request`. During discovery this reported the hub as an error instead of returning it.
-
 ### Removed
 
 - `ApiClient`: removed support for the legacy AES protocol. Lights, plugs, power strips and the H100 hub now always connect over KLAP, so a device whose firmware predates KLAP needs a firmware update in the Tapo app before it can be used. `ApiClient::discover_devices` reports such a device with an `Error::UnsupportedProtocol` error that says so. Connecting by IP address also sends one request fewer, because the client no longer probes the device to find out which protocol it speaks.
+
+### Fixed
+
+- `ApiClient::h200`, `ApiClient::h500`, `ApiClient::discover_devices`: logging in to a camera hub and the first request after it no longer fail intermittently with `error sending request`. During discovery this reported the hub as an error instead of returning it.
 
 ## [Python v0.11.0][v0.11.0] - 2026-10-02
 
@@ -343,6 +347,10 @@ file. This change log follows the conventions of
 - `TemperatureHumidityRecord`: renamed the `datetime` attribute to `recorded_at`, in `to_dict()` too.
 - `ApiClient.discover_devices`: a device that only accepts the TPAP protocol now raises an exception that points to the Third-Party Compatibility option in the Tapo app, instead of one from a failed handshake.
 
+### Removed
+
+- `ApiClient`: removed support for the legacy AES protocol. Lights, plugs, power strips and the H100 hub now always connect over KLAP, so a device whose firmware predates KLAP needs a firmware update in the Tapo app before it can be used. `ApiClient.discover_devices` raises an exception for such a device that says so. Connecting by IP address also sends one request fewer, because the client no longer probes the device to find out which protocol it speaks.
+
 ### Fixed
 
 - `ApiClient.h200`, `ApiClient.h500`, `ApiClient.discover_devices`: logging in to a camera hub and the first request after it no longer fail intermittently with `error sending request`. During discovery this raised an exception for the hub instead of returning it.
@@ -350,10 +358,6 @@ file. This change log follows the conventions of
 - Type stubs: the enums are no longer declared as `(str, Enum)` or `Enum` subclasses, which they never were at runtime. Each variant is now typed as an instance of its class, so type checkers reject comparing a value with a string or reading `.name` / `.value`, which never worked.
 - Type stubs: `TriggerLogsS200Result`, `S200Log`, `S200Event`, `S200RotationParams` and the `T100`, `T110` and `T300` counterparts are now declared in `tapo.responses`, where they live at runtime. Importing them from the top-level `tapo` package type-checked but raised `ImportError`.
 - Type stubs: `T31XResult.current_temperature` and `T31XResult.current_temperature_exception` are now typed as `float`, which is what they are at runtime, instead of `int`.
-
-### Removed
-
-- `ApiClient`: removed support for the legacy AES protocol. Lights, plugs, power strips and the H100 hub now always connect over KLAP, so a device whose firmware predates KLAP needs a firmware update in the Tapo app before it can be used. `ApiClient.discover_devices` raises an exception for such a device that says so. Connecting by IP address also sends one request fewer, because the client no longer probes the device to find out which protocol it speaks.
 
 ## [MCP v0.5.1][tapo-mcp-v0.5.1] - 2026-09-28
 
@@ -481,14 +485,14 @@ file. This change log follows the conventions of
 - `DeviceInfoPowerStripResult`: changed `time_diff` from `i64` to `Option<i64>` for consistency with other device info types.
 - `DeviceInfoBasicResult`: removed `device_on`, `on_time`, `ip`, `fw_id`, `hw_id`, `lang`, `rssi`, `signal_level`, `specs`, `ssid`, and `time_diff` fields. Changed `nickname` to `Option<String>`. Added serde aliases for SmartCam field name compatibility.
 
-### Fixed
-
-- `AesSslProtocol`, `KlapProtocol`: downgraded `error!` log calls to `debug!` on request, handshake, and authentication failures. The same information is already returned as an `Err` value, so the `error!` logs were duplicate reporting.
-
 ### Removed
 
 - `GenericDeviceHandler`: removed. Use a specific handler type (e.g. `l530`, `p110`) instead.
 - `ApiClient::generic_device`: removed method for creating a `GenericDeviceHandler`.
+
+### Fixed
+
+- `AesSslProtocol`, `KlapProtocol`: downgraded `error!` log calls to `debug!` on request, handshake, and authentication failures. The same information is already returned as an `Err` value, so the `error!` logs were duplicate reporting.
 
 ## [Python v0.9.0][v0.9.0] - 2026-04-25
 
@@ -511,15 +515,15 @@ file. This change log follows the conventions of
 - `DeviceInfoGenericResult`: renamed to `DeviceInfoBasicResult`.
 - `DeviceInfoBasicResult`: removed `device_on`, `on_time`, `ip`, `fw_id`, `hw_id`, `lang`, `rssi`, `signal_level`, `specs`, `ssid`, and `time_diff` fields. Changed `nickname` to `Optional[str]`. No longer inherits from `DeviceInfoSmartExt`; all fields are now declared directly.
 
-### Fixed
-
-- `DeviceInfoRgbLightStripResult`, `DeviceInfoRgbicLightStripResult`: removed incorrect `on_time` field from `.pyi` stubs (not present in Rust type).
-- `Logging`: stopped emitting `error`-level Rust logs on stderr for request failures, handshake errors, and session expiry. The same information is already raised as a Python exception; these messages are now emitted at `debug` level instead.
-
 ### Removed
 
 - `GenericDeviceHandler`: removed. Use a specific handler type (e.g. `l530`, `p110`) instead.
 - `ApiClient.generic_device`: removed method for creating a `GenericDeviceHandler`.
+
+### Fixed
+
+- `DeviceInfoRgbLightStripResult`, `DeviceInfoRgbicLightStripResult`: removed incorrect `on_time` field from `.pyi` stubs (not present in Rust type).
+- `Logging`: stopped emitting `error`-level Rust logs on stderr for request failures, handshake errors, and session expiry. The same information is already raised as a Python exception; these messages are now emitted at `debug` level instead.
 
 ## [Rust v0.8.12][v0.8.12] - 2026-03-11
 
@@ -969,13 +973,13 @@ This marks the first unified release of the Rust and Python libraries. Moving fo
 - The comments of `start_timestamp` and `end_timestamp` fields in `EnergyDataResult` have been updated to better describe their purpose.
 - `S200BRotationParams`'s field `degrees` has been renamed to `rotation_degrees`.
 
-### Fixed
-
-- Fixed an issue with the `Color` presets that triggered a validation error when attempting to set the `color` to `DarkRed`.
-
 ### Removed
 
 - The deprecated `past24h`, `past7d`, `past30d` and `past1y` fields have been removed from `EnergyUsageResult`. This data is now available exclusively through `get_energy_data`'s `EnergyDataResult` response.
+
+### Fixed
+
+- Fixed an issue with the `Color` presets that triggered a validation error when attempting to set the `color` to `DarkRed`.
 
 ## [Python v0.5.0][py-v0.5.0] - 2024-09-18
 
@@ -1039,27 +1043,27 @@ This marks the first unified release of the Rust and Python libraries. Moving fo
 - `HubDevice` variants now take a `String` instead of a `&str` to allow for more flexibility.
 - `Plug` variants now take a `String` instead of a `&str` to allow for more flexibility.
 
+### Removed
+
+- The `overheated` property has been removed from `DeviceInfoGenericResult` because it's not present in the response of all devices.
+
 ### Fixed
 
 - `ColorLightSetDeviceInfoParams` `hue` field validation has been changed from `between 1 and 360` to `between 0 and 360` to match the device's expected range.
 - Fixed an issue where the `EnergyDataResult`'s `start_timestamp` and `end_timestamp` did not correctly adjust for timezone offsets.
 - The `chrono` dependency has been updated to `0.4.34` to fix the minimum version requirement.
 
+## [Python v0.3.1][py-v0.3.1] - 2024-06-27
+
 ### Removed
 
 - The `overheated` property has been removed from `DeviceInfoGenericResult` because it's not present in the response of all devices.
-
-## [Python v0.3.1][py-v0.3.1] - 2024-06-27
 
 ### Fixed
 
 - `ColorLightSetDeviceInfoParams` `hue` field validation has been changed from `between 1 and 360` to `between 0 and 360` to match the device's expected range.
 - Fixed an issue where the `EnergyDataResult`'s `start_timestamp` and `end_timestamp` did not correctly adjust for timezone offsets.
 - All handlers are now correctly exported and can be imported from the `tapo` module.
-
-### Removed
-
-- The `overheated` property has been removed from `DeviceInfoGenericResult` because it's not present in the response of all devices.
 
 ## [Rust v0.7.11][v0.7.11] - 2024-05-04
 
@@ -1211,11 +1215,7 @@ It supports the plug devices P100, P105, P110 and P115.
 
 ## [v0.7.4] - 2023-09-15
 
-### Fixed
-
-- Fixed the minimum version of the chrono dependency by setting it to 0.4.25.
-
-### Changes
+### Changed
 
 - `DeviceUsageResult` has been split into `DeviceUsageResult` and `DeviceUsageEnergyMonitoringResult`. The former is now returned for the P100 and P105 devices while the latter is returned for all the other devices that support energy monitoring.
 - `EnergyMonitoringPlugHandler` has been renamed to `PlugEnergyMonitoringHandler`.
@@ -1225,6 +1225,10 @@ It supports the plug devices P100, P105, P110 and P115.
 ### Removed
 
 - `get_device_usage` has been removed from the `GenericDeviceHandler` because it is not supported by all devices.
+
+### Fixed
+
+- Fixed the minimum version of the chrono dependency by setting it to 0.4.25.
 
 ## [v0.7.3] - 2023-09-14
 
