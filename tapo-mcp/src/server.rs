@@ -26,6 +26,21 @@ use crate::snapshots::{SNAPSHOT_TTL, SnapshotStore};
 use crate::telemetry;
 use crate::tools;
 
+/// What every client needs to know to use the tools well, sent to the client
+/// when it connects.
+const INSTRUCTIONS: &str = "Control and monitor Tapo smart home devices (plugs, lights, light strips, power strips, hubs and their child devices, cameras).
+
+- Start with list_devices, or the tapo://devices resource, unless you have a recent list; it answers immediately from the server's background discovery. Use each device's `id` and `ip` exactly as listed. If a device the user expects is missing, check `errors`, `unsupported`, `discovered_at` and `refresh_error`: a device that joined after `discovered_at` appears after the next refresh, so do not call list_devices in a loop.
+- A child device (a power strip's child plug, or a device paired with a hub) is addressed with its own `id` and its parent's `ip`, which its list entry carries.
+- get_device_state reads the device's `get_capabilities`, except `Snapshot`, which take_snapshot reads; control_device applies its `set_capabilities`.
+- DeviceInfo: whether a device is on, its brightness and color, a sensor's latest reading. EnergyMeterData: what a plug draws now. EnergyDataHourly, EnergyDataDaily, EnergyDataMonthly: energy used over hours, days or months. PowerDataEvery5Minutes, PowerDataHourly: power drawn over time. TemperatureHumidityRecords, TriggerLogs: a sensor's history. Detections: what a camera detected. Snapshot: what a camera sees now. control_device returns the device's state afterwards, so there is no need to read it again.
+- Date-times are in UTC, except that energy data covers whole days and months in the plug's time zone, as the Tapo app does; its entry times are still UTC and its `local_time` is the plug's clock.
+- EnergyMeterData gives mV, mA and mW, and the energy since the last restart as one total in both Wh and mWh, not to be added. Energy data is in Wh, power data in W.
+- Calls that reach a device run one at a time per device, children sharing their parent's turn, and wait for a running background discovery, so one can take a minute or more. Send several changes to one device as one control_device call.";
+// Some clients cut server instructions at 2048 characters. `len` counts bytes,
+// which is never fewer, so the check errs on the safe side.
+const _: () = assert!(INSTRUCTIONS.len() <= 2048);
+
 #[derive(Clone)]
 pub struct TapoMcp {
     config: Arc<AppConfig>,
@@ -128,7 +143,7 @@ impl ServerHandler for TapoMcp {
                 .enable_resources()
                 .build(),
         )
-        .with_instructions("Control and monitor Tapo smart home devices (plugs, lights, power strips, hubs and their child devices, cameras). Use list_devices or the tapo://devices resource to discover available devices before interacting with them.");
+        .with_instructions(INSTRUCTIONS);
         info.server_info.name = env!("CARGO_PKG_NAME").to_owned();
         info.server_info.version = env!("CARGO_PKG_VERSION").to_owned();
         info.server_info.title = Some("Tapo MCP Server".to_owned());

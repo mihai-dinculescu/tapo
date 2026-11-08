@@ -1,6 +1,6 @@
 ---
 name: tapo
-description: Control TP-Link Tapo smart home devices (lights, plugs, power strips, hubs and their child devices, cameras) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp).
+description: Control TP-Link Tapo smart home devices (plugs, lights, light strips, power strips, hubs and their child devices, cameras) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp).
 version: 0.6.2
 metadata:
   {
@@ -127,3 +127,4 @@ npx mcporter call tapo.take_snapshot id="<DEVICE_ID>" ip="<IP>"
 1. Always run `list_devices` first if you don't have a recent device list. It returns immediately from the server's background discovery, so there is no need to cache it. If a device the user expects is missing, check `errors`, `unsupported`, `discovered_at` and `refresh_error` as described under `list_devices` before concluding it is gone. A device that joined after `discovered_at` shows up within `TAPO_MCP_DISCOVERY_INTERVAL` seconds; do not poll `list_devices` in a loop.
 2. Use the device `id` and `ip` from the list — never guess or hardcode these values.
 3. For power strips (e.g. P304M) and the H100, H110, H200 and H500 hubs, children have their own `id`. Use the child `id` with the parent's `ip`.
+4. Calls that reach a device (`get_device_state`, `control_device`, `take_snapshot`) run one at a time per device, children sharing their parent's turn, and wait for a running background discovery, so one can take a minute or more. Send several changes to one device as one `control_device` call.

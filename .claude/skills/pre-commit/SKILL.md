@@ -47,11 +47,12 @@ Run the following checks if there are changes in the `tapo-mcp/` directory. Fix 
 
 - Verify that **all** `#[derive(JsonSchema)]` types have `schemars` annotations — including tool input params, response types, enums, and their fields/variants. Check for descriptions and range constraints where applicable.
 - Verify that `tapo-mcp/README.md` reflects any MCP API changes (tools, resources, capabilities, env vars, auth)
+- Verify that the `INSTRUCTIONS` const in `tapo-mcp/src/server.rs` reflects any MCP API changes: every get capability is named with the question it answers, and the units, time zones, child addressing and call ordering it states still match the code
 - Verify that the OpenClaw skill reflects any MCP API changes. The skill spans three files — check each:
   - `tapo-mcp/openclaw-skill/SKILL.md` — frontmatter (`description`, `version`, `requires`), Setup, Tools section with example `npx mcporter call` invocations
   - `tapo-mcp/openclaw-skill/references/setup.md` — verification table (tool, description, parameters)
   - `tapo-mcp/openclaw-skill/references/tapo-mcp-setup.md` — Tools table, Resources table, Configuration env vars, Authentication, Deployment (kept in sync with `tapo-mcp/README.md`)
-- The device family words in `tapo-mcp/src/server.rs` `with_instructions(...)` and the OpenClaw `description:` are checked by `/verify-device-support`, which the Rust and Python checks below run when a model or category changes
+- The device family words in the `INSTRUCTIONS` const in `tapo-mcp/src/server.rs` and the OpenClaw `description:` are checked by `/verify-device-support`, which the Rust and Python checks below run when a model or category changes
 
 ### Non-exhaustive enum checks
 
