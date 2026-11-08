@@ -7,14 +7,14 @@ For deploying the Tapo MCP server itself (Docker, Kubernetes, configuration), se
 ## Prerequisites
 
 - A running [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp) server on your network (HTTP transport)
-- The server URL (e.g. `http://192.168.1.100`)
+- The server URL (e.g. `http://192.168.1.100/mcp`)
 - A Bearer auth token, if one was configured (highly recommended; required when the server binds to a non-loopback address)
 - When connecting by LAN IP or hostname (anything other than loopback), the server's `TAPO_MCP_ALLOWED_HOSTS` must include that host, or requests are rejected with `403 Forbidden` (see [tapo-mcp-setup.md](tapo-mcp-setup.md))
 
 ## Step 1: Add the Tapo MCP server
 
 ```bash
-npx mcporter config add tapo http://<TAPO_MCP_IP> \
+npx mcporter config add tapo http://<TAPO_MCP_IP>/mcp \
   --transport http \
   --header "Authorization=Bearer <YOUR_TOKEN>" \
   --scope home
@@ -85,7 +85,7 @@ npx mcporter config doctor
 
 ## Troubleshooting
 
-- **Connection refused**: Verify the Tapo MCP server is running and reachable (`curl http://<IP>/`).
+- **Connection refused**: Verify the Tapo MCP server is running and reachable with `curl http://<IP>/mcp`. Any HTTP response, even an error status such as `401` or `406`, means it is reachable; only a refused connection or a timeout means it is not.
 - **401 Unauthorized**: Check the Bearer token is correct.
 - **403 Forbidden**: The `Host` you connect with isn't in the server's allowlist. Add the exact hostname or `host:port` you use to `TAPO_MCP_ALLOWED_HOSTS` on the server (see [tapo-mcp-setup.md](tapo-mcp-setup.md)).
 - **Device discovery unavailable**: No discovery has succeeded since the server started. Right after startup, the first one is still running; it takes `TAPO_MCP_DISCOVERY_TIMEOUT` seconds (default 5) plus the time to log in to every device and read the hub and power strip child lists, so wait a little longer than that and retry. Otherwise every discovery so far has failed and the error gives the reason, which is a problem with `TAPO_MCP_DISCOVERY_TARGET` or the server's network, not with the credentials: a wrong Tapo password still produces a list, with each device under `errors`. Once a discovery has succeeded, a later failure no longer produces this error; `list_devices` keeps returning the last successful list, with the failure in `refresh_error`.

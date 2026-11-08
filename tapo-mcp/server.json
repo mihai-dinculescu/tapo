@@ -15,7 +15,7 @@
       "identifier": "ghcr.io/mihai-dinculescu/tapo-mcp:0.6.2",
       "transport": {
         "type": "streamable-http",
-        "url": "http://localhost:3000/"
+        "url": "http://localhost:3000/mcp"
       },
       "environmentVariables": [
         {

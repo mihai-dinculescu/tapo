@@ -47,6 +47,7 @@ file. This change log follows the conventions of
 
 ### Changed
 
+- The MCP endpoint is now `/mcp`, for example `http://127.0.0.1:3000/mcp`. `/` still works in this release but logs a deprecation warning, and will be removed in a later release. Update your client URLs.
 - `list_devices`: a device without a name is now listed by its type, such as "Plug" or "Power Strip", instead of with an empty name. A power strip that has a name of its own is now listed by that name.
 
 ### Fixed

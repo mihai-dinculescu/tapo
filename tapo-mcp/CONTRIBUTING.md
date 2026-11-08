@@ -17,10 +17,10 @@ cargo run -p tapo-mcp
 The quickest way to interactively explore the server:
 
 ```bash
-npx @modelcontextprotocol/inspector http://127.0.0.1:3000
+npx @modelcontextprotocol/inspector http://127.0.0.1:3000/mcp
 
 # With authentication:
-npx @modelcontextprotocol/inspector --header "Authorization: Bearer $TAPO_MCP_API_KEY" http://127.0.0.1:3000
+npx @modelcontextprotocol/inspector --header "Authorization: Bearer $TAPO_MCP_API_KEY" http://127.0.0.1:3000/mcp
 ```
 
 Opens a browser UI where you can list tools/resources and invoke them manually. Requires Node.js.
@@ -30,10 +30,10 @@ Opens a browser UI where you can list tools/resources and invoke them manually. 
 Add the server to your Claude Code MCP config:
 
 ```bash
-claude mcp add --transport http tapo http://127.0.0.1:3000
+claude mcp add --transport http tapo http://127.0.0.1:3000/mcp
 
 # With authentication:
-claude mcp add --transport http --header "Authorization: Bearer <YOUR_TAPO_MCP_API_KEY>" -- tapo http://127.0.0.1:3000
+claude mcp add --transport http --header "Authorization: Bearer <YOUR_TAPO_MCP_API_KEY>" -- tapo http://127.0.0.1:3000/mcp
 ```
 
 Then use `/mcp` in Claude Code to verify the server is connected and its tools appear.

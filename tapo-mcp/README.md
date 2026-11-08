@@ -98,6 +98,8 @@ All configuration is via environment variables prefixed with `TAPO_MCP_`:
 
 [^discovery]: While a background discovery runs, tool calls that contact a device wait for it to finish, and the discovery waits for calls already in progress. A run takes about `TAPO_MCP_DISCOVERY_TIMEOUT` seconds plus a few more to log in to the devices, and longer if a device is slow to respond. A short interval means these pauses happen often: at `15` with the default timeout, tool calls can be held up for several seconds out of every 15. `list_devices` and the `tapo://devices` resource never wait.
 
+Clients connect to the MCP endpoint at `/mcp` on that address, for example `http://127.0.0.1:3000/mcp`. `/` still works but is deprecated: it logs a warning and will be removed in a later release.
+
 ## Authentication
 
 When `TAPO_MCP_API_KEY` is set, the server requires all HTTP requests to include an `Authorization: Bearer <key>` header. Requests with a missing or invalid token receive a `401 Unauthorized` response.

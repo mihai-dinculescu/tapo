@@ -60,7 +60,7 @@ async fn mcp_endpoint_still_requires_bearer_token() {
     let config = test_config(Some("test-key"), Some("http://localhost:3000"));
     let request = Request::builder()
         .method("POST")
-        .uri("/")
+        .uri("/mcp")
         .header("Host", "localhost")
         .header("Content-Type", "application/json")
         .header("Accept", "application/json, text/event-stream")

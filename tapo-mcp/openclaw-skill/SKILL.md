@@ -23,7 +23,7 @@ You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mc
 1. **Add the Tapo server**:
 
    ```bash
-   npx mcporter config add tapo http://<TAPO_MCP_IP> \
+   npx mcporter config add tapo http://<TAPO_MCP_IP>/mcp \
      --transport http \
      --header "Authorization=Bearer <YOUR_TOKEN>" \
      --scope home

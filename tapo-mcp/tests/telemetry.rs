@@ -72,7 +72,7 @@ async fn post(
 ) -> Response {
     let mut request = Request::builder()
         .method("POST")
-        .uri("/")
+        .uri("/mcp")
         .header("Host", "localhost")
         .header("Content-Type", "application/json")
         .header("Accept", "application/json, text/event-stream");

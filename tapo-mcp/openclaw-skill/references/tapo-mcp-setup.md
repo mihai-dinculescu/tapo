@@ -44,6 +44,8 @@ All configuration is via environment variables prefixed with `TAPO_MCP_`:
 
 [^discovery]: While a background discovery runs, tool calls that contact a device wait for it to finish, and the discovery waits for calls already in progress. A run takes about `TAPO_MCP_DISCOVERY_TIMEOUT` seconds plus a few more to log in to the devices, and longer if a device is slow to respond. A short interval means these pauses happen often: at `15` with the default timeout, tool calls can be held up for several seconds out of every 15. `list_devices` and the `tapo://devices` resource never wait.
 
+Clients connect to the MCP endpoint at `/mcp` on that address, for example `http://127.0.0.1:3000/mcp`. `/` still works but is deprecated: it logs a warning and will be removed in a later release.
+
 ## Authentication
 
 When `TAPO_MCP_API_KEY` is set, the server requires all HTTP requests to include an `Authorization: Bearer <key>` header. Requests with a missing or invalid token receive a `401 Unauthorized` response.
@@ -173,12 +175,12 @@ spec:
 ### MCP Inspector
 
 ```bash
-npx @modelcontextprotocol/inspector http://127.0.0.1:3000
+npx @modelcontextprotocol/inspector http://127.0.0.1:3000/mcp
 
 # With authentication:
 npx @modelcontextprotocol/inspector \
   --header "Authorization: Bearer $TAPO_MCP_API_KEY" \
-  http://127.0.0.1:3000
+  http://127.0.0.1:3000/mcp
 ```
 
 Opens a browser UI where you can list tools/resources and invoke them manually.
@@ -186,12 +188,12 @@ Opens a browser UI where you can list tools/resources and invoke them manually.
 ### Claude Code
 
 ```bash
-claude mcp add --transport http tapo http://127.0.0.1:3000
+claude mcp add --transport http tapo http://127.0.0.1:3000/mcp
 
 # With authentication:
 claude mcp add --transport http \
   --header "Authorization: Bearer <YOUR_TAPO_MCP_API_KEY>" \
-  -- tapo http://127.0.0.1:3000
+  -- tapo http://127.0.0.1:3000/mcp
 ```
 
 Then use `/mcp` in Claude Code to verify the server is connected and its tools appear.

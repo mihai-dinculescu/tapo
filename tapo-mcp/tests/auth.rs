@@ -27,9 +27,13 @@ fn mcp_request(authorization: Option<&str>) -> Request {
 }
 
 fn mcp_request_with_host(authorization: Option<&str>, host: &str) -> Request {
+    mcp_request_to("/mcp", authorization, host)
+}
+
+fn mcp_request_to(path: &str, authorization: Option<&str>, host: &str) -> Request {
     let mut builder = Request::builder()
         .method("POST")
-        .uri("/")
+        .uri(path)
         .header("Host", host)
         .header("Content-Type", "application/json")
         .header("Accept", "application/json, text/event-stream");
@@ -147,4 +151,43 @@ async fn allows_loopback_host_header() {
     let request = mcp_request_with_host(None, "127.0.0.1:3000");
     let response = app.oneshot(request).await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
+}
+
+#[tokio::test]
+async fn deprecated_root_path_still_serves_mcp() {
+    let app = tapo_mcp::router(
+        test_config(None).into(),
+        Default::default(),
+        Default::default(),
+        Default::default(),
+    );
+    let request = mcp_request_to("/", None, "localhost");
+    let response = app.oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+}
+
+#[tokio::test]
+async fn deprecated_root_path_requires_token() {
+    let app = tapo_mcp::router(
+        test_config(Some("test-key")).into(),
+        Default::default(),
+        Default::default(),
+        Default::default(),
+    );
+    let request = mcp_request_to("/", None, "localhost");
+    let response = app.oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+}
+
+#[tokio::test]
+async fn deprecated_root_path_rejects_foreign_host_header() {
+    let app = tapo_mcp::router(
+        test_config(None).into(),
+        Default::default(),
+        Default::default(),
+        Default::default(),
+    );
+    let request = mcp_request_to("/", None, "attacker.example:3000");
+    let response = app.oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::FORBIDDEN);
 }
