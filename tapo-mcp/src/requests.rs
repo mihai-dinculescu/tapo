@@ -1,5 +1,5 @@
-pub mod check_device;
 pub mod get_devices;
+pub mod with_device;
 
-pub use check_device::*;
 pub use get_devices::*;
+pub use with_device::*;

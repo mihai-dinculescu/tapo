@@ -68,7 +68,7 @@ For each new variant:
 
 - **No `unreachable!()` hits**: every `match` that ends in `_ => unreachable!()` names the new variant. A variant without a capability is still named, in the arm that rejects it (for example, a device without on/off support in the `WrongDeviceType` arm of `control_device`)
 - **Python mirrors**: enums that mirror the Rust one get the variant too, with all their per-variant methods: `PyDiscoveryResult` (`tapo-py/src/api/discovery/discovery_result.rs`), `PyRecordingType` and the hub child list macros. Add it to the `.pyi` stubs, including those for enums exposed directly, such as `DeviceType`
-- **MCP capabilities**: `tapo-mcp/src/requests/get_devices.rs` and `check_device.rs` and the tools under `tapo-mcp/src/tools/` give the new variant every capability it supports, and list its children if it has any
+- **MCP capabilities**: `tapo-mcp/src/requests/get_devices.rs` and `with_device.rs` and the tools under `tapo-mcp/src/tools/` give the new variant every capability it supports, and list its children if it has any
 
 ### Documentation checks
 

@@ -19,8 +19,7 @@ use crate::device_locks::DeviceLocks;
 use crate::discovery::DeviceCache;
 use crate::errors::TapoMcpError;
 use crate::models::{
-    CONTROL_CAPABILITIES, CheckDeviceParams, ControlDeviceParams, GetDeviceStateParams,
-    TakeSnapshotParams,
+    CONTROL_CAPABILITIES, ControlDeviceParams, GetDeviceStateParams, TakeSnapshotParams,
 };
 use crate::resources;
 use crate::snapshots::{SNAPSHOT_TTL, SnapshotStore};
@@ -52,23 +51,7 @@ impl TapoMcp {
     }
 
     #[tool(
-        description = "Verify a Tapo device ID matches at a given IP.",
-        annotations(
-            read_only_hint = true,
-            destructive_hint = false,
-            idempotent_hint = true,
-            open_world_hint = true
-        )
-    )]
-    async fn check_device(
-        &self,
-        Parameters(params): Parameters<CheckDeviceParams>,
-    ) -> Result<CallToolResult, TapoMcpError> {
-        tools::check_device(&self.config, &self.locks, params).await
-    }
-
-    #[tool(
-        description = "Get a Tapo device's current state. Checks the capability's parameters, then runs check_device to verify the device ID matches at the given IP. A camera's `Snapshot` capability is read with take_snapshot, not this tool.",
+        description = "Get a Tapo device's current state. Checks the capability's parameters, then verifies the device ID matches at the given IP. A camera's `Snapshot` capability is read with take_snapshot, not this tool.",
         annotations(
             read_only_hint = true,
             destructive_hint = false,
@@ -85,7 +68,7 @@ impl TapoMcp {
 
     #[tool(
         description = format!(
-            "Control a Tapo device by applying {} to {} set capabilities, in order. Checks the count and every value before contacting the device, then runs check_device to verify the device ID matches at the given IP. A capability the device does not support fails the call before any capability is applied. When the device returns an error partway through, the error says how many capabilities were applied and which one failed.",
+            "Control a Tapo device by applying {} to {} set capabilities, in order. Checks the count and every value before contacting the device, then verifies the device ID matches at the given IP. A capability the device does not support fails the call before any capability is applied. When the device returns an error partway through, the error says how many capabilities were applied and which one failed.",
             CONTROL_CAPABILITIES.start(),
             CONTROL_CAPABILITIES.end()
         ),
@@ -118,7 +101,7 @@ impl TapoMcp {
 
     #[tool(
         description = format!(
-            "Capture a still JPEG snapshot from a Tapo camera (~640x360). Runs check_device first to verify the device ID matches at the given IP. Returns the device id, capture time and size as text alongside the image. The text may also include a link to the image that is valid for {} minutes; share it with the user or fetch it to save the file.",
+            "Capture a still JPEG snapshot from a Tapo camera (~640x360). Verifies the device ID matches at the given IP first. Returns the device id, capture time and size as text alongside the image. The text may also include a link to the image that is valid for {} minutes; share it with the user or fetch it to save the file.",
             SNAPSHOT_TTL.as_secs() / 60
         ),
         annotations(

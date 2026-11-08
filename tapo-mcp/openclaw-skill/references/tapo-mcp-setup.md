@@ -8,13 +8,12 @@ Tapo MCP is an HTTP server (Streamable HTTP transport) that exposes TP-Link Tapo
 
 ### Tools
 
-| Tool               | Description                                                                                                                                |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `list_devices`     | List available Tapo devices on the network (includes set and get capabilities).                                                            |
-| `check_device`     | Verify a device ID matches at a given IP.                                                                                                  |
-| `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Checks the capability's parameters, then runs `check_device`.                |
-| `control_device`   | Control a device by applying 1 to 12 set capabilities, in order. Checks the count and values, then runs `check_device`; a capability the device does not support fails before any is applied. |
-| `take_snapshot`    | Capture a still JPEG snapshot from a Tapo camera (~640x360), with the device id, capture time and size as text, plus a short-lived link when `TAPO_MCP_PUBLIC_URL` is set (see Snapshot links). Runs `check_device` first. |
+| Tool               | Description                                                                                                                                                                                                                                           |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `list_devices`     | List available Tapo devices on the network (includes set and get capabilities).                                                                                                                                                                       |
+| `get_device_state` | Get a device's current state (e.g. `{"type": "DeviceInfo"}`). Checks the capability's parameters, then verifies the device ID matches at the given IP.                                                                                                |
+| `control_device`   | Control a device by applying 1 to 12 set capabilities, in order. Checks the count and values, then verifies the device ID matches at the given IP; a capability the device does not support fails before any is applied.                              |
+| `take_snapshot`    | Capture a still JPEG snapshot from a Tapo camera (~640x360), with the device id, capture time and size as text, plus a short-lived link when `TAPO_MCP_PUBLIC_URL` is set (see Snapshot links). Verifies the device ID matches at the given IP first. |
 
 ### Resources
 

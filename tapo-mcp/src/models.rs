@@ -164,15 +164,6 @@ pub struct SnapshotResult {
     pub expires_at: Option<DateTime<Utc>>,
 }
 
-/// Parameters for `check_device`.
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct CheckDeviceParams {
-    /// Device ID from `list_devices`.
-    pub id: String,
-    /// Device IP address from `list_devices`. For a child device, its `ip`, which is the parent's.
-    pub ip: String,
-}
-
 /// A capability to set on a device, with the value to set it to.
 #[derive(Debug, Clone, Deserialize, JsonSchema, IntoStaticStr)]
 #[serde(tag = "type")]

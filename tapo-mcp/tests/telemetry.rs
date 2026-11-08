@@ -372,7 +372,7 @@ async fn failing_step_span_has_error_status() {
     let router = router();
     let session_id = open_session(&router).await;
 
-    // Nothing answers discovery on loopback, so `check_device` fails. Whether it
+    // Nothing answers discovery on loopback, so the device check fails. Whether it
     // fails with a discovery error or with the device not found depends on the OS.
     call_tool(
         &router,

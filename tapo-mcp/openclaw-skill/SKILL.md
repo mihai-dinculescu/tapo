@@ -33,7 +33,7 @@ You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mc
    ```bash
    npx mcporter list tapo --schema
    ```
-   You should see `list_devices`, `check_device`, `get_device_state`, `control_device`, and `take_snapshot`.
+   You should see `list_devices`, `get_device_state`, `control_device`, and `take_snapshot`.
 
 See [references/setup.md](references/setup.md) for the full walkthrough, config management, and troubleshooting.
 
@@ -49,17 +49,9 @@ npx mcporter call tapo.list_devices
 
 Returns `discovered_at`, the time the discovery that produced the list started, and each device's `id`, `name`, `model`, `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips and the H100, H110, H200 and H500 hubs). The server refreshes the list in the background (every 10 minutes by default), so the call returns immediately. Until a discovery has succeeded after the server starts, it fails with "Device discovery unavailable" and the message says why: either the first discovery is still running, so wait a little longer than `TAPO_MCP_DISCOVERY_TIMEOUT` seconds and retry, or every discovery so far has failed, in which case the message carries the reason and the retry interval, so report the reason instead of retrying. A device that joined the network after `discovered_at` appears after the next refresh, which is at most `TAPO_MCP_DISCOVERY_INTERVAL` seconds (600 by default) away. A device that answered the discovery but could not be logged in to is listed under `errors` with its `ip` and the reason. A hub or power strip whose children could not be read stays under `devices` with an empty `children` list, and the reason is under `errors` with the parent's `ip`. A Tapo device the server cannot control is listed under `unsupported`. When the most recent refresh failed, the result also includes `refresh_error` with the reason, and the devices are the ones from the last successful discovery.
 
-### check_device
-
-Verify a device ID matches at a given IP.
-
-```bash
-npx mcporter call tapo.check_device id="<DEVICE_ID>" ip="<IP>"
-```
-
 ### get_device_state
 
-Get a device's current state. Checks the capability's parameters, then automatically runs `check_device`.
+Get a device's current state. Checks the capability's parameters, then verifies the device ID matches at the given IP.
 
 ```bash
 # Device info
@@ -97,7 +89,7 @@ Energy dates are read in the plug's time zone, so the entries match the Tapo app
 
 ### control_device
 
-Control a device by applying 1 to 12 set capabilities, in order. The count and every value are checked before the device is contacted; then it automatically runs `check_device`, and a capability the device does not support fails the call before any capability is applied. `Brightness`, `Color`, `HueSaturation` and `ColorTemperature` also turn the device on if it is off. When the device returns an error partway through, the error says how many capabilities were applied and which one failed.
+Control a device by applying 1 to 12 set capabilities, in order. The count and every value are checked before the device is contacted; then the device ID is verified to match at the given IP, and a capability the device does not support fails the call before any capability is applied. `Brightness`, `Color`, `HueSaturation` and `ColorTemperature` also turn the device on if it is off. When the device returns an error partway through, the error says how many capabilities were applied and which one failed.
 
 ```bash
 # Turn on (plugs, lights, power strip child plugs, and S210 switches paired to a hub)
@@ -124,7 +116,7 @@ npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[
 
 ### take_snapshot
 
-Capture a still JPEG snapshot from a Tapo camera (~640x360), with the device id, capture time and size as text. When the server has `TAPO_MCP_PUBLIC_URL` set, the text also includes a `url` to the image that is valid for 5 minutes; share it with the user or download the file. Automatically runs `check_device` first. Requires `TAPO_MCP_CAMERA_USERNAME` and `TAPO_MCP_CAMERA_PASSWORD` configured on the server (Camera Settings > Advanced Settings > Camera Account in the Tapo app).
+Capture a still JPEG snapshot from a Tapo camera (~640x360), with the device id, capture time and size as text. When the server has `TAPO_MCP_PUBLIC_URL` set, the text also includes a `url` to the image that is valid for 5 minutes; share it with the user or download the file. Verifies the device ID matches at the given IP first. Requires `TAPO_MCP_CAMERA_USERNAME` and `TAPO_MCP_CAMERA_PASSWORD` configured on the server (Camera Settings > Advanced Settings > Camera Account in the Tapo app).
 
 ```bash
 npx mcporter call tapo.take_snapshot id="<DEVICE_ID>" ip="<IP>"

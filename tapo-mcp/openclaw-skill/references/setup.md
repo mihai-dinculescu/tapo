@@ -38,12 +38,11 @@ chmod 600 ~/.mcporter/mcporter.json
 npx mcporter list tapo --schema
 ```
 
-You should see these five tools (the printed descriptions are longer than this summary):
+You should see these four tools (the printed descriptions are longer than this summary):
 
 | Tool               | Description                           | Parameters                 |
 | ------------------ | ------------------------------------- | -------------------------- |
 | `list_devices`     | List all available Tapo devices       | (none)                     |
-| `check_device`     | Verify a device ID matches at an IP   | `id`, `ip`                 |
 | `get_device_state` | Get a device's current state          | `id`, `ip`, `capability`   |
 | `control_device`   | Control a device                      | `id`, `ip`, `capabilities` |
 | `take_snapshot`    | Capture a JPEG snapshot from a camera | `id`, `ip`                 |

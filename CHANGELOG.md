@@ -47,16 +47,20 @@ file. This change log follows the conventions of
 
 ### Changed
 
-- `/mcp`: replaces `/` as the MCP endpoint, for example `http://127.0.0.1:3000/mcp`. Update your client URLs. `/` still works in this release but is deprecated.
+- `/mcp`: replaces `/` as the MCP endpoint, for example `http://127.0.0.1:3000/mcp`. Update your client URLs.
 - `list_devices`: a device without a name is now listed by its type, such as "Plug" or "Power Strip", instead of with an empty name. A power strip that has a name of its own is now listed by that name.
 
 ### Deprecated
 
 - `/`: deprecated as the MCP endpoint. It still works in this release but logs a deprecation warning, and will be removed in a later release.
 
+### Removed
+
+- `check_device`: removed. `get_device_state`, `control_device` and `take_snapshot` already verify that the device ID matches at the given IP before reading or changing anything on it. To check a device on its own, call `get_device_state` with the `DeviceInfo` capability.
+
 ### Fixed
 
-- `list_devices`, `check_device`, `get_device_state`, `control_device`: devices that ask for their password unchanged via `"passwd_id": 4`, such as the H110 on firmware 1.5.4, and their child devices can now be reached. They used to fail with `The device asks for a password transform that is not supported yet`.
+- `list_devices`, `get_device_state`, `control_device`: devices that ask for their password unchanged via `"passwd_id": 4`, such as the H110 on firmware 1.5.4, and their child devices can now be reached. They used to fail with `The device asks for a password transform that is not supported yet`.
 - `get_device_state`: the `EnergyDataHourly` capability now returns only the requested days when they include the day the clocks go back. It used to return an extra day, and 8 days that included it failed with the device error `-1008`. (thanks to @bradthurber)
 
 ## [MCP v0.6.2][tapo-mcp-v0.6.2] - 2026-11-01
