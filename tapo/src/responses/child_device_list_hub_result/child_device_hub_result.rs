@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::Error;
 use crate::responses::{
-    DecodableResultExt, KE100Result, OtherResult, S200Result, S210Result, T31XResult, T100Result,
-    T110Result, T300Result, TapoResponseExt,
+    DecodableResultExt, HubChildType, KE100Result, OtherResult, S200Result, S210Result, T31XResult,
+    T100Result, T110Result, T300Result, TapoResponseExt,
 };
 
 /// Hub child device list result.
@@ -96,6 +96,20 @@ impl ChildDeviceHubResult {
             ChildDeviceHubResult::T300(d) => &d.model,
             ChildDeviceHubResult::T31X(d) => &d.model,
             ChildDeviceHubResult::Other(d) => &d.model,
+        }
+    }
+
+    /// Returns the [`HubChildType`] category of this child device.
+    pub fn device_type(&self) -> HubChildType {
+        match self {
+            ChildDeviceHubResult::KE100(_) => HubChildType::ThermostaticRadiatorValve,
+            ChildDeviceHubResult::S200(_) => HubChildType::ButtonSwitch,
+            ChildDeviceHubResult::S210(_) => HubChildType::LightSwitch,
+            ChildDeviceHubResult::T100(_) => HubChildType::MotionSensor,
+            ChildDeviceHubResult::T110(_) => HubChildType::ContactSensor,
+            ChildDeviceHubResult::T300(_) => HubChildType::WaterSensor,
+            ChildDeviceHubResult::T31X(_) => HubChildType::TemperatureHumiditySensor,
+            ChildDeviceHubResult::Other(_) => HubChildType::Other,
         }
     }
 }

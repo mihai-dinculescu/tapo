@@ -91,6 +91,9 @@ pub struct Device {
     pub name: String,
     /// Device model (e.g. "L530", "P110").
     pub model: String,
+    /// The kind of device, such as "Plug", "Color Light" or "Hub".
+    #[serde(rename = "type")]
+    pub device_type: String,
     /// Device IP address on the local network.
     pub ip: String,
     /// Capabilities that can be set on this device.
@@ -110,6 +113,9 @@ pub struct ChildDevice {
     pub name: String,
     /// Child device model.
     pub model: String,
+    /// The kind of device, such as "Child Plug", "Motion Sensor" or "Light Switch".
+    #[serde(rename = "type")]
+    pub device_type: String,
     /// IP address of the parent device. Child devices have no IP of their own;
     /// they are reached through their parent's.
     pub ip: String,

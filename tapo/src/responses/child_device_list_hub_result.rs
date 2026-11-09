@@ -1,5 +1,6 @@
 mod child_device_hub_ir_result;
 mod child_device_hub_result;
+mod hub_child_type;
 mod ir_remote_result;
 mod ke100_result;
 mod other_result;
@@ -13,6 +14,7 @@ mod t31x_result;
 
 pub use child_device_hub_ir_result::*;
 pub use child_device_hub_result::*;
+pub use hub_child_type::*;
 pub use ir_remote_result::*;
 pub use ke100_result::*;
 pub use other_result::*;

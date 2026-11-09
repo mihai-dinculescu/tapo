@@ -13,6 +13,7 @@ file. This change log follows the conventions of
 - Firmware updates: every device except cameras and camera hubs can now check for, start and follow a firmware update. `get_latest_firmware` returns the newest firmware that the device can update to as `LatestFirmwareResult`: `UpToDate` with the version that the device is running, or `UpdateAvailable` with the update's version, release date and release notes. `start_firmware_update` starts updating to that firmware. The device downloads, installs and reboots by itself, and needs `refresh_session` once it is back. `get_firmware_update_state` returns the state of the update as `FirmwareUpdateStateResult`: `Idle`, `Downloading` with the download progress, `Downloaded` with the time the device takes to install the update and reboot, `AwaitingTransfer` when the hub has downloaded a child device's update but not sent it yet, or `Failed` and `Unknown` with the device's status code. (thanks to @bradthurber)
 - Renaming a device: lights, light strips, plugs, power strips and the H100 and H110 hubs can now be renamed with `set_nickname`, for example right after setting them up. The name can be up to 128 bytes in UTF-8.
 - `DeviceInfoPowerStripResult`: added `nickname`, the name of the power strip itself, which is empty when the strip has none.
+- `ChildDeviceHubResult`, `ChildDeviceHubIrResult`: added `device_type`, which returns what kind of device a hub child is as a `HubChildType`, such as `MotionSensor` or `LightSwitch`. Like `DeviceType`, its `as_str` and `Display` give a readable name, such as "Motion Sensor".
 
 ### Changed
 
@@ -44,6 +45,10 @@ file. This change log follows the conventions of
 - `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval.Hourly` now returns only the requested days when they include the day the clocks go back. It used to return an extra day of entries after `end_date`, and 8 days that included it raised the device error `-1008`. (thanks to @bradthurber)
 
 ## [MCP Unreleased][Unreleased]
+
+### Added
+
+- `list_devices`: every device and child device now has a `type`, such as "Plug", "Color Light", "Child Plug" or "Motion Sensor", so devices can be picked by kind, for example all the lights.
 
 ### Changed
 

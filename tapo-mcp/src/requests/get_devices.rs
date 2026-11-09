@@ -93,8 +93,9 @@ enum DeviceOutcome {
 
 async fn process_device(device: DiscoveryResult) -> DeviceOutcome {
     let id = device.device_id().to_string();
+    let device_type = device.device_type().as_str();
     let name = if device.nickname().trim().is_empty() {
-        device.device_type().as_str()
+        device_type
     } else {
         device.nickname()
     }
@@ -148,6 +149,7 @@ async fn process_device(device: DiscoveryResult) -> DeviceOutcome {
             id,
             name,
             model,
+            device_type: device_type.to_string(),
             ip,
             set_capabilities,
             get_capabilities,
@@ -169,6 +171,7 @@ async fn fetch_children(
                         id: c.device_id,
                         name: c.nickname,
                         model: c.model,
+                        device_type: "Child Plug".to_string(),
                         ip: ip.to_string(),
                         set_capabilities: vec![SetCapability::OnOff],
                         get_capabilities: vec![GetCapability::DeviceInfo],
@@ -183,6 +186,7 @@ async fn fetch_children(
                         id: c.device_id,
                         name: c.nickname,
                         model: c.model,
+                        device_type: "Child Plug with Energy Monitoring".to_string(),
                         ip: ip.to_string(),
                         set_capabilities: vec![SetCapability::OnOff],
                         get_capabilities: [GetCapability::DeviceInfo]
@@ -251,6 +255,7 @@ fn hub_child_to_child_device(child: ChildDeviceHubIrResult, ip: &str) -> ChildDe
         id: child.device_id().to_string(),
         name: child.nickname().to_string(),
         model: child.model().to_string(),
+        device_type: child.device_type().as_str().to_string(),
         ip: ip.to_string(),
         set_capabilities,
         get_capabilities,
