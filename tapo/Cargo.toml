@@ -50,7 +50,7 @@ hmac = "0.13"
 p256 = { version = "0.14", default-features = false, features = ["arithmetic"] }
 pbkdf2 = "0.13"
 rand = { workspace = true }
-rsa = { version = "0.10.0-rc.18", features = ["getrandom"] }
+rsa = { version = "0.10", features = ["getrandom"] }
 sha1 = "0.11"
 md-5 = "0.11"
 sha2 = "0.11"

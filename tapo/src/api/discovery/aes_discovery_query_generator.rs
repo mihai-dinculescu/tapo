@@ -5,19 +5,19 @@ use rand::{
     rngs::{StdRng, SysRng},
 };
 use rsa::pkcs1::EncodeRsaPublicKey;
-use rsa::{RsaPrivateKey, RsaPublicKey};
+use rsa::{PrivateKey, PublicKey};
 use serde_json::json;
 
 struct KeyPair {
-    public_key: RsaPublicKey,
+    public_key: PublicKey,
 }
 
 impl KeyPair {
     fn new(key_size: usize) -> anyhow::Result<KeyPair> {
         let mut rng = StdRng::try_from_rng(&mut SysRng).context("Failed to initialize RNG")?;
         let private_key =
-            RsaPrivateKey::new(&mut rng, key_size).context("Failed to generate RSA private key")?;
-        let public_key = RsaPublicKey::from(&private_key);
+            PrivateKey::new(&mut rng, key_size).context("Failed to generate RSA private key")?;
+        let public_key = PublicKey::from(&private_key);
         Ok(KeyPair { public_key })
     }
 
