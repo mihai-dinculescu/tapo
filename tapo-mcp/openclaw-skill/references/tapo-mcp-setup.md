@@ -47,7 +47,7 @@ Clients connect to the MCP endpoint at `/mcp` on that address, for example `http
 
 ## Authentication
 
-When `TAPO_MCP_API_KEY` is set, the server requires all HTTP requests to include an `Authorization: Bearer <key>` header. Requests with a missing or invalid token receive a `401 Unauthorized` response.
+When `TAPO_MCP_API_KEY` is set, the server requires every HTTP request except `/livez` and snapshot links to include an `Authorization: Bearer <key>` header. Requests with a missing or invalid token receive a `401 Unauthorized` response.
 
 When the variable is unset (or empty/whitespace-only), the server runs without authentication.
 
@@ -165,9 +165,24 @@ spec:
                 configMapKeyRef:
                   name: tapo-mcp-config
                   key: TAPO_MCP_DISCOVERY_TARGET
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: 3000
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 256Mi
 ```
 
 > **Note:** `hostNetwork: true` is required for UDP broadcast discovery, similar to `--network host` in Docker. Because clients reach the server by node IP or hostname rather than loopback, set `TAPO_MCP_ALLOWED_HOSTS` accordingly (see Network exposure above). To get snapshot links, add `TAPO_MCP_PUBLIC_URL` to the ConfigMap and the Deployment's `env`.
+
+### Health checks
+
+`GET /livez` answers `200 OK` while the server is running. It needs neither the API key nor a `Host` from `TAPO_MCP_ALLOWED_HOSTS`, so a liveness probe works as it is.
 
 ## Testing
 

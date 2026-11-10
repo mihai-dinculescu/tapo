@@ -2,6 +2,7 @@ pub mod auth;
 pub mod config;
 pub mod device_locks;
 pub mod discovery;
+pub mod health;
 pub mod server;
 pub mod snapshots;
 pub mod telemetry;
@@ -58,9 +59,10 @@ pub fn router(
         router
     };
 
-    // Merged outside the MCP service and after the auth layer, so snapshot links
-    // skip both the API key and the `allowed_hosts` Host check. The random token
-    // in the path is their only credential.
+    // Merged outside the MCP service and after the auth layer, so probes and
+    // snapshot links skip both the API key and the `allowed_hosts` Host check.
+    // The random token in a snapshot link's path is its only credential.
+    let router = router.merge(health::router());
     if serve_snapshots {
         router.merge(snapshots::router(snapshots))
     } else {

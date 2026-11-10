@@ -49,6 +49,7 @@ file. This change log follows the conventions of
 ### Added
 
 - `list_devices`: every device and child device now has a `type`, such as "Plug", "Color Light", "Child Plug" or "Motion Sensor", so devices can be picked by kind, for example all the lights.
+- `/livez`: added, an endpoint for HTTP health checks such as a Kubernetes liveness probe. It needs neither the API key nor an allowed `Host`.
 
 ### Changed
 
