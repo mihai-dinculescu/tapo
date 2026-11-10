@@ -16,16 +16,17 @@ pub enum TapoMcpError {
     Serialization(#[from] serde_json::Error),
 
     #[error(
-        "Device mismatch: expected id '{expected_id}' at ip '{expected_ip}', found id '{found_id}' at ip '{found_ip}'"
+        "Device mismatch: the device at ip '{ip}' has id '{found_id}', and none of its children has id '{expected_id}'. The IP address now belongs to another device, or the child was unpaired from its parent. Call list_devices once and use the `id` and `ip` it lists; if they are unchanged, the change shows after the list's next refresh (see `discovered_at`)"
     )]
     DeviceMismatch {
+        ip: String,
         expected_id: String,
-        expected_ip: String,
         found_id: String,
-        found_ip: String,
     },
 
-    #[error("Device not found: id '{id}' at ip '{ip}'")]
+    #[error(
+        "Device not found: nothing answered at ip '{ip}' while looking for id '{id}'. The device, or its parent if it is a child device, is off, unreachable or slow to answer, so retry once; if list_devices now lists it at another `ip`, use that one"
+    )]
     DeviceNotFound { id: String, ip: String },
 
     #[error("Device timed out: id '{id}' at ip '{ip}' did not finish within {seconds} seconds")]
@@ -216,6 +217,33 @@ mod tests {
         assert_eq!(
             error_message(&err),
             "Failed to discover device at 192.168.1.126: error sending request: connection reset by peer"
+        );
+    }
+
+    #[test]
+    fn device_mismatch_says_what_to_do_next() {
+        let err = TapoMcpError::DeviceMismatch {
+            ip: "192.168.1.100".to_string(),
+            expected_id: "child-1".to_string(),
+            found_id: "hub-1".to_string(),
+        };
+
+        assert_eq!(
+            err.to_string(),
+            "Device mismatch: the device at ip '192.168.1.100' has id 'hub-1', and none of its children has id 'child-1'. The IP address now belongs to another device, or the child was unpaired from its parent. Call list_devices once and use the `id` and `ip` it lists; if they are unchanged, the change shows after the list's next refresh (see `discovered_at`)"
+        );
+    }
+
+    #[test]
+    fn device_not_found_says_what_to_do_next() {
+        let err = TapoMcpError::DeviceNotFound {
+            id: "plug-1".to_string(),
+            ip: "192.168.1.100".to_string(),
+        };
+
+        assert_eq!(
+            err.to_string(),
+            "Device not found: nothing answered at ip '192.168.1.100' while looking for id 'plug-1'. The device, or its parent if it is a child device, is off, unreachable or slow to answer, so retry once; if list_devices now lists it at another `ip`, use that one"
         );
     }
 

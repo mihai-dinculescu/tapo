@@ -121,10 +121,9 @@ async fn find_device(
 
     match last_seen {
         Some(found_id) => Err(TapoMcpError::DeviceMismatch {
+            ip: ip.to_string(),
             expected_id: id.to_string(),
-            expected_ip: ip.to_string(),
             found_id,
-            found_ip: ip.to_string(),
         }),
         None => Err(TapoMcpError::DeviceNotFound {
             id: id.to_string(),

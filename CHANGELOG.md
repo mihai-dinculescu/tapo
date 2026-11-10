@@ -55,6 +55,7 @@ file. This change log follows the conventions of
 - `/mcp`: replaces `/` as the MCP endpoint, for example `http://127.0.0.1:3000/mcp`. Update your client URLs.
 - `control_device`: now returns `device_info`, the device's state afterwards read back from the device, the same as the `DeviceInfo` capability returns. It used to return nothing. When every capability was applied but reading the state back fails, the call now returns an error that says so; the capabilities were applied.
 - `list_devices`: a device without a name is now listed by its type, such as "Plug" or "Power Strip", instead of with an empty name. A power strip that has a name of its own is now listed by that name.
+- `get_device_state`, `control_device`, `take_snapshot`: the `Device not found` and `Device mismatch` errors now say what to do next: retry once when nothing answered, and take the device's current `id` and `ip` from `list_devices` when it moved.
 
 ### Deprecated
 
