@@ -58,6 +58,10 @@ file. This change log follows the conventions of
 - `get_device_state`, `control_device`, `take_snapshot`: the `Device not found` and `Device mismatch` errors now say what to do next: retry once when nothing answered, and take the device's current `id` and `ip` from `list_devices` when it moved.
 - Logs: a request refused with `403 Forbidden` for its `Host` header is now logged as a warning that names the host, so a missing `TAPO_MCP_ALLOWED_HOSTS` entry shows in the server's log.
 - Logs: color escape codes are now written only when the output is a terminal, so logs that go to a file or a log collector are plain text.
+- `TAPO_MCP_DISCOVERY_TARGET`: the server now refuses to start when the value is not an IP address, such as a hostname or a range like `192.168.1.0/24`. It used to start and then fail every discovery.
+- `TAPO_MCP_USERNAME`, `TAPO_MCP_PASSWORD`, `TAPO_MCP_DISCOVERY_TARGET`, `TAPO_MCP_HTTP_ADDR`: spaces and line breaks around the value are now ignored, so a password read from a file that ends in a line break works.
+- Startup: a `TAPO_MCP_*` environment variable that the server does not know, such as a misspelled `TAPO_MCP_APIKEY`, is now logged as a warning instead of being ignored silently.
+- Startup: the error for a value that is not a number, such as `TAPO_MCP_DISCOVERY_TIMEOUT=5s`, now names the environment variable. So does the error when the server cannot listen on `TAPO_MCP_HTTP_ADDR`, for example when the port is missing or already in use.
 
 ### Deprecated
 

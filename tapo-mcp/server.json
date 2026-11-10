@@ -44,7 +44,7 @@
         },
         {
           "name": "TAPO_MCP_DISCOVERY_TARGET",
-          "description": "Network target for device discovery (e.g. 192.168.1.255)",
+          "description": "IP address for device discovery, usually the network's broadcast address (e.g. 192.168.1.255)",
           "isRequired": true,
           "isSecret": false
         },

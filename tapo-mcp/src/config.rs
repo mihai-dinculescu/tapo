@@ -1,3 +1,5 @@
+use std::net::{IpAddr, SocketAddr};
+
 use serde::Deserialize;
 use url::Url;
 
@@ -7,6 +9,20 @@ const DEFAULT_DISCOVERY_TIMEOUT: u64 = 5;
 const DEFAULT_DISCOVERY_INTERVAL: u64 = 600;
 /// One day. Keeps the interval far below the point where tokio's `Instant + period` overflows.
 const MAX_DISCOVERY_INTERVAL: u64 = 86_400;
+/// Every variable the server reads, without the `TAPO_MCP_` prefix.
+const KNOWN_ENVS: &[&str] = &[
+    "USERNAME",
+    "PASSWORD",
+    "CAMERA_USERNAME",
+    "CAMERA_PASSWORD",
+    "DISCOVERY_TARGET",
+    "HTTP_ADDR",
+    "DISCOVERY_TIMEOUT",
+    "DISCOVERY_INTERVAL",
+    "API_KEY",
+    "ALLOWED_HOSTS",
+    "PUBLIC_URL",
+];
 
 #[derive(Clone, Deserialize)]
 pub struct AppConfig {
@@ -75,6 +91,14 @@ impl AppConfig {
     }
 
     pub fn from_env() -> Result<Self, config::ConfigError> {
+        let unknown = Self::unknown_envs();
+        if !unknown.is_empty() {
+            tracing::warn!(
+                "Ignoring unknown environment variable(s): {}",
+                unknown.join(", ")
+            );
+        }
+
         let required_envs = [
             format!("{ENV_PREFIX}_USERNAME"),
             format!("{ENV_PREFIX}_PASSWORD"),
@@ -101,7 +125,13 @@ impl AppConfig {
         let mut config: Self = config::Config::builder()
             .add_source(config::Environment::default().prefix(ENV_PREFIX))
             .build()?
-            .try_deserialize()?;
+            .try_deserialize()
+            .map_err(Self::name_env_var)?;
+
+        config.username = config.username.trim().to_string();
+        config.password = config.password.trim().to_string();
+        config.discovery_target = config.discovery_target.trim().to_string();
+        config.http_addr = config.http_addr.trim().to_string();
 
         config.api_key = config
             .api_key
@@ -127,11 +157,47 @@ impl AppConfig {
             .map(|v| Self::normalize_public_url(&v))
             .transpose()?;
 
+        config.validate_discovery_target()?;
         config.validate_discovery_timeout()?;
         config.validate_discovery_interval()?;
         config.validate_binding_security()?;
 
         Ok(config)
+    }
+
+    /// The `TAPO_MCP_*` variables that are set but that the server does not read, such as
+    /// a misspelled `TAPO_MCP_APIKEY`. Names are compared without regard to case, as the
+    /// `config` crate reads them.
+    fn unknown_envs() -> Vec<String> {
+        let prefix = format!("{ENV_PREFIX}_");
+
+        let mut unknown: Vec<String> = std::env::vars_os()
+            .filter_map(|(name, _)| name.into_string().ok())
+            .filter(|name| {
+                name.to_ascii_uppercase()
+                    .strip_prefix(&prefix)
+                    .is_some_and(|suffix| !KNOWN_ENVS.contains(&suffix))
+            })
+            .collect();
+        unknown.sort();
+        unknown
+    }
+
+    /// Rewrites a value that failed to convert so that the error names the environment
+    /// variable instead of the config field.
+    fn name_env_var(err: config::ConfigError) -> config::ConfigError {
+        match err {
+            config::ConfigError::Type {
+                unexpected,
+                expected,
+                key: Some(key),
+                ..
+            } => config::ConfigError::Message(format!(
+                "{ENV_PREFIX}_{} must be {expected}, got {unexpected}",
+                key.to_ascii_uppercase()
+            )),
+            other => other,
+        }
     }
 
     /// Validates `TAPO_MCP_PUBLIC_URL` and returns it normalized, without a trailing slash.
@@ -173,7 +239,7 @@ impl AppConfig {
 
     /// True when `http_addr` binds to a loopback interface (or `localhost`).
     fn binds_to_loopback(&self) -> bool {
-        if let Ok(socket) = self.http_addr.parse::<std::net::SocketAddr>() {
+        if let Ok(socket) = self.http_addr.parse::<SocketAddr>() {
             return socket.ip().is_loopback();
         }
         // Fall back to parsing `host:port` forms that aren't literal socket
@@ -189,9 +255,22 @@ impl AppConfig {
 
         host.eq_ignore_ascii_case("localhost")
             || host
-                .parse::<std::net::IpAddr>()
+                .parse::<IpAddr>()
                 .map(|ip| ip.is_loopback())
                 .unwrap_or(false)
+    }
+
+    /// Refuses a target that is not an IP address, such as a hostname or a CIDR range, which
+    /// would otherwise only surface as a failure of every background discovery.
+    fn validate_discovery_target(&self) -> Result<(), config::ConfigError> {
+        if self.discovery_target.parse::<IpAddr>().is_ok() {
+            return Ok(());
+        }
+
+        Err(config::ConfigError::Message(format!(
+            "{ENV_PREFIX}_DISCOVERY_TARGET must be an IP address such as 192.168.1.255, got '{}'",
+            self.discovery_target
+        )))
     }
 
     /// Refuses a timeout outside the range `ApiClient::discover_devices` accepts, which
@@ -253,20 +332,8 @@ mod tests {
     ///
     /// Callers must hold `ENV_LOCK` to ensure no concurrent env mutation.
     unsafe fn clear_tapo_env() {
-        for key in [
-            "TAPO_MCP_USERNAME",
-            "TAPO_MCP_PASSWORD",
-            "TAPO_MCP_CAMERA_USERNAME",
-            "TAPO_MCP_CAMERA_PASSWORD",
-            "TAPO_MCP_DISCOVERY_TARGET",
-            "TAPO_MCP_HTTP_ADDR",
-            "TAPO_MCP_DISCOVERY_TIMEOUT",
-            "TAPO_MCP_DISCOVERY_INTERVAL",
-            "TAPO_MCP_API_KEY",
-            "TAPO_MCP_ALLOWED_HOSTS",
-            "TAPO_MCP_PUBLIC_URL",
-        ] {
-            unsafe { std::env::remove_var(key) };
+        for name in KNOWN_ENVS {
+            unsafe { std::env::remove_var(format!("{ENV_PREFIX}_{name}")) };
         }
     }
 
@@ -336,6 +403,72 @@ mod tests {
             err.contains("TAPO_MCP_USERNAME"),
             "blank value should be treated as missing: {err}"
         );
+    }
+
+    #[test]
+    fn required_values_and_http_addr_trim_whitespace() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_USERNAME", " user@example.com ");
+            std::env::set_var("TAPO_MCP_PASSWORD", "secret\n");
+            std::env::set_var("TAPO_MCP_DISCOVERY_TARGET", " 192.168.1.255 ");
+            std::env::set_var("TAPO_MCP_HTTP_ADDR", " 127.0.0.1:3001 ");
+        }
+
+        let config = AppConfig::from_env().unwrap();
+        assert_eq!(config.username, "user@example.com");
+        assert_eq!(config.password, "secret");
+        assert_eq!(config.discovery_target, "192.168.1.255");
+        assert_eq!(config.http_addr, "127.0.0.1:3001");
+    }
+
+    #[test]
+    fn discovery_target_that_is_not_an_ip_is_rejected() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        for target in ["192.168.1.0/24", "tapo.local", "192.168.1"] {
+            unsafe {
+                clear_tapo_env();
+                set_required_env();
+                std::env::set_var("TAPO_MCP_DISCOVERY_TARGET", target);
+            }
+
+            let err = AppConfig::from_env().unwrap_err().to_string();
+            assert!(
+                err.contains("TAPO_MCP_DISCOVERY_TARGET must be an IP address"),
+                "should refuse a target of {target}: {err}"
+            );
+        }
+    }
+
+    #[test]
+    fn non_numeric_value_names_the_env_var() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            clear_tapo_env();
+            set_required_env();
+            std::env::set_var("TAPO_MCP_DISCOVERY_TIMEOUT", "5s");
+        }
+
+        let err = AppConfig::from_env().unwrap_err().to_string();
+        assert_eq!(
+            err,
+            "TAPO_MCP_DISCOVERY_TIMEOUT must be an integer, got string \"5s\""
+        );
+    }
+
+    #[test]
+    fn unknown_envs_lists_misspelled_names() {
+        let _lock = ENV_LOCK.lock().unwrap();
+        unsafe {
+            std::env::set_var("TAPO_MCP_APIKEY", "a-key");
+        }
+
+        let unknown = AppConfig::unknown_envs();
+        unsafe { std::env::remove_var("TAPO_MCP_APIKEY") };
+
+        assert!(unknown.contains(&"TAPO_MCP_APIKEY".to_string()));
     }
 
     #[test]

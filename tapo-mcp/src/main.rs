@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::oneshot;
@@ -16,7 +16,14 @@ async fn main() -> Result<()> {
     let tracer_provider = init_tracing()?;
 
     let app_config = Arc::new(AppConfig::from_env()?);
-    let listener = tokio::net::TcpListener::bind(&app_config.http_addr).await?;
+    let listener = tokio::net::TcpListener::bind(&app_config.http_addr)
+        .await
+        .with_context(|| {
+            format!(
+                "Failed to listen on TAPO_MCP_HTTP_ADDR '{}'",
+                app_config.http_addr
+            )
+        })?;
     tracing::info!(addr = %app_config.http_addr, "Tapo MCP server listening");
 
     let devices = Arc::new(DeviceCache::default());
