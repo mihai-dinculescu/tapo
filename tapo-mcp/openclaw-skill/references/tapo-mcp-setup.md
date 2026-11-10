@@ -53,7 +53,7 @@ When the variable is unset (or empty/whitespace-only), the server runs without a
 
 ## Network exposure
 
-The server enforces the MCP Streamable HTTP DNS-rebinding protection. By default only loopback `Host` headers (`localhost`, `127.0.0.1`, `::1`) are accepted, which prevents a malicious web page from reaching a locally running server via DNS rebinding. Requests to the MCP endpoint with any other `Host` receive a `403 Forbidden` response. Snapshot links are not covered by this check (see Snapshot links).
+The server enforces the MCP Streamable HTTP DNS-rebinding protection. By default only loopback `Host` headers (`localhost`, `127.0.0.1`, `::1`) are accepted, which prevents a malicious web page from reaching a locally running server via DNS rebinding. Requests to the MCP endpoint with any other `Host` receive a `403 Forbidden` response, and the server logs a warning that names the refused host. Snapshot links are not covered by this check (see Snapshot links).
 
 To reach the server over the LAN or from another host, set `TAPO_MCP_ALLOWED_HOSTS` to the exact hostname(s) or `host:port` authorities clients connect to, for example `TAPO_MCP_ALLOWED_HOSTS="tapo-mcp.lan:3000,192.168.1.50:3000"`. This replaces the loopback default, so include loopback entries as well if you still need them.
 

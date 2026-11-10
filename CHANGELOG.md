@@ -56,6 +56,8 @@ file. This change log follows the conventions of
 - `control_device`: now returns `device_info`, the device's state afterwards read back from the device, the same as the `DeviceInfo` capability returns. It used to return nothing. When every capability was applied but reading the state back fails, the call now returns an error that says so; the capabilities were applied.
 - `list_devices`: a device without a name is now listed by its type, such as "Plug" or "Power Strip", instead of with an empty name. A power strip that has a name of its own is now listed by that name.
 - `get_device_state`, `control_device`, `take_snapshot`: the `Device not found` and `Device mismatch` errors now say what to do next: retry once when nothing answered, and take the device's current `id` and `ip` from `list_devices` when it moved.
+- Logs: a request refused with `403 Forbidden` for its `Host` header is now logged as a warning that names the host, so a missing `TAPO_MCP_ALLOWED_HOSTS` entry shows in the server's log.
+- Logs: color escape codes are now written only when the output is a terminal, so logs that go to a file or a log collector are plain text.
 
 ### Deprecated
 

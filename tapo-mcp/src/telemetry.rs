@@ -1,4 +1,5 @@
 use std::future::Future;
+use std::io::IsTerminal as _;
 
 use anyhow::Result;
 use axum::http::HeaderMap;
@@ -48,7 +49,7 @@ pub fn init_tracing() -> Result<Option<opentelemetry_sdk::trace::SdkTracerProvid
 
         tracing_subscriber::registry()
             .with(env_filter)
-            .with(tracing_subscriber::fmt::layer())
+            .with(fmt_layer())
             .with(otel_layer)
             .try_init()?;
 
@@ -57,10 +58,23 @@ pub fn init_tracing() -> Result<Option<opentelemetry_sdk::trace::SdkTracerProvid
 
     tracing_subscriber::registry()
         .with(env_filter)
-        .with(tracing_subscriber::fmt::layer())
+        .with(fmt_layer())
         .try_init()?;
 
     Ok(None)
+}
+
+/// The log layer. It writes color escape codes only to a terminal, so logs that
+/// go to a file, a journal or a log collector stay plain text. On a terminal
+/// the layer's default is kept, which honours `NO_COLOR`; `with_ansi(true)`
+/// would override it.
+fn fmt_layer<S>() -> tracing_subscriber::fmt::Layer<S> {
+    let layer = tracing_subscriber::fmt::layer();
+    if std::io::stdout().is_terminal() {
+        layer
+    } else {
+        layer.with_ansi(false)
+    }
 }
 
 /// Opens the server span for one `tools/call` request, following the OpenTelemetry
