@@ -8,14 +8,40 @@
     "source": "github",
     "subfolder": "tapo-mcp"
   },
+  "websiteUrl": "https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp",
   "version": "0.6.2",
   "packages": [
     {
       "registryType": "oci",
       "identifier": "ghcr.io/mihai-dinculescu/tapo-mcp:0.6.2",
+      "runtimeHint": "docker",
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--network",
+          "description": "Host networking, so that device discovery can reach the local network",
+          "value": "host"
+        }
+      ],
       "transport": {
         "type": "streamable-http",
-        "url": "http://localhost:3000/mcp"
+        "url": "http://localhost:3000/mcp",
+        "headers": [
+          {
+            "name": "Authorization",
+            "description": "Bearer token; the same value as TAPO_MCP_API_KEY",
+            "isRequired": true,
+            "isSecret": true,
+            "value": "Bearer {api_key}",
+            "variables": {
+              "api_key": {
+                "description": "The value of TAPO_MCP_API_KEY",
+                "isRequired": true,
+                "isSecret": true
+              }
+            }
+          }
+        ]
       },
       "environmentVariables": [
         {
@@ -50,8 +76,8 @@
         },
         {
           "name": "TAPO_MCP_API_KEY",
-          "description": "Optional Bearer token for API authentication",
-          "isRequired": false,
+          "description": "Bearer token that clients send in the Authorization header; the image listens on all interfaces and does not start without it",
+          "isRequired": true,
           "isSecret": true
         },
         {

@@ -50,6 +50,8 @@ file. This change log follows the conventions of
 
 - `list_devices`: every device and child device now has a `type`, such as "Plug", "Color Light", "Child Plug" or "Motion Sensor", so devices can be picked by kind, for example all the lights.
 - `/livez`: added, an endpoint for HTTP health checks such as a Kubernetes liveness probe. It needs neither the API key nor an allowed `Host`.
+- Tools: added titles, such as "List Devices" and "Take Camera Snapshot", for clients that show them in place of the tool names.
+- Server info: added a description and a link to the documentation.
 
 ### Changed
 
@@ -63,6 +65,7 @@ file. This change log follows the conventions of
 - `TAPO_MCP_USERNAME`, `TAPO_MCP_PASSWORD`, `TAPO_MCP_DISCOVERY_TARGET`, `TAPO_MCP_HTTP_ADDR`: spaces and line breaks around the value are now ignored, so a password read from a file that ends in a line break works.
 - Startup: a `TAPO_MCP_*` environment variable that the server does not know, such as a misspelled `TAPO_MCP_APIKEY`, is now logged as a warning instead of being ignored silently.
 - Startup: the error for a value that is not a number, such as `TAPO_MCP_DISCOVERY_TIMEOUT=5s`, now names the environment variable. So does the error when the server cannot listen on `TAPO_MCP_HTTP_ADDR`, for example when the port is missing or already in use.
+- Server info: the server's title is now "Tapo MCP" instead of "Tapo MCP Server".
 
 ### Deprecated
 

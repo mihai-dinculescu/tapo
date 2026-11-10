@@ -66,6 +66,7 @@ impl TapoMcp {
     }
 
     #[tool(
+        title = "Get Device State",
         description = "Get a Tapo device's current state. Checks the capability's parameters, then verifies the device ID matches at the given IP. A camera's `Snapshot` capability is read with take_snapshot, not this tool.",
         annotations(
             read_only_hint = true,
@@ -82,6 +83,7 @@ impl TapoMcp {
     }
 
     #[tool(
+        title = "Control Device",
         description = format!(
             "Control a Tapo device by applying {} to {} set capabilities, in order. Checks the count and every value before contacting the device, then verifies the device ID matches at the given IP. A capability the device does not support fails the call before any capability is applied. When the device returns an error partway through, the error says how many capabilities were applied and which one failed. Returns the device's state afterwards, read back from the device as the DeviceInfo capability returns it.",
             CONTROL_CAPABILITIES.start(),
@@ -102,6 +104,7 @@ impl TapoMcp {
     }
 
     #[tool(
+        title = "List Devices",
         description = "List available Tapo devices. The list is refreshed periodically in the background. If a device the user expects is missing, it may have joined after `discovered_at` and will appear after the next refresh. Prefer reading the `tapo://devices` resource instead if your client supports resources.",
         annotations(
             read_only_hint = true,
@@ -115,6 +118,7 @@ impl TapoMcp {
     }
 
     #[tool(
+        title = "Take Camera Snapshot",
         description = format!(
             "Capture a still JPEG snapshot from a Tapo camera (~640x360). Verifies the device ID matches at the given IP first. Returns the device id, capture time and size as text alongside the image. The text may also include a link to the image that is valid for {} minutes; share it with the user or fetch it to save the file.",
             SNAPSHOT_TTL.as_secs() / 60
@@ -146,7 +150,11 @@ impl ServerHandler for TapoMcp {
         .with_instructions(INSTRUCTIONS);
         info.server_info.name = env!("CARGO_PKG_NAME").to_owned();
         info.server_info.version = env!("CARGO_PKG_VERSION").to_owned();
-        info.server_info.title = Some("Tapo MCP Server".to_owned());
+        info.server_info.title = Some("Tapo MCP".to_owned());
+        info.server_info.description =
+            Some("Discover, control and monitor TP-Link Tapo smart home devices".to_owned());
+        info.server_info.website_url =
+            Some("https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp".to_owned());
         info
     }
 
