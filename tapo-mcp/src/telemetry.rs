@@ -7,7 +7,7 @@ use axum::http::request::Parts;
 use opentelemetry::propagation::Extractor;
 use opentelemetry::trace::{TraceContextExt as _, TracerProvider as _};
 use opentelemetry::{Context, global};
-use opentelemetry_otlp::WithExportConfig as _;
+use opentelemetry_otlp::{OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_TRACES_ENDPOINT};
 use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use rmcp::ErrorData as McpError;
@@ -20,21 +20,25 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::errors::TapoMcpError;
 
-const OTEL_ENDPOINT_ENV: &str = "OTEL_EXPORTER_OTLP_ENDPOINT";
-
 /// The `EnvFilter` directive used when `RUST_LOG` is unset. It also decides
 /// which spans are exported.
 pub const DEFAULT_FILTER: &str = "tapo_mcp=info";
 
+/// Sets up logging, and trace export when `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`
+/// or `OTEL_EXPORTER_OTLP_ENDPOINT` is set. The exporter reads the two
+/// variables itself, by the OpenTelemetry rules: the first is used as it is,
+/// and the second gets `/v1/traces` appended.
 pub fn init_tracing() -> Result<Option<opentelemetry_sdk::trace::SdkTracerProvider>> {
     let env_filter = tracing_subscriber::EnvFilter::try_from_default_env()
         // safe: hardcoded filter directive always parses successfully.
         .unwrap_or_else(|_| DEFAULT_FILTER.parse().unwrap());
 
-    if let Ok(endpoint) = std::env::var(OTEL_ENDPOINT_ENV) {
+    let endpoint = non_empty_env(OTEL_EXPORTER_OTLP_ENDPOINT);
+    let traces_endpoint = non_empty_env(OTEL_EXPORTER_OTLP_TRACES_ENDPOINT);
+
+    let tracer_provider = if endpoint.is_some() || traces_endpoint.is_some() {
         let exporter = opentelemetry_otlp::SpanExporter::builder()
             .with_http()
-            .with_endpoint(endpoint)
             .build()?;
 
         let tracer_provider = opentelemetry_sdk::trace::SdkTracerProvider::builder()
@@ -44,24 +48,42 @@ pub fn init_tracing() -> Result<Option<opentelemetry_sdk::trace::SdkTracerProvid
 
         global::set_text_map_propagator(TraceContextPropagator::new());
 
-        let tracer = tracer_provider.tracer("tapo-mcp");
-        let otel_layer = tracing_opentelemetry::layer().with_tracer(tracer);
+        Some(tracer_provider)
+    } else {
+        None
+    };
 
-        tracing_subscriber::registry()
-            .with(env_filter)
-            .with(fmt_layer())
-            .with(otel_layer)
-            .try_init()?;
-
-        return Ok(Some(tracer_provider));
-    }
+    let otel_layer = tracer_provider
+        .as_ref()
+        .map(|provider| tracing_opentelemetry::layer().with_tracer(provider.tracer("tapo-mcp")));
 
     tracing_subscriber::registry()
         .with(env_filter)
         .with(fmt_layer())
+        .with(otel_layer)
         .try_init()?;
 
-    Ok(None)
+    // The value is left out of the warning: a URL can carry credentials.
+    if traces_endpoint.is_none() && endpoint.is_some_and(|endpoint| has_traces_path(&endpoint)) {
+        tracing::warn!(
+            "{OTEL_EXPORTER_OTLP_ENDPOINT} ends in /v1/traces, which is appended to it again; \
+             remove the path, or set {OTEL_EXPORTER_OTLP_TRACES_ENDPOINT} to the full URL"
+        );
+    }
+
+    Ok(tracer_provider)
+}
+
+/// The value of an environment variable, or `None` when it is unset or empty,
+/// which is how the exporter reads the endpoint variables.
+fn non_empty_env(name: &str) -> Option<String> {
+    std::env::var(name).ok().filter(|value| !value.is_empty())
+}
+
+/// Whether a base endpoint already carries the traces path that the exporter
+/// appends to it.
+fn has_traces_path(endpoint: &str) -> bool {
+    endpoint.trim_end_matches('/').ends_with("/v1/traces")
 }
 
 /// The log layer. It writes color escape codes only to a terminal, so logs that
@@ -238,5 +260,18 @@ impl Extractor for MetaExtractor<'_> {
 
     fn keys(&self) -> Vec<&str> {
         self.0.keys().map(String::as_str).collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn has_traces_path_spots_a_full_traces_url() {
+        assert!(has_traces_path("http://alloy.monitoring:4318/v1/traces"));
+        assert!(has_traces_path("http://alloy.monitoring:4318/v1/traces/"));
+        assert!(!has_traces_path("http://alloy.monitoring:4318"));
+        assert!(!has_traces_path("http://alloy.monitoring:4318/otlp/"));
     }
 }

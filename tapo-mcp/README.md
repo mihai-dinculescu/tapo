@@ -125,7 +125,7 @@ When `TAPO_MCP_PUBLIC_URL` is unset, no link is returned and the `/snapshots/` r
 
 ## OpenTelemetry
 
-Set `OTEL_EXPORTER_OTLP_ENDPOINT` to the full URL of an OTLP/HTTP traces endpoint, including the path (e.g. `http://alloy.monitoring:4318/v1/traces`), to export traces. `OTEL_RESOURCE_ATTRIBUTES` adds resource attributes. `RUST_LOG` (default `tapo_mcp=info`) also decides which spans are exported.
+To export traces, set `OTEL_EXPORTER_OTLP_ENDPOINT` to the base URL of an OTLP/HTTP collector (e.g. `http://alloy.monitoring:4318`); the server sends them to `/v1/traces` under it. To send them to another path, set `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` to the full URL instead. `OTEL_RESOURCE_ATTRIBUTES` adds resource attributes. `RUST_LOG` (default `tapo_mcp=info`) also decides which spans are exported.
 
 What gets traced:
 

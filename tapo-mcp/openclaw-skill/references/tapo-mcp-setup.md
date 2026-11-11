@@ -71,7 +71,7 @@ When `TAPO_MCP_PUBLIC_URL` is unset, no link is returned and the `/snapshots/` r
 
 ## OpenTelemetry
 
-To export traces, set `OTEL_EXPORTER_OTLP_ENDPOINT` to the full URL of an OTLP/HTTP traces endpoint, including the path (e.g. `http://alloy.monitoring:4318/v1/traces`). `OTEL_RESOURCE_ATTRIBUTES` adds resource attributes, and `RUST_LOG` (default `tapo_mcp=info`) also decides which spans are exported.
+To export traces, set `OTEL_EXPORTER_OTLP_ENDPOINT` to the base URL of an OTLP/HTTP collector (e.g. `http://alloy.monitoring:4318`); the server sends them to `/v1/traces` under it. To send them to another path, set `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` to the full URL instead. `OTEL_RESOURCE_ATTRIBUTES` adds resource attributes, and `RUST_LOG` (default `tapo_mcp=info`) also decides which spans are exported.
 
 Each tool call is exported as one span that covers the whole call, with the device check and the device request as child spans, and a failed call has error status. The background device discoveries and the sweeps of expired snapshot links are traced too. Credentials, the API key and image data are never recorded. Incoming W3C trace context is honoured: when the MCP client sends `traceparent` in the request's `params._meta`, the call joins the client's trace and a `traceparent` HTTP header from a tracing reverse proxy is recorded as a span link; without the `_meta` context, the call joins the proxy's trace instead. See the [README](https://github.com/mihai-dinculescu/tapo/blob/main/tapo-mcp/README.md#opentelemetry) for the span names and attributes.
 

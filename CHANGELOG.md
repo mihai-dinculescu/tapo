@@ -73,6 +73,7 @@ file. This change log follows the conventions of
 - Startup: a `TAPO_MCP_*` environment variable that the server does not know, such as a misspelled `TAPO_MCP_APIKEY`, is now logged as a warning instead of being ignored silently.
 - Startup: the error for a value that is not a number, such as `TAPO_MCP_DISCOVERY_TIMEOUT=5s`, now names the environment variable. So does the error when the server cannot listen on `TAPO_MCP_HTTP_ADDR`, for example when the port is missing or already in use.
 - Server info: the server's title is now "Tapo MCP" instead of "Tapo MCP Server".
+- `OTEL_EXPORTER_OTLP_ENDPOINT`: now takes the collector's base URL, such as `http://alloy.monitoring:4318`, as other OpenTelemetry tools do, and traces are sent to `/v1/traces` under it. Remove `/v1/traces` from the value, or move the full URL to `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, which is now read too. A value that still ends in `/v1/traces` is logged as a warning at startup.
 
 ### Deprecated
 

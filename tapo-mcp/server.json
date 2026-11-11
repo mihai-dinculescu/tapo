@@ -110,7 +110,7 @@
         },
         {
           "name": "OTEL_EXPORTER_OTLP_ENDPOINT",
-          "description": "Optional OpenTelemetry collector endpoint for tracing",
+          "description": "Base URL of an OTLP/HTTP collector to export traces to, such as http://localhost:4318; traces go to /v1/traces under it",
           "isRequired": false,
           "isSecret": false
         }
