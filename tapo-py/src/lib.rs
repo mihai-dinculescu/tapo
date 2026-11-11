@@ -23,14 +23,15 @@ use tapo::responses::{
     DeviceInfoPlugResult, DeviceInfoPowerStripResult, DeviceInfoRgbLightStripResult,
     DeviceInfoRgbicLightStripResult, DeviceUsageEnergyMonitoringResult, DeviceUsageResult,
     EnergyDataIntervalResult, EnergyDataResult, EnergyMeterDataResult, EnergyUsageResult,
-    IrRemoteKey, IrRemoteResult, KE100Result, OtherResult, OvercurrentStatus, OverheatStatus,
-    PlugState, PowerDataIntervalResult, PowerDataResult, PowerProtectionStatus, PowerState,
-    PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult, Preset, RecordingDateHubResult,
-    RecordingDownloadResult, RgbLightStripState, RgbicLightStripState, RtspStreamUrl, S200Result,
-    S200RotationParams, S210Result, ScheduleRuleResult, Snapshot, Status, T31XResult, T100Event,
-    T100Result, T110Event, T110Result, T300Event, T300Result, TemperatureHumidityRecord,
-    TemperatureHumidityRecords, TemperatureUnit, TemperatureUnitKE100, Timer, TimezoneResult,
-    UsageByPeriodResult, WaterLeakStatus, WifiJoinResult, WifiNetwork, WifiSecurity,
+    IrRemoteKey, IrRemoteResult, KE100Result, LightingEffectSummary, OtherResult,
+    OvercurrentStatus, OverheatStatus, PlugState, PowerDataIntervalResult, PowerDataResult,
+    PowerProtectionStatus, PowerState, PowerStripPlugEnergyMonitoringResult, PowerStripPlugResult,
+    Preset, RecordingDateHubResult, RecordingDownloadResult, RgbLightStripState,
+    RgbicLightStripState, RtspStreamUrl, S200Result, S200RotationParams, S210Result,
+    ScheduleRuleResult, Snapshot, Status, T31XResult, T100Event, T100Result, T110Event, T110Result,
+    T300Event, T300Result, TemperatureHumidityRecord, TemperatureHumidityRecords, TemperatureUnit,
+    TemperatureUnitKE100, Timer, TimezoneResult, UsageByPeriodResult, WaterLeakStatus,
+    WifiJoinResult, WifiNetwork, WifiSecurity,
 };
 use tapo::{BluetoothSetupDevice, DeviceType, DiscoveryRawResult};
 
@@ -213,6 +214,7 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<DeviceInfoRgbicLightStripResult>()?;
     module.add_class::<DefaultRgbicLightStripState>()?;
     module.add_class::<RgbicLightStripState>()?;
+    module.add_class::<LightingEffectSummary>()?;
     module.add_class::<LightingEffect>()?;
     module.add_class::<LightingEffectType>()?;
 

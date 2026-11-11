@@ -13,6 +13,7 @@ file. This change log follows the conventions of
 - Firmware updates: every device except cameras and camera hubs can now check for, start and follow a firmware update. `get_latest_firmware` returns the newest firmware that the device can update to as `LatestFirmwareResult`: `UpToDate` with the version that the device is running, or `UpdateAvailable` with the update's version, release date and release notes. `start_firmware_update` starts updating to that firmware. The device downloads, installs and reboots by itself, and needs `refresh_session` once it is back. `get_firmware_update_state` returns the state of the update as `FirmwareUpdateStateResult`: `Idle`, `Downloading` with the download progress, `Downloaded` with the time the device takes to install the update and reboot, `AwaitingTransfer` when the hub has downloaded a child device's update but not sent it yet, or `Failed` and `Unknown` with the device's status code. (thanks to @bradthurber)
 - Renaming a device: lights, light strips, plugs, power strips and the H100 and H110 hubs can now be renamed with `set_nickname`, for example right after setting them up. The name can be up to 128 bytes in UTF-8.
 - `DeviceInfoPowerStripResult`: added `nickname`, the name of the power strip itself, which is empty when the strip has none.
+- `DeviceInfoRgbicLightStripResult`: added `lighting_effect`, the lighting effect that the L920 or L930 ran last as a `LightingEffectSummary`, with its `name`, `brightness` and `enabled`, which says whether it is running now. It is `None` when the strip has not run a lighting effect yet.
 - `ChildDeviceHubResult`, `ChildDeviceHubIrResult`: added `device_type`, which returns what kind of device a hub child is as a `HubChildType`, such as `MotionSensor` or `LightSwitch`. Like `DeviceType`, its `as_str` and `Display` give a readable name, such as "Motion Sensor".
 
 ### Changed
@@ -33,6 +34,7 @@ file. This change log follows the conventions of
 - Firmware updates: every device except cameras and camera hubs can now check for, start and follow a firmware update. `get_latest_firmware` returns the newest firmware that the device can update to as `LatestFirmwareResult`: `update_available`, the newest version as `fw_ver` (the running version when the device is up to date), and the update's `release_date` and `release_notes`, which are `None` when no update is available. `start_firmware_update` starts updating to that firmware. The device downloads, installs and reboots by itself, and needs `refresh_session` once it is back. `get_firmware_update_state` returns the state of the update as `FirmwareUpdateStateResult`: a `status` of `FirmwareUpdateStatus` (`Idle`, `Downloading`, `Downloaded`, `AwaitingTransfer`, `Failed` or `Unknown`), with `download_progress` while downloading, `install_time_s` and `reboot_time_s` once downloaded, and the device's status `code` when failed or unknown. (thanks to @bradthurber)
 - Renaming a device: lights, light strips, plugs, power strips and the H100 and H110 hubs can now be renamed with `set_nickname`, for example right after setting them up. The name can be up to 128 bytes in UTF-8.
 - `DeviceInfoPowerStripResult`: added `nickname`, the name of the power strip itself, which is empty when the strip has none.
+- `DeviceInfoRgbicLightStripResult`: added `lighting_effect`, the lighting effect that the L920 or L930 ran last as a `LightingEffectSummary`, with its `name`, `brightness` and `enabled`, which says whether it is running now. It is `None` when the strip has not run a lighting effect yet.
 
 ### Changed
 
@@ -52,6 +54,7 @@ file. This change log follows the conventions of
 - `/livez`: added, an endpoint for HTTP health checks such as a Kubernetes liveness probe. It needs neither the API key nor an allowed `Host`.
 - Tools: added titles, such as "List Devices" and "Take Camera Snapshot", for clients that show them in place of the tool names.
 - Server info: added a description and a link to the documentation.
+- `get_device_state`: the `DeviceInfo` capability of an L920 or L930 now returns `lighting_effect`, the lighting effect that the strip ran last, with its `name`, `brightness` and `enabled`, which says whether it is running now. It is `null` when the strip has not run a lighting effect yet.
 
 ### Changed
 
