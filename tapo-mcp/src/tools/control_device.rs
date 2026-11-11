@@ -13,6 +13,7 @@ use tracing::field::Empty;
 use crate::config::AppConfig;
 use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
+use crate::json::device_info_json;
 use crate::models::{
     CONTROL_CAPABILITIES, ControlDeviceParams, ControlDeviceResult, GetCapability,
     SetCapabilityRequest,
@@ -156,7 +157,7 @@ fn device_info_request<'a>(
         ($handler:expr) => {
             Box::pin(async move {
                 let info = $handler.get_device_info().await?;
-                Ok::<_, tapo::Error>(serde_json::to_value(&info)?)
+                Ok::<_, tapo::Error>(device_info_json(&info)?)
             })
         };
     }

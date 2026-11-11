@@ -8,6 +8,7 @@ pub mod snapshots;
 pub mod telemetry;
 
 pub(crate) mod errors;
+pub(crate) mod json;
 pub(crate) mod models;
 pub(crate) mod requests;
 pub(crate) mod resources;

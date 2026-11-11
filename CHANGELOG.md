@@ -63,6 +63,7 @@ file. This change log follows the conventions of
 - `/mcp`: replaces `/` as the MCP endpoint, for example `http://127.0.0.1:3000/mcp`. Update your client URLs.
 - `control_device`: now returns `device_info`, the device's state afterwards read back from the device, the same as the `DeviceInfo` capability returns. It used to return nothing. When every capability was applied but reading the state back fails, the call now returns an error that says so; the capabilities were applied.
 - `get_device_state`: the device info of a hub child device now returns `last_onboarding_timestamp` instead of `lastOnboardingTimestamp`.
+- `get_device_state`: the device info that the `DeviceInfo` capability returns no longer carries the home's latitude and longitude, `has_set_location_info`, the Wi-Fi network name, the MAC address, `oem_id`, `specs`, or `default_states`, whose brightness and color were easy to mistake for the current ones.
 - `list_devices`: a device without a name is now listed by its type, such as "Plug" or "Power Strip", instead of with an empty name. A power strip that has a name of its own is now listed by that name.
 - `get_device_state`, `control_device`, `take_snapshot`: the `Device not found` and `Device mismatch` errors now say what to do next: retry once when nothing answered, and take the device's current `id` and `ip` from `list_devices` when it moved.
 - Logs: a request refused with `403 Forbidden` for its `Host` header is now logged as a warning that names the host, so a missing `TAPO_MCP_ALLOWED_HOSTS` entry shows in the server's log.
@@ -85,6 +86,7 @@ file. This change log follows the conventions of
 
 - `list_devices`, `get_device_state`, `control_device`: devices that ask for their password unchanged via `"passwd_id": 4`, such as the H110 on firmware 1.5.4, and their child devices can now be reached. They used to fail with `The device asks for a password transform that is not supported yet`.
 - `get_device_state`: the `EnergyDataHourly` capability now returns only the requested days when they include the day the clocks go back. It used to return an extra day, and 8 days that included it failed with the device error `-1008`. (thanks to @bradthurber)
+- `get_device_state`: temperatures are now returned as the device reports them, such as `9.3`. The `DeviceInfo` and `TemperatureHumidityRecords` capabilities used to return values like `9.300000190734863`.
 
 ## [MCP v0.6.2][tapo-mcp-v0.6.2] - 2026-11-01
 

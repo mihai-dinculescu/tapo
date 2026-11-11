@@ -11,6 +11,7 @@ use tracing::field::Empty;
 use crate::config::AppConfig;
 use crate::device_locks::DeviceLocks;
 use crate::errors::TapoMcpError;
+use crate::json::{self, device_info_json};
 use crate::models::{
     DATA_YEARS, DETECTIONS_WINDOW_HOURS, DetectionsResult, ENERGY_HOURLY_DAYS,
     GetCapabilityRequest, GetDeviceStateParams, POWER_5_MINUTE_HOURS, POWER_HOURLY_DAYS, QUARTERS,
@@ -214,50 +215,44 @@ fn detections_window(
 async fn get_device_info(checked: CheckedDevice) -> Result<serde_json::Value, TapoMcpError> {
     match checked {
         CheckedDevice::Parent(device) => match device {
-            DiscoveryResult::Light { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
-            DiscoveryResult::ColorLight { device_info, .. } => {
-                Ok(serde_json::to_value(&*device_info)?)
-            }
+            DiscoveryResult::Light { device_info, .. } => Ok(device_info_json(&*device_info)?),
+            DiscoveryResult::ColorLight { device_info, .. } => Ok(device_info_json(&*device_info)?),
             DiscoveryResult::RgbLightStrip { device_info, .. } => {
-                Ok(serde_json::to_value(&*device_info)?)
+                Ok(device_info_json(&*device_info)?)
             }
             DiscoveryResult::RgbicLightStrip { device_info, .. } => {
-                Ok(serde_json::to_value(&*device_info)?)
+                Ok(device_info_json(&*device_info)?)
             }
-            DiscoveryResult::Plug { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
+            DiscoveryResult::Plug { device_info, .. } => Ok(device_info_json(&*device_info)?),
             DiscoveryResult::PlugEnergyMonitoring { device_info, .. } => {
-                Ok(serde_json::to_value(&*device_info)?)
+                Ok(device_info_json(&*device_info)?)
             }
-            DiscoveryResult::PowerStrip { device_info, .. } => {
-                Ok(serde_json::to_value(&*device_info)?)
-            }
+            DiscoveryResult::PowerStrip { device_info, .. } => Ok(device_info_json(&*device_info)?),
             DiscoveryResult::PowerStripEnergyMonitoring { device_info, .. } => {
-                Ok(serde_json::to_value(&*device_info)?)
+                Ok(device_info_json(&*device_info)?)
             }
-            DiscoveryResult::Hub { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
-            DiscoveryResult::HubIr { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
-            DiscoveryResult::CameraHub { device_info, .. } => {
-                Ok(serde_json::to_value(&*device_info)?)
-            }
+            DiscoveryResult::Hub { device_info, .. } => Ok(device_info_json(&*device_info)?),
+            DiscoveryResult::HubIr { device_info, .. } => Ok(device_info_json(&*device_info)?),
+            DiscoveryResult::CameraHub { device_info, .. } => Ok(device_info_json(&*device_info)?),
             DiscoveryResult::Camera { device_info, .. }
             | DiscoveryResult::CameraPtz { device_info, .. } => {
-                Ok(serde_json::to_value(&*device_info)?)
+                Ok(device_info_json(&*device_info)?)
             }
-            DiscoveryResult::Other { device_info, .. } => Ok(serde_json::to_value(&*device_info)?),
+            DiscoveryResult::Other { device_info, .. } => Ok(device_info_json(&*device_info)?),
             // `DiscoveryResult` is non-exhaustive. Every type it has today is handled above.
             _ => unreachable!(),
         },
         CheckedDevice::PowerStripChild { handler, child_id } => {
             let plug = handler.plug_unchecked(child_id);
             let info = plug.get_device_info().await?;
-            Ok(serde_json::to_value(&info)?)
+            Ok(device_info_json(&info)?)
         }
         CheckedDevice::PowerStripEnergyMonitoringChild { handler, child_id } => {
             let plug = handler.plug_unchecked(child_id);
             let info = plug.get_device_info().await?;
-            Ok(serde_json::to_value(&info)?)
+            Ok(device_info_json(&info)?)
         }
-        CheckedDevice::HubChild { child, .. } => Ok(serde_json::to_value(&child)?),
+        CheckedDevice::HubChild { child, .. } => Ok(device_info_json(&child)?),
     }
 }
 
@@ -515,7 +510,7 @@ async fn get_temperature_humidity_records(
                 HubParent::HubIr(hub) => hub.t31x_unchecked(child_id),
                 HubParent::CameraHub(hub) => hub.t31x_unchecked(child_id),
             };
-            Ok(serde_json::to_value(
+            Ok(json::to_value(
                 &h.get_temperature_humidity_records().await?,
             )?)
         }
