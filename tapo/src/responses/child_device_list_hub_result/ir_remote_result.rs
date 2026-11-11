@@ -34,7 +34,7 @@ pub struct IrRemoteResult {
     pub parent_device_id: String,
     pub r#type: String,
     // Specific properties to this device.
-    #[serde(rename = "lastOnboardingTimestamp")]
+    #[serde(alias = "lastOnboardingTimestamp")]
     pub last_onboarding_timestamp: u64,
     /// The keys stored on this remote.
     pub key_list: Vec<IrRemoteKey>,

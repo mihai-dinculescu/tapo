@@ -33,7 +33,7 @@ pub struct S200Result {
     pub status: Status,
     pub r#type: String,
     // Specific properties to this device.
-    #[serde(rename = "lastOnboardingTimestamp")]
+    #[serde(alias = "lastOnboardingTimestamp")]
     pub last_onboarding_timestamp: u64,
     /// The time in seconds between each report.
     pub report_interval: u32,

@@ -37,7 +37,7 @@ pub struct S210Result {
     // Specific properties to this device.
     pub battery_percentage: u8,
     pub device_on: bool,
-    #[serde(rename = "lastOnboardingTimestamp")]
+    #[serde(alias = "lastOnboardingTimestamp")]
     pub last_onboarding_timestamp: u64,
     pub position: u8,
     pub slot_number: u8,

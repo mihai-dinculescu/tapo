@@ -35,7 +35,7 @@ pub struct T100Result {
     pub r#type: String,
     // Specific properties to this device.
     pub detected: bool,
-    #[serde(rename = "lastOnboardingTimestamp")]
+    #[serde(alias = "lastOnboardingTimestamp")]
     pub last_onboarding_timestamp: u64,
     /// The time in seconds between each report.
     pub report_interval: u32,

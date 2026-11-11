@@ -62,7 +62,7 @@ pub struct T31XResult {
     pub current_temperature_exception: f32,
     #[serde(rename = "current_temp")]
     pub current_temperature: f32,
-    #[serde(rename = "lastOnboardingTimestamp")]
+    #[serde(alias = "lastOnboardingTimestamp")]
     pub last_onboarding_timestamp: u64,
     /// The time in seconds between each report.
     pub report_interval: u32,

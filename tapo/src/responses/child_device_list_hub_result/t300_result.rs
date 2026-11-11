@@ -49,7 +49,7 @@ pub struct T300Result {
     pub r#type: String,
     // Specific properties to this device.
     pub in_alarm: bool,
-    #[serde(rename = "lastOnboardingTimestamp")]
+    #[serde(alias = "lastOnboardingTimestamp")]
     pub last_onboarding_timestamp: u64,
     /// The time in seconds between each report.
     pub report_interval: u32,
