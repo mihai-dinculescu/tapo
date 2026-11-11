@@ -1,0 +1,303 @@
+{
+  "discovery_response": {
+    "error_code": 0,
+    "result": {
+      "device_id": "0123456789abcdef0123456789abcdef",
+      "device_model": "L930-5(EU)",
+      "device_type": "SMART.TAPOBULB",
+      "factory_default": false,
+      "ip": "192.168.1.100",
+      "is_support_iot_cloud": true,
+      "mac": "AA-BB-CC-DD-EE-93",
+      "mgt_encrypt_schm": {
+        "encrypt_type": "TPAP",
+        "http_port": 80,
+        "is_support_https": false,
+        "lv": 2
+      },
+      "obd_src": "tplink",
+      "owner": "0123456789ABCDEF0123456789ABCDEF",
+      "protocol_version": 1,
+      "tpap": {
+        "dac": 0,
+        "noc": 0,
+        "pake": [2],
+        "port": 80,
+        "tls": 0
+      },
+      "tpap_preferred": true
+    }
+  },
+  "component_nego": {
+    "component_list": [
+      {
+        "id": "device",
+        "ver_code": 2
+      },
+      {
+        "id": "light_strip",
+        "ver_code": 1
+      },
+      {
+        "id": "light_strip_lighting_effect",
+        "ver_code": 2
+      },
+      {
+        "id": "firmware",
+        "ver_code": 2
+      },
+      {
+        "id": "quick_setup",
+        "ver_code": 3
+      },
+      {
+        "id": "inherit",
+        "ver_code": 1
+      },
+      {
+        "id": "time",
+        "ver_code": 1
+      },
+      {
+        "id": "wireless",
+        "ver_code": 1
+      },
+      {
+        "id": "schedule",
+        "ver_code": 2
+      },
+      {
+        "id": "countdown",
+        "ver_code": 2
+      },
+      {
+        "id": "antitheft",
+        "ver_code": 1
+      },
+      {
+        "id": "account",
+        "ver_code": 1
+      },
+      {
+        "id": "synchronize",
+        "ver_code": 1
+      },
+      {
+        "id": "sunrise_sunset",
+        "ver_code": 1
+      },
+      {
+        "id": "brightness",
+        "ver_code": 1
+      },
+      {
+        "id": "cloud_connect",
+        "ver_code": 1
+      },
+      {
+        "id": "color_temperature",
+        "ver_code": 1
+      },
+      {
+        "id": "default_states",
+        "ver_code": 1
+      },
+      {
+        "id": "preset",
+        "ver_code": 3
+      },
+      {
+        "id": "color",
+        "ver_code": 1
+      },
+      {
+        "id": "on_off_gradually",
+        "ver_code": 4
+      },
+      {
+        "id": "device_local_time",
+        "ver_code": 1
+      },
+      {
+        "id": "iot_cloud",
+        "ver_code": 1
+      },
+      {
+        "id": "music_rhythm",
+        "ver_code": 3
+      },
+      {
+        "id": "bulb_quick_control",
+        "ver_code": 1
+      },
+      {
+        "id": "localSmart",
+        "ver_code": 1
+      },
+      {
+        "id": "homekit",
+        "ver_code": 2
+      },
+      {
+        "id": "segment",
+        "ver_code": 1
+      },
+      {
+        "id": "segment_effect",
+        "ver_code": 2
+      },
+      {
+        "id": "music_rhythm_v2",
+        "ver_code": 4
+      },
+      {
+        "id": "auto_light",
+        "ver_code": 1
+      },
+      {
+        "id": "tpap",
+        "ver_code": 1
+      }
+    ]
+  },
+  "login": {
+    "discover": {
+      "sub_method": "discover",
+      "tpap_preferred": true,
+      "mac": "AABBCCDDEE93",
+      "tpap": {
+        "tls": 0,
+        "dac": 0,
+        "noc": 0,
+        "pake": [2],
+        "port": 80
+      }
+    },
+    "pake_register": {
+      "sub_method": "pake_register",
+      "extra_crypt": {
+        "params": {
+          "passwd_id": 2
+        },
+        "type": "password_shadow"
+      },
+      "encryption": "aes_128_ccm",
+      "cipher_suites": 1,
+      "iterations": 3000
+    },
+    "pake_share": {
+      "error_code": -2203
+    }
+  },
+  "get_device_info": {
+    "avatar": "",
+    "brightness": 100,
+    "color_temp": 4500,
+    "color_temp_range": [2500, 6500],
+    "default_states": {
+      "state": {
+        "lighting_effect": {
+          "brightness": 100,
+          "custom": 0,
+          "direction": 3,
+          "display_colors": [[198, 84, 100]],
+          "duration": 0,
+          "enable": 1,
+          "expansion_strategy": 1,
+          "id": "TapoStrip_0fOleCdwSgR0nfjkReeYfw",
+          "name": "Ocean",
+          "repeat_times": 0,
+          "segments": [0],
+          "sequence": [[198, 84, 30], [198, 70, 30], [198, 10, 30]],
+          "spread": 16,
+          "transition": 2000,
+          "type": "sequence"
+        }
+      },
+      "type": "last_states"
+    },
+    "device_id": "8000000000000000000000000000000000000930",
+    "device_on": false,
+    "fw_id": "00000000000000000000000000000000",
+    "fw_ver": "1.4.3 Build 260430 Rel.163123",
+    "has_set_location_info": false,
+    "hue": 0,
+    "hw_id": "0123456789ABCDEF0123456789ABCDEF",
+    "hw_ver": "1.0",
+    "ip": "192.168.1.100",
+    "lang": "",
+    "latitude": -1879048193,
+    "lighting_effect": {
+      "brightness": 100,
+      "custom": 0,
+      "display_colors": [[198, 84, 100]],
+      "enable": 0,
+      "id": "TapoStrip_0fOleCdwSgR0nfjkReeYfw",
+      "name": "Ocean"
+    },
+    "longitude": -1879048193,
+    "mac": "AA-BB-CC-DD-EE-93",
+    "model": "L930",
+    "music_rhythm_enable": false,
+    "music_rhythm_mode": "single_lamp",
+    "nickname": "U2ltdWxhdGVkIExpZ2h0IFN0cmlw",
+    "oem_id": "FEDCBA9876543210FEDCBA9876543210",
+    "overheated": false,
+    "region": "Europe/London",
+    "rssi": -42,
+    "saturation": 100,
+    "segment_effect": {
+      "brightness": 97,
+      "custom": 0,
+      "display_colors": [],
+      "enable": 0,
+      "id": "",
+      "name": "Ocean"
+    },
+    "signal_level": 3,
+    "specs": "EU",
+    "ssid": "U2ltdWxhdGVkIFdpLUZp",
+    "time_diff": 0,
+    "type": "SMART.TAPOBULB"
+  },
+  "get_device_usage": {
+    "time_usage": {
+      "today": 0,
+      "past7": 0,
+      "past30": 0
+    },
+    "power_usage": {
+      "today_mwh": 111,
+      "past7_mwh": 111,
+      "past30_mwh": 111,
+      "today": 0,
+      "past7": 0,
+      "past30": 0
+    },
+    "saved_power": {
+      "today_mwh": 0,
+      "today": 0,
+      "past7_mwh": 0,
+      "past7": 0,
+      "past30_mwh": 0,
+      "past30": 0
+    }
+  },
+  "get_latest_fw": {
+    "type": 0,
+    "fw_ver": "1.4.3 Build 260430 Rel.163123",
+    "release_date": "",
+    "release_note": "",
+    "fw_size": 0,
+    "hw_id": "",
+    "oem_id": "",
+    "need_to_upgrade": false
+  },
+  "get_fw_download_state": {
+    "status": 0,
+    "download_progress": 0,
+    "reboot_time": 5,
+    "upgrade_time": 5,
+    "auto_upgrade": false
+  }
+}

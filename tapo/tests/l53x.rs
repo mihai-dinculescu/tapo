@@ -50,7 +50,7 @@ async fn discovery_finds_the_device_and_logs_in(
 #[case::l535_1_4_3(L535_1_4_3_FIXTURE)]
 #[case::l535_1_4_5(L535_1_4_5_FIXTURE)]
 #[tokio::test]
-async fn an_l53x_takes_a_login_by_ip_address(#[case] fixture: &str) -> Result<(), Box<dyn Error>> {
+async fn an_l53x_reads_its_state(#[case] fixture: &str) -> Result<(), Box<dyn Error>> {
     let device = SimulatedDevice::new(fixture).start().await;
 
     let handler = ApiClient::new(device.username(), device.password())
@@ -58,30 +58,15 @@ async fn an_l53x_takes_a_login_by_ip_address(#[case] fixture: &str) -> Result<()
         .await?;
 
     handler.get_device_info().await?;
-
-    Ok(())
-}
-
-#[rstest]
-#[case::l530(L530_FIXTURE)]
-#[case::l535_1_4_3(L535_1_4_3_FIXTURE)]
-#[case::l535_1_4_5(L535_1_4_5_FIXTURE)]
-#[tokio::test]
-async fn an_l53x_reads_its_usage(#[case] fixture: &str) -> Result<(), Box<dyn Error>> {
-    let device = SimulatedDevice::new(fixture).start().await;
-
-    let handler = ApiClient::new(device.username(), device.password())
-        .l530(device.address())
-        .await?;
-
     handler.get_device_usage().await?;
 
     Ok(())
 }
 
-// Only the L530 fixture holds the latest firmware.
+// Only the L530 fixture holds the latest firmware and the firmware update
+// state.
 #[tokio::test]
-async fn an_l530_reads_its_latest_firmware() -> Result<(), Box<dyn Error>> {
+async fn an_l530_reads_its_firmware() -> Result<(), Box<dyn Error>> {
     let device = SimulatedDevice::new(L530_FIXTURE).start().await;
 
     let handler = ApiClient::new(device.username(), device.password())
@@ -89,19 +74,6 @@ async fn an_l530_reads_its_latest_firmware() -> Result<(), Box<dyn Error>> {
         .await?;
 
     handler.get_latest_firmware().await?;
-
-    Ok(())
-}
-
-// Only the L530 fixture holds the firmware update state.
-#[tokio::test]
-async fn an_l530_reads_its_firmware_update_state() -> Result<(), Box<dyn Error>> {
-    let device = SimulatedDevice::new(L530_FIXTURE).start().await;
-
-    let handler = ApiClient::new(device.username(), device.password())
-        .l530(device.address())
-        .await?;
-
     handler.get_firmware_update_state().await?;
 
     Ok(())

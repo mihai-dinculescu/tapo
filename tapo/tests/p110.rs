@@ -56,7 +56,7 @@ async fn discovery_finds_the_device_and_logs_in(
 #[case::p110_klap(P110_KLAP_FIXTURE)]
 #[case::p110m_tpap(P110M_TPAP_FIXTURE)]
 #[tokio::test]
-async fn a_p110_takes_a_login_by_ip_address(#[case] fixture: &str) -> Result<(), Box<dyn Error>> {
+async fn a_p110_reads_its_state(#[case] fixture: &str) -> Result<(), Box<dyn Error>> {
     let device = SimulatedDevice::new(fixture).start().await;
 
     let handler = ApiClient::new(device.username(), device.password())
@@ -64,22 +64,6 @@ async fn a_p110_takes_a_login_by_ip_address(#[case] fixture: &str) -> Result<(),
         .await?;
 
     handler.get_device_info().await?;
-
-    Ok(())
-}
-
-#[rstest]
-#[case::p110_tpap(P110_TPAP_FIXTURE)]
-#[case::p110_klap(P110_KLAP_FIXTURE)]
-#[case::p110m_tpap(P110M_TPAP_FIXTURE)]
-#[tokio::test]
-async fn a_p110_reads_its_usage(#[case] fixture: &str) -> Result<(), Box<dyn Error>> {
-    let device = SimulatedDevice::new(fixture).start().await;
-
-    let handler = ApiClient::new(device.username(), device.password())
-        .p110(device.address())
-        .await?;
-
     handler.get_device_usage().await?;
     handler.get_energy_meter_data().await?;
 
@@ -92,7 +76,7 @@ async fn a_p110_reads_its_usage(#[case] fixture: &str) -> Result<(), Box<dyn Err
 #[case::p110m_tpap(P110M_TPAP_FIXTURE)]
 #[case::p110_update_available(P110_UPDATE_AVAILABLE_FIXTURE)]
 #[tokio::test]
-async fn a_p110_reads_its_latest_firmware(#[case] fixture: &str) -> Result<(), Box<dyn Error>> {
+async fn a_p110_reads_its_firmware(#[case] fixture: &str) -> Result<(), Box<dyn Error>> {
     let device = SimulatedDevice::new(fixture).start().await;
 
     let handler = ApiClient::new(device.username(), device.password())
@@ -100,25 +84,6 @@ async fn a_p110_reads_its_latest_firmware(#[case] fixture: &str) -> Result<(), B
         .await?;
 
     handler.get_latest_firmware().await?;
-
-    Ok(())
-}
-
-#[rstest]
-#[case::p110_tpap(P110_TPAP_FIXTURE)]
-#[case::p110_klap(P110_KLAP_FIXTURE)]
-#[case::p110m_tpap(P110M_TPAP_FIXTURE)]
-#[case::p110_update_downloaded(P110_UPDATE_AVAILABLE_FIXTURE)]
-#[tokio::test]
-async fn a_p110_reads_its_firmware_update_state(
-    #[case] fixture: &str,
-) -> Result<(), Box<dyn Error>> {
-    let device = SimulatedDevice::new(fixture).start().await;
-
-    let handler = ApiClient::new(device.username(), device.password())
-        .p110(device.address())
-        .await?;
-
     handler.get_firmware_update_state().await?;
 
     Ok(())

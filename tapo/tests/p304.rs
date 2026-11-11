@@ -41,7 +41,7 @@ async fn discovery_finds_the_device_and_logs_in() -> Result<(), Box<dyn Error>> 
 }
 
 #[tokio::test]
-async fn a_p304_takes_a_login_by_ip_address() -> Result<(), Box<dyn Error>> {
+async fn a_p304_reads_its_state() -> Result<(), Box<dyn Error>> {
     let device = SimulatedDevice::new(FIXTURE).start().await;
 
     let power_strip = ApiClient::new(device.username(), device.password())
@@ -54,7 +54,7 @@ async fn a_p304_takes_a_login_by_ip_address() -> Result<(), Box<dyn Error>> {
 }
 
 #[tokio::test]
-async fn a_p304_reads_its_latest_firmware() -> Result<(), Box<dyn Error>> {
+async fn a_p304_reads_its_firmware() -> Result<(), Box<dyn Error>> {
     let device = SimulatedDevice::new(FIXTURE).start().await;
 
     let power_strip = ApiClient::new(device.username(), device.password())
@@ -62,25 +62,13 @@ async fn a_p304_reads_its_latest_firmware() -> Result<(), Box<dyn Error>> {
         .await?;
 
     power_strip.get_latest_firmware().await?;
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn a_p304_reads_its_firmware_update_state() -> Result<(), Box<dyn Error>> {
-    let device = SimulatedDevice::new(FIXTURE).start().await;
-
-    let power_strip = ApiClient::new(device.username(), device.password())
-        .p304(device.address())
-        .await?;
-
     power_strip.get_firmware_update_state().await?;
 
     Ok(())
 }
 
 #[tokio::test]
-async fn a_p304_lists_its_plugs() -> Result<(), Box<dyn Error>> {
+async fn a_p304_reads_the_state_of_a_plug() -> Result<(), Box<dyn Error>> {
     let device = SimulatedDevice::new(FIXTURE).start().await;
 
     let power_strip = ApiClient::new(device.username(), device.password())
@@ -92,20 +80,6 @@ async fn a_p304_lists_its_plugs() -> Result<(), Box<dyn Error>> {
     let plug = power_strip.plug(Plug::ByPosition(1)).await?;
 
     plug.get_device_info().await?;
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn a_p304_reads_the_usage_of_a_plug() -> Result<(), Box<dyn Error>> {
-    let device = SimulatedDevice::new(FIXTURE).start().await;
-
-    let power_strip = ApiClient::new(device.username(), device.password())
-        .p304(device.address())
-        .await?;
-
-    let plug = power_strip.plug(Plug::ByPosition(1)).await?;
-
     plug.get_current_power().await?;
     plug.get_device_usage().await?;
     plug.get_energy_meter_data().await?;
