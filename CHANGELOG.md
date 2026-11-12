@@ -18,8 +18,8 @@ file. This change log follows the conventions of
 
 ### Changed
 
-- `S200Result`, `S210Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`, `IrRemoteResult`: `last_onboarding_timestamp` is now serialized under that name instead of `lastOnboardingTimestamp`. Both names are accepted when deserializing.
 - `DiscoveryResult::nickname`: power strips now return their own name, which is empty when the strip has none, instead of "Power Strip" or "Power Strip with Energy Monitoring".
+- `S200Result`, `S210Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`, `IrRemoteResult`: `last_onboarding_timestamp` is now serialized under that name instead of `lastOnboardingTimestamp`. Both names are accepted when deserializing.
 
 ### Fixed
 
@@ -39,9 +39,9 @@ file. This change log follows the conventions of
 
 ### Changed
 
-- `DeviceType`: `str()` now returns the name of the device type, such as "Power Strip", instead of `DeviceType.PowerStrip`.
-- `S200Result`, `S210Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`, `IrRemoteResult`: `to_dict` now returns `last_onboarding_timestamp` under that key instead of `lastOnboardingTimestamp`.
 - `DiscoveryResult.nickname`: power strips now return their own name, which is empty when the strip has none, instead of "Power Strip" or "Power Strip with Energy Monitoring".
+- `S200Result`, `S210Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`, `IrRemoteResult`: `to_dict` now returns `last_onboarding_timestamp` under that key instead of `lastOnboardingTimestamp`.
+- `DeviceType`: `str()` now returns the name of the device type, such as "Power Strip", instead of `DeviceType.PowerStrip`.
 
 ### Fixed
 
@@ -53,27 +53,27 @@ file. This change log follows the conventions of
 ### Added
 
 - `list_devices`: every device and child device now has a `type`, such as "Plug", "Color Light", "Child Plug" or "Motion Sensor", so devices can be picked by kind, for example all the lights.
+- `get_device_state`: the `DeviceInfo` capability of an L920 or L930 now returns `lighting_effect`, the lighting effect that the strip ran last, with its `name`, `brightness` and `enabled`, which says whether it is running now. It is `null` when the strip has not run a lighting effect yet.
 - `/livez`: added, an endpoint for HTTP health checks such as a Kubernetes liveness probe. It needs neither the API key nor an allowed `Host`.
 - Tools: added titles, such as "List Devices" and "Take Camera Snapshot", for clients that show them in place of the tool names.
 - Server info: added a description and a link to the documentation.
-- `get_device_state`: the `DeviceInfo` capability of an L920 or L930 now returns `lighting_effect`, the lighting effect that the strip ran last, with its `name`, `brightness` and `enabled`, which says whether it is running now. It is `null` when the strip has not run a lighting effect yet.
 
 ### Changed
 
 - `/mcp`: replaces `/` as the MCP endpoint, for example `http://127.0.0.1:3000/mcp`. Update your client URLs.
+- `OTEL_EXPORTER_OTLP_ENDPOINT`: now takes the collector's base URL, such as `http://alloy.monitoring:4318`, as other OpenTelemetry tools do, and traces are sent to `/v1/traces` under it. Remove `/v1/traces` from the value, or move the full URL to `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, which is now read too. A value that still ends in `/v1/traces` is logged as a warning at startup.
 - `control_device`: now returns `device_info`, the device's state afterwards read back from the device, the same as the `DeviceInfo` capability returns. It used to return nothing. When every capability was applied but reading the state back fails, the call now returns an error that says so; the capabilities were applied.
-- `get_device_state`: the device info of a hub child device now returns `last_onboarding_timestamp` instead of `lastOnboardingTimestamp`.
 - `get_device_state`: the device info that the `DeviceInfo` capability returns no longer carries the home's latitude and longitude, `has_set_location_info`, the Wi-Fi network name, the MAC address, `oem_id`, `specs`, or `default_states`, whose brightness and color were easy to mistake for the current ones.
+- `get_device_state`: the device info of a hub child device now returns `last_onboarding_timestamp` instead of `lastOnboardingTimestamp`.
 - `list_devices`: a device without a name is now listed by its type, such as "Plug" or "Power Strip", instead of with an empty name. A power strip that has a name of its own is now listed by that name.
 - `get_device_state`, `control_device`, `take_snapshot`: the `Device not found` and `Device mismatch` errors now say what to do next: retry once when nothing answered, and take the device's current `id` and `ip` from `list_devices` when it moved.
-- Logs: a request refused with `403 Forbidden` for its `Host` header is now logged as a warning that names the host, so a missing `TAPO_MCP_ALLOWED_HOSTS` entry shows in the server's log.
-- Logs: color escape codes are now written only when the output is a terminal, so logs that go to a file or a log collector are plain text.
 - `TAPO_MCP_DISCOVERY_TARGET`: the server now refuses to start when the value is not an IP address, such as a hostname or a range like `192.168.1.0/24`. It used to start and then fail every discovery.
 - `TAPO_MCP_USERNAME`, `TAPO_MCP_PASSWORD`, `TAPO_MCP_DISCOVERY_TARGET`, `TAPO_MCP_HTTP_ADDR`: spaces and line breaks around the value are now ignored, so a password read from a file that ends in a line break works.
 - Startup: a `TAPO_MCP_*` environment variable that the server does not know, such as a misspelled `TAPO_MCP_APIKEY`, is now logged as a warning instead of being ignored silently.
 - Startup: the error for a value that is not a number, such as `TAPO_MCP_DISCOVERY_TIMEOUT=5s`, now names the environment variable. So does the error when the server cannot listen on `TAPO_MCP_HTTP_ADDR`, for example when the port is missing or already in use.
+- Logs: a request refused with `403 Forbidden` for its `Host` header is now logged as a warning that names the host, so a missing `TAPO_MCP_ALLOWED_HOSTS` entry shows in the server's log.
+- Logs: color escape codes are now written only when the output is a terminal, so logs that go to a file or a log collector are plain text.
 - Server info: the server's title is now "Tapo MCP" instead of "Tapo MCP Server".
-- `OTEL_EXPORTER_OTLP_ENDPOINT`: now takes the collector's base URL, such as `http://alloy.monitoring:4318`, as other OpenTelemetry tools do, and traces are sent to `/v1/traces` under it. Remove `/v1/traces` from the value, or move the full URL to `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, which is now read too. A value that still ends in `/v1/traces` is logged as a warning at startup.
 
 ### Deprecated
 
