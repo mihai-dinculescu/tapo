@@ -9,11 +9,11 @@
     "subfolder": "tapo-mcp"
   },
   "websiteUrl": "https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "packages": [
     {
       "registryType": "oci",
-      "identifier": "ghcr.io/mihai-dinculescu/tapo-mcp:0.6.2",
+      "identifier": "ghcr.io/mihai-dinculescu/tapo-mcp:0.7.0",
       "runtimeHint": "docker",
       "runtimeArguments": [
         {

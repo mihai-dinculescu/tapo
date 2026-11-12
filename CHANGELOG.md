@@ -10,6 +10,8 @@ file. This change log follows the conventions of
 
 ## [MCP Unreleased][Unreleased]
 
+## [MCP v0.7.0][tapo-mcp-v0.7.0] - 2026-11-12
+
 ### Added
 
 - `list_devices`: every device and child device now has a `type`, such as "Plug", "Color Light", "Child Plug" or "Motion Sensor", so devices can be picked by kind, for example all the lights.
@@ -1430,6 +1432,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[tapo-mcp-v0.7.0]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.7.0
 [v0.13.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.13.0
 [tapo-mcp-v0.6.2]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.6.2
 [v0.12.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.12.2
