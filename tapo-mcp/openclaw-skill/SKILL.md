@@ -1,7 +1,7 @@
 ---
 name: tapo
 description: Control TP-Link Tapo smart home devices (plugs, lights, light strips, power strips, hubs and their child devices, cameras) via [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp).
-version: 0.6.2
+version: 0.7.0
 metadata:
   {
     "openclaw":
@@ -18,7 +18,7 @@ Control Tapo devices using `npx mcporter call tapo.<tool>`.
 
 ## Setup
 
-You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp) server (v0.6.2 or later) running on your network (HTTP transport). Bearer token auth is recommended (and required when the server binds to a non-loopback address). When connecting by LAN IP or hostname, the server's `TAPO_MCP_ALLOWED_HOSTS` must include that host, or requests get `403 Forbidden`.
+You need a [Tapo MCP](https://github.com/mihai-dinculescu/tapo/tree/main/tapo-mcp) server (v0.7.0 or later) running on your network (HTTP transport). Bearer token auth is recommended (and required when the server binds to a non-loopback address). When connecting by LAN IP or hostname, the server's `TAPO_MCP_ALLOWED_HOSTS` must include that host, or requests get `403 Forbidden`.
 
 1. **Add the Tapo server**:
 
@@ -47,7 +47,7 @@ List all Tapo devices on the network.
 npx mcporter call tapo.list_devices
 ```
 
-Returns `discovered_at`, the time the discovery that produced the list started, and each device's `id`, `name`, `model`, `type` (such as "Plug", "Color Light", "Child Plug" or "Motion Sensor"), `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips and the H100, H110, H200 and H500 hubs). The server refreshes the list in the background (every 10 minutes by default), so the call returns immediately. Until a discovery has succeeded after the server starts, it fails with "Device discovery unavailable" and the message says why: either the first discovery is still running, so wait a little longer than `TAPO_MCP_DISCOVERY_TIMEOUT` seconds and retry, or every discovery so far has failed, in which case the message carries the reason and the retry interval, so report the reason instead of retrying. A device that joined the network after `discovered_at` appears after the next refresh, which is at most `TAPO_MCP_DISCOVERY_INTERVAL` seconds (600 by default) away. A device that answered the discovery but could not be logged in to is listed under `errors` with its `ip` and the reason. A hub or power strip whose children could not be read stays under `devices` with an empty `children` list, and the reason is under `errors` with the parent's `ip`. A Tapo device the server cannot control is listed under `unsupported`. When the most recent refresh failed, the result also includes `refresh_error` with the reason, and the devices are the ones from the last successful discovery.
+Returns `discovered_at`, the time the discovery that produced the list started, and each device's `id`, `name` (the device's type when it has no name), `model`, `type` (such as "Plug", "Color Light", "Child Plug" or "Motion Sensor"), `ip`, `set_capabilities`, `get_capabilities`, and `children` (for power strips and the H100, H110, H200 and H500 hubs). The server refreshes the list in the background (every 10 minutes by default), so the call returns immediately. Until a discovery has succeeded after the server starts, it fails with "Device discovery unavailable" and the message says why: either the first discovery is still running, so wait a little longer than `TAPO_MCP_DISCOVERY_TIMEOUT` seconds and retry, or every discovery so far has failed, in which case the message carries the reason and the retry interval, so report the reason instead of retrying. A device that joined the network after `discovered_at` appears after the next refresh, which is at most `TAPO_MCP_DISCOVERY_INTERVAL` seconds (600 by default) away. A device that answered the discovery but could not be logged in to is listed under `errors` with its `ip` and the reason. A hub or power strip whose children could not be read stays under `devices` with an empty `children` list, and the reason is under `errors` with the parent's `ip`. A Tapo device the server cannot control is listed under `unsupported`. When the most recent refresh failed, the result also includes `refresh_error` with the reason, and the devices are the ones from the last successful discovery.
 
 ### get_device_state
 
