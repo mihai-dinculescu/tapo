@@ -6,47 +6,7 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
-### Added
-
-- Device setup over Wi-Fi: a new or factory-reset device that broadcasts a setup network, such as the P110, can now be put on a Wi-Fi network without the Tapo app. With the host on the device's setup network, `ApiClient::setup_over_wifi("192.168.0.1")` returns a `SetupHandler`. `scan_wifi` returns the Wi-Fi networks that the device sees as `WifiNetwork`s, with the name, the security as `WifiSecurity`, and the signal level of each. `join_wifi` puts the device on one of them and returns `WifiJoinResult::Sent` once the device has left its setup network. From then on the device takes the `ApiClient` credentials as its login, and they need not be those of a TP-Link account.
-- Device setup over Bluetooth: a new or factory-reset device that is set up over Bluetooth, such as the P110M, can now be put on a Wi-Fi network the same way, behind the new `bluetooth` feature flag. `ApiClient::discover_bluetooth_setup_devices` returns the devices nearby that are ready for setup as `BluetoothSetupDevice`s, with the name, model and Bluetooth address of each, and `ApiClient::setup_over_bluetooth` returns a `SetupHandler` for one of them. Over Bluetooth, `join_wifi` waits until the device says that it has joined and returns `WifiJoinResult::Connected`, or returns an error if it does not join within 65 seconds.
-- Firmware updates: every device except cameras and camera hubs can now check for, start and follow a firmware update. `get_latest_firmware` returns the newest firmware that the device can update to as `LatestFirmwareResult`: `UpToDate` with the version that the device is running, or `UpdateAvailable` with the update's version, release date and release notes. `start_firmware_update` starts updating to that firmware. The device downloads, installs and reboots by itself, and needs `refresh_session` once it is back. `get_firmware_update_state` returns the state of the update as `FirmwareUpdateStateResult`: `Idle`, `Downloading` with the download progress, `Downloaded` with the time the device takes to install the update and reboot, `AwaitingTransfer` when the hub has downloaded a child device's update but not sent it yet, or `Failed` and `Unknown` with the device's status code. (thanks to @bradthurber)
-- Renaming a device: lights, light strips, plugs, power strips and the H100 and H110 hubs can now be renamed with `set_nickname`, for example right after setting them up. The name can be up to 128 bytes in UTF-8.
-- `DeviceInfoPowerStripResult`: added `nickname`, the name of the power strip itself, which is empty when the strip has none.
-- `DeviceInfoRgbicLightStripResult`: added `lighting_effect`, the lighting effect that the L920 or L930 ran last as a `LightingEffectSummary`, with its `name`, `brightness` and `enabled`, which says whether it is running now. It is `None` when the strip has not run a lighting effect yet.
-- `ChildDeviceHubResult`, `ChildDeviceHubIrResult`: added `device_type`, which returns what kind of device a hub child is as a `HubChildType`, such as `MotionSensor` or `LightSwitch`. Like `DeviceType`, its `as_str` and `Display` give a readable name, such as "Motion Sensor".
-
-### Changed
-
-- `DiscoveryResult::nickname`: power strips now return their own name, which is empty when the strip has none, instead of "Power Strip" or "Power Strip with Energy Monitoring".
-- `S200Result`, `S210Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`, `IrRemoteResult`: `last_onboarding_timestamp` is now serialized under that name instead of `lastOnboardingTimestamp`. Both names are accepted when deserializing.
-
-### Fixed
-
-- `ApiClient`: connecting to a device that asks for its password unchanged via `"passwd_id": 4`, as the H110 on firmware 1.5.4 does, now works. It used to fail with `The device asks for a password transform that is not supported yet`.
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval::Hourly` now returns only the requested days when they include the day the clocks go back. It used to return an extra day of entries after `end_date`, and 8 days that included it failed with the device error `-1008`. (thanks to @bradthurber)
-
 ## [Python Unreleased][Unreleased]
-
-### Added
-
-- Device setup over Wi-Fi: a new or factory-reset device that broadcasts a setup network, such as the P110, can now be put on a Wi-Fi network without the Tapo app. With the host on the device's setup network, `ApiClient.setup_over_wifi("192.168.0.1")` returns a `SetupHandler`. `scan_wifi` returns the Wi-Fi networks that the device sees as `WifiNetwork`s, with the name, the security as `WifiSecurity`, and the signal level of each. `join_wifi` puts the device on one of them and returns `WifiJoinResult.Sent` once the device has left its setup network. From then on the device takes the `ApiClient` credentials as its login, and they need not be those of a TP-Link account.
-- Device setup over Bluetooth: a new or factory-reset device that is set up over Bluetooth, such as the P110M, can now be put on a Wi-Fi network the same way. `ApiClient.discover_bluetooth_setup_devices` returns the devices nearby that are ready for setup as `BluetoothSetupDevice`s, with the name, model and Bluetooth address of each, and `ApiClient.setup_over_bluetooth` returns a `SetupHandler` for one of them. Over Bluetooth, `join_wifi` waits until the device says that it has joined and returns `WifiJoinResult.Connected`, or raises if it does not join within 65 seconds. On Linux it uses BlueZ, and the wheels need no system libdbus.
-- Firmware updates: every device except cameras and camera hubs can now check for, start and follow a firmware update. `get_latest_firmware` returns the newest firmware that the device can update to as `LatestFirmwareResult`: `update_available`, the newest version as `fw_ver` (the running version when the device is up to date), and the update's `release_date` and `release_notes`, which are `None` when no update is available. `start_firmware_update` starts updating to that firmware. The device downloads, installs and reboots by itself, and needs `refresh_session` once it is back. `get_firmware_update_state` returns the state of the update as `FirmwareUpdateStateResult`: a `status` of `FirmwareUpdateStatus` (`Idle`, `Downloading`, `Downloaded`, `AwaitingTransfer`, `Failed` or `Unknown`), with `download_progress` while downloading, `install_time_s` and `reboot_time_s` once downloaded, and the device's status `code` when failed or unknown. (thanks to @bradthurber)
-- Renaming a device: lights, light strips, plugs, power strips and the H100 and H110 hubs can now be renamed with `set_nickname`, for example right after setting them up. The name can be up to 128 bytes in UTF-8.
-- `DeviceInfoPowerStripResult`: added `nickname`, the name of the power strip itself, which is empty when the strip has none.
-- `DeviceInfoRgbicLightStripResult`: added `lighting_effect`, the lighting effect that the L920 or L930 ran last as a `LightingEffectSummary`, with its `name`, `brightness` and `enabled`, which says whether it is running now. It is `None` when the strip has not run a lighting effect yet.
-
-### Changed
-
-- `DiscoveryResult.nickname`: power strips now return their own name, which is empty when the strip has none, instead of "Power Strip" or "Power Strip with Energy Monitoring".
-- `S200Result`, `S210Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`, `IrRemoteResult`: `to_dict` now returns `last_onboarding_timestamp` under that key instead of `lastOnboardingTimestamp`.
-- `DeviceType`: `str()` now returns the name of the device type, such as "Power Strip", instead of `DeviceType.PowerStrip`.
-
-### Fixed
-
-- `ApiClient`: connecting to a device that asks for its password unchanged via `"passwd_id": 4`, as the H110 on firmware 1.5.4 does, now works. It used to raise `The device asks for a password transform that is not supported yet`.
-- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval.Hourly` now returns only the requested days when they include the day the clocks go back. It used to return an extra day of entries after `end_date`, and 8 days that included it raised the device error `-1008`. (thanks to @bradthurber)
 
 ## [MCP Unreleased][Unreleased]
 
@@ -88,6 +48,50 @@ file. This change log follows the conventions of
 - `list_devices`, `get_device_state`, `control_device`: devices that ask for their password unchanged via `"passwd_id": 4`, such as the H110 on firmware 1.5.4, and their child devices can now be reached. They used to fail with `The device asks for a password transform that is not supported yet`.
 - `get_device_state`: the `EnergyDataHourly` capability now returns only the requested days when they include the day the clocks go back. It used to return an extra day, and 8 days that included it failed with the device error `-1008`. (thanks to @bradthurber)
 - `get_device_state`: temperatures are now returned as the device reports them, such as `9.3`. The `DeviceInfo` and `TemperatureHumidityRecords` capabilities used to return values like `9.300000190734863`.
+
+## [Rust v0.13.0][v0.13.0] - 2026-11-12
+
+### Added
+
+- Device setup over Wi-Fi: a new or factory-reset device that broadcasts a setup network, such as the P110, can now be put on a Wi-Fi network without the Tapo app. With the host on the device's setup network, `ApiClient::setup_over_wifi("192.168.0.1")` returns a `SetupHandler`. `scan_wifi` returns the Wi-Fi networks that the device sees as `WifiNetwork`s, with the name, the security as `WifiSecurity`, and the signal level of each. `join_wifi` puts the device on one of them and returns `WifiJoinResult::Sent` once the device has left its setup network. From then on the device takes the `ApiClient` credentials as its login, and they need not be those of a TP-Link account.
+- Device setup over Bluetooth: a new or factory-reset device that is set up over Bluetooth, such as the P110M, can now be put on a Wi-Fi network the same way, behind the new `bluetooth` feature flag. `ApiClient::discover_bluetooth_setup_devices` returns the devices nearby that are ready for setup as `BluetoothSetupDevice`s, with the name, model and Bluetooth address of each, and `ApiClient::setup_over_bluetooth` returns a `SetupHandler` for one of them. Over Bluetooth, `join_wifi` waits until the device says that it has joined and returns `WifiJoinResult::Connected`, or returns an error if it does not join within 65 seconds.
+- Firmware updates: every device except cameras and camera hubs can now check for, start and follow a firmware update. `get_latest_firmware` returns the newest firmware that the device can update to as `LatestFirmwareResult`: `UpToDate` with the version that the device is running, or `UpdateAvailable` with the update's version, release date and release notes. `start_firmware_update` starts updating to that firmware. The device downloads, installs and reboots by itself, and needs `refresh_session` once it is back. `get_firmware_update_state` returns the state of the update as `FirmwareUpdateStateResult`: `Idle`, `Downloading` with the download progress, `Downloaded` with the time the device takes to install the update and reboot, `AwaitingTransfer` when the hub has downloaded a child device's update but not sent it yet, or `Failed` and `Unknown` with the device's status code. (thanks to @bradthurber)
+- Renaming a device: lights, light strips, plugs, power strips and the H100 and H110 hubs can now be renamed with `set_nickname`, for example right after setting them up. The name can be up to 128 bytes in UTF-8.
+- `DeviceInfoPowerStripResult`: added `nickname`, the name of the power strip itself, which is empty when the strip has none.
+- `DeviceInfoRgbicLightStripResult`: added `lighting_effect`, the lighting effect that the L920 or L930 ran last as a `LightingEffectSummary`, with its `name`, `brightness` and `enabled`, which says whether it is running now. It is `None` when the strip has not run a lighting effect yet.
+- `ChildDeviceHubResult`, `ChildDeviceHubIrResult`: added `device_type`, which returns what kind of device a hub child is as a `HubChildType`, such as `MotionSensor` or `LightSwitch`. Like `DeviceType`, its `as_str` and `Display` give a readable name, such as "Motion Sensor".
+
+### Changed
+
+- `DiscoveryResult::nickname`: power strips now return their own name, which is empty when the strip has none, instead of "Power Strip" or "Power Strip with Energy Monitoring".
+- `S200Result`, `S210Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`, `IrRemoteResult`: `last_onboarding_timestamp` is now serialized under that name instead of `lastOnboardingTimestamp`. Both names are accepted when deserializing.
+
+### Fixed
+
+- `ApiClient`: connecting to a device that asks for its password unchanged via `"passwd_id": 4`, as the H110 on firmware 1.5.4 does, now works. It used to fail with `The device asks for a password transform that is not supported yet`.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval::Hourly` now returns only the requested days when they include the day the clocks go back. It used to return an extra day of entries after `end_date`, and 8 days that included it failed with the device error `-1008`. (thanks to @bradthurber)
+
+## [Python v0.13.0][v0.13.0] - 2026-11-12
+
+### Added
+
+- Device setup over Wi-Fi: a new or factory-reset device that broadcasts a setup network, such as the P110, can now be put on a Wi-Fi network without the Tapo app. With the host on the device's setup network, `ApiClient.setup_over_wifi("192.168.0.1")` returns a `SetupHandler`. `scan_wifi` returns the Wi-Fi networks that the device sees as `WifiNetwork`s, with the name, the security as `WifiSecurity`, and the signal level of each. `join_wifi` puts the device on one of them and returns `WifiJoinResult.Sent` once the device has left its setup network. From then on the device takes the `ApiClient` credentials as its login, and they need not be those of a TP-Link account.
+- Device setup over Bluetooth: a new or factory-reset device that is set up over Bluetooth, such as the P110M, can now be put on a Wi-Fi network the same way. `ApiClient.discover_bluetooth_setup_devices` returns the devices nearby that are ready for setup as `BluetoothSetupDevice`s, with the name, model and Bluetooth address of each, and `ApiClient.setup_over_bluetooth` returns a `SetupHandler` for one of them. Over Bluetooth, `join_wifi` waits until the device says that it has joined and returns `WifiJoinResult.Connected`, or raises if it does not join within 65 seconds. On Linux it uses BlueZ, and the wheels need no system libdbus.
+- Firmware updates: every device except cameras and camera hubs can now check for, start and follow a firmware update. `get_latest_firmware` returns the newest firmware that the device can update to as `LatestFirmwareResult`: `update_available`, the newest version as `fw_ver` (the running version when the device is up to date), and the update's `release_date` and `release_notes`, which are `None` when no update is available. `start_firmware_update` starts updating to that firmware. The device downloads, installs and reboots by itself, and needs `refresh_session` once it is back. `get_firmware_update_state` returns the state of the update as `FirmwareUpdateStateResult`: a `status` of `FirmwareUpdateStatus` (`Idle`, `Downloading`, `Downloaded`, `AwaitingTransfer`, `Failed` or `Unknown`), with `download_progress` while downloading, `install_time_s` and `reboot_time_s` once downloaded, and the device's status `code` when failed or unknown. (thanks to @bradthurber)
+- Renaming a device: lights, light strips, plugs, power strips and the H100 and H110 hubs can now be renamed with `set_nickname`, for example right after setting them up. The name can be up to 128 bytes in UTF-8.
+- `DeviceInfoPowerStripResult`: added `nickname`, the name of the power strip itself, which is empty when the strip has none.
+- `DeviceInfoRgbicLightStripResult`: added `lighting_effect`, the lighting effect that the L920 or L930 ran last as a `LightingEffectSummary`, with its `name`, `brightness` and `enabled`, which says whether it is running now. It is `None` when the strip has not run a lighting effect yet.
+
+### Changed
+
+- `DiscoveryResult.nickname`: power strips now return their own name, which is empty when the strip has none, instead of "Power Strip" or "Power Strip with Energy Monitoring".
+- `S200Result`, `S210Result`, `T100Result`, `T110Result`, `T300Result`, `T31XResult`, `IrRemoteResult`: `to_dict` now returns `last_onboarding_timestamp` under that key instead of `lastOnboardingTimestamp`.
+- `DeviceType`: `str()` now returns the name of the device type, such as "Power Strip", instead of `DeviceType.PowerStrip`.
+
+### Fixed
+
+- `ApiClient`: connecting to a device that asks for its password unchanged via `"passwd_id": 4`, as the H110 on firmware 1.5.4 does, now works. It used to raise `The device asks for a password transform that is not supported yet`.
+- `PlugEnergyMonitoringHandler`, `PowerStripPlugEnergyMonitoringHandler`: `get_energy_data` with `EnergyDataInterval.Hourly` now returns only the requested days when they include the day the clocks go back. It used to return an extra day of entries after `end_date`, and 8 days that included it raised the device error `-1008`. (thanks to @bradthurber)
 
 ## [MCP v0.6.2][tapo-mcp-v0.6.2] - 2026-11-01
 
@@ -1426,6 +1430,7 @@ let device = ApiClient::new(ip_address, tapo_username, tapo_password)?
 ### Initial Release of Tapo
 
 [Unreleased]: https://github.com/mihai-dinculescu/tapo
+[v0.13.0]: https://github.com/mihai-dinculescu/tapo/tree/v0.13.0
 [tapo-mcp-v0.6.2]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.6.2
 [v0.12.2]: https://github.com/mihai-dinculescu/tapo/tree/v0.12.2
 [tapo-mcp-v0.6.1]: https://github.com/mihai-dinculescu/tapo/tree/tapo-mcp-v0.6.1
