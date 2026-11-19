@@ -4,6 +4,7 @@
 mod child_device_component_list_result;
 mod child_device_list_hub_result;
 mod child_device_list_power_strip_result;
+mod cloud_connection_state_result;
 #[cfg(feature = "debug")]
 mod component_list_result;
 mod control_child_result;
@@ -37,6 +38,7 @@ pub use crate::requests::{LightingEffect, LightingEffectType};
 pub use child_device_component_list_result::*;
 pub use child_device_list_hub_result::*;
 pub use child_device_list_power_strip_result::*;
+pub use cloud_connection_state_result::*;
 #[cfg(feature = "debug")]
 pub use component_list_result::*;
 pub use current_power_result::*;

@@ -27,8 +27,8 @@
 /// * `on()` and `off()` methods (if `on_off` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
 /// * `device_reboot()`, `device_reset()`, `set_nickname()`, `get_latest_firmware()`,
-///   `get_firmware_update_state()` and `start_firmware_update()` methods (if
-///   `device_management` specified)
+///   `get_firmware_update_state()`, `start_firmware_update()` and
+///   `get_cloud_connection_state()` methods (if `device_management` specified)
 /// * `impl HandlerExt` with `get_client()`
 macro_rules! tapo_handler {
     // With on_off + device_usage + device_management
@@ -330,6 +330,18 @@ macro_rules! tapo_handler {
             /// logs in again.
             pub async fn start_firmware_update(&self) -> Result<(), crate::error::Error> {
                 self.client.read().await.start_firmware_update().await
+            }
+
+            /// Returns the *state of the connection to the Tapo cloud* as
+            /// [`CloudConnectionStateResult`](crate::responses::CloudConnectionStateResult).
+            ///
+            /// Only [`Connected`](crate::responses::CloudConnectionStateResult::Connected)
+            /// means that the device reaches the Tapo cloud. The device can take a few
+            /// minutes to notice that it has lost or regained its internet connection.
+            pub async fn get_cloud_connection_state(
+                &self,
+            ) -> Result<crate::responses::CloudConnectionStateResult, crate::error::Error> {
+                self.client.read().await.get_cloud_connection_state().await
             }
         }
     };

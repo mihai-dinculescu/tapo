@@ -49,6 +49,7 @@ async fn an_l930_reads_its_state() -> Result<(), Box<dyn Error>> {
 
     handler.get_device_info().await?;
     handler.get_device_usage().await?;
+    handler.get_cloud_connection_state().await?;
 
     Ok(())
 }

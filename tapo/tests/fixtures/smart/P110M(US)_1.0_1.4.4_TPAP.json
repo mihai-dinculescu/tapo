@@ -271,5 +271,8 @@
     "reboot_time": 5,
     "status": 0,
     "upgrade_time": 5
+  },
+  "get_connect_cloud_state": {
+    "status": 0
   }
 }

@@ -24,8 +24,8 @@
 /// * `impl PyHandlerExt`
 /// * `on()` and `off()` methods (if `on_off` specified)
 /// * `device_reboot()`, `device_reset()`, `set_nickname()`, `get_latest_firmware()`,
-///   `get_firmware_update_state()` and `start_firmware_update()` methods (if
-///   `device_management` specified)
+///   `get_firmware_update_state()`, `start_firmware_update()` and
+///   `get_cloud_connection_state()` methods (if `device_management` specified)
 /// * `get_device_usage()` method (if `device_usage = Type` specified)
 macro_rules! py_handler {
     // on_off + device_management + device_usage
@@ -229,6 +229,18 @@ macro_rules! py_handler {
                     handler.read().await.deref(),
                     $handler::start_firmware_update
                 )
+            }
+
+            pub async fn get_cloud_connection_state(
+                &self,
+            ) -> pyo3::prelude::PyResult<$crate::responses::PyCloudConnectionStateResult> {
+                use std::ops::Deref;
+                let handler = self.inner.clone();
+                $crate::call_handler_method!(
+                    handler.read().await.deref(),
+                    $handler::get_cloud_connection_state
+                )
+                .map(Into::into)
             }
         }
     };

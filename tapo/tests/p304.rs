@@ -49,6 +49,7 @@ async fn a_p304_reads_its_state() -> Result<(), Box<dyn Error>> {
         .await?;
 
     power_strip.get_device_info().await?;
+    power_strip.get_cloud_connection_state().await?;
 
     Ok(())
 }

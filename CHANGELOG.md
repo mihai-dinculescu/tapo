@@ -6,7 +6,15 @@ file. This change log follows the conventions of
 
 ## [Rust Unreleased][Unreleased]
 
+### Added
+
+- Lights, light strips, plugs, power strips and hubs (H100, H110): added `get_cloud_connection_state`, which returns whether the device is connected to the Tapo cloud as `CloudConnectionStateResult`: `Connected`, `Disconnected`, `Connecting`, `Disconnecting`, or `Unknown` with the device's status code. A device that has lost its internet connection reports `Connecting` until the connection is back, and can take a few minutes to notice either change.
+
 ## [Python Unreleased][Unreleased]
+
+### Added
+
+- Lights, light strips, plugs, power strips and hubs (H100, H110): added `get_cloud_connection_state`, which returns whether the device is connected to the Tapo cloud as `CloudConnectionStateResult`: a `status` of `CloudConnectionStatus` (`Connected`, `Disconnected`, `Connecting`, `Disconnecting` or `Unknown`), with the device's status `code` when unknown. A device that has lost its internet connection reports `Connecting` until the connection is back, and can take a few minutes to notice either change.
 
 ## [MCP Unreleased][Unreleased]
 

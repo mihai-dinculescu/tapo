@@ -24,6 +24,7 @@
 | get_child_device_component_list (d) |                             |                                           |                     |                         |                                          |                              | &#x2705;                | &#x2705;                  |
 | get_child_device_list               |                             |                                           |                     |                         |                                          |                              | &#x2705;                | &#x2705;                  |
 | get_child_device_list_json (d)      |                             |                                           |                     |                         |                                          |                              | &#x2705;                | &#x2705;                  |
+| get_cloud_connection_state          | &#x2705;                    | &#x2705;                                  | &#x2705;            | &#x2705;                | &#x2705;                                 | &#x2705;                     | &#x2705;                | &#x2705;                  |
 | get_component_list (d)              | &#x2705;                    | &#x2705;                                  | &#x2705;            | &#x2705;                | &#x2705;                                 | &#x2705;                     | &#x2705;                | &#x2705;                  |
 | get_current_power                   |                             |                                           |                     |                         |                                          | &#x2705;                     |                         |                           |
 | get_device_info                     | &#x2705;                    | &#x2705;                                  | &#x2705;            | &#x2705;                | &#x2705;                                 | &#x2705;                     | &#x2705;                | &#x2705;                  |
@@ -119,6 +120,7 @@
 | get_child_device_component_list (d) | &#x2705;      | &#x2705;      |
 | get_child_device_list               | &#x2705;      | &#x2705;      |
 | get_child_device_list_json (d)      | &#x2705;      | &#x2705;      |
+| get_cloud_connection_state          | &#x2705;      |               |
 | get_component_list (d)              | &#x2705;      | &#x2705;      |
 | get_device_info                     | &#x2705;      | &#x2705;      |
 | get_device_info_json (d)            | &#x2705;      | &#x2705;      |

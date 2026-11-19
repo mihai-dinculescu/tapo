@@ -21,9 +21,10 @@ use crate::requests::{
     SmartCamSearchDetectionListParams, TapoParams, TapoRequest,
 };
 use crate::responses::{
-    AddScheduleRuleResult, AddTimerResult, ControlChildResult, CurrentPowerResult,
-    DecodableResultExt, DetectionListResultRaw, DetectionResult, EnergyDataResult,
-    EnergyDataResultRaw, EnergyMeterDataResult, EnergyUsageResult, FirmwareUpdateStateResult,
+    AddScheduleRuleResult, AddTimerResult, CloudConnectionStateResult,
+    CloudConnectionStateResultRaw, ControlChildResult, CurrentPowerResult, DecodableResultExt,
+    DetectionListResultRaw, DetectionResult, EnergyDataResult, EnergyDataResultRaw,
+    EnergyMeterDataResult, EnergyUsageResult, FirmwareUpdateStateResult,
     FirmwareUpdateStateResultRaw, LatestFirmwareResult, LatestFirmwareResultRaw, PowerDataResult,
     PowerDataResultRaw, PowerState, RecordingDownloadResult, ScheduleRuleListResultRaw,
     ScheduleRuleResult, SmartCamControlChildResult, TapoMultipleResponse, TapoResponseExt,
@@ -1830,6 +1831,21 @@ impl ApiClient {
             .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
 
         Ok(raw.try_into()?)
+    }
+
+    pub(crate) async fn get_cloud_connection_state(
+        &self,
+    ) -> Result<CloudConnectionStateResult, Error> {
+        debug!("Get Cloud connection state...");
+        let request = TapoRequest::GetConnectCloudState(TapoParams::new(EmptyParams));
+
+        let raw = self
+            .protocol()?
+            .execute_request::<CloudConnectionStateResultRaw>(request)
+            .await?
+            .ok_or_else(|| Error::Tapo(TapoResponseError::EmptyResult))?;
+
+        Ok(raw.into())
     }
 
     pub(crate) async fn get_device_usage<R>(&self) -> Result<R, Error>

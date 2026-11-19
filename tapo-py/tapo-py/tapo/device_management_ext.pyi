@@ -1,5 +1,7 @@
 from typing import Protocol
 
+from tapo.responses import CloudConnectionStateResult
+
 class DeviceManagementExt(Protocol):
     """Extension class for device management capabilities like `device_reboot` and `device_reset`."""
 
@@ -38,4 +40,16 @@ class DeviceManagementExt(Protocol):
         Raises:
             Exception: If `nickname` is longer than 128 bytes in UTF-8, or if the
                 device turns the request down.
+        """
+
+    async def get_cloud_connection_state(self) -> CloudConnectionStateResult:
+        """Returns the *state of the connection to the Tapo cloud* as
+        `CloudConnectionStateResult`.
+
+        Only a `status` of `CloudConnectionStatus.Connected` means that the device
+        reaches the Tapo cloud. The device can take a few minutes to notice that it
+        has lost or regained its internet connection.
+
+        Returns:
+            CloudConnectionStateResult: The state of the connection to the Tapo cloud.
         """

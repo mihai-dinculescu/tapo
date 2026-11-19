@@ -49,10 +49,11 @@ use requests::{
     PyAlarmDuration, PyColorLightSetDeviceInfoParams, PyEnergyDataInterval, PyPowerDataInterval,
 };
 use responses::{
-    PyBackupWifi, PyDetectionResult, PyFirmwareUpdateStateResult, PyFirmwareUpdateStatus,
-    PyGeneralDeviceHubResult, PyLatestFirmwareResult, PyRecordingHubResult, PyRecordingType,
-    PyS200Event, PyS200Log, PyT100Log, PyT110Log, PyT300Log, TriggerLogsS200Result,
-    TriggerLogsT100Result, TriggerLogsT110Result, TriggerLogsT300Result,
+    PyBackupWifi, PyCloudConnectionStateResult, PyCloudConnectionStatus, PyDetectionResult,
+    PyFirmwareUpdateStateResult, PyFirmwareUpdateStatus, PyGeneralDeviceHubResult,
+    PyLatestFirmwareResult, PyRecordingHubResult, PyRecordingType, PyS200Event, PyS200Log,
+    PyT100Log, PyT110Log, PyT300Log, TriggerLogsS200Result, TriggerLogsT100Result,
+    TriggerLogsT110Result, TriggerLogsT300Result,
 };
 
 #[pymodule]
@@ -174,6 +175,8 @@ fn register_responses(module: &Bound<'_, PyModule>) -> Result<(), PyErr> {
     module.add_class::<EnergyDataResult>()?;
     module.add_class::<EnergyMeterDataResult>()?;
     module.add_class::<EnergyUsageResult>()?;
+    module.add_class::<PyCloudConnectionStateResult>()?;
+    module.add_class::<PyCloudConnectionStatus>()?;
     module.add_class::<PyLatestFirmwareResult>()?;
     module.add_class::<PyFirmwareUpdateStateResult>()?;
     module.add_class::<PyFirmwareUpdateStatus>()?;

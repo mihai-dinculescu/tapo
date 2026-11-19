@@ -66,6 +66,7 @@ async fn a_p110_reads_its_state(#[case] fixture: &str) -> Result<(), Box<dyn Err
     handler.get_device_info().await?;
     handler.get_device_usage().await?;
     handler.get_energy_meter_data().await?;
+    handler.get_cloud_connection_state().await?;
 
     Ok(())
 }

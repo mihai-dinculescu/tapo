@@ -299,5 +299,8 @@
     "reboot_time": 5,
     "upgrade_time": 5,
     "auto_upgrade": false
+  },
+  "get_connect_cloud_state": {
+    "status": 0
   }
 }

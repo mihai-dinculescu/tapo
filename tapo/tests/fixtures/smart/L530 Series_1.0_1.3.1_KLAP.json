@@ -183,5 +183,8 @@
     "reboot_time": 15,
     "status": 0,
     "upgrade_time": 0
+  },
+  "get_connect_cloud_state": {
+    "status": 0
   }
 }

@@ -63,6 +63,20 @@ async fn an_l53x_reads_its_state(#[case] fixture: &str) -> Result<(), Box<dyn Er
     Ok(())
 }
 
+// Only the L530 fixture holds the cloud connection state.
+#[tokio::test]
+async fn an_l530_reads_its_cloud_connection_state() -> Result<(), Box<dyn Error>> {
+    let device = SimulatedDevice::new(L530_FIXTURE).start().await;
+
+    let handler = ApiClient::new(device.username(), device.password())
+        .l530(device.address())
+        .await?;
+
+    handler.get_cloud_connection_state().await?;
+
+    Ok(())
+}
+
 // Only the L530 fixture holds the latest firmware and the firmware update
 // state.
 #[tokio::test]
