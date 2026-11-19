@@ -1,17 +1,25 @@
 ---
 name: review-loop
-description: Run /code-review repeatedly on a target, fixing only findings that pass the review bar below, until three consecutive rounds accept nothing. Findings about device behavior are settled by read-only calls to real devices, not by the decompiled app. Ends with /simplify and a summary for review. Does not commit.
+description: Run /simplify on a target, then /code-review repeatedly, fixing only findings that pass the review bar below, until two consecutive rounds accept nothing; simplify and review again until a whole review loop accepts nothing. Findings about device behavior are settled by read-only calls to real devices, not by the decompiled app. Ends with a summary for review. Does not commit.
 ---
 
 # Review Loop
 
-Review a target repeatedly until the reviews stop producing findings worth fixing, without letting the fixes complicate the code or make the API worse to use.
+Review a target until the reviews stop producing findings worth fixing, without letting the fixes complicate the code or make the API worse to use.
 
-The argument is the target, passed through to `/code-review` (a path, branch or PR number). With no argument, review the current diff, staged and unstaged. Never stage or unstage anything while the loop runs.
+The argument is the target, passed through to `/simplify` and `/code-review` (a path, branch or PR number). With no argument, the target is the current diff, staged and unstaged. Never stage or unstage anything while the skill runs.
+
+## Order of work
+
+1. **Simplify the target.** Run `/simplify` on the changed code, before any review, so that the reviews read the code in its simplest form.
+2. **Review loop.** Run rounds as described below until the loop ends (see "Stopping").
+3. **Repeat while a loop accepts anything.** If the review loop accepted at least one finding, run `/simplify` again, this time on everything: the target and every fix made so far. If that pass changed nothing, the run ends: the loop's last two rounds already reviewed the final code. Otherwise run another review loop.
+
+A `/simplify` pass must not change behavior or anything a caller sees in `tapo`, `tapo-py` and its `.pyi` stubs, or `tapo-mcp`, and it leaves the review bar's reject list alone: no field made optional or required, no touched `_ => unreachable!()` arm. After every pass that changed something, run the same checks as after a round with fixes.
 
 ## Each round
 
-1. **Review.** Run `/code-review high <target>`. Never pass `--fix`: nothing is applied before triage.
+1. **Review.** Run `/code-review high <target>`. Never pass `--fix`: nothing is applied before triage. Every review includes the run's own simplifications and fixes so far, and the reviewer is told what this run has already rejected.
 2. **Triage.** Judge every finding against the review bar below. Check the claimed failure against the actual code, and when it is a claim about what a device sends or does, against the evidence in "Device evidence". Do not accept a finding on the reviewer's word.
    - A finding that repeats one already rejected in this run, or one the user declined in an earlier review (recorded in memory), is rejected again without re-litigating it.
    - When unsure whether a failure is reachable, reject it and list it as "unconfirmed" in the summary.
@@ -69,19 +77,16 @@ When a device confirms something the code so far justified with the app, the com
 
 ## Stopping
 
-Stop when either is true:
-
-- three consecutive rounds accepted nothing, or
-- 24 rounds have run.
+A review loop ends when two consecutive rounds accepted nothing. The whole run ends when a review loop accepted nothing from its first round to its last, when the `/simplify` pass after a loop changed nothing, or after 24 rounds in total across every loop.
 
 "The reviewer found nothing" is not the condition. A reviewer can always produce something; only accepted findings count.
 
-## After the last round
+## After the run
 
-1. Run `/simplify` once if any fixes were applied.
-2. Present a summary in chat:
-   - rounds run, and why the loop stopped
+1. Present a summary in chat:
+   - the simplify passes and review loops run, with the rounds in each, and why the run stopped
    - a table of applied fixes: file, problem, change, evidence (device and firmware, fixture, issue log, or "code only")
+   - what each simplify pass changed
    - a table of rejected findings: finding, reason (mark the "unconfirmed" ones, with the device call that would settle each)
    - the read-only device calls made: model, firmware, what was asked
-3. Do not commit, and do not write changelog entries: `/commit` handles both. Wait for the user to review.
+2. Do not commit, and do not write changelog entries: `/commit` handles both. Wait for the user to review.
