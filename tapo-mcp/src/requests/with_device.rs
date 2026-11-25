@@ -40,7 +40,7 @@ pub enum HubParent {
 }
 
 impl HubParent {
-    /// A handler for the S210 light switch with `child_id`, paired to this hub.
+    /// A handler for the S210 or S220 light switch with `child_id`, paired to this hub.
     pub fn s210_unchecked(&self, child_id: impl Into<String>) -> S210Handler {
         let child_id = child_id.into();
         match self {

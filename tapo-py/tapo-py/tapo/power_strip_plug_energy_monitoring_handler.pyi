@@ -17,7 +17,8 @@ from tapo.responses import (
 )
 
 class PowerStripPlugEnergyMonitoringHandler(OnOffExt, DebugExt):
-    """Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+    """Handler for the [P210M](https://www.tapo.com/en/search/?q=P210M),
+    [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
     [P316M](https://www.tp-link.com/us/search/?q=P316M) child plugs.
     """
 
@@ -33,7 +34,7 @@ class PowerStripPlugEnergyMonitoringHandler(OnOffExt, DebugExt):
         try `PowerStripPlugEnergyMonitoringHandler.get_device_info_json`.
 
         Returns:
-            PowerStripPlugEnergyMonitoringResult: P304M and P316M power strip child plugs.
+            PowerStripPlugEnergyMonitoringResult: P210M, P304M and P316M power strip child plugs.
         """
 
     async def get_current_power(self) -> CurrentPowerResult:

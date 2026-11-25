@@ -1,4 +1,4 @@
-/// Tapo cameras without PTZ (C120) Example
+/// Tapo cameras without PTZ (C100, C101, C110, C120, C460, C720, TC65) Example
 use chrono::{Duration, Utc};
 use log::info;
 use tapo::ApiClient;

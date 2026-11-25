@@ -15,19 +15,19 @@ use serde::{Deserialize, Serialize};
 pub enum DeviceType {
     /// Tapo L510, L520, L610 - dimmable lights.
     Light,
-    /// Tapo L430C, L430P, L530, L535, L630 - color lights.
+    /// Tapo L430C, L430P, L530, L530EA, L535, L630 - color lights.
     ColorLight,
     /// Tapo L900 - RGB light strip.
     RgbLightStrip,
     /// Tapo L920, L930 - RGBIC light strip.
     RgbicLightStrip,
-    /// Tapo P100, P105, P125, P125M, TP10 - smart plugs.
+    /// Tapo P100, P105, P125, P125M, S500, S505, TP10, TP15, TS15 - smart plugs and wall switches.
     Plug,
-    /// Tapo P110, P110M, P115 - smart plugs with energy monitoring.
+    /// Tapo P110, P110M, P115, P116M, P116M - smart plugs with energy monitoring.
     PlugEnergyMonitoring,
-    /// Tapo P300, P306 - power strips.
+    /// Tapo P300, P306, TP25, TP25 - power strips.
     PowerStrip,
-    /// Tapo P304M, P316M - power strips with energy monitoring.
+    /// Tapo P210M, P210M, P304M, P316M - power strips with energy monitoring.
     PowerStripEnergyMonitoring,
     /// Tapo H100 - smart hub.
     Hub,
@@ -35,9 +35,9 @@ pub enum DeviceType {
     HubIr,
     /// Tapo H200, H500 - camera hubs.
     CameraHub,
-    /// Tapo C120 - smart cameras without PTZ.
+    /// Tapo C100, C101, C110, C120, C460, C720, TC65 - smart cameras without PTZ.
     Camera,
-    /// Tapo C210, C220, C225, C325WB, C520WS, TC40, TC70 - smart cameras with PTZ.
+    /// Tapo C200, C200, C210, C211, C220, C225, C325WB, C520WS, TC40, TC70 - smart cameras with PTZ.
     CameraPtz,
     /// A Tapo device without a specific handler implementation.
     Other,
@@ -50,20 +50,22 @@ impl DeviceType {
     pub fn from_model(model: &str) -> Self {
         match model {
             "L510" | "L520" | "L610" => DeviceType::Light,
-            "L430C" | "L430P" | "L530" | "L530 Series" | "L535" | "L535B" | "L630" => {
+            "L430C" | "L430P" | "L530" | "L530 Series" | "L530EA" | "L535" | "L535B" | "L630" => {
                 DeviceType::ColorLight
             }
             "L900" => DeviceType::RgbLightStrip,
             "L920" | "L930" => DeviceType::RgbicLightStrip,
-            "P100" | "P105" | "P125" | "P125M" | "TP10" => DeviceType::Plug,
-            "P110" | "P110M" | "P115" => DeviceType::PlugEnergyMonitoring,
-            "P300" | "P306" => DeviceType::PowerStrip,
-            "P304M" | "P316M" => DeviceType::PowerStripEnergyMonitoring,
+            "P100" | "P105" | "P125" | "P125M" | "S500" | "S505" | "TP10" | "TP15" | "TS15" => {
+                DeviceType::Plug
+            }
+            "P110" | "P110M" | "P115" | "P116M" => DeviceType::PlugEnergyMonitoring,
+            "P300" | "P306" | "TP25" => DeviceType::PowerStrip,
+            "P210M" | "P304M" | "P316M" => DeviceType::PowerStripEnergyMonitoring,
             "H100" => DeviceType::Hub,
             "H110" => DeviceType::HubIr,
             "H200" | "H500" => DeviceType::CameraHub,
-            "C120" => DeviceType::Camera,
-            "C210" | "C220" | "C225" | "C325WB" | "C520WS" | "TC40" | "TC70" => {
+            "C100" | "C101" | "C110" | "C120" | "C460" | "C720" | "TC65" => DeviceType::Camera,
+            "C200" | "C210" | "C211" | "C220" | "C225" | "C325WB" | "C520WS" | "TC40" | "TC70" => {
                 DeviceType::CameraPtz
             }
             _ => DeviceType::Other,
@@ -115,6 +117,7 @@ mod tests {
         assert_eq!(DeviceType::from_model("L430C"), DeviceType::ColorLight);
         assert_eq!(DeviceType::from_model("L430P"), DeviceType::ColorLight);
         assert_eq!(DeviceType::from_model("L530"), DeviceType::ColorLight);
+        assert_eq!(DeviceType::from_model("L530EA"), DeviceType::ColorLight);
         assert_eq!(
             DeviceType::from_model("L530 Series"),
             DeviceType::ColorLight
@@ -138,6 +141,10 @@ mod tests {
         assert_eq!(DeviceType::from_model("P125"), DeviceType::Plug);
         assert_eq!(DeviceType::from_model("P125M"), DeviceType::Plug);
         assert_eq!(DeviceType::from_model("TP10"), DeviceType::Plug);
+        assert_eq!(DeviceType::from_model("TP15"), DeviceType::Plug);
+        assert_eq!(DeviceType::from_model("S500"), DeviceType::Plug);
+        assert_eq!(DeviceType::from_model("S505"), DeviceType::Plug);
+        assert_eq!(DeviceType::from_model("TS15"), DeviceType::Plug);
         assert_eq!(
             DeviceType::from_model("P110"),
             DeviceType::PlugEnergyMonitoring
@@ -150,12 +157,21 @@ mod tests {
             DeviceType::from_model("P115"),
             DeviceType::PlugEnergyMonitoring
         );
+        assert_eq!(
+            DeviceType::from_model("P116M"),
+            DeviceType::PlugEnergyMonitoring
+        );
     }
 
     #[test]
     fn from_model_power_strips() {
         assert_eq!(DeviceType::from_model("P300"), DeviceType::PowerStrip);
+        assert_eq!(DeviceType::from_model("TP25"), DeviceType::PowerStrip);
         assert_eq!(DeviceType::from_model("P306"), DeviceType::PowerStrip);
+        assert_eq!(
+            DeviceType::from_model("P210M"),
+            DeviceType::PowerStripEnergyMonitoring
+        );
         assert_eq!(
             DeviceType::from_model("P304M"),
             DeviceType::PowerStripEnergyMonitoring
@@ -181,11 +197,19 @@ mod tests {
     #[test]
     fn from_model_smart_cam() {
         assert_eq!(DeviceType::from_model("C120"), DeviceType::Camera);
+        assert_eq!(DeviceType::from_model("C100"), DeviceType::Camera);
+        assert_eq!(DeviceType::from_model("C101"), DeviceType::Camera);
+        assert_eq!(DeviceType::from_model("C110"), DeviceType::Camera);
+        assert_eq!(DeviceType::from_model("C460"), DeviceType::Camera);
+        assert_eq!(DeviceType::from_model("C720"), DeviceType::Camera);
+        assert_eq!(DeviceType::from_model("TC65"), DeviceType::Camera);
     }
 
     #[test]
     fn from_model_smart_cam_ptz() {
         assert_eq!(DeviceType::from_model("C210"), DeviceType::CameraPtz);
+        assert_eq!(DeviceType::from_model("C200"), DeviceType::CameraPtz);
+        assert_eq!(DeviceType::from_model("C211"), DeviceType::CameraPtz);
         assert_eq!(DeviceType::from_model("C220"), DeviceType::CameraPtz);
         assert_eq!(DeviceType::from_model("C225"), DeviceType::CameraPtz);
         assert_eq!(DeviceType::from_model("C325WB"), DeviceType::CameraPtz);

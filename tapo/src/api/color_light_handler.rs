@@ -6,6 +6,7 @@ tapo_handler! {
     /// Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
     /// [L430P](https://www.tapo.com/en/search/?q=L430P),
     /// [L530](https://www.tapo.com/en/search/?q=L530),
+    /// [L530EA](https://www.tapo.com/en/search/?q=L530EA),
     /// [L535](https://www.tapo.com/en/search/?q=L535) and
     /// [L630](https://www.tapo.com/en/search/?q=L630) devices.
     ColorLightHandler(DeviceInfoColorLightResult),

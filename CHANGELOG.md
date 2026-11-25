@@ -8,15 +8,38 @@ file. This change log follows the conventions of
 
 ### Added
 
+- `CameraHandler`: added support for the C100, C101, C110, C460, C720 and TC65. Use `c100`, `c101`, `c110`, `c460`, `c720` and `tc65` on the `ApiClient` to create them, and discovery now returns them as `DiscoveryResult::Camera`.
+- `CameraPtzHandler`: added support for the C200. Use `c200` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult::CameraPtz`.
+- `ColorLightHandler`: added support for the L530EA. Use `l530ea` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult::ColorLight`.
+- `PlugHandler`: added support for the TP15 plug and the S500, S505 and TS15 wall switches. Use `s500`, `s505`, `tp15` and `ts15` on the `ApiClient` to create them, and discovery now returns them as `DiscoveryResult::Plug`.
+- `PlugEnergyMonitoringHandler`: added support for the P116M. Use `p116` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult::PlugEnergyMonitoring`.
+- `PowerStripHandler`: added support for the TP25. Use `tp25` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult::PowerStrip`.
+- `PowerStripEnergyMonitoringHandler`: added support for the P210M. Use `p210` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult::PowerStripEnergyMonitoring`.
+- `S210Handler`: added support for the S220 light switch, which hubs now return as `ChildDeviceHubResult::S210`.
+- `CameraPtzHandler`: added support for the C211. Use `c211` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult::CameraPtz`.
 - Lights, light strips, plugs, power strips and hubs (H100, H110): added `get_cloud_connection_state`, which returns whether the device is connected to the Tapo cloud as `CloudConnectionStateResult`: `Connected`, `Disconnected`, `Connecting`, `Disconnecting`, or `Unknown` with the device's status code. A device that has lost its internet connection reports `Connecting` until the connection is back, and can take a few minutes to notice either change.
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
+- `CameraHandler`: added support for the C100, C101, C110, C460, C720 and TC65. Use `c100`, `c101`, `c110`, `c460`, `c720` and `tc65` on the `ApiClient` to create them, and discovery now returns them as `DiscoveryResult.Camera`.
+- `CameraPtzHandler`: added support for the C200. Use `c200` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult.CameraPtz`.
+- `ColorLightHandler`: added support for the L530EA. Use `l530ea` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult.ColorLight`.
+- `PlugHandler`: added support for the TP15 plug and the S500, S505 and TS15 wall switches. Use `s500`, `s505`, `tp15` and `ts15` on the `ApiClient` to create them, and discovery now returns them as `DiscoveryResult.Plug`.
+- `PlugEnergyMonitoringHandler`: added support for the P116M. Use `p116` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult.PlugEnergyMonitoring`.
+- `PowerStripHandler`: added support for the TP25. Use `tp25` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult.PowerStrip`.
+- `PowerStripEnergyMonitoringHandler`: added support for the P210M. Use `p210` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult.PowerStripEnergyMonitoring`.
+- `S210Handler`: added support for the S220 light switch, which hubs now return as `S210Result`.
+- `CameraPtzHandler`: added support for the C211. Use `c211` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult.CameraPtz`.
 - Lights, light strips, plugs, power strips and hubs (H100, H110): added `get_cloud_connection_state`, which returns whether the device is connected to the Tapo cloud as `CloudConnectionStateResult`: a `status` of `CloudConnectionStatus` (`Connected`, `Disconnected`, `Connecting`, `Disconnecting` or `Unknown`), with the device's status `code` when unknown. A device that has lost its internet connection reports `Connecting` until the connection is back, and can take a few minutes to notice either change.
 
 ## [MCP Unreleased][Unreleased]
+
+### Added
+
+- `list_devices`, `get_device_state`, `take_snapshot`: added support for the C211 camera, which is now listed as a "Smart Camera with PTZ" with the `Detections` capability.
+- `list_devices`, `get_device_state`, `control_device`, `take_snapshot`: added support for the C100, C101, C110, C460, C720 and TC65 cameras, the C200 PTZ camera, the L530EA bulb, the P116M and TP15 plugs, the S500, S505 and TS15 wall switches, the TP25 and P210M power strips, and the S220 hub light switch.
 
 ## [MCP v0.7.0][tapo-mcp-v0.7.0] - 2026-11-12
 

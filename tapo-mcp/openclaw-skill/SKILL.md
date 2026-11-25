@@ -57,7 +57,7 @@ Get a device's current state. Checks the capability's parameters, then verifies 
 # Device info
 npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "DeviceInfo"}'
 
-# Energy used per hour, in Wh, for 1-8 days from start_date (P110, P110M, P115 plugs; for a P304M or P316M child plug, pass the child plug's id as <DEVICE_ID> and the strip's ip as <IP>)
+# Energy used per hour, in Wh, for 1-8 days from start_date (P110, P110M, P115, P116M plugs; for a P304M or P316M child plug, pass the child plug's id as <DEVICE_ID> and the strip's ip as <IP>)
 npx mcporter call tapo.get_device_state id="<DEVICE_ID>" ip="<IP>" capability='{"type": "EnergyDataHourly", "start_date": "2026-01-01", "days": 1}'
 
 # Energy used per day, in Wh, for a quarter (1-4) of a year
@@ -92,7 +92,7 @@ Energy dates are read in the plug's time zone, so the entries match the Tapo app
 Control a device by applying 1 to 12 set capabilities, in order. The count and every value are checked before the device is contacted; then the device ID is verified to match at the given IP, and a capability the device does not support fails the call before any capability is applied. `Brightness`, `Color`, `HueSaturation` and `ColorTemperature` also turn the device on if it is off. When the device returns an error partway through, the error says how many capabilities were applied and which one failed. On success, it returns `device_info`, the device's state afterwards read back from the device, the same as the `DeviceInfo` capability returns, so there is no need to read it again.
 
 ```bash
-# Turn on (plugs, lights, power strip child plugs, and S210 switches paired to a hub)
+# Turn on (plugs, lights, power strip child plugs, and S210 and S220 switches paired to a hub)
 npx mcporter call tapo.control_device id="<DEVICE_ID>" ip="<IP>" capabilities='[{"type": "OnOff", "value": true}]'
 
 # Turn off

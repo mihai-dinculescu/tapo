@@ -1,4 +1,4 @@
-/// P110, P110M and P115 Schedule Example
+/// P110, P110M, P115 and P116M Schedule Example
 use log::info;
 use tapo::ApiClient;
 use tapo::requests::{DaysOfWeek, ScheduleRule};

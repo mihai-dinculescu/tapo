@@ -7,7 +7,7 @@ use super::{
     ChargingStatus, DefaultPlugState, OvercurrentStatus, OverheatStatus, PowerProtectionStatus,
 };
 
-/// Device info of Tapo P110, P110M and P115.
+/// Device info of Tapo P110, P110M, P115 and P116M.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs, deprecated)]

@@ -8,8 +8,9 @@ use crate::responses::{
 use super::{Plug, PowerStripPlugHandler};
 
 tapo_handler! {
-    /// Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
-    /// [P306](https://www.tp-link.com/us/search/?q=P306) devices.
+    /// Handler for the [P300](https://www.tp-link.com/en/search/?q=P300),
+    /// [P306](https://www.tp-link.com/us/search/?q=P306) and
+    /// [TP25](https://www.tapo.com/en/search/?q=TP25) devices.
     PowerStripHandler(DeviceInfoPowerStripResult),
     device_management,
 }

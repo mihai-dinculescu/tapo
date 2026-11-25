@@ -323,8 +323,7 @@ async fn get_power_data(
     }
 }
 
-const ENERGY_MONITORING_DEVICES: &str =
-    "an energy-monitoring plug (P110, P110M, P115) or power strip child plug (P304M, P316M)";
+const ENERGY_MONITORING_DEVICES: &str = "an energy-monitoring plug (P110, P110M, P115, P116M) or power strip child plug (P210M, P304M, P316M)";
 
 /// Reads hourly energy data for `days` whole days, from `start_date`.
 fn energy_data_hourly(start_date: NaiveDate, days: u8) -> Result<EnergyDataInterval, TapoMcpError> {

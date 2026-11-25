@@ -10,6 +10,7 @@ class ColorLightHandler(DeviceHandlerExt, OnOffExt, DeviceManagementExt, Firmwar
     """Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
     [L430P](https://www.tapo.com/en/search/?q=L430P),
     [L530](https://www.tapo.com/en/search/?q=L530),
+    [L530EA](https://www.tapo.com/en/search/?q=L530EA),
     [L535](https://www.tapo.com/en/search/?q=L535) and
     [L630](https://www.tapo.com/en/search/?q=L630) devices.
     """
@@ -26,7 +27,7 @@ class ColorLightHandler(DeviceHandlerExt, OnOffExt, DeviceManagementExt, Firmwar
         try `ColorLightHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoColorLightResult: Device info of Tapo L430C, L430P, L530, L535 and L630.
+            DeviceInfoColorLightResult: Device info of Tapo L430C, L430P, L530, L530EA, L535 and L630.
         """
 
     async def get_device_usage(self) -> DeviceUsageEnergyMonitoringResult:

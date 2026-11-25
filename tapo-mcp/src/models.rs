@@ -49,23 +49,23 @@ pub enum SetCapability {
 #[cfg_attr(test, derive(strum::EnumIter))]
 pub enum GetCapability {
     /// Read the detections stored on a camera's SD card, with the events
-    /// detected, for a window of up to 24 hours (C120, C210, C220, C225,
-    /// C325WB, C520WS, TC40, TC70).
+    /// detected, for a window of up to 24 hours (C120, C210, C211, C220,
+    /// C225, C325WB, C520WS, TC40, TC70).
     Detections,
     /// Read the device's current state.
     DeviceInfo,
-    /// Read the energy used per hour, in watt-hours (P110, P110M, P115, P304M, P316M).
+    /// Read the energy used per hour, in watt-hours (P110, P110M, P115, P116M, P210M, P304M, P316M).
     EnergyDataHourly,
-    /// Read the energy used per day, in watt-hours (P110, P110M, P115, P304M, P316M).
+    /// Read the energy used per day, in watt-hours (P110, P110M, P115, P116M, P210M, P304M, P316M).
     EnergyDataDaily,
-    /// Read the energy used per month, in watt-hours (P110, P110M, P115, P304M, P316M).
+    /// Read the energy used per month, in watt-hours (P110, P110M, P115, P116M, P210M, P304M, P316M).
     EnergyDataMonthly,
     /// Read the live voltage, current and power, and the energy used since the
-    /// device last restarted (P110, P110M, P115, P304M, P316M).
+    /// device last restarted (P110, P110M, P115, P116M, P210M, P304M, P316M).
     EnergyMeterData,
-    /// Read the power draw every 5 minutes, in watts (P110, P110M, P115, P304M, P316M).
+    /// Read the power draw every 5 minutes, in watts (P110, P110M, P115, P116M, P210M, P304M, P316M).
     PowerDataEvery5Minutes,
-    /// Read the power draw every hour, in watts (P110, P110M, P115, P304M, P316M).
+    /// Read the power draw every hour, in watts (P110, P110M, P115, P116M, P210M, P304M, P316M).
     PowerDataHourly,
     /// Capture a still JPEG snapshot via the `take_snapshot` tool.
     Snapshot,
@@ -246,8 +246,8 @@ pub enum GetCapabilityRequest {
     /// Read the device's current state (on/off, brightness, etc.).
     DeviceInfo,
     /// Read the energy used per hour, in watt-hours, for whole days, from an
-    /// energy-monitoring plug (P110, P110M, P115) or power strip child plug
-    /// (P304M, P316M). Dates are in the plug's time zone. Hours that have not
+    /// energy-monitoring plug (P110, P110M, P115, P116M) or power strip child plug
+    /// (P210M, P304M, P316M). Dates are in the plug's time zone. Hours that have not
     /// started yet are left out.
     EnergyDataHourly {
         /// The first day to read, in the years 2000 to 9999.
@@ -257,8 +257,8 @@ pub enum GetCapabilityRequest {
         days: u8,
     },
     /// Read the energy used per day, in watt-hours, for a quarter of a year,
-    /// from an energy-monitoring plug (P110, P110M, P115) or power strip
-    /// child plug (P304M, P316M). Dates are in the plug's time zone. Days that
+    /// from an energy-monitoring plug (P110, P110M, P115, P116M) or power strip
+    /// child plug (P210M, P304M, P316M). Dates are in the plug's time zone. Days that
     /// have not started yet are left out.
     EnergyDataDaily {
         /// The year the quarter is in.
@@ -270,8 +270,8 @@ pub enum GetCapabilityRequest {
         quarter: u8,
     },
     /// Read the energy used per month, in watt-hours, for a year, from an
-    /// energy-monitoring plug (P110, P110M, P115) or power strip child plug
-    /// (P304M, P316M). Dates are in the plug's time zone. Months that have not
+    /// energy-monitoring plug (P110, P110M, P115, P116M) or power strip child plug
+    /// (P210M, P304M, P316M). Dates are in the plug's time zone. Months that have not
     /// started yet are left out.
     EnergyDataMonthly {
         /// The year to read.
@@ -282,11 +282,11 @@ pub enum GetCapabilityRequest {
     /// power in milliwatts, and the energy used since the device last
     /// restarted, as one total given in both watt-hours and milliwatt-hours
     /// (not to be added together), from an energy-monitoring plug
-    /// (P110, P110M, P115) or power strip child plug (P304M, P316M).
+    /// (P110, P110M, P115, P116M) or power strip child plug (P210M, P304M, P316M).
     EnergyMeterData,
     /// Read the power draw every 5 minutes, in watts, from an
-    /// energy-monitoring plug (P110, P110M, P115) or power strip child plug
-    /// (P304M, P316M).
+    /// energy-monitoring plug (P110, P110M, P115, P116M) or power strip child plug
+    /// (P210M, P304M, P316M).
     PowerDataEvery5Minutes {
         /// When to start reading, in UTC, in the years 2000 to 9999. Rounded up
         /// to the next 5 minute mark.
@@ -296,7 +296,7 @@ pub enum GetCapabilityRequest {
         hours: u8,
     },
     /// Read the power draw every hour, in watts, from an energy-monitoring
-    /// plug (P110, P110M, P115) or power strip child plug (P304M, P316M).
+    /// plug (P110, P110M, P115, P116M) or power strip child plug (P210M, P304M, P316M).
     PowerDataHourly {
         /// When to start reading, in UTC, in the years 2000 to 9999. Rounded up
         /// to the next hour.

@@ -12,8 +12,9 @@ use crate::responses::{
 
 tapo_handler! {
     /// Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
-    /// [P110M](https://www.tapo.com/en/search/?q=P110M) and
-    /// [P115](https://www.tapo.com/en/search/?q=P115) devices.
+    /// [P110M](https://www.tapo.com/en/search/?q=P110M),
+    /// [P115](https://www.tapo.com/en/search/?q=P115) and
+    /// [P116M](https://www.tapo.com/en/search/?q=P116M) devices.
     PlugEnergyMonitoringHandler(DeviceInfoPlugEnergyMonitoringResult),
     on_off,
     device_usage = DeviceUsageEnergyMonitoringResult,

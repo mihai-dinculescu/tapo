@@ -73,7 +73,8 @@ class HubChildrenExt(Protocol):
             nickname (Optional[str]): The Nickname of the device
 
         Returns:
-            S210Handler: Handler for the [S210](https://www.tapo.com/en/search/?q=S210) devices.
+            S210Handler: Handler for the [S210](https://www.tapo.com/en/search/?q=S210) and
+            [S220](https://www.tapo.com/en/search/?q=S220) devices.
         """
 
     async def t100(
