@@ -63,7 +63,7 @@ Devices and child devices expose separate lists of set and get capabilities they
 
 | Capability                   | Description                                                                                                                                                               |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Detections`                 | Read the detections stored on a camera's SD card, with the events detected (person, motion, ...), for up to 24 hours (C120, C210, C220, C225, C325WB, C520WS, TC40, TC70) |
+| `Detections`                 | Read the detections stored on a camera's SD card, with the events detected (person, motion, ...), for up to 24 hours (C120, C210, C211, C220, C225, C325WB, C520WS, TC40, TC70) |
 | `DeviceInfo`                 | Read the device's current state                                                                                                                                           |
 | `EnergyDataHourly`           | Read the energy used per hour, in Wh, for up to 8 days (P110, P110M, P115, P304M, P316M)                                                                                  |
 | `EnergyDataDaily`            | Read the energy used per day, in Wh, for a quarter of a year (P110, P110M, P115, P304M, P316M)                                                                            |

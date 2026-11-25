@@ -1100,6 +1100,39 @@ impl ApiClient {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .c211("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn c211(mut self, ip_address: impl Into<String>) -> Result<CameraPtzHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::SmartCam,
+                AuthProtocol::TpapThenAesSsl,
+            )
+            .await?;
+
+        Ok(CameraPtzHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraPtzHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .c220("192.168.1.100")
     ///     .await?;
     ///

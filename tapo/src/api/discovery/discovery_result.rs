@@ -122,12 +122,13 @@ pub enum DiscoveryResult {
         /// [C120](https://www.tapo.com/en/search/?q=C120).
         handler: CameraHandler,
     },
-    /// Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70).
+    /// Tapo cameras with PTZ (C210, C211, C220, C225, C325WB, C520WS, TC40, TC70).
     CameraPtz {
-        /// Device info of Tapo cameras (C210, C220, C225, C325WB, C520WS, TC40, TC70).
+        /// Device info of Tapo cameras (C210, C211, C220, C225, C325WB, C520WS, TC40, TC70).
         device_info: Box<DeviceInfoCameraResult>,
         /// Handler for Tapo cameras with PTZ, such as the
         /// [C210](https://www.tapo.com/en/search/?q=C210),
+        /// [C211](https://www.tapo.com/en/search/?q=C211),
         /// [C220](https://www.tapo.com/en/search/?q=C220),
         /// [C225](https://www.tapo.com/en/search/?q=C225),
         /// [C325WB](https://www.tapo.com/en/search/?q=C325WB),

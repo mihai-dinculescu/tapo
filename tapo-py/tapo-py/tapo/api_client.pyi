@@ -2,7 +2,7 @@
 
 Tested with light bulbs (L430C, L430P, L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P125, P125M, TP10),
 power strips (P300, P304M, P306, P316M), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
-and cameras (C120, C210, C220, C225, C325WB, C520WS, TC40, TC70).
+and cameras (C120, C210, C211, C220, C225, C325WB, C520WS, TC40, TC70).
 
 Example:
     ```python
@@ -48,7 +48,7 @@ class ApiClient:
 
     Tested with light bulbs (L430C, L430P, L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P125, P125M, TP10),
     power strips (P300, P304M, P306, P316M), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
-    and cameras (C120, C210, C220, C225, C325WB, C520WS, TC40, TC70).
+    and cameras (C120, C210, C211, C220, C225, C325WB, C520WS, TC40, TC70).
 
     Example:
         ```python
@@ -647,6 +647,25 @@ class ApiClient:
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
             [C210](https://www.tapo.com/en/search/?q=C210),
+            [C211](https://www.tapo.com/en/search/?q=C211),
+            [C220](https://www.tapo.com/en/search/?q=C220),
+            [C225](https://www.tapo.com/en/search/?q=C225),
+            [C325WB](https://www.tapo.com/en/search/?q=C325WB),
+            [C520WS](https://www.tapo.com/en/search/?q=C520WS),
+            [TC40](https://www.tapo.com/en/search/?q=TC40),
+            and [TC70](https://www.tapo.com/en/search/?q=TC70).
+        """
+
+    async def c211(self, ip_address: str) -> CameraPtzHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraPtzHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C210](https://www.tapo.com/en/search/?q=C210),
+            [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
             [C225](https://www.tapo.com/en/search/?q=C225),
             [C325WB](https://www.tapo.com/en/search/?q=C325WB),
@@ -664,6 +683,7 @@ class ApiClient:
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
             [C210](https://www.tapo.com/en/search/?q=C210),
+            [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
             [C225](https://www.tapo.com/en/search/?q=C225),
             [C325WB](https://www.tapo.com/en/search/?q=C325WB),
@@ -681,6 +701,7 @@ class ApiClient:
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
             [C210](https://www.tapo.com/en/search/?q=C210),
+            [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
             [C225](https://www.tapo.com/en/search/?q=C225),
             [C325WB](https://www.tapo.com/en/search/?q=C325WB),
@@ -698,6 +719,7 @@ class ApiClient:
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
             [C210](https://www.tapo.com/en/search/?q=C210),
+            [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
             [C225](https://www.tapo.com/en/search/?q=C225),
             [C325WB](https://www.tapo.com/en/search/?q=C325WB),
@@ -715,6 +737,7 @@ class ApiClient:
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
             [C210](https://www.tapo.com/en/search/?q=C210),
+            [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
             [C225](https://www.tapo.com/en/search/?q=C225),
             [C325WB](https://www.tapo.com/en/search/?q=C325WB),
@@ -732,6 +755,7 @@ class ApiClient:
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
             [C210](https://www.tapo.com/en/search/?q=C210),
+            [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
             [C225](https://www.tapo.com/en/search/?q=C225),
             [C325WB](https://www.tapo.com/en/search/?q=C325WB),
@@ -749,6 +773,7 @@ class ApiClient:
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
             [C210](https://www.tapo.com/en/search/?q=C210),
+            [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
             [C225](https://www.tapo.com/en/search/?q=C225),
             [C325WB](https://www.tapo.com/en/search/?q=C325WB),

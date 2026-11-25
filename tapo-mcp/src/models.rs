@@ -49,8 +49,8 @@ pub enum SetCapability {
 #[cfg_attr(test, derive(strum::EnumIter))]
 pub enum GetCapability {
     /// Read the detections stored on a camera's SD card, with the events
-    /// detected, for a window of up to 24 hours (C120, C210, C220, C225,
-    /// C325WB, C520WS, TC40, TC70).
+    /// detected, for a window of up to 24 hours (C120, C210, C211, C220,
+    /// C225, C325WB, C520WS, TC40, TC70).
     Detections,
     /// Read the device's current state.
     DeviceInfo,

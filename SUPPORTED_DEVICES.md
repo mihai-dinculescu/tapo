@@ -87,7 +87,7 @@
 &#x2705; - Rust and Python\
 (d) - Requires the `debug` feature flag (enabled by default in `tapo-py`)
 
-| Feature<br/><br/><br/>   | C120<br/><br/><br/> | C210<br/>C220<br/>C225<br/> | C325WB<br/>C520WS<br/><br/> | TC40<br/>TC70<br/><br/> |
+| Feature<br/><br/><br/>   | C120<br/><br/><br/> | C210<br/>C211<br/>C220<br/> | C225<br/>C325WB<br/>C520WS<br/> | TC40<br/>TC70<br/><br/> |
 | ------------------------ | :------------------ | :-------------------------- | :-------------------------- | :---------------------- |
 | address                  | &#x2705;            | &#x2705;                    | &#x2705;                    | &#x2705;                |
 | delete_preset            |                     | &#x2705;                    | &#x2705;                    | &#x2705;                |

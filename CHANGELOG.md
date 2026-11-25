@@ -8,15 +8,21 @@ file. This change log follows the conventions of
 
 ### Added
 
+- `CameraPtzHandler`: added support for the C211. Use `c211` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult::CameraPtz`.
 - Lights, light strips, plugs, power strips and hubs (H100, H110): added `get_cloud_connection_state`, which returns whether the device is connected to the Tapo cloud as `CloudConnectionStateResult`: `Connected`, `Disconnected`, `Connecting`, `Disconnecting`, or `Unknown` with the device's status code. A device that has lost its internet connection reports `Connecting` until the connection is back, and can take a few minutes to notice either change.
 
 ## [Python Unreleased][Unreleased]
 
 ### Added
 
+- `CameraPtzHandler`: added support for the C211. Use `c211` on the `ApiClient` to create it, and discovery now returns it as `DiscoveryResult.CameraPtz`.
 - Lights, light strips, plugs, power strips and hubs (H100, H110): added `get_cloud_connection_state`, which returns whether the device is connected to the Tapo cloud as `CloudConnectionStateResult`: a `status` of `CloudConnectionStatus` (`Connected`, `Disconnected`, `Connecting`, `Disconnecting` or `Unknown`), with the device's status `code` when unknown. A device that has lost its internet connection reports `Connecting` until the connection is back, and can take a few minutes to notice either change.
 
 ## [MCP Unreleased][Unreleased]
+
+### Added
+
+- `list_devices`, `get_device_state`, `take_snapshot`: added support for the C211 camera, which is now listed as a "Smart Camera with PTZ" with the `Detections` capability.
 
 ## [MCP v0.7.0][tapo-mcp-v0.7.0] - 2026-11-12
 

@@ -1,4 +1,4 @@
-"""Tapo cameras with PTZ (C210, C220, C225, C325WB, C520WS, TC40, TC70) Example"""
+"""Tapo cameras with PTZ (C210, C211, C220, C225, C325WB, C520WS, TC40, TC70) Example"""
 
 import asyncio
 import os
