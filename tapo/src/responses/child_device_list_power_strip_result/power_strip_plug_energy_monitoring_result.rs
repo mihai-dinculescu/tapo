@@ -30,7 +30,7 @@ impl DecodableResultExt for ChildDeviceListPowerStripEnergyMonitoringResult {
 
 impl TapoResponseExt for ChildDeviceListPowerStripEnergyMonitoringResult {}
 
-/// P304M and P316M power strip child plugs.
+/// P210M, P304M and P316M power strip child plugs.
 ///
 /// Specific properties: `auto_off_remain_time`, `auto_off_status`,
 /// `bind_count`, `default_states`, `charging_status`, `is_usb`,

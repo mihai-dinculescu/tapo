@@ -11,7 +11,7 @@ from tapo.responses.device_info_result.power_status import (
 from tapo.to_dict_ext import ToDictExt
 
 class PowerStripPlugEnergyMonitoringResult(ToDictExt):
-    """P304M and P316M power strip child plugs.
+    """P210M, P304M and P316M power strip child plugs.
 
     Specific properties: `auto_off_remain_time`, `auto_off_status`,
     `bind_count`, `default_states`, `charging_status`, `is_usb`,

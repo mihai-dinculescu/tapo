@@ -7,6 +7,7 @@ use crate::responses::{DeviceInfoCameraResult, Preset, PresetRaw};
 
 tapo_handler! {
     /// Handler for Tapo cameras with PTZ, such as the
+    /// [C200](https://www.tapo.com/en/search/?q=C200),
     /// [C210](https://www.tapo.com/en/search/?q=C210),
     /// [C211](https://www.tapo.com/en/search/?q=C211),
     /// [C220](https://www.tapo.com/en/search/?q=C220),

@@ -14,7 +14,8 @@ from tapo.responses import (
 class PowerStripEnergyMonitoringHandler(
     DeviceHandlerExt, DeviceManagementExt, FirmwareExt, DebugExt
 ):
-    """Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+    """Handler for the [P210M](https://www.tapo.com/en/search/?q=P210M),
+    [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
     [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
     """
 
@@ -30,7 +31,7 @@ class PowerStripEnergyMonitoringHandler(
         try `PowerStripEnergyMonitoringHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoPowerStripResult: Device info of Tapo P300, P304M, P306 and P316M.
+            DeviceInfoPowerStripResult: Device info of Tapo P210M, P300, P304M, P306, P316M and TP25.
         """
 
     async def get_child_device_list(
@@ -75,7 +76,8 @@ class PowerStripEnergyMonitoringHandler(
             position (Optional[str]): The Position of the device
 
         Returns:
-            PowerStripPlugEnergyMonitoringHandler: Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+            PowerStripPlugEnergyMonitoringHandler: Handler for the [P210M](https://www.tapo.com/en/search/?q=P210M),
+            [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
             [P316M](https://www.tp-link.com/us/search/?q=P316M) child plugs.
 
         Example:

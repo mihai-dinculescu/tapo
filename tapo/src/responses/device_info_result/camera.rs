@@ -4,7 +4,7 @@ use crate::error::Error;
 use crate::responses::{DecodableResultExt, TapoResponseExt};
 use crate::utils::{bool_from_int_or_bool, option_bool_from_int_or_bool};
 
-/// Device info of Tapo cameras (C120, C210, C211, C220, C225, C325WB, C520WS, TC40, TC70).
+/// Device info of Tapo cameras (C100, C101, C110, C120, C200, C210, C211, C220, C225, C325WB, C460, C520WS, C720, TC40, TC65, TC70).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]

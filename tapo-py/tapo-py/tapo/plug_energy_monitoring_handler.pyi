@@ -25,8 +25,9 @@ class PlugEnergyMonitoringHandler(
     DeviceHandlerExt, OnOffExt, DeviceManagementExt, FirmwareExt, TimerExt, ScheduleExt, DebugExt
 ):
     """Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
-    [P110M](https://www.tapo.com/en/search/?q=P110M) and
-    [P115](https://www.tapo.com/en/search/?q=P115) devices.
+    [P110M](https://www.tapo.com/en/search/?q=P110M),
+    [P115](https://www.tapo.com/en/search/?q=P115) and
+    [P116M](https://www.tapo.com/en/search/?q=P116M) devices.
     """
 
     def __init__(self, handler: object):
@@ -41,7 +42,7 @@ class PlugEnergyMonitoringHandler(
         try `PlugEnergyMonitoringHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoPlugEnergyMonitoringResult: Device info of Tapo P110, P110M and P115.
+            DeviceInfoPlugEnergyMonitoringResult: Device info of Tapo P110, P110M, P115 and P116M.
         """
 
     async def get_current_power(self) -> CurrentPowerResult:

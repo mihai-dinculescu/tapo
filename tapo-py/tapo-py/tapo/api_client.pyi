@@ -1,8 +1,10 @@
 """Tapo API Client.
 
-Tested with light bulbs (L430C, L430P, L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P125, P125M, TP10),
-power strips (P300, P304M, P306, P316M), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
-and cameras (C120, C210, C211, C220, C225, C325WB, C520WS, TC40, TC70).
+Tested with light bulbs (L430C, L430P, L510, L520, L530, L530EA, L535, L610, L630), light strips
+(L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P116M, P125, P125M, TP10, TP15), power
+strips (P210M, P300, P304M, P306, P316M, TP25), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210, S220), wall switches (S500, S505, TS15), sensors (KE100, T100, T110, T300, T310, T315) and cameras
+(C100, C101, C110, C120, C200, C210, C211, C220, C225, C325WB, C460, C520WS, C720, TC40, TC65,
+TC70).
 
 Example:
     ```python
@@ -46,9 +48,11 @@ from .setup_handler import SetupHandler
 class ApiClient:
     """Tapo API Client.
 
-    Tested with light bulbs (L430C, L430P, L510, L520, L530, L535, L610, L630), light strips (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P125, P125M, TP10),
-    power strips (P300, P304M, P306, P316M), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210), sensors (KE100, T100, T110, T300, T310, T315)
-    and cameras (C120, C210, C211, C220, C225, C325WB, C520WS, TC40, TC70).
+    Tested with light bulbs (L430C, L430P, L510, L520, L530, L530EA, L535, L610, L630), light strips
+    (L900, L920, L930), plugs (P100, P105, P110, P110M, P115, P116M, P125, P125M, TP10, TP15), power
+    strips (P210M, P300, P304M, P306, P316M, TP25), hubs (H100, H110, H200, H500), switches (S200B, S200D, S210, S220), wall switches (S500, S505, TS15), sensors (KE100, T100, T110, T300, T310, T315) and cameras
+    (C100, C101, C110, C120, C200, C210, C211, C220, C225, C325WB, C460, C520WS, C720, TC40, TC65,
+    TC70).
 
     Example:
         ```python
@@ -197,8 +201,11 @@ class ApiClient:
 
         Returns:
             ColorLightHandler: Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
-            [L430P](https://www.tapo.com/en/search/?q=L430P), [L530](https://www.tapo.com/en/search/?q=L530),
-            [L535](https://www.tapo.com/en/search/?q=L535) and [L630](https://www.tapo.com/en/search/?q=L630) devices.
+            [L430P](https://www.tapo.com/en/search/?q=L430P),
+            [L530](https://www.tapo.com/en/search/?q=L530),
+            [L530EA](https://www.tapo.com/en/search/?q=L530EA),
+            [L535](https://www.tapo.com/en/search/?q=L535) and
+            [L630](https://www.tapo.com/en/search/?q=L630) devices.
 
         Example:
             ```python
@@ -217,13 +224,39 @@ class ApiClient:
 
         Returns:
             ColorLightHandler: Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
-            [L430P](https://www.tapo.com/en/search/?q=L430P), [L530](https://www.tapo.com/en/search/?q=L530),
-            [L535](https://www.tapo.com/en/search/?q=L535) and [L630](https://www.tapo.com/en/search/?q=L630) devices.
+            [L430P](https://www.tapo.com/en/search/?q=L430P),
+            [L530](https://www.tapo.com/en/search/?q=L530),
+            [L530EA](https://www.tapo.com/en/search/?q=L530EA),
+            [L535](https://www.tapo.com/en/search/?q=L535) and
+            [L630](https://www.tapo.com/en/search/?q=L630) devices.
 
         Example:
             ```python
             client = ApiClient("tapo-username@example.com", "tapo-password")
             device = await client.l530("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
+    async def l530ea(self, ip_address: str) -> ColorLightHandler:
+        """Specializes the given `ApiClient` into an authenticated `ColorLightHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            ColorLightHandler: Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
+            [L430P](https://www.tapo.com/en/search/?q=L430P),
+            [L530](https://www.tapo.com/en/search/?q=L530),
+            [L530EA](https://www.tapo.com/en/search/?q=L530EA),
+            [L535](https://www.tapo.com/en/search/?q=L535) and
+            [L630](https://www.tapo.com/en/search/?q=L630) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.l530ea("192.168.1.100")
 
             await device.on()
             ```
@@ -237,8 +270,11 @@ class ApiClient:
 
         Returns:
             ColorLightHandler: Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
-            [L430P](https://www.tapo.com/en/search/?q=L430P), [L530](https://www.tapo.com/en/search/?q=L530),
-            [L535](https://www.tapo.com/en/search/?q=L535) and [L630](https://www.tapo.com/en/search/?q=L630) devices.
+            [L430P](https://www.tapo.com/en/search/?q=L430P),
+            [L530](https://www.tapo.com/en/search/?q=L530),
+            [L530EA](https://www.tapo.com/en/search/?q=L530EA),
+            [L535](https://www.tapo.com/en/search/?q=L535) and
+            [L630](https://www.tapo.com/en/search/?q=L630) devices.
 
         Example:
             ```python
@@ -276,8 +312,11 @@ class ApiClient:
 
         Returns:
             ColorLightHandler: Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
-            [L430P](https://www.tapo.com/en/search/?q=L430P), [L530](https://www.tapo.com/en/search/?q=L530),
-            [L535](https://www.tapo.com/en/search/?q=L535) and [L630](https://www.tapo.com/en/search/?q=L630) devices.
+            [L430P](https://www.tapo.com/en/search/?q=L430P),
+            [L530](https://www.tapo.com/en/search/?q=L530),
+            [L530EA](https://www.tapo.com/en/search/?q=L530EA),
+            [L535](https://www.tapo.com/en/search/?q=L535) and
+            [L630](https://www.tapo.com/en/search/?q=L630) devices.
 
         Example:
             ```python
@@ -352,9 +391,14 @@ class ApiClient:
 
         Returns:
             PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
-            [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125),
-            [P125M](https://www.tapo.com/en/search/?q=P125M) and
-            [TP10](https://www.tapo.com/en/search/?q=TP10) devices.
+            [P105](https://www.tapo.com/en/search/?q=P105),
+            [P125](https://www.tapo.com/en/search/?q=P125),
+            [P125M](https://www.tapo.com/en/search/?q=P125M),
+            [S500](https://www.tapo.com/en/search/?q=S500),
+            [S505](https://www.tapo.com/en/search/?q=S505),
+            [TP10](https://www.tapo.com/en/search/?q=TP10),
+            [TP15](https://www.tapo.com/en/search/?q=TP15) and
+            [TS15](https://www.tapo.com/en/search/?q=TS15) devices.
 
         Example:
             ```python
@@ -373,9 +417,14 @@ class ApiClient:
 
         Returns:
             PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
-            [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125),
-            [P125M](https://www.tapo.com/en/search/?q=P125M) and
-            [TP10](https://www.tapo.com/en/search/?q=TP10) devices.
+            [P105](https://www.tapo.com/en/search/?q=P105),
+            [P125](https://www.tapo.com/en/search/?q=P125),
+            [P125M](https://www.tapo.com/en/search/?q=P125M),
+            [S500](https://www.tapo.com/en/search/?q=S500),
+            [S505](https://www.tapo.com/en/search/?q=S505),
+            [TP10](https://www.tapo.com/en/search/?q=TP10),
+            [TP15](https://www.tapo.com/en/search/?q=TP15) and
+            [TS15](https://www.tapo.com/en/search/?q=TS15) devices.
 
         Example:
             ```python
@@ -394,9 +443,14 @@ class ApiClient:
 
         Returns:
             PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
-            [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125),
-            [P125M](https://www.tapo.com/en/search/?q=P125M) and
-            [TP10](https://www.tapo.com/en/search/?q=TP10) devices.
+            [P105](https://www.tapo.com/en/search/?q=P105),
+            [P125](https://www.tapo.com/en/search/?q=P125),
+            [P125M](https://www.tapo.com/en/search/?q=P125M),
+            [S500](https://www.tapo.com/en/search/?q=S500),
+            [S505](https://www.tapo.com/en/search/?q=S505),
+            [TP10](https://www.tapo.com/en/search/?q=TP10),
+            [TP15](https://www.tapo.com/en/search/?q=TP15) and
+            [TS15](https://www.tapo.com/en/search/?q=TS15) devices.
 
         Example:
             ```python
@@ -415,14 +469,123 @@ class ApiClient:
 
         Returns:
             PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
-            [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125),
-            [P125M](https://www.tapo.com/en/search/?q=P125M) and
-            [TP10](https://www.tapo.com/en/search/?q=TP10) devices.
+            [P105](https://www.tapo.com/en/search/?q=P105),
+            [P125](https://www.tapo.com/en/search/?q=P125),
+            [P125M](https://www.tapo.com/en/search/?q=P125M),
+            [S500](https://www.tapo.com/en/search/?q=S500),
+            [S505](https://www.tapo.com/en/search/?q=S505),
+            [TP10](https://www.tapo.com/en/search/?q=TP10),
+            [TP15](https://www.tapo.com/en/search/?q=TP15) and
+            [TS15](https://www.tapo.com/en/search/?q=TS15) devices.
 
         Example:
             ```python
             client = ApiClient("tapo-username@example.com", "tapo-password")
             device = await client.tp10("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
+    async def s500(self, ip_address: str) -> PlugHandler:
+        """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
+            [P105](https://www.tapo.com/en/search/?q=P105),
+            [P125](https://www.tapo.com/en/search/?q=P125),
+            [P125M](https://www.tapo.com/en/search/?q=P125M),
+            [S500](https://www.tapo.com/en/search/?q=S500),
+            [S505](https://www.tapo.com/en/search/?q=S505),
+            [TP10](https://www.tapo.com/en/search/?q=TP10),
+            [TP15](https://www.tapo.com/en/search/?q=TP15) and
+            [TS15](https://www.tapo.com/en/search/?q=TS15) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.s500("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
+    async def s505(self, ip_address: str) -> PlugHandler:
+        """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
+            [P105](https://www.tapo.com/en/search/?q=P105),
+            [P125](https://www.tapo.com/en/search/?q=P125),
+            [P125M](https://www.tapo.com/en/search/?q=P125M),
+            [S500](https://www.tapo.com/en/search/?q=S500),
+            [S505](https://www.tapo.com/en/search/?q=S505),
+            [TP10](https://www.tapo.com/en/search/?q=TP10),
+            [TP15](https://www.tapo.com/en/search/?q=TP15) and
+            [TS15](https://www.tapo.com/en/search/?q=TS15) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.s505("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
+    async def tp15(self, ip_address: str) -> PlugHandler:
+        """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
+            [P105](https://www.tapo.com/en/search/?q=P105),
+            [P125](https://www.tapo.com/en/search/?q=P125),
+            [P125M](https://www.tapo.com/en/search/?q=P125M),
+            [S500](https://www.tapo.com/en/search/?q=S500),
+            [S505](https://www.tapo.com/en/search/?q=S505),
+            [TP10](https://www.tapo.com/en/search/?q=TP10),
+            [TP15](https://www.tapo.com/en/search/?q=TP15) and
+            [TS15](https://www.tapo.com/en/search/?q=TS15) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.tp15("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
+    async def ts15(self, ip_address: str) -> PlugHandler:
+        """Specializes the given `ApiClient` into an authenticated `PlugHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            PlugHandler: Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
+            [P105](https://www.tapo.com/en/search/?q=P105),
+            [P125](https://www.tapo.com/en/search/?q=P125),
+            [P125M](https://www.tapo.com/en/search/?q=P125M),
+            [S500](https://www.tapo.com/en/search/?q=S500),
+            [S505](https://www.tapo.com/en/search/?q=S505),
+            [TP10](https://www.tapo.com/en/search/?q=TP10),
+            [TP15](https://www.tapo.com/en/search/?q=TP15) and
+            [TS15](https://www.tapo.com/en/search/?q=TS15) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.ts15("192.168.1.100")
 
             await device.on()
             ```
@@ -436,8 +599,9 @@ class ApiClient:
 
         Returns:
             PlugEnergyMonitoringHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
-            [P110M](https://www.tapo.com/en/search/?q=P110M) and
-            [P115](https://www.tapo.com/en/search/?q=P115) devices.
+            [P110M](https://www.tapo.com/en/search/?q=P110M),
+            [P115](https://www.tapo.com/en/search/?q=P115) and
+            [P116M](https://www.tapo.com/en/search/?q=P116M) devices.
 
         Example:
             ```python
@@ -456,8 +620,9 @@ class ApiClient:
 
         Returns:
             PlugEnergyMonitoringHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
-            [P110M](https://www.tapo.com/en/search/?q=P110M) and
-            [P115](https://www.tapo.com/en/search/?q=P115) devices.
+            [P110M](https://www.tapo.com/en/search/?q=P110M),
+            [P115](https://www.tapo.com/en/search/?q=P115) and
+            [P116M](https://www.tapo.com/en/search/?q=P116M) devices.
 
         Example:
             ```python
@@ -468,6 +633,48 @@ class ApiClient:
             ```
         """
 
+    async def p116(self, ip_address: str) -> PlugEnergyMonitoringHandler:
+        """Specializes the given `ApiClient` into an authenticated `PlugEnergyMonitoringHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            PlugEnergyMonitoringHandler: Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
+            [P110M](https://www.tapo.com/en/search/?q=P110M),
+            [P115](https://www.tapo.com/en/search/?q=P115) and
+            [P116M](https://www.tapo.com/en/search/?q=P116M) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            device = await client.p116("192.168.1.100")
+
+            await device.on()
+            ```
+        """
+
+    async def p210(self, ip_address: str) -> PowerStripEnergyMonitoringHandler:
+        """Specializes the given `ApiClient` into an authenticated `PowerStripEnergyMonitoringHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            PowerStripEnergyMonitoringHandler: Handler for the [P210M](https://www.tapo.com/en/search/?q=P210M),
+            [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+            [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            power_strip = await client.p210("192.168.1.100")
+
+            child_device_list = await power_strip.get_child_device_list()
+            print(f"Child device list: {[child.to_dict() for child in child_device_list]}")
+            ```
+        """
+
     async def p300(self, ip_address: str) -> PowerStripHandler:
         """Specializes the given `ApiClient` into an authenticated `PowerStripHandler`.
 
@@ -475,8 +682,9 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            PowerStripHandler: Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
-            [P306](https://www.tp-link.com/us/search/?q=P306) devices.
+            PowerStripHandler: Handler for the [P300](https://www.tp-link.com/en/search/?q=P300),
+            [P306](https://www.tp-link.com/us/search/?q=P306) and
+            [TP25](https://www.tapo.com/en/search/?q=TP25) devices.
 
         Example:
             ```python
@@ -495,7 +703,8 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            PowerStripEnergyMonitoringHandler: Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+            PowerStripEnergyMonitoringHandler: Handler for the [P210M](https://www.tapo.com/en/search/?q=P210M),
+            [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
             [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
 
         Example:
@@ -515,8 +724,9 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            PowerStripHandler: Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
-            [P306](https://www.tp-link.com/us/search/?q=P306) devices.
+            PowerStripHandler: Handler for the [P300](https://www.tp-link.com/en/search/?q=P300),
+            [P306](https://www.tp-link.com/us/search/?q=P306) and
+            [TP25](https://www.tapo.com/en/search/?q=TP25) devices.
 
         Example:
             ```python
@@ -535,13 +745,35 @@ class ApiClient:
             ip_address (str): The IP address of the device
 
         Returns:
-            PowerStripEnergyMonitoringHandler: Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+            PowerStripEnergyMonitoringHandler: Handler for the [P210M](https://www.tapo.com/en/search/?q=P210M),
+            [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
             [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
 
         Example:
             ```python
             client = ApiClient("tapo-username@example.com", "tapo-password")
             power_strip = await client.p316("192.168.1.100")
+
+            child_device_list = await power_strip.get_child_device_list()
+            print(f"Child device list: {[child.to_dict() for child in child_device_list]}")
+            ```
+        """
+
+    async def tp25(self, ip_address: str) -> PowerStripHandler:
+        """Specializes the given `ApiClient` into an authenticated `PowerStripHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            PowerStripHandler: Handler for the [P300](https://www.tp-link.com/en/search/?q=P300),
+            [P306](https://www.tp-link.com/us/search/?q=P306) and
+            [TP25](https://www.tapo.com/en/search/?q=TP25) devices.
+
+        Example:
+            ```python
+            client = ApiClient("tapo-username@example.com", "tapo-password")
+            power_strip = await client.tp25("192.168.1.100")
 
             child_device_list = await power_strip.get_child_device_list()
             print(f"Child device list: {[child.to_dict() for child in child_device_list]}")
@@ -627,6 +859,57 @@ class ApiClient:
             ```
         """
 
+    async def c100(self, ip_address: str) -> CameraHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraHandler: Handler for Tapo cameras without PTZ, such as the
+            [C100](https://www.tapo.com/en/search/?q=C100),
+            [C101](https://www.tapo.com/en/search/?q=C101),
+            [C110](https://www.tapo.com/en/search/?q=C110),
+            [C120](https://www.tapo.com/en/search/?q=C120),
+            [C460](https://www.tapo.com/en/search/?q=C460),
+            [C720](https://www.tapo.com/en/search/?q=C720),
+            and [TC65](https://www.tapo.com/en/search/?q=TC65).
+        """
+
+    async def c101(self, ip_address: str) -> CameraHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraHandler: Handler for Tapo cameras without PTZ, such as the
+            [C100](https://www.tapo.com/en/search/?q=C100),
+            [C101](https://www.tapo.com/en/search/?q=C101),
+            [C110](https://www.tapo.com/en/search/?q=C110),
+            [C120](https://www.tapo.com/en/search/?q=C120),
+            [C460](https://www.tapo.com/en/search/?q=C460),
+            [C720](https://www.tapo.com/en/search/?q=C720),
+            and [TC65](https://www.tapo.com/en/search/?q=TC65).
+        """
+
+    async def c110(self, ip_address: str) -> CameraHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraHandler: Handler for Tapo cameras without PTZ, such as the
+            [C100](https://www.tapo.com/en/search/?q=C100),
+            [C101](https://www.tapo.com/en/search/?q=C101),
+            [C110](https://www.tapo.com/en/search/?q=C110),
+            [C120](https://www.tapo.com/en/search/?q=C120),
+            [C460](https://www.tapo.com/en/search/?q=C460),
+            [C720](https://www.tapo.com/en/search/?q=C720),
+            and [TC65](https://www.tapo.com/en/search/?q=TC65).
+        """
+
     async def c120(self, ip_address: str) -> CameraHandler:
         """Specializes the given `ApiClient` into an authenticated `CameraHandler`.
 
@@ -635,7 +918,83 @@ class ApiClient:
 
         Returns:
             CameraHandler: Handler for Tapo cameras without PTZ, such as the
-            [C120](https://www.tapo.com/en/search/?q=C120).
+            [C100](https://www.tapo.com/en/search/?q=C100),
+            [C101](https://www.tapo.com/en/search/?q=C101),
+            [C110](https://www.tapo.com/en/search/?q=C110),
+            [C120](https://www.tapo.com/en/search/?q=C120),
+            [C460](https://www.tapo.com/en/search/?q=C460),
+            [C720](https://www.tapo.com/en/search/?q=C720),
+            and [TC65](https://www.tapo.com/en/search/?q=TC65).
+        """
+
+    async def c460(self, ip_address: str) -> CameraHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraHandler: Handler for Tapo cameras without PTZ, such as the
+            [C100](https://www.tapo.com/en/search/?q=C100),
+            [C101](https://www.tapo.com/en/search/?q=C101),
+            [C110](https://www.tapo.com/en/search/?q=C110),
+            [C120](https://www.tapo.com/en/search/?q=C120),
+            [C460](https://www.tapo.com/en/search/?q=C460),
+            [C720](https://www.tapo.com/en/search/?q=C720),
+            and [TC65](https://www.tapo.com/en/search/?q=TC65).
+        """
+
+    async def c720(self, ip_address: str) -> CameraHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraHandler: Handler for Tapo cameras without PTZ, such as the
+            [C100](https://www.tapo.com/en/search/?q=C100),
+            [C101](https://www.tapo.com/en/search/?q=C101),
+            [C110](https://www.tapo.com/en/search/?q=C110),
+            [C120](https://www.tapo.com/en/search/?q=C120),
+            [C460](https://www.tapo.com/en/search/?q=C460),
+            [C720](https://www.tapo.com/en/search/?q=C720),
+            and [TC65](https://www.tapo.com/en/search/?q=TC65).
+        """
+
+    async def tc65(self, ip_address: str) -> CameraHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraHandler: Handler for Tapo cameras without PTZ, such as the
+            [C100](https://www.tapo.com/en/search/?q=C100),
+            [C101](https://www.tapo.com/en/search/?q=C101),
+            [C110](https://www.tapo.com/en/search/?q=C110),
+            [C120](https://www.tapo.com/en/search/?q=C120),
+            [C460](https://www.tapo.com/en/search/?q=C460),
+            [C720](https://www.tapo.com/en/search/?q=C720),
+            and [TC65](https://www.tapo.com/en/search/?q=TC65).
+        """
+
+    async def c200(self, ip_address: str) -> CameraPtzHandler:
+        """Specializes the given `ApiClient` into an authenticated `CameraPtzHandler`.
+
+        Args:
+            ip_address (str): The IP address of the device
+
+        Returns:
+            CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C200](https://www.tapo.com/en/search/?q=C200),
+            [C210](https://www.tapo.com/en/search/?q=C210),
+            [C211](https://www.tapo.com/en/search/?q=C211),
+            [C220](https://www.tapo.com/en/search/?q=C220),
+            [C225](https://www.tapo.com/en/search/?q=C225),
+            [C325WB](https://www.tapo.com/en/search/?q=C325WB),
+            [C520WS](https://www.tapo.com/en/search/?q=C520WS),
+            [TC40](https://www.tapo.com/en/search/?q=TC40),
+            and [TC70](https://www.tapo.com/en/search/?q=TC70).
         """
 
     async def c210(self, ip_address: str) -> CameraPtzHandler:
@@ -646,6 +1005,7 @@ class ApiClient:
 
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C200](https://www.tapo.com/en/search/?q=C200),
             [C210](https://www.tapo.com/en/search/?q=C210),
             [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
@@ -664,6 +1024,7 @@ class ApiClient:
 
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C200](https://www.tapo.com/en/search/?q=C200),
             [C210](https://www.tapo.com/en/search/?q=C210),
             [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
@@ -682,6 +1043,7 @@ class ApiClient:
 
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C200](https://www.tapo.com/en/search/?q=C200),
             [C210](https://www.tapo.com/en/search/?q=C210),
             [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
@@ -700,6 +1062,7 @@ class ApiClient:
 
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C200](https://www.tapo.com/en/search/?q=C200),
             [C210](https://www.tapo.com/en/search/?q=C210),
             [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
@@ -718,6 +1081,7 @@ class ApiClient:
 
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C200](https://www.tapo.com/en/search/?q=C200),
             [C210](https://www.tapo.com/en/search/?q=C210),
             [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
@@ -736,6 +1100,7 @@ class ApiClient:
 
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C200](https://www.tapo.com/en/search/?q=C200),
             [C210](https://www.tapo.com/en/search/?q=C210),
             [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
@@ -754,6 +1119,7 @@ class ApiClient:
 
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C200](https://www.tapo.com/en/search/?q=C200),
             [C210](https://www.tapo.com/en/search/?q=C210),
             [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),
@@ -772,6 +1138,7 @@ class ApiClient:
 
         Returns:
             CameraPtzHandler: Handler for Tapo cameras with PTZ, such as the
+            [C200](https://www.tapo.com/en/search/?q=C200),
             [C210](https://www.tapo.com/en/search/?q=C210),
             [C211](https://www.tapo.com/en/search/?q=C211),
             [C220](https://www.tapo.com/en/search/?q=C220),

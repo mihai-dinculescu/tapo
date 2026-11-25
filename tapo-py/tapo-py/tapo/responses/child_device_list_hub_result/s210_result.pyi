@@ -1,7 +1,7 @@
 from tapo.responses.child_device_list_hub_result.hub_result import HubResultBase
 
 class S210Result(HubResultBase):
-    """Device info of Tapo S210 light switch.
+    """Device info of Tapo S210 and S220 light switches.
 
     Specific properties: `battery_percentage`, `device_on`,
     `last_onboarding_timestamp`, `position`, `slot_number`, `status_follow_edge`.

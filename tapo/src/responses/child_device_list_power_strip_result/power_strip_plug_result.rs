@@ -29,7 +29,7 @@ impl DecodableResultExt for ChildDeviceListPowerStripResult {
 
 impl TapoResponseExt for ChildDeviceListPowerStripResult {}
 
-/// P300 and P306 power strip child plugs.
+/// P300, P306 and TP25 power strip child plugs.
 ///
 /// Specific properties: `auto_off_remain_time`, `auto_off_status`,
 /// `bind_count`, `default_states`, `overheat_status`, `position`, `slot_number`.

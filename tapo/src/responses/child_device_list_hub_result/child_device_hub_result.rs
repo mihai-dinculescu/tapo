@@ -42,7 +42,7 @@ pub enum ChildDeviceHubResult {
     KE100(Box<KE100Result>),
     /// S200B/S200D button switch.
     S200(Box<S200Result>),
-    /// S210 light switch.
+    /// S210/S220 light switch.
     S210(Box<S210Result>),
     /// T100 motion sensor.
     T100(Box<T100Result>),
@@ -147,7 +147,7 @@ impl<'de> Deserialize<'de> for ChildDeviceHubResult {
             "S200B" | "S200D" => serde_json::from_value(value)
                 .map(|r| ChildDeviceHubResult::S200(Box::new(r)))
                 .map_err(serde::de::Error::custom),
-            "S210" => serde_json::from_value(value)
+            "S210" | "S220" => serde_json::from_value(value)
                 .map(|r| ChildDeviceHubResult::S210(Box::new(r)))
                 .map_err(serde::de::Error::custom),
             "T100" => serde_json::from_value(value)

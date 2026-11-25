@@ -98,15 +98,16 @@ class Light(DiscoveryResultExt):
 
 @dataclass
 class ColorLight(DiscoveryResultExt):
-    """Tapo L430C, L430P, L530, L535 and L630 devices."""
+    """Tapo L430C, L430P, L530, L530EA, L535 and L630 devices."""
 
     device_info: DeviceInfoColorLightResult
-    """Device info of Tapo L430C, L430P, L530, L535 and L630."""
+    """Device info of Tapo L430C, L430P, L530, L530EA, L535 and L630."""
 
     handler: ColorLightHandler
     """Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
     [L430P](https://www.tapo.com/en/search/?q=L430P),
     [L530](https://www.tapo.com/en/search/?q=L530),
+    [L530EA](https://www.tapo.com/en/search/?q=L530EA),
     [L535](https://www.tapo.com/en/search/?q=L535) and
     [L630](https://www.tapo.com/en/search/?q=L630) devices.
     """
@@ -149,16 +150,21 @@ class RgbicLightStrip(DiscoveryResultExt):
 
 @dataclass
 class Plug(DiscoveryResultExt):
-    """Tapo P100, P105, P125, P125M and TP10 devices."""
+    """Tapo P100, P105, P125, P125M, S500, S505, TP10, TP15 and TS15 devices."""
 
     device_info: DeviceInfoPlugResult
-    """Device info of Tapo P100, P105, P125, P125M and TP10."""
+    """Device info of Tapo P100, P105, P125, P125M, S500, S505, TP10, TP15 and TS15."""
 
     handler: PlugHandler
     """Handler for the [P100](https://www.tapo.com/en/search/?q=P100),
-    [P105](https://www.tapo.com/en/search/?q=P105), [P125](https://www.tapo.com/en/search/?q=P125),
-    [P125M](https://www.tapo.com/en/search/?q=P125M) and
-    [TP10](https://www.tapo.com/en/search/?q=TP10) devices."""
+    [P105](https://www.tapo.com/en/search/?q=P105),
+    [P125](https://www.tapo.com/en/search/?q=P125),
+    [P125M](https://www.tapo.com/en/search/?q=P125M),
+    [S500](https://www.tapo.com/en/search/?q=S500),
+    [S505](https://www.tapo.com/en/search/?q=S505),
+    [TP10](https://www.tapo.com/en/search/?q=TP10),
+    [TP15](https://www.tapo.com/en/search/?q=TP15) and
+    [TS15](https://www.tapo.com/en/search/?q=TS15) devices."""
 
     __match_args__ = (
         "device_info",
@@ -167,15 +173,16 @@ class Plug(DiscoveryResultExt):
 
 @dataclass
 class PlugEnergyMonitoring(DiscoveryResultExt):
-    """Tapo P110, P110M and P115 devices."""
+    """Tapo P110, P110M, P115 and P116M devices."""
 
     device_info: DeviceInfoPlugEnergyMonitoringResult
-    """Device info of Tapo P110, P110M and P115."""
+    """Device info of Tapo P110, P110M, P115 and P116M."""
 
     handler: PlugEnergyMonitoringHandler
     """Handler for the [P110](https://www.tapo.com/en/search/?q=P110),
-    [P110M](https://www.tapo.com/en/search/?q=P110M) and
-    [P115](https://www.tapo.com/en/search/?q=P115) devices."""
+    [P110M](https://www.tapo.com/en/search/?q=P110M),
+    [P115](https://www.tapo.com/en/search/?q=P115) and
+    [P116M](https://www.tapo.com/en/search/?q=P116M) devices."""
 
     __match_args__ = (
         "device_info",
@@ -184,14 +191,15 @@ class PlugEnergyMonitoring(DiscoveryResultExt):
 
 @dataclass
 class PowerStrip(DiscoveryResultExt):
-    """Tapo P300 and P306 devices."""
+    """Tapo P300, P306 and TP25 devices."""
 
     device_info: DeviceInfoPowerStripResult
-    """Device info of Tapo P300 and P306."""
+    """Device info of Tapo P300, P306 and TP25."""
 
     handler: PowerStripHandler
-    """Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
-    [P306](https://www.tp-link.com/us/search/?q=P306) devices.
+    """Handler for the [P300](https://www.tp-link.com/en/search/?q=P300),
+    [P306](https://www.tp-link.com/us/search/?q=P306) and
+    [TP25](https://www.tapo.com/en/search/?q=TP25) devices.
     """
 
     __match_args__ = (
@@ -201,13 +209,14 @@ class PowerStrip(DiscoveryResultExt):
 
 @dataclass
 class PowerStripEnergyMonitoring(DiscoveryResultExt):
-    """Tapo P304M and P316M devices."""
+    """Tapo P210M, P304M and P316M devices."""
 
     device_info: DeviceInfoPowerStripResult
-    """Device info of Tapo P304M and P316M."""
+    """Device info of Tapo P210M, P304M and P316M."""
 
     handler: PowerStripEnergyMonitoringHandler
-    """Handler for the [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
+    """Handler for the [P210M](https://www.tapo.com/en/search/?q=P210M),
+    [P304M](https://www.tp-link.com/uk/search/?q=P304M) and
     [P316M](https://www.tp-link.com/us/search/?q=P316M) devices.
     """
 
@@ -264,27 +273,34 @@ class CameraHub(DiscoveryResultExt):
 
 @dataclass
 class Camera(DiscoveryResultExt):
-    """Tapo cameras without PTZ (C120)."""
+    """Tapo cameras without PTZ (C100, C101, C110, C120, C460, C720, TC65)."""
 
     device_info: DeviceInfoCameraResult
-    """Device info of Tapo cameras without PTZ (C120)."""
+    """Device info of Tapo cameras without PTZ (C100, C101, C110, C120, C460, C720, TC65)."""
 
     handler: CameraHandler
     """Handler for Tapo cameras without PTZ, such as the
-    [C120](https://www.tapo.com/en/search/?q=C120).
+    [C100](https://www.tapo.com/en/search/?q=C100),
+    [C101](https://www.tapo.com/en/search/?q=C101),
+    [C110](https://www.tapo.com/en/search/?q=C110),
+    [C120](https://www.tapo.com/en/search/?q=C120),
+    [C460](https://www.tapo.com/en/search/?q=C460),
+    [C720](https://www.tapo.com/en/search/?q=C720),
+    and [TC65](https://www.tapo.com/en/search/?q=TC65).
     """
 
     __match_args__ = ("device_info", "handler")
 
 @dataclass
 class CameraPtz(DiscoveryResultExt):
-    """Tapo cameras with PTZ (C210, C211, C220, C225, C325WB, C520WS, TC40, TC70)."""
+    """Tapo cameras with PTZ (C200, C210, C211, C220, C225, C325WB, C520WS, TC40, TC70)."""
 
     device_info: DeviceInfoCameraResult
-    """Device info of Tapo cameras (C210, C211, C220, C225, C325WB, C520WS, TC40, TC70)."""
+    """Device info of Tapo cameras (C200, C210, C211, C220, C225, C325WB, C520WS, TC40, TC70)."""
 
     handler: CameraPtzHandler
     """Handler for Tapo cameras with PTZ, such as the
+    [C200](https://www.tapo.com/en/search/?q=C200),
     [C210](https://www.tapo.com/en/search/?q=C210),
     [C211](https://www.tapo.com/en/search/?q=C211),
     [C220](https://www.tapo.com/en/search/?q=C220),

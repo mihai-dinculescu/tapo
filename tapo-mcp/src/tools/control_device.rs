@@ -165,7 +165,7 @@ fn device_info_request<'a>(
     let wrong_device_type = || TapoMcpError::WrongDeviceType {
         id: id.to_string(),
         capability: GetCapability::DeviceInfo.name().to_string(),
-        expected: "a light, a plug, a power strip child or an S210 switch".to_string(),
+        expected: "a light, a plug, a power strip child or an S210 or S220 switch".to_string(),
     };
 
     let request: DeviceInfoRequest<'a> = match checked {
@@ -423,7 +423,7 @@ fn on_off_request<'a>(
             return Err(TapoMcpError::WrongDeviceType {
                 id: id.to_string(),
                 capability: "OnOff".to_string(),
-                expected: "a power strip child or an S210 switch".to_string(),
+                expected: "a power strip child or an S210 or S220 switch".to_string(),
             });
         }
     };

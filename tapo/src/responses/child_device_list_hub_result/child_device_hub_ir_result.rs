@@ -20,7 +20,7 @@ pub enum ChildDeviceHubIrResult {
     KE100(Box<KE100Result>),
     /// S200B/S200D button switch.
     S200(Box<S200Result>),
-    /// S210 light switch.
+    /// S210 and S220 light switches.
     S210(Box<S210Result>),
     /// T100 motion sensor.
     T100(Box<T100Result>),

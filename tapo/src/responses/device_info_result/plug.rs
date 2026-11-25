@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::Error;
 use crate::responses::{DecodableResultExt, DefaultPlugState, TapoResponseExt, decode_value};
 
-/// Device info of Tapo P100, P105, P125, P125M and TP10.
+/// Device info of Tapo P100, P105, P125, P125M, S500, S505, TP10, TP15 and TS15.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "python", pyo3::prelude::pyclass(from_py_object, get_all))]
 #[allow(missing_docs)]

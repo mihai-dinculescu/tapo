@@ -3,7 +3,8 @@ use crate::requests::{EmptyParams, TapoParams, TapoRequest};
 use crate::responses::{DeviceUsageResult, S210Result};
 
 tapo_child_handler! {
-    /// Handler for the [S210](https://www.tapo.com/en/search/?q=S210) devices.
+    /// Handler for the [S210](https://www.tapo.com/en/search/?q=S210) and
+    /// [S220](https://www.tapo.com/en/search/?q=S220) devices.
     S210Handler(S210Result),
     on_off,
     firmware,

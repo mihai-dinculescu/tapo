@@ -7,7 +7,13 @@ from tapo.responses import DetectionResult, DeviceInfoCameraResult, RtspStreamUr
 
 class CameraHandler(DeviceHandlerExt, DebugExt):
     """Handler for Tapo cameras without PTZ, such as the
-    [C120](https://www.tapo.com/en/search/?q=C120).
+    [C100](https://www.tapo.com/en/search/?q=C100),
+    [C101](https://www.tapo.com/en/search/?q=C101),
+    [C110](https://www.tapo.com/en/search/?q=C110),
+    [C120](https://www.tapo.com/en/search/?q=C120),
+    [C460](https://www.tapo.com/en/search/?q=C460),
+    [C720](https://www.tapo.com/en/search/?q=C720),
+    and [TC65](https://www.tapo.com/en/search/?q=TC65).
     """
 
     def __init__(self, handler: object):
@@ -22,7 +28,7 @@ class CameraHandler(DeviceHandlerExt, DebugExt):
         try `CameraHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoCameraResult: Device info of Tapo cameras (C120, C210, C211, C220, C225, C325WB, C520WS, TC40, TC70).
+            DeviceInfoCameraResult: Device info of Tapo cameras (C100, C101, C110, C120, C200, C210, C211, C220, C225, C325WB, C460, C520WS, C720, TC40, TC65, TC70).
         """
 
     async def device_reboot(self) -> None:

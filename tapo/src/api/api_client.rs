@@ -373,6 +373,40 @@ impl ApiClient {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .l530ea("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn l530ea(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<ColorLightHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::Smart,
+                AuthProtocol::Unknown,
+            )
+            .await?;
+
+        Ok(ColorLightHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`ColorLightHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .l535("192.168.1.100")
     ///     .await?;
     /// device.on().await?;
@@ -679,6 +713,130 @@ impl ApiClient {
         Ok(PlugHandler::new(self, address))
     }
 
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .s500("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn s500(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::Smart,
+                AuthProtocol::Unknown,
+            )
+            .await?;
+
+        Ok(PlugHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .s505("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn s505(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::Smart,
+                AuthProtocol::Unknown,
+            )
+            .await?;
+
+        Ok(PlugHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .tp15("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn tp15(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::Smart,
+                AuthProtocol::Unknown,
+            )
+            .await?;
+
+        Ok(PlugHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .ts15("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn ts15(mut self, ip_address: impl Into<String>) -> Result<PlugHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::Smart,
+                AuthProtocol::Unknown,
+            )
+            .await?;
+
+        Ok(PlugHandler::new(self, address))
+    }
+
     /// Specializes the given [`ApiClient`] into an authenticated [`PlugEnergyMonitoringHandler`].
     ///
     /// # Arguments
@@ -745,6 +903,75 @@ impl ApiClient {
             .await?;
 
         Ok(PlugEnergyMonitoringHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`PlugEnergyMonitoringHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .p116("192.168.1.100")
+    ///     .await?;
+    /// device.on().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn p116(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<PlugEnergyMonitoringHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::Smart,
+                AuthProtocol::Unknown,
+            )
+            .await?;
+
+        Ok(PlugEnergyMonitoringHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`PowerStripEnergyMonitoringHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .p210("192.168.1.100")
+    ///     .await?;
+    /// let child_device_list = device.get_child_device_list().await?;
+    /// println!("Child device list: {child_device_list:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn p210(
+        mut self,
+        ip_address: impl Into<String>,
+    ) -> Result<PowerStripEnergyMonitoringHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::Smart,
+                AuthProtocol::Unknown,
+            )
+            .await?;
+
+        Ok(PowerStripEnergyMonitoringHandler::new(self, address))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`PowerStripHandler`].
@@ -879,6 +1106,38 @@ impl ApiClient {
             .await?;
 
         Ok(PowerStripEnergyMonitoringHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`PowerStripHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .tp25("192.168.1.100")
+    ///     .await?;
+    /// let child_device_list = device.get_child_device_list().await?;
+    /// println!("Child device list: {child_device_list:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn tp25(mut self, ip_address: impl Into<String>) -> Result<PowerStripHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::Smart,
+                AuthProtocol::Unknown,
+            )
+            .await?;
+
+        Ok(PowerStripHandler::new(self, address))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`HubHandler`].
@@ -1034,6 +1293,105 @@ impl ApiClient {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .c100("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn c100(mut self, ip_address: impl Into<String>) -> Result<CameraHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::SmartCam,
+                AuthProtocol::TpapThenAesSsl,
+            )
+            .await?;
+
+        Ok(CameraHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .c101("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn c101(mut self, ip_address: impl Into<String>) -> Result<CameraHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::SmartCam,
+                AuthProtocol::TpapThenAesSsl,
+            )
+            .await?;
+
+        Ok(CameraHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .c110("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn c110(mut self, ip_address: impl Into<String>) -> Result<CameraHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::SmartCam,
+                AuthProtocol::TpapThenAesSsl,
+            )
+            .await?;
+
+        Ok(CameraHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
     ///     .c120("192.168.1.100")
     ///     .await?;
     ///
@@ -1052,6 +1410,138 @@ impl ApiClient {
             .await?;
 
         Ok(CameraHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .c460("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn c460(mut self, ip_address: impl Into<String>) -> Result<CameraHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::SmartCam,
+                AuthProtocol::TpapThenAesSsl,
+            )
+            .await?;
+
+        Ok(CameraHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .c720("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn c720(mut self, ip_address: impl Into<String>) -> Result<CameraHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::SmartCam,
+                AuthProtocol::TpapThenAesSsl,
+            )
+            .await?;
+
+        Ok(CameraHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .tc65("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn tc65(mut self, ip_address: impl Into<String>) -> Result<CameraHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::SmartCam,
+                AuthProtocol::TpapThenAesSsl,
+            )
+            .await?;
+
+        Ok(CameraHandler::new(self, address))
+    }
+
+    /// Specializes the given [`ApiClient`] into an authenticated [`CameraPtzHandler`].
+    ///
+    /// # Arguments
+    ///
+    /// * `ip_address` - the IP address of the device
+    ///
+    /// # Example
+    ///
+    /// ```rust,no_run
+    /// # use tapo::ApiClient;
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let device = ApiClient::new("tapo-username@example.com", "tapo-password")
+    ///     .c200("192.168.1.100")
+    ///     .await?;
+    ///
+    /// let device_info = device.get_device_info().await?;
+    /// println!("Device info: {device_info:?}");
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn c200(mut self, ip_address: impl Into<String>) -> Result<CameraPtzHandler, Error> {
+        let address = self
+            .login(
+                &ip_address.into(),
+                DeviceFamily::SmartCam,
+                AuthProtocol::TpapThenAesSsl,
+            )
+            .await?;
+
+        Ok(CameraPtzHandler::new(self, address))
     }
 
     /// Specializes the given [`ApiClient`] into an authenticated [`CameraPtzHandler`].

@@ -1,4 +1,4 @@
-"""P100, P105, P125, P125M and TP10 Example"""
+"""P100, P105, P125, P125M, S500, S505, TP10, TP15 and TS15 Example"""
 
 import asyncio
 

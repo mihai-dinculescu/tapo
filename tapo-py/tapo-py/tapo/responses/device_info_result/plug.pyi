@@ -5,7 +5,7 @@ from tapo.responses.device_info_result.device_info_ext import DeviceInfoSmartExt
 from tapo.to_dict_ext import ToDictExt
 
 class DeviceInfoPlugResult(DeviceInfoSmartExt, ToDictExt):
-    """Device info of Tapo P100, P105, P125, P125M and TP10."""
+    """Device info of Tapo P100, P105, P125, P125M, S500, S505, TP10, TP15 and TS15."""
 
     default_states: Union[LastStates, Custom]
     device_on: bool

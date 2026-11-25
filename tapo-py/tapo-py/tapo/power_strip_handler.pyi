@@ -12,8 +12,9 @@ from tapo.responses import (
 )
 
 class PowerStripHandler(DeviceHandlerExt, DeviceManagementExt, FirmwareExt, DebugExt):
-    """Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
-    [P306](https://www.tp-link.com/us/search/?q=P306) devices.
+    """Handler for the [P300](https://www.tp-link.com/en/search/?q=P300),
+    [P306](https://www.tp-link.com/us/search/?q=P306) and
+    [TP25](https://www.tapo.com/en/search/?q=TP25) devices.
     """
 
     def __init__(self, handler: object):
@@ -28,7 +29,7 @@ class PowerStripHandler(DeviceHandlerExt, DeviceManagementExt, FirmwareExt, Debu
         try `PowerStripHandler.get_device_info_json`.
 
         Returns:
-            DeviceInfoPowerStripResult: Device info of Tapo P300, P304M, P306 and P316M.
+            DeviceInfoPowerStripResult: Device info of Tapo P210M, P300, P304M, P306, P316M and TP25.
         """
 
     async def get_child_device_list(
@@ -73,8 +74,9 @@ class PowerStripHandler(DeviceHandlerExt, DeviceManagementExt, FirmwareExt, Debu
             position (Optional[str]): The Position of the device
 
         Returns:
-            PowerStripPlugHandler: Handler for the [P300](https://www.tp-link.com/en/search/?q=P300) and
-            [P306](https://www.tp-link.com/us/search/?q=P306) child plugs.
+            PowerStripPlugHandler: Handler for the [P300](https://www.tp-link.com/en/search/?q=P300),
+            [P306](https://www.tp-link.com/us/search/?q=P306) and
+            [TP25](https://www.tapo.com/en/search/?q=TP25) child plugs.
 
         Example:
             ```python

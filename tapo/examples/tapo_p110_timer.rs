@@ -1,4 +1,4 @@
-/// P110, P110M and P115 Timer Example
+/// P110, P110M, P115 and P116M Timer Example
 use std::time::Duration;
 
 use log::info;
