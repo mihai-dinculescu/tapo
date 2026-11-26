@@ -31,13 +31,14 @@ pub enum DiscoveryResult {
         /// [L610](https://www.tapo.com/en/search/?q=L610) devices.
         handler: LightHandler,
     },
-    /// Tapo L430C, L430P, L530, L535 and L630 devices.
+    /// Tapo L430C, L430P, L530, L531, L535 and L630 devices.
     ColorLight {
-        /// Device info of Tapo L430C, L430P, L530, L535 and L630.
+        /// Device info of Tapo L430C, L430P, L530, L531, L535 and L630.
         device_info: Box<DeviceInfoColorLightResult>,
         /// Handler for the [L430C](https://www.tapo.com/en/search/?q=L430C),
         /// [L430P](https://www.tapo.com/en/search/?q=L430P),
         /// [L530](https://www.tapo.com/en/search/?q=L530),
+        /// [L531](https://www.tapo.com/en/search/?q=L531),
         /// [L535](https://www.tapo.com/en/search/?q=L535) and
         /// [L630](https://www.tapo.com/en/search/?q=L630) devices.
         handler: ColorLightHandler,
