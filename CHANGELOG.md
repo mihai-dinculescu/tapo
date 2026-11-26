@@ -8,6 +8,7 @@ file. This change log follows the conventions of
 
 ### Added
 
+- `ColorLightHandler`: added support for the L531 color light bulb, which is now discovered as a `Color Light` and listed with the L430C, L430P, L530, L535 and L630.
 - Lights, light strips, plugs, power strips and hubs (H100, H110): added `get_cloud_connection_state`, which returns whether the device is connected to the Tapo cloud as `CloudConnectionStateResult`: `Connected`, `Disconnected`, `Connecting`, `Disconnecting`, or `Unknown` with the device's status code. A device that has lost its internet connection reports `Connecting` until the connection is back, and can take a few minutes to notice either change.
 
 ## [Python Unreleased][Unreleased]
@@ -17,6 +18,10 @@ file. This change log follows the conventions of
 - Lights, light strips, plugs, power strips and hubs (H100, H110): added `get_cloud_connection_state`, which returns whether the device is connected to the Tapo cloud as `CloudConnectionStateResult`: a `status` of `CloudConnectionStatus` (`Connected`, `Disconnected`, `Connecting`, `Disconnecting` or `Unknown`), with the device's status `code` when unknown. A device that has lost its internet connection reports `Connecting` until the connection is back, and can take a few minutes to notice either change.
 
 ## [MCP Unreleased][Unreleased]
+
+### Added
+
+- `list_devices`, `get_device_state`, `control_device`: added support for the L531 color light bulb. It is now listed as a `Color Light`, like the L530, L535 and L630.
 
 ## [MCP v0.7.0][tapo-mcp-v0.7.0] - 2026-11-12
 
